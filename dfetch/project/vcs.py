@@ -1,0 +1,112 @@
+"""
+Version Control system
+"""
+
+import os
+import logging
+
+from colorama import Fore
+
+from dfetch.util.util import safe_rmtree
+import dfetch.manifest.manifest
+from dfetch.project.metadata import Metadata
+
+
+class VCS:
+    """Abstract Version Control System object
+
+    This object represents one Project entry in the Manifest.
+    It can be updated
+    """
+
+    def __init__(
+        self, project: dfetch.manifest.project.ProjectEntry, logger: logging.Logger
+    ) -> None:
+        self._logger = logger
+        self._project = project
+        self._metadata = Metadata.from_project_entry(self._project)
+
+    def update(self) -> None:
+        """ Update this VCS if required """
+
+        if not (self._metadata.branch and self._metadata.revision):
+            self._update_metadata()
+
+        if not self._update_required():
+            return
+
+        if os.path.exists(self.local_path):
+            self.logger.debug(f"Clearing destination directory {self.local_path}")
+            safe_rmtree(self.local_path)
+
+        self.logger.debug(
+            f"fetching {self._project.name} {self._project.revision} from {self._project.remote_url}"
+        )
+
+        self._fetch_impl()
+        self._metadata.fetched(self.revision, self.branch)
+
+        self.logger.debug(f"Writing repo metadata to: {self._metadata.path}")
+        self._metadata.dump()
+
+    def _update_required(self) -> bool:
+
+        wanted_version_string = (
+            f"({self._metadata.branch} - {self._metadata.revision[:8]})"
+        )
+        if os.path.exists(self.local_path) and os.path.exists(self._metadata.path):
+
+            on_disk = Metadata.from_file(self._metadata.path)
+            if self._metadata != on_disk:
+                self._log_project(
+                    f"updating ({on_disk.branch} - {on_disk.revision[:8]})"
+                    f" --> {wanted_version_string}",
+                )
+                return True
+            self._log_project(f"up-to-date {wanted_version_string}")
+            return False
+        self._log_project(
+            f"fetching {wanted_version_string}",
+        )
+        return True
+
+    def _log_project(self, version_info: str) -> None:
+        self.logger.info(
+            f"  {Fore.GREEN}- {self._project.name:20s}:{Fore.BLUE} {version_info}"
+        )
+
+    @property
+    def local_path(self) -> str:
+        """ Get the local destination of this project """
+        return self._project.destination
+
+    @property
+    def branch(self) -> str:
+        """ Get the required branch of this VCS """
+        return self._metadata.branch
+
+    @property
+    def revision(self) -> str:
+        """ Get the required revision of this VCS """
+        return self._metadata.revision
+
+    @property
+    def remote(self) -> str:
+        """ Get the remote url of this VCS """
+        return self._metadata.remote_url
+
+    @property
+    def logger(self) -> logging.Logger:
+        """ Return the logger for this VCS """
+        return self._logger
+
+    def check(self) -> bool:
+        """ Check if it can handle the type """
+        raise NotImplementedError("Should be implemented")
+
+    def _fetch_impl(self) -> None:
+        """ Called when the VCS must be cloned, should be implented by the child class """
+        raise NotImplementedError("_fetch_impl Should be implemented")
+
+    def _update_metadata(self) -> None:
+        raise NotImplementedError("_update_metadata Should be implemented")

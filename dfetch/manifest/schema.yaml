@@ -1,0 +1,31 @@
+# Schema file (schema.yaml)
+type: map
+mapping:
+  "manifest":
+    type: map
+    required: True
+    mapping:
+      "version": { type: number, required: True}
+      "remotes":
+          type: seq
+          sequence:
+             - type: map
+               mapping:
+                   "name": { type: str, required: True, unique: True}
+                   "url-base": { type: str, required: True}
+                   "default": { type: bool }
+      "projects":
+          type: seq
+          sequence:
+             - type: map
+               mapping:
+                   "name": { type: str, required: True, unique: True}
+                   "dst": { type: str, unique: True }
+                   "branch": { type: str }
+                   "revision": { type: str }
+                   "url": { type: str }
+                   "repo-path": { type: str }
+                   "remote": { type: str }
+                   "patch": { type: str }
+                   "src":
+                      type: any
