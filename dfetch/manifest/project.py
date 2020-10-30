@@ -1,5 +1,6 @@
 """
 Projects are specific repository or sources to download from a remote location.
+
 In its most basic form a project only has a 'name:'. This would make `Dfetch`
 retrieve the mymodule project from the only remote listed (`mycompany-git-modules`)
 and place it in a folder ``mymodule`` in the same folder as the manifest.
@@ -45,10 +46,11 @@ from typing import Dict
 from dfetch.manifest.remote import Remote
 
 
-class ProjectEntry:
-    """A single Project entry in the manifest file"""
+class ProjectEntry:  # pylint: disable=too-many-instance-attributes
+    """A single Project entry in the manifest file."""
 
     def __init__(self, yamldata: Dict[str, str], default_remote: Remote) -> None:
+        """Create the project entry."""
         self._name: str = yamldata["name"]
         self._revision: str = yamldata.get("revision", "")
 
@@ -62,42 +64,43 @@ class ProjectEntry:
         self._branch: str = yamldata.get("branch", "")
 
     def set_remote(self, remote: Remote) -> None:
-        """ Set the remote """
+        """Set the remote."""
         self._remote_obj = remote
 
     @property
     def remote_url(self) -> str:
-        """ Get the remote url of the project """
+        """Get the remote url of the project."""
         return self._url or "/".join(
             self._remote_obj.url.strip("/").split("/") + self._repo_path.split("/")
         )
 
     @property
     def remote(self) -> str:
-        """ Get the url """
+        """Get the url."""
         return self._remote
 
     @property
     def name(self) -> str:
-        """ Get the name of the project """
+        """Get the name of the project."""
         return self._name
 
     @property
     def destination(self) -> str:
-        """ Get the local path the project should be copied to """
+        """Get the local path the project should be copied to."""
         return self._dst
 
     @property
     def branch(self) -> str:
-        """ Get the branch that should be fetched """
+        """Get the branch that should be fetched."""
         return self._branch
 
     @property
     def revision(self) -> str:
-        """ Get the revision that should be fetched """
+        """Get the revision that should be fetched."""
         return self._revision
 
     def __repr__(self) -> str:
+        """Get a string representation of this project entry."""
         version = (
             f"{self.branch} {self.revision}".strip()
             if (self.branch or self.revision)

@@ -1,6 +1,4 @@
-"""
-All Project related items
-"""
+"""All Project related items."""
 import logging
 
 import dfetch.manifest.project
@@ -14,8 +12,7 @@ SUPPORTED_PROJECT_TYPES = [GitRepo, SvnRepo]
 def make(
     project_entry: dfetch.manifest.project.ProjectEntry, logger: logging.Logger
 ) -> VCS:
-    """ Create a new VCS based on a project from the manifest """
-
+    """Create a new VCS based on a project from the manifest."""
     for project_type in SUPPORTED_PROJECT_TYPES:
         project = project_type(project_entry, logger)
 

@@ -2,6 +2,8 @@
 
 [![Documentation Status](https://readthedocs.org/projects/dfetch/badge/?version=latest)](https://dfetch.readthedocs.io/en/latest/?badge=latest)
 [![Build](https://github.com/dfetch-org/dfetch/workflows/Test/badge.svg)](https://github.com/dfetch-org/dfetch/actions)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![GitHub](https://img.shields.io/github/license/dfetch-org/dfetch)
 
 DFetch can manage dependencies
 

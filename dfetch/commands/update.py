@@ -1,6 +1,4 @@
-"""
-Updating is very important
-"""
+"""Updating is very important."""
 
 import argparse
 import logging
@@ -18,24 +16,19 @@ logger = logging.getLogger(__name__)
 
 
 class Update(dfetch.commands.command.Command):
-    """Update all modules from the manifest
+    """Update all modules from the manifest.
 
     Verifies the manifest and checks all dependencies if updates are available.
     """
 
     @staticmethod
     def create_menu(subparsers: "argparse._SubParsersAction") -> None:
-        """ Add the menu for the update action """
+        """Add the menu for the update action."""
         parser = dfetch.commands.command.Command.parser(subparsers, Update)
         parser.add_argument("--dry-run", "-n", action="store_true", help="Only check")
 
     def __call__(self, args: argparse.Namespace) -> None:
-        """
-        Updating
-
-        something something
-        """
-
+        """Perform the update."""
         logger.debug("Looking for manifest")
         manifest_path = dfetch.manifest.manifest.find_manifest()
         dfetch.manifest.validate.validate(manifest_path)

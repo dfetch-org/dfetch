@@ -1,34 +1,31 @@
-"""
-Git specific implementation
-"""
+"""SVN specific implementation."""
 
 import os
 from typing import Dict, Tuple
 
 from dfetch.project.vcs import VCS
-from dfetch.util.cmdline import Cmdline, SubprocessCommandError
+from dfetch.util.cmdline import run_on_cmdline, SubprocessCommandError
 
 
 class SvnRepo(VCS):
-    """A svn repository"""
+    """A svn repository."""
 
     DEFAULT_BRANCH = "trunk"
 
     def check(self) -> bool:
-        """ Check if is SVN """
+        """Check if is SVN."""
         try:
-            Cmdline.run(self._logger, f"svn info {self._project.remote_url}")
+            run_on_cmdline(self._logger, f"svn info {self._project.remote_url}")
             return True
         except SubprocessCommandError:
             return False
 
     def _fetch_impl(self) -> None:
-        """ Get the revision of the remote and place it at the local path """
-
+        """Get the revision of the remote and place it at the local path."""
         rev, branch = self._determine_rev_and_branch()
         cmd = f"svn export {rev} {self.remote}/{branch} {self.local_path}"
 
-        Cmdline.run(self.logger, cmd)
+        run_on_cmdline(self.logger, cmd)
 
     def _determine_rev_and_branch(self) -> Tuple[str, str]:
         rev = ""
@@ -42,7 +39,7 @@ class SvnRepo(VCS):
         return (rev, branch)
 
     def _get_info(self, branch: str) -> Dict[str, str]:
-        result = Cmdline.run(self.logger, f"svn info {self.remote}/{branch}")
+        result = run_on_cmdline(self.logger, f"svn info {self.remote}/{branch}")
 
         info = {}
         for line in result.stdout.decode().split(os.linesep):

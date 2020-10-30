@@ -1,7 +1,7 @@
 """
 A manifest file is a ``.yaml`` file describing what external projects are used in this project.
-This can be any external repository (git, svn).
 
+This can be any external repository (git, svn).
 A manifest must consist of a ``manifest:`` block with the ``version:`` of the manifest syntax.
 In the block two main block are present.
 
@@ -33,12 +33,13 @@ from dfetch.util.util import find_file
 
 
 class Manifest:
-    """Manifest describing all the modules information
+    """Manifest describing all the modules information.
 
     This class is created from the manifest file a project has.
     """
 
     def __init__(self, manifest_text: Union[io.TextIOWrapper, str, IO[str]]) -> None:
+        """Create the manifest."""
         loaded_yaml = self._load_yaml(manifest_text)
 
         if not loaded_yaml:
@@ -77,7 +78,7 @@ class Manifest:
 
     @staticmethod
     def from_file(path: str) -> "Manifest":
-        """Creates the manifest from a file path
+        """Create a manifest from a file path.
 
         Args:
             path:
@@ -94,17 +95,17 @@ class Manifest:
 
     @property
     def version(self) -> str:
-        """ Version of the manifest file """
+        """Version of the manifest file."""
         return self.__version
 
     @property
     def projects(self) -> List[ProjectEntry]:
-        """ Get a list of Projects from the manifest """
+        """Get a list of Projects from the manifest."""
         return list(self._projects.values())
 
 
 def find_manifest() -> str:
-    """ Find a manifest """
+    """Find a manifest."""
     paths = find_file("manifest.yaml", ".")
 
     if len(paths) == 0:

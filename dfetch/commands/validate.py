@@ -19,16 +19,19 @@ logger = logging.getLogger(__name__)
 
 
 class Validate(dfetch.commands.command.Command):
-    """Validate a manifest
+    """
+    Validate a manifest.
 
-    The Manifest is validated against a schema"""
+    The Manifest is validated against a schema.
+    """
 
     @staticmethod
     def create_menu(subparsers: "argparse._SubParsersAction") -> None:
-        """ Add the parser menu for this action """
+        """Add the parser menu for this action."""
         dfetch.commands.command.Command.parser(subparsers, Validate)
 
     def __call__(self, args: argparse.Namespace) -> None:
+        """Perform the validation."""
         del args  # unused
 
         manifest_path = find_manifest()

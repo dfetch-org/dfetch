@@ -1,38 +1,37 @@
-"""
-Git specific implementation
-"""
+"""Git specific implementation."""
 
 import os
 
+from typing import Dict
+
 from dfetch.project.vcs import VCS
-from dfetch.util.cmdline import Cmdline
+from dfetch.util.cmdline import run_on_cmdline
 from dfetch.util.util import in_directory, safe_rmtree
 
 
 class GitRepo(VCS):
-    """A git repository"""
+    """A git repository."""
 
     METADATA_DIR = ".git"
     DEFAULT_BRANCH = "master"
 
     def check(self) -> bool:
-        """ Check if is GIT """
+        """Check if is GIT."""
         return self._project.remote_url.endswith(".git")
 
     def _fetch_impl(self) -> None:
-        """ Get the revision of the remote and place it at the local path """
-
+        """Get the revision of the remote and place it at the local path."""
         # also allow for revision
         branch = self.branch or self.DEFAULT_BRANCH
         cmd = f"git clone --branch {branch} --depth 1 {self.remote} {self.local_path}"
 
-        Cmdline.run(self.logger, cmd)
+        run_on_cmdline(self.logger, cmd)
 
         self._cleanup()
 
-    def _update_metadata(self) -> None:
+    def __ls_remote(self) -> Dict[str, str]:
 
-        result = Cmdline.run(self.logger, f"git ls-remote {self.remote}")
+        result = run_on_cmdline(self.logger, f"git ls-remote {self.remote}")
 
         info = {}
         for line in result.stdout.decode().split("\n"):
@@ -46,6 +45,11 @@ class GitRepo(VCS):
                     else:
                         if value.strip() not in info:
                             info[value.strip()] = key.strip()
+        return info
+
+    def _update_metadata(self) -> None:
+
+        info = self.__ls_remote()
 
         rev = self._metadata.revision
         branch = self._metadata.branch
@@ -75,4 +79,4 @@ class GitRepo(VCS):
     def _checkout(self, revision: str) -> None:
         with in_directory(self.local_path):
             cmd = f"git checkout {revision}"
-            Cmdline.run(self.logger, cmd)
+            run_on_cmdline(self.logger, cmd)

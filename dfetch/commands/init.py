@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class Init(dfetch.commands.command.Command):
-    """Initialize a manifest
+    """Initialize a manifest.
 
     Generate a manifest that can be used as basis for a project.
     """
@@ -27,10 +27,11 @@ class Init(dfetch.commands.command.Command):
 
     @staticmethod
     def create_menu(subparsers: "argparse._SubParsersAction") -> None:
-        """ Add the parser menu for this action """
+        """Add the parser menu for this action."""
         dfetch.commands.command.Command.parser(subparsers, Init)
 
     def __call__(self, args: argparse.Namespace) -> None:
+        """Perform the init."""
         del args  # unused
 
         if os.path.isfile(self.MANIFEST_NAME):

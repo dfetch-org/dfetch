@@ -17,8 +17,10 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - run: isort --diff dfetch
-      - run: black --check dfetch
-      - run: flake8 dfetch
-      - run: pylint dfetch
-      - run: mypy --strict dfetch
+      - run: isort --diff dfetch   # Checks import order
+      - run: black --check dfetch  # Checks code style
+      - run: flake8 dfetch         # Checks pep8 conformance
+      - run: pylint dfetch         # Checks pep8 conformance
+      - run: mypy --strict dfetch  # Check types
+      - run: doc8 doc              # Checks documentation
+      - run: pydocstyle dfetch     # Checks doc strings

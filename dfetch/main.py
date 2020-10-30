@@ -1,4 +1,5 @@
-"""
+"""Main entry point of commandline tool.
+
 Created on 28/04/2020
 @author: Ben Spoor
 """
@@ -19,7 +20,7 @@ logger = dfetch.log.setup_root(__name__)
 
 
 def create_parser() -> argparse.ArgumentParser:
-    """ Create the main argument parser """
+    """Create the main argument parser."""
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parser.set_defaults(func=_help)
     subparsers = parser.add_subparsers(help="commands")
@@ -32,12 +33,12 @@ def create_parser() -> argparse.ArgumentParser:
 
 
 def _help(args: argparse.Namespace) -> None:
-    """ """
+    """Show the help."""
     raise RuntimeError("Select a function")
 
 
 def main() -> None:
-    """ Start dfetch """
+    """Start dfetch."""
     logger.info(f"{Fore.BLUE}Dfetch ({__version__})")
     args = create_parser().parse_args()
 

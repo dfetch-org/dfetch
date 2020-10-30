@@ -1,6 +1,4 @@
-"""
-Version Control system
-"""
+"""Version Control system."""
 
 import logging
 import os
@@ -13,22 +11,22 @@ from dfetch.util.util import safe_rmtree
 
 
 class VCS:
-    """Abstract Version Control System object
+    """Abstract Version Control System object.
 
     This object represents one Project entry in the Manifest.
-    It can be updated
+    It can be updated.
     """
 
     def __init__(
         self, project: dfetch.manifest.project.ProjectEntry, logger: logging.Logger
     ) -> None:
+        """Create the VCS."""
         self._logger = logger
         self._project = project
         self._metadata = Metadata.from_project_entry(self._project)
 
     def update(self) -> None:
-        """ Update this VCS if required """
-
+        """Update this VCS if required."""
         if not (self._metadata.branch and self._metadata.revision):
             self._update_metadata()
 
@@ -77,35 +75,35 @@ class VCS:
 
     @property
     def local_path(self) -> str:
-        """ Get the local destination of this project """
+        """Get the local destination of this project."""
         return self._project.destination
 
     @property
     def branch(self) -> str:
-        """ Get the required branch of this VCS """
+        """Get the required branch of this VCS."""
         return self._metadata.branch
 
     @property
     def revision(self) -> str:
-        """ Get the required revision of this VCS """
+        """Get the required revision of this VCS."""
         return self._metadata.revision
 
     @property
     def remote(self) -> str:
-        """ Get the remote url of this VCS """
+        """Get the remote url of this VCS."""
         return self._metadata.remote_url
 
     @property
     def logger(self) -> logging.Logger:
-        """ Return the logger for this VCS """
+        """Return the logger for this VCS."""
         return self._logger
 
     def check(self) -> bool:
-        """ Check if it can handle the type """
+        """Check if it can handle the type."""
         raise NotImplementedError("Should be implemented")
 
     def _fetch_impl(self) -> None:
-        """ Called when the VCS must be cloned, should be implented by the child class """
+        """Fetch the given version of the VCS, should be implented by the child class."""
         raise NotImplementedError("_fetch_impl Should be implemented")
 
     def _update_metadata(self) -> None:

@@ -1,6 +1,4 @@
-"""
-Logging related items
-"""
+"""Logging related items."""
 
 import logging
 
@@ -8,7 +6,7 @@ import coloredlogs
 
 
 def setup_root(name: str) -> logging.Logger:
-    """ Setup the root logger """
+    """Create the root logger."""
     logger = logging.getLogger(name)
 
     msg_format = "%(message)s"

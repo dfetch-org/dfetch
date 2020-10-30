@@ -1,6 +1,4 @@
-"""
-Validate manifests
-"""
+"""Validate manifests."""
 import logging
 import os
 
@@ -14,7 +12,7 @@ SCRIPT_PATH = os.path.dirname(__file__)
 
 
 def validate(path: str) -> None:
-    """ Validate the given manifest """
+    """Validate the given manifest."""
     logging.getLogger(pykwalify.__name__).setLevel(logging.CRITICAL)
 
     schema_path = _find_schema()

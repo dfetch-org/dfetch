@@ -1,6 +1,4 @@
-"""
-Generic python utilities
-"""
+"""Generic python utilities."""
 
 import os
 import shutil
@@ -16,8 +14,7 @@ def _remove_readonly(func: Any, path: str, excinfo: Any) -> None:
 
 
 def safe_rmtree(path: str) -> None:
-    """ Delete an entire directory and all its subfolders and files """
-
+    """Delete an entire directory and all its subfolders and files."""
     try:
         shutil.rmtree(path, onerror=_remove_readonly)
     except PermissionError as exc:
@@ -28,7 +25,7 @@ def safe_rmtree(path: str) -> None:
 
 @contextmanager
 def in_directory(path: str) -> Generator[str, None, None]:
-    """ Allows for temporarily operating in a given directory """
+    """Work temporarily in a given directory."""
     pwd = os.getcwd()
     if not os.path.isdir(path):
         path = os.path.dirname(path)
@@ -38,7 +35,7 @@ def in_directory(path: str) -> Generator[str, None, None]:
 
 
 def find_file(name: str, path: str = ".") -> List[str]:
-    """ Find all files with a specific name recrusivly in a directory """
+    """Find all files with a specific name recrusivly in a directory."""
     return [
         os.path.join(root, name) for root, dirs, files in os.walk(path) if name in files
     ]
