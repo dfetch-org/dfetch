@@ -18,6 +18,18 @@ class GitRepo(VCS):
         """Check if is GIT."""
         return self._project.remote_url.endswith(".git")
 
+    def _check_impl(self) -> str:
+        """Check if a newer version is available on the given branch."""
+        info = self.__ls_remote()
+        branch = self.branch or self.DEFAULT_BRANCH
+
+        rev = ""
+        for reference, sha in info.items():
+            if reference in [f"refs/heads/{branch}", f"refs/tags/{branch}"]:
+                rev = sha
+                break
+        return rev
+
     def _fetch_impl(self) -> None:
         """Get the revision of the remote and place it at the local path."""
         # also allow for revision

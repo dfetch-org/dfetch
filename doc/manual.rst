@@ -3,4 +3,15 @@
 Manual
 ======
 
-Some text
+Check
+-----
+.. automodule:: dfetch.commands.check
+
+Update
+------
+.. automodule:: dfetch.commands.update
+
+
+Validation
+----------
+.. automodule:: dfetch.commands.validate

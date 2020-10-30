@@ -22,11 +22,13 @@ A block ``remotes`` (see :ref:`remotes`) which contains a list of sources of the
            dst: Tests/Utils/python/mycompany/
 """
 import io
+import logging
 import os
-from typing import IO, Any, Dict, List, Union
+from typing import IO, Any, Dict, List, Tuple, Union
 
 import yaml
 
+import dfetch.manifest.validate
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.remote import Remote
 from dfetch.util.util import find_file
@@ -114,3 +116,16 @@ def find_manifest() -> str:
         raise RuntimeError(f"Multiple manifests found: {paths}")
 
     return os.path.realpath(paths[0])
+
+
+def get_manifest(logger: logging.Logger) -> Tuple[Manifest, str]:
+    """Get manifest and its path."""
+    logger.debug("Looking for manifest")
+    manifest_path = find_manifest()
+    dfetch.manifest.validate.validate(manifest_path)
+
+    logger.debug(f"Using manifest {manifest_path}")
+    return (
+        dfetch.manifest.manifest.Manifest.from_file(manifest_path),
+        manifest_path,
+    )

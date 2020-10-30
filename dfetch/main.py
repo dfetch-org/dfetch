@@ -9,6 +9,7 @@ import sys
 
 from colorama import Fore
 
+import dfetch.commands.check
 import dfetch.commands.init
 import dfetch.commands.update
 import dfetch.commands.validate
@@ -26,6 +27,7 @@ def create_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(help="commands")
 
     dfetch.commands.init.Init.create_menu(subparsers)
+    dfetch.commands.check.Check.create_menu(subparsers)
     dfetch.commands.update.Update.create_menu(subparsers)
     dfetch.commands.validate.Validate.create_menu(subparsers)
 

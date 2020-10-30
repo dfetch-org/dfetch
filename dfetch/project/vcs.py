@@ -47,6 +47,27 @@ class VCS:
         self.logger.debug(f"Writing repo metadata to: {self._metadata.path}")
         self._metadata.dump()
 
+    def check_for_update(self) -> None:
+        """Check if there is an update available."""
+        on_disk_revision: str = ""
+        if os.path.exists(self.local_path) and os.path.exists(self._metadata.path):
+            on_disk = Metadata.from_file(self._metadata.path)
+            on_disk_revision = on_disk.revision
+
+        remote_revision = self._check_impl()
+
+        if remote_revision[:8] == on_disk_revision[:8]:
+            self._log_project(f"up-to-date ({on_disk_revision[:8]})")
+        else:
+            pinned: str = (
+                "and pinned "
+                if self._project.revision[:8] == on_disk_revision[:8]
+                else ""
+            )
+            self._log_project(
+                f"installed {pinned}({on_disk_revision[:8]}), available ({remote_revision[:8]})"
+            )
+
     def _update_required(self) -> bool:
 
         wanted_version_string = (
@@ -68,10 +89,8 @@ class VCS:
         )
         return True
 
-    def _log_project(self, version_info: str) -> None:
-        self.logger.info(
-            f"  {Fore.GREEN}- {self._project.name:20s}:{Fore.BLUE} {version_info}"
-        )
+    def _log_project(self, msg: str) -> None:
+        self.logger.info(f"  {Fore.GREEN}- {self._project.name:20s}:{Fore.BLUE} {msg}")
 
     @property
     def local_path(self) -> str:
@@ -101,6 +120,10 @@ class VCS:
     def check(self) -> bool:
         """Check if it can handle the type."""
         raise NotImplementedError("Should be implemented")
+
+    def _check_impl(self) -> str:
+        """Check the given version of the VCS, should be implented by the child class."""
+        raise NotImplementedError("_check_impl Should be implemented")
 
     def _fetch_impl(self) -> None:
         """Fetch the given version of the VCS, should be implented by the child class."""

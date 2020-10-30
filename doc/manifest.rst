@@ -11,7 +11,3 @@ Remotes
 Projects
 --------
 .. automodule:: dfetch.manifest.project
-
-Validation
-----------
-.. automodule:: dfetch.commands.validate
