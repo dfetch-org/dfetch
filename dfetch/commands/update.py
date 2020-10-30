@@ -3,7 +3,6 @@
 import argparse
 import logging
 import os
-from typing import List
 
 import dfetch.commands.command
 import dfetch.manifest.manifest
@@ -41,14 +40,8 @@ class Update(dfetch.commands.command.Command):
 
         manifest = dfetch.manifest.manifest.Manifest.from_file(manifest_path)
 
-        self._send_minions(manifest.projects)
-
-    @staticmethod
-    def _send_minions(projects: List[dfetch.manifest.project.ProjectEntry]) -> None:
-
         exceptions = []
-
-        for project in projects:
+        for project in manifest.projects:
             try:
                 dfetch.project.make(project, logger.getChild(project.name)).update()
             except RuntimeError as exc:
