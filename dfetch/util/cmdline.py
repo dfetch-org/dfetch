@@ -2,10 +2,9 @@
 Module for performing cmd line arguments
 """
 
-import subprocess
-import os
 import logging
-
+import os
+import subprocess
 from typing import Any  # pylint: disable=unused-import
 
 

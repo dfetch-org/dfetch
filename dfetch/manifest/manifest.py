@@ -23,7 +23,7 @@ A block ``remotes`` (see :ref:`remotes`) which contains a list of sources of the
 """
 import io
 import os
-from typing import Union, IO, Dict, Any, List
+from typing import IO, Any, Dict, List, Union
 
 import yaml
 

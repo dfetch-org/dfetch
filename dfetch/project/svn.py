@@ -3,11 +3,10 @@ Git specific implementation
 """
 
 import os
+from typing import Dict, Tuple
 
-from typing import Tuple, Dict
-
-from dfetch.util.cmdline import Cmdline, SubprocessCommandError
 from dfetch.project.vcs import VCS
+from dfetch.util.cmdline import Cmdline, SubprocessCommandError
 
 
 class SvnRepo(VCS):

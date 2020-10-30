@@ -8,12 +8,12 @@ import sys
 
 from colorama import Fore
 
-from dfetch import __version__
 import dfetch.commands.init
 import dfetch.commands.update
 import dfetch.commands.validate
-import dfetch.util.cmdline
 import dfetch.log
+import dfetch.util.cmdline
+from dfetch import __version__
 
 logger = dfetch.log.setup_root(__name__)
 

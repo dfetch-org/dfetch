@@ -2,14 +2,14 @@
 Version Control system
 """
 
-import os
 import logging
+import os
 
 from colorama import Fore
 
-from dfetch.util.util import safe_rmtree
 import dfetch.manifest.manifest
 from dfetch.project.metadata import Metadata
+from dfetch.util.util import safe_rmtree
 
 
 class VCS:

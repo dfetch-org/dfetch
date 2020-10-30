@@ -3,7 +3,7 @@ A generic command
 """
 
 import argparse
-from typing import TypeVar, Type
+from typing import Type, TypeVar
 
 
 class Command:

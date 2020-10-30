@@ -3,11 +3,10 @@ Generic python utilities
 """
 
 import os
-import stat
 import shutil
-from typing import List, Any, Generator
-
+import stat
 from contextlib import contextmanager
+from typing import Any, Generator, List
 
 
 def _remove_readonly(func: Any, path: str, excinfo: Any) -> None:

@@ -38,6 +38,7 @@ Use following tools (will be automated soon)
 pylint dfetch
 mypy --strict dfetch
 black dfetch
+isort dfetch
 ```
 
 ## Creating internal documentation

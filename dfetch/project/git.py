@@ -4,9 +4,9 @@ Git specific implementation
 
 import os
 
-from dfetch.util.cmdline import Cmdline
 from dfetch.project.vcs import VCS
-from dfetch.util.util import safe_rmtree, in_directory
+from dfetch.util.cmdline import Cmdline
+from dfetch.util.util import in_directory, safe_rmtree
 
 
 class GitRepo(VCS):

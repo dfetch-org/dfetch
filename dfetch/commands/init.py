@@ -4,8 +4,8 @@ Note that you can validate your manifest using :ref:`validate`.
 This will parse your :ref:`Manifest` and check if all fields can be parsed.
 """
 
-import logging
 import argparse
+import logging
 import os
 import shutil
 

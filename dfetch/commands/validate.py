@@ -4,15 +4,15 @@ Note that you can validate your manifest using :ref:`validate`.
 This will parse your :ref:`Manifest` and check if all fields can be parsed.
 """
 
-import logging
 import argparse
+import logging
 import os
 
 from colorama import Fore
 
+import dfetch.commands.command
 from dfetch.manifest.manifest import find_manifest
 from dfetch.manifest.validate import validate
-import dfetch.commands.command
 
 SCRIPT_PATH = os.path.dirname(__file__)
 logger = logging.getLogger(__name__)

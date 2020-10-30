@@ -2,10 +2,11 @@
 All Project related items
 """
 import logging
+
+import dfetch.manifest.project
 from dfetch.project.git import GitRepo
 from dfetch.project.svn import SvnRepo
 from dfetch.project.vcs import VCS
-import dfetch.manifest.project
 
 SUPPORTED_PROJECT_TYPES = [GitRepo, SvnRepo]
 

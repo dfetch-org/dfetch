@@ -2,9 +2,9 @@
 Updating is very important
 """
 
+import argparse
 import logging
 import os
-import argparse
 from typing import List
 
 import dfetch.commands.command
