@@ -1,6 +1,9 @@
 # DFetch
 
-This directory contains the DFetch that can manage dependencies
+[![Documentation Status](https://readthedocs.org/projects/dfetch/badge/?version=latest)](https://dfetch.readthedocs.io/en/latest/?badge=latest)
+[![Build](https://github.com/dfetch-org/dfetch/workflows/Test/badge.svg)](https://github.com/dfetch-org/dfetch/actions)
+
+DFetch can manage dependencies
 
 ## Running in VSCode
 
