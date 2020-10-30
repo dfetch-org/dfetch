@@ -1,7 +1,6 @@
 """Git specific implementation."""
 
 import os
-
 from typing import Dict
 
 from dfetch.project.vcs import VCS

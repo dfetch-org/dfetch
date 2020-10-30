@@ -3,9 +3,9 @@
 import datetime
 import os
 from typing import Any
-from typing_extensions import TypedDict
 
 import yaml
+from typing_extensions import TypedDict
 
 import dfetch.manifest.manifest
 

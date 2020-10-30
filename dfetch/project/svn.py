@@ -4,7 +4,7 @@ import os
 from typing import Dict, Tuple
 
 from dfetch.project.vcs import VCS
-from dfetch.util.cmdline import run_on_cmdline, SubprocessCommandError
+from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 
 
 class SvnRepo(VCS):
