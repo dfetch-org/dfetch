@@ -19,8 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class Validate(dfetch.commands.command.Command):
-    """
-    Validate a manifest.
+    """Validate a manifest.
 
     The Manifest is validated against a schema.
     """
