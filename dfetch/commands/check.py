@@ -20,8 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class Check(dfetch.commands.command.Command):
-    """
-    Check all projects for updates.
+    """Check all projects for updates.
 
     Check all project to see if there are any new updates.
     """
