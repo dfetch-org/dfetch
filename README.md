@@ -35,19 +35,11 @@ pip install -e .
 ```
 
 ### Quality
-Use following tools (will be automated soon)
-```
-pylint dfetch
-mypy --strict dfetch
-black dfetch
-isort dfetch
-```
+Run `check_quality.bat` (or Github will run it for you).
 
-## Creating internal documentation
-
-Run `create_internal_documentation.bat` and open `index.html` in `doc/internal/_build/html` to read it.
+### Creating documentation
+Run `create_docs.bat` and open `index.html` in `doc/_build/html` to read it.
 See [This example](https://pythonhosted.org/an_example_pypi_project/sphinx.html) for documenting the code.
-
 
 # Logo
 - Logo: [Beagle (3171) - The Noun Project.svg icon from the Noun Project](https://thenounproject.com/icon/3171)
