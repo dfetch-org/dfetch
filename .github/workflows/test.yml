@@ -17,12 +17,12 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - run: isort --diff dfetch   # Checks import order
-      - run: black --check dfetch  # Checks code style
-      - run: flake8 dfetch         # Checks pep8 conformance
-      - run: pylint dfetch         # Checks pep8 conformance
-      - run: mypy --strict dfetch  # Check types
-      - run: doc8 doc              # Checks documentation
-      - run: pydocstyle dfetch     # Checks doc strings
-      - run: bandit dfetch         # Checks security issues
-      - run: xenon -b B -m A -a A  # Check code quality
+      - run: isort --diff dfetch         # Checks import order
+      - run: black --check dfetch        # Checks code style
+      - run: flake8 dfetch               # Checks pep8 conformance
+      - run: pylint dfetch               # Checks pep8 conformance
+      - run: mypy --strict dfetch        # Check types
+      - run: doc8 doc                    # Checks documentation
+      - run: pydocstyle dfetch           # Checks doc strings
+      - run: bandit dfetch               # Checks security issues
+      - run: xenon -b B -m A -a A dfetch # Check code quality
