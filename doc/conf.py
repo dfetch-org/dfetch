@@ -85,6 +85,16 @@ html_theme = 'alabaster'
 
 html_logo = 'images/dfetch_logo.png'
 
+html_theme_options = {
+    'show_powered_by': False,
+    'github_user': 'dfetch-org',
+    'github_repo': 'dfetch',
+    'github_banner': True,
+    'show_related': False,
+    'note_bg': '#FFF59C'
+}
+
+
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
