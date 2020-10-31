@@ -1,5 +1,6 @@
 # DFetch
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/431474d43db0420a92ebc10c1886df8d)](https://app.codacy.com/gh/dfetch-org/dfetch?utm_source=github.com&utm_medium=referral&utm_content=dfetch-org/dfetch&utm_campaign=Badge_Grade)
 [![Documentation Status](https://readthedocs.org/projects/dfetch/badge/?version=latest)](https://dfetch.readthedocs.io/en/latest/?badge=latest)
 [![Build](https://github.com/dfetch-org/dfetch/workflows/Test/badge.svg)](https://github.com/dfetch-org/dfetch/actions)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
