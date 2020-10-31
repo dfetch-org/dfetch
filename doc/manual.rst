@@ -11,7 +11,6 @@ Update
 ------
 .. automodule:: dfetch.commands.update
 
-
 Validation
 ----------
 .. automodule:: dfetch.commands.validate

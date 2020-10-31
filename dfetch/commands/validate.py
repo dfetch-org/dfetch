@@ -21,7 +21,9 @@ logger = logging.getLogger(__name__)
 class Validate(dfetch.commands.command.Command):
     """Validate a manifest.
 
-    The Manifest is validated against a schema.
+    The Manifest is validated against a schema. See :ref:`manifest` for requirements.
+
+    .. note:: Each time either :ref:`update` or :ref:`check` is run the :ref:`manifest` is also validated.
     """
 
     @staticmethod

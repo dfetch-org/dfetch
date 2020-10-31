@@ -2,11 +2,11 @@
 A manifest file is a ``.yaml`` file describing what external projects are used in this project.
 
 This can be any external repository (git, svn).
-A manifest must consist of a ``manifest:`` block with the ``version:`` of the manifest syntax.
-In the block two main block are present.
+A manifest must consist of a ``manifest:`` section with the ``version:`` of the manifest syntax.
+In the section two subsections are present.
 
-A block ``remotes`` (see :ref:`remotes`) which contains a list of sources of the projects the download and a block
-``projects:`` that contains a list of projects to add.
+A section ``remotes`` (see :ref:`remotes`) which contains a list of sources of the projects to
+download and a section ``projects:`` that contains a list of projects to fetch.
 
 .. code-block:: yaml
 
@@ -19,7 +19,7 @@ A block ``remotes`` (see :ref:`remotes`) which contains a list of sources of the
 
         projects:
          - name: somemodule
-           dst: Tests/Utils/python/mycompany/
+           dst: external/somemodule/
 """
 import io
 import logging

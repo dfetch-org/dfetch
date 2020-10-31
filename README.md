@@ -8,6 +8,14 @@
 
 DFetch can manage dependencies
 
+We needed a dependency manager that was flexible enough to retrieve dependencies as plain text
+from various sources. `svn externals`, `git submodules` and `git subtrees` solve a similar
+problem, but not in a vcs agnostic way or completely user friendly way.
+We want self-contained code repositories without any hassle for end-users.
+Dfetch must promote upstreaming changes, but allow for local customizations.
+
+Other tools that do similar things are ``Zephyr's West``, ``CMake ExternalProject`` and other meta tools.
+
 [![asciicast](https://asciinema.org/a/X7RIrLtctOPBq2ekHr9DyVrRe.png)](https://asciinema.org/a/X7RIrLtctOPBq2ekHr9DyVrRe)
 
 ## Running in VSCode

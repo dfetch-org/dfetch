@@ -4,6 +4,8 @@ In its most basic form a project only has a 'name:'. This would make `Dfetch`
 retrieve the mymodule project from the only remote listed (`mycompany-git-modules`)
 and place it in a folder ``mymodule`` in the same folder as the manifest.
 
+.. note:: A project name *must* be unique.
+
 .. code-block:: yaml
 
     manifest:
@@ -18,9 +20,9 @@ and place it in a folder ``mymodule`` in the same folder as the manifest.
 
 Destination and revision
 ########################
-Since we want more control on what project is retrieved and where it is placed the ``revision:`` and
-``dst:`` attributes can help. Below manifest will download tag ``v1.13`` of the mymodule
-and place it in the path listed by ``dst:``.
+Since we want more control on what project is retrieved and where it is placed
+the ``revision:``, ``branch:`` and ``dst:`` attributes can help. Below manifest
+will download tag ``v1.13`` of the mymodule and place it in the path listed by ``dst:``.
 
 .. code-block:: yaml
 
@@ -34,9 +36,27 @@ and place it in the path listed by ``dst:``.
         projects:
          - name: mymodule
            branch: v1.13
-           dst: Tests/Utils/python/mymodule
+           dst: external/mymodule
 
-We can also list multiple projects
+We can also list multiple projects.
+
+.. code-block:: yaml
+
+    manifest:
+        version: 0.0
+
+        remotes:
+        - name: mycompany-git-modules
+          url-base: http://git.mycompany.local/mycompany/
+
+        projects:
+         - name: mymodule
+           branch: v1.13
+           dst: external/mymodule
+
+         - name: myothermodule
+           revision: bea84ba8f
+           dst: external/myothermodule
 
 """
 
