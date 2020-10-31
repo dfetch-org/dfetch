@@ -28,6 +28,6 @@ def setup_root(name: str) -> logging.Logger:
     return logger
 
 
-def increase_verbosity():
+def increase_verbosity() -> None:
     """Increase the verbosity of the logger."""
     coloredlogs.increase_verbosity()
