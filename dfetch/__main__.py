@@ -47,8 +47,6 @@ def main() -> None:
     logger.info(f"{Fore.BLUE}Dfetch ({__version__})")
     args = create_parser().parse_args()
 
-    dfetch.log.increase_verbosity()
-
     if args.verbose:
         dfetch.log.increase_verbosity()
 
