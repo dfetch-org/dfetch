@@ -31,7 +31,7 @@ class Check(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
-        manifest, path = dfetch.manifest.manifest.get_manifest(logger)
+        manifest, path = dfetch.manifest.manifest.get_manifest()
 
         with dfetch.util.util.in_directory(os.path.dirname(path)):
             exceptions = []
