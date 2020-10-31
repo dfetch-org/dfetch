@@ -1,10 +1,7 @@
 #!python3.7
-"""
-Script to setup a venv
-"""
+"""Script to setup a venv"""
 
 import argparse
-import os
 import subprocess
 import venv
 
