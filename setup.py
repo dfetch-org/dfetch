@@ -11,6 +11,6 @@ setup(
     url="https://github.com/dfetch-org/dfetch",
     packages=['dfetch'],
     package_data={'dfetch':['resources/*.png']},
-    install_requires=['pyyaml', 'appdirs', 'coloredlogs', 'pykwalify'],
+    install_requires=['pyyaml', 'appdirs', 'coloredlogs', 'pykwalify', 'colorama'],
     entry_points={ 'console_scripts': ['dfetch = dfetch.main:main' ] }
 )
