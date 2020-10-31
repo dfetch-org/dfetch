@@ -36,7 +36,7 @@ def run_on_cmdline(
 
     try:
         proc = subprocess.run(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+            cmd.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
         )
     except subprocess.CalledProcessError as exc:
         raise SubprocessCommandError(
