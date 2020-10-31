@@ -40,6 +40,10 @@ pydocstyle dfetch
 CALL :sub_display bandit
 bandit dfetch
 
+CALL :sub_display radon
+radon mi -nc dfetch
+radon cc -nc dfetch
+
 pause
 
 exit /b 0
