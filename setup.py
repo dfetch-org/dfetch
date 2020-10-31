@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from dfetch import __version__
 
 setup(
@@ -9,7 +9,7 @@ setup(
     description="Dependency fetcher",
     keywords="dfetch",
     url="https://github.com/dfetch-org/dfetch",
-    packages=['dfetch'],
+    packages=find_packages(include=['dfetch', 'dfetch.*']),
     package_data={'dfetch':['resources/*.png']},
     install_requires=['pyyaml', 'appdirs', 'coloredlogs', 'pykwalify', 'colorama', 'typing-extensions'],
     entry_points={ 'console_scripts': ['dfetch = dfetch.__main__:main' ] }
