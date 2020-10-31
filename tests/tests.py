@@ -1,4 +1,4 @@
-""" python tests main entry point, automatically finds test cases to run
+"""Python tests main entry point, automatically finds test cases to run
 
 @author: GlennVL
 """
