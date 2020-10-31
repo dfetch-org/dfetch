@@ -8,7 +8,7 @@
 
 DFetch can manage dependencies
 
-[![asciicast](https://asciinema.org/a/Kk88zIU3aXo4o8dkkDudprUQM.png)](https://asciinema.org/a/Kk88zIU3aXo4o8dkkDudprUQM)
+[![asciicast](https://asciinema.org/a/X7RIrLtctOPBq2ekHr9DyVrRe.png)](https://asciinema.org/a/X7RIrLtctOPBq2ekHr9DyVrRe)
 
 ## Running in VSCode
 
