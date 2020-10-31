@@ -24,3 +24,4 @@ jobs:
       - run: mypy --strict dfetch  # Check types
       - run: doc8 doc              # Checks documentation
       - run: pydocstyle dfetch     # Checks doc strings
+      - run: bandit dfetch         # Checks security issues
