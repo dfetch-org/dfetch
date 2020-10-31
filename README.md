@@ -8,6 +8,8 @@
 
 DFetch can manage dependencies
 
+[![asciicast](https://asciinema.org/a/Kk88zIU3aXo4o8dkkDudprUQM.png)](https://asciinema.org/a/Kk88zIU3aXo4o8dkkDudprUQM)
+
 ## Running in VSCode
 
 Make sure the venv is created (by using `start_gui.bat` for instance) and set the `venv` as python interpreter.
