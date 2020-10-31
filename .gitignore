@@ -1,5 +1,5 @@
 .vscode
-venv
+venv*
 dfetch.egg-info
 __pycache__
 doc/_build

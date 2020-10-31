@@ -12,5 +12,5 @@ setup(
     packages=['dfetch'],
     package_data={'dfetch':['resources/*.png']},
     install_requires=['pyyaml', 'appdirs', 'coloredlogs', 'pykwalify', 'colorama', 'typing-extensions'],
-    entry_points={ 'console_scripts': ['dfetch = dfetch.main:main' ] }
+    entry_points={ 'console_scripts': ['dfetch = dfetch.__main__:main' ] }
 )

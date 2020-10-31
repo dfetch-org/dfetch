@@ -16,6 +16,6 @@ jobs:
       - name: Install dfetch
         run: pip install .
 
-      - run: dfetch validate
-      - run: dfetch check
-      - run: dfetch update
+      - run: python -m dfetch validate
+      - run: python -m dfetch check
+      - run: python -m dfetch update
