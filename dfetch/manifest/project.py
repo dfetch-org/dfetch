@@ -1,5 +1,4 @@
-"""
-Projects are specific repository or sources to download from a remote location.
+"""Projects are specific repository or sources to download from a remote location.
 
 In its most basic form a project only has a 'name:'. This would make `Dfetch`
 retrieve the mymodule project from the only remote listed (`mycompany-git-modules`)
