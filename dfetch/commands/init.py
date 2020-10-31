@@ -10,9 +10,8 @@ import os
 import shutil
 
 import dfetch.commands.command
-from dfetch.util.util import find_file
+from dfetch.resources import TEMPLATE_PATH
 
-SCRIPT_PATH = os.path.dirname(__file__)
 logger = logging.getLogger(__name__)
 
 
@@ -22,7 +21,6 @@ class Init(dfetch.commands.command.Command):
     Generate a manifest that can be used as basis for a project.
     """
 
-    TEMPLATE_PATH = find_file("template.yaml", SCRIPT_PATH)[0]
     MANIFEST_NAME = "manifest.yaml"
 
     @staticmethod
@@ -38,6 +36,7 @@ class Init(dfetch.commands.command.Command):
             logger.warning(f"{self.MANIFEST_NAME} already exists!")
             return
 
-        dest = shutil.copyfile(self.TEMPLATE_PATH, self.MANIFEST_NAME)
+        with TEMPLATE_PATH as template_path:
+            dest = shutil.copyfile(template_path, self.MANIFEST_NAME)
 
         logger.info(f"Created {dest}")

@@ -1,5 +1,4 @@
-"""
-To check if your projects are up-to-date, you can let dfetch check it.
+"""To check if your projects are up-to-date, you can let dfetch check it.
 
 For each project the local revision will be compared against the available
 revision on that branch.
