@@ -45,6 +45,9 @@ def run_on_cmdline(
             exc.stderr.decode().strip(),
             exc.returncode,
         ) from exc
+    except FileNotFoundError as exc:
+        cmd = cmd.split(" ")[0]
+        raise RuntimeError(f"{cmd} not available on system, please install") from exc
 
     stdout, stderr = proc.stdout, proc.stderr
 
