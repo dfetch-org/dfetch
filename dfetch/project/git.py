@@ -23,12 +23,7 @@ class GitRepo(VCS):
         info = self.__ls_remote()
         branch = self.branch or self.DEFAULT_BRANCH
 
-        rev = ""
-        for reference, sha in info.items():
-            if reference in [f"refs/heads/{branch}", f"refs/tags/{branch}"]:
-                rev = sha
-                break
-        return rev
+        return self._find_sha_of_branch_or_tag(info, branch)
 
     def _fetch_impl(self) -> None:
         """Get the revision of the remote and place it at the local path."""
@@ -69,19 +64,25 @@ class GitRepo(VCS):
             branch = self.DEFAULT_BRANCH
 
         if branch and not rev:
-            for reference, sha in info.items():
-                if reference in [f"refs/heads/{branch}", f"refs/tags/{branch}"]:
-                    rev = sha
-                    break
+            rev = self._find_sha_of_branch_or_tag(info, branch)
         elif not branch and rev:
-            for reference, sha in info.items():
-                if sha[:8] == rev[:8]:  # Also allow for shorter SHA's
-                    branch = reference.replace("refs/heads", "").replace(
-                        "refs/tags", ""
-                    )
-                    break
+            branch = self._find_branch_or_tag_from_sha(info, rev)
 
         self._metadata.fetched(rev, branch)
+
+    @staticmethod
+    def _find_sha_of_branch_or_tag(info: Dict[str, str], branch: str) -> str:
+        for reference, sha in info.items():
+            if reference in [f"refs/heads/{branch}", f"refs/tags/{branch}"]:
+                return sha
+        return ""
+
+    @staticmethod
+    def _find_branch_or_tag_from_sha(info: Dict[str, str], rev: str) -> str:
+        for reference, sha in info.items():
+            if sha[:8] == rev[:8]:  # Also allow for shorter SHA's
+                return reference.replace("refs/heads", "").replace("refs/tags", "")
+        return ""
 
     def _cleanup(self) -> None:
         path = os.path.join(self.local_path, self.METADATA_DIR)
