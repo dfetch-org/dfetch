@@ -37,6 +37,9 @@ doc8 doc
 CALL :sub_display pydocstyle
 pydocstyle dfetch
 
+CALL :sub_display bandit
+bandit dfetch
+
 pause
 
 exit /b 0
