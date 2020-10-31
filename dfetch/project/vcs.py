@@ -56,7 +56,9 @@ class VCS:
 
         remote_revision = self._check_impl()
 
-        if remote_revision[:8] == on_disk_revision[:8]:
+        if not on_disk_revision:
+            self._log_project(f"available ({remote_revision[:8]})")
+        elif remote_revision[:8] == on_disk_revision[:8]:
             self._log_project(f"up-to-date ({on_disk_revision[:8]})")
         else:
             pinned: str = (
