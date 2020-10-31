@@ -23,6 +23,9 @@ logger = dfetch.log.setup_root(__name__)
 def create_parser() -> argparse.ArgumentParser:
     """Create the main argument parser."""
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Increase verbosity"
+    )
     parser.set_defaults(func=_help)
     subparsers = parser.add_subparsers(help="commands")
 
@@ -43,6 +46,11 @@ def main() -> None:
     """Start dfetch."""
     logger.info(f"{Fore.BLUE}Dfetch ({__version__})")
     args = create_parser().parse_args()
+
+    dfetch.log.increase_verbosity()
+
+    if args.verbose:
+        dfetch.log.increase_verbosity()
 
     try:
         args.func(args)

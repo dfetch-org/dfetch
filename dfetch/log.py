@@ -26,3 +26,8 @@ def setup_root(name: str) -> logging.Logger:
     coloredlogs.install(fmt=msg_format, level_styles=level_styles, level="INFO")
 
     return logger
+
+
+def increase_verbosity():
+    """Increase the verbosity of the logger."""
+    coloredlogs.increase_verbosity()
