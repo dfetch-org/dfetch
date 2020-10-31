@@ -19,3 +19,4 @@ jobs:
       - run: python -m dfetch validate
       - run: python -m dfetch check
       - run: python -m dfetch update
+      - run: python -m dfetch check
