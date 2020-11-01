@@ -3,14 +3,42 @@
 Manual
 ======
 
+Init
+-----
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: init
+
+.. automodule:: dfetch.commands.init
+
 Check
 -----
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: check
+
 .. automodule:: dfetch.commands.check
 
 Update
 ------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: update
+
 .. automodule:: dfetch.commands.update
 
 Validation
 ----------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: validate
+
 .. automodule:: dfetch.commands.validate

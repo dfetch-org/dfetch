@@ -1,7 +1,7 @@
 """
-Note that you can validate your manifest using :ref:`validate`.
+*Dfetch* can generate a starting manifest.
 
-This will parse your :ref:`Manifest` and check if all fields can be parsed.
+It will be created in the current folder.
 """
 
 import argparse

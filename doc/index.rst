@@ -11,7 +11,7 @@ Dfetch
    getting_started
    manifest
    manual
-   command-line
+   contributing
 
 
 What is Dfetch?

@@ -18,40 +18,6 @@ Other tools that do similar things are ``Zephyr's West``, ``CMake ExternalProjec
 
 [![asciicast](https://asciinema.org/a/X7RIrLtctOPBq2ekHr9DyVrRe.png)](https://asciinema.org/a/X7RIrLtctOPBq2ekHr9DyVrRe)
 
-## Running in VSCode
-
-Make sure the venv is created (by using `start_gui.bat` for instance) and set the `venv` as python interpreter.
-
-```json
-    "configurations": [
-        {
-            "name": "Python: Module",
-            "type": "python",
-            "request": "launch",
-            "module": "dfetch.main",
-            "justMyCode": false,
-            "args": ["update"]
-        }
-    ]
-```
-
-## Contributing
-
-### Setup environment
-```bash
-python -m venv venv
-venv/Scripts/activate
-pip install -r requirements.txt
-pip install -e .
-```
-
-### Quality
-Run `check_quality.bat` (or Github will run it for you).
-
-### Creating documentation
-Run `create_docs.bat` and open `index.html` in `doc/_build/html` to read it.
-See [This example](https://pythonhosted.org/an_example_pypi_project/sphinx.html) for documenting the code.
-
 ## Logo
 -   Logo: [Beagle (3171) - The Noun Project.svg icon from the Noun Project](https://thenounproject.com/icon/3171)
 -   Date: 7 March 2018
