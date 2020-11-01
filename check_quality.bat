@@ -38,11 +38,11 @@ CALL :sub_display pydocstyle
 pydocstyle dfetch
 
 CALL :sub_display bandit
-bandit dfetch
+bandit -r dfetch
 
 CALL :sub_display radon
-radon mi -nc dfetch
-radon cc -nc dfetch
+radon mi -nb dfetch
+radon cc -nb dfetch
 
 pause
 
