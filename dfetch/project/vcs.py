@@ -112,7 +112,7 @@ class VCS(ABC):
 
     @property
     def remote(self) -> str:
-        """Get the remote url of this VCS."""
+        """Get the remote URL of this VCS."""
         return self._metadata.remote_url
 
     @property
@@ -126,11 +126,11 @@ class VCS(ABC):
 
     @abstractmethod
     def _check_impl(self) -> str:
-        """Check the given version of the VCS, should be implented by the child class."""
+        """Check the given version of the VCS, should be implemented by the child class."""
 
     @abstractmethod
     def _fetch_impl(self) -> None:
-        """Fetch the given version of the VCS, should be implented by the child class."""
+        """Fetch the given version of the VCS, should be implemented by the child class."""
 
     @abstractmethod
     def _update_metadata(self) -> None:

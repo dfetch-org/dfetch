@@ -1,5 +1,4 @@
-"""
-*Dfetch* can generate a starting manifest.
+"""*Dfetch* can generate a starting manifest.
 
 It will be created in the current folder.
 """

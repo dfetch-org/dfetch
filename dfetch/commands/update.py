@@ -1,5 +1,4 @@
-"""
-Update is the main functionality of dfetch.
+"""Update is the main functionality of dfetch.
 
 You can add Projects to your :ref:`Manifest` and update will fetch the version specified.
 It tries to determine what kind of vcs it is: git, svn or something else.

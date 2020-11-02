@@ -1,5 +1,4 @@
-"""
-Note that you can validate your manifest using :ref:`validate`.
+"""Note that you can validate your manifest using :ref:`validate`.
 
 This will parse your :ref:`Manifest` and check if all fields can be parsed.
 """

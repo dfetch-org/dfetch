@@ -1,5 +1,4 @@
-"""
-A manifest file is a ``.yaml`` file describing what external projects are used in this project.
+"""A manifest file is a ``.yaml`` file describing what external projects are used in this project.
 
 This can be any external repository (git, svn).
 A manifest must consist of a ``manifest:`` section with the ``version:`` of the manifest syntax.

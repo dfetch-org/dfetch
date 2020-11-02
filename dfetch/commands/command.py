@@ -16,7 +16,7 @@ class Command(ABC):
     @staticmethod
     @abstractmethod
     def create_menu(subparsers: "argparse._SubParsersAction") -> None:
-        """Add a subparser to the given parser."""
+        """Add a sub-parser to the given parser."""
 
     @abstractmethod
     def __call__(self, args: argparse.Namespace) -> None:

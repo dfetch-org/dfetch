@@ -1,4 +1,4 @@
-"""Main entry point of commandline tool.
+"""Main entry point of command-line tool.
 
 Created on 28/04/2020
 @author: Ben Spoor

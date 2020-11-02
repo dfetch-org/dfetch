@@ -1,5 +1,4 @@
-"""
-Remotes are the external repository where the code should be retrieved from.
+"""Remotes are the external repository where the code should be retrieved from.
 
 If only one remote is added this is assumed to be the default.
 If multiple remotes are listed ``default:`` can be explicitly specified.
