@@ -1,3 +1,33 @@
+strictness: veryhigh
+doc-warnings: true
+member-warnings: true
 pep257:
   disable:
     - D203
+    - D213
+    - D406
+    - D407
+    - D413
+
+pylint:
+  disable:
+    - logging-fstring-interpolation
+  options:
+    max-line-length: 120
+pep8:
+  options:
+    max-line-length: 120
+
+pyroma:
+  run: true
+
+vulture:
+  run: false
+
+mypy:
+  run: true
+  options:
+    strict: true
+
+bandit:
+  run: true
