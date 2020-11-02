@@ -2,6 +2,7 @@
 
 import logging
 import os
+from abc import ABC, abstractmethod
 
 from colorama import Fore
 
@@ -10,7 +11,7 @@ from dfetch.project.metadata import Metadata
 from dfetch.util.util import safe_rmtree
 
 
-class VCS:
+class VCS(ABC):
     """Abstract Version Control System object.
 
     This object represents one Project entry in the Manifest.
@@ -123,13 +124,14 @@ class VCS:
         """Check if it can handle the type."""
         raise NotImplementedError("Should be implemented")
 
+    @abstractmethod
     def _check_impl(self) -> str:
         """Check the given version of the VCS, should be implented by the child class."""
-        raise NotImplementedError("_check_impl Should be implemented")
 
+    @abstractmethod
     def _fetch_impl(self) -> None:
         """Fetch the given version of the VCS, should be implented by the child class."""
-        raise NotImplementedError("_fetch_impl Should be implemented")
 
+    @abstractmethod
     def _update_metadata(self) -> None:
-        raise NotImplementedError("_update_metadata Should be implemented")
+        """Update the metadata after performing a fetch."""

@@ -1,10 +1,11 @@
 """A generic command."""
 
 import argparse
+from abc import ABC, abstractmethod
 from typing import Type, TypeVar
 
 
-class Command:
+class Command(ABC):
     """An abstract command that dfetch can perform.
 
     Each command must implement :ref:`create_menu` and :ref:`__call__`.
@@ -13,13 +14,13 @@ class Command:
     CHILD_TYPE = TypeVar("CHILD_TYPE", bound="Command")
 
     @staticmethod
+    @abstractmethod
     def create_menu(subparsers: "argparse._SubParsersAction") -> None:
         """Add a subparser to the given parser."""
-        raise NotImplementedError("Should be implemented")
 
+    @abstractmethod
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the command."""
-        raise NotImplementedError("Should be implemented")
 
     @staticmethod
     def parser(
