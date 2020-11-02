@@ -9,4 +9,4 @@ updates:
     target-branch: "main"
     # Labels on pull requests for version updates only
     labels:
-      - "pip dependencies"
+      - "dependencies"
