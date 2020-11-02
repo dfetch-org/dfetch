@@ -120,9 +120,9 @@ class VCS(ABC):
         """Return the logger for this VCS."""
         return self._logger
 
+    @abstractmethod
     def check(self) -> bool:
         """Check if it can handle the type."""
-        raise NotImplementedError("Should be implemented")
 
     @abstractmethod
     def _check_impl(self) -> str:
