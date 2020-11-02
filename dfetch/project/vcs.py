@@ -60,7 +60,7 @@ class VCS(ABC):
         if not on_disk_revision:
             self._log_project(f"available ({remote_revision[:8]})")
         elif remote_revision[:8] == on_disk_revision[:8]:
-            self._log_project(f"up-to-date ({on_disk_revision[:8]})")
+            self._log_project(f"up-to-date ({on_disk.branch} - {on_disk_revision[:8]})")
         else:
             pinned: str = (
                 "and pinned "
@@ -68,7 +68,7 @@ class VCS(ABC):
                 else ""
             )
             self._log_project(
-                f"installed {pinned}({on_disk_revision[:8]}), available ({remote_revision[:8]})"
+                f"installed {pinned}({on_disk.branch} - {on_disk_revision[:8]}), available ({remote_revision[:8]})"
             )
 
     def _update_required(self) -> bool:
