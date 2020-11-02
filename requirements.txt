@@ -82,4 +82,4 @@ urllib3==1.25.10
 virtualenv==20.1.0
 wrapt==1.12.1
 xenon==0.7.1
-zipp==3.3.0
+zipp==3.4.0
