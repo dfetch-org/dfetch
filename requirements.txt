@@ -20,7 +20,7 @@ flake8==3.8.4
 flake8-polyfill==1.0.2
 future==0.18.2
 gitdb==4.0.5
-GitPython==3.1.9
+GitPython==3.1.11
 humanfriendly==8.2
 idna==2.10
 imagesize==1.2.0
