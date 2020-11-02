@@ -2,7 +2,7 @@
 
 import logging
 import os
-import subprocess
+import subprocess  # nosec
 from typing import Any  # pylint: disable=unused-import
 
 

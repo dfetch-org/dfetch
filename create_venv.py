@@ -2,7 +2,7 @@
 """Script to setup a venv."""
 
 import argparse
-import subprocess
+import subprocess  # nosec
 import venv
 
 from typing import Any
@@ -44,9 +44,9 @@ class MyEnvBuilder(venv.EnvBuilder):
         intended for the global Python environment
         (same as EnvBuilder's _setup_pip)
         """
-        ret = subprocess.call(
+        ret = subprocess.call(  # nosec
             (context.env_exe, "-Im", "pip", "install") + args,
-            stderr=subprocess.STDOUT,  # nosec
+            stderr=subprocess.STDOUT,
         )
         if ret:
             raise Exception("pip install command result was not 0 but %d" % ret)
