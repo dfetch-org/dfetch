@@ -7,8 +7,7 @@ from contextlib import contextmanager
 from typing import Any, Generator, List
 
 
-def _remove_readonly(func: Any, path: str, excinfo: Any) -> None:
-    del excinfo  # unused
+def _remove_readonly(func: Any, path: str, _: Any) -> None:
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
@@ -35,7 +34,7 @@ def in_directory(path: str) -> Generator[str, None, None]:
 
 
 def find_file(name: str, path: str = ".") -> List[str]:
-    """Find all files with a specific name recrusivly in a directory."""
+    """Find all files with a specific name recursively in a directory."""
     return [
-        os.path.join(root, name) for root, dirs, files in os.walk(path) if name in files
+        os.path.join(root, name) for root, _, files in os.walk(path) if name in files
     ]
