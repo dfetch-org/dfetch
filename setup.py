@@ -1,3 +1,5 @@
+"""Script for creating package."""
+
 from setuptools import setup, find_packages
 from dfetch import __version__
 

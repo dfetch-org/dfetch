@@ -19,6 +19,7 @@ def given_manifest_from_text(text: str) -> Manifest:
 
 
 class TestParsing(unittest.TestCase):
+    """Test if Manifest can be parsed."""
 
     def test_can_read_version(self) -> None:
         """Test that the version can be read."""
