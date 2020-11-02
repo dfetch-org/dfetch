@@ -78,7 +78,7 @@ tox==3.20.1
 typed-ast==1.4.1
 typing-extensions==3.7.4.3
 unittest-xml-reporting==3.0.4
-urllib3==1.25.10
+urllib3==1.25.11
 virtualenv==20.1.0
 wrapt==1.12.1
 xenon==0.7.1
