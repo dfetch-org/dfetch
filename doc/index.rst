@@ -12,6 +12,7 @@ Dfetch
    manifest
    manual
    contributing
+   technical
 
 
 What is Dfetch?

@@ -7,7 +7,7 @@ from typing import Type, TypeVar
 class Command:
     """An abstract command that dfetch can perform.
 
-    Each commond must implemened :ref:`create_menu` and :ref:`__call__`.
+    Each command must implement :ref:`create_menu` and :ref:`__call__`.
     """
 
     CHILD_TYPE = TypeVar("CHILD_TYPE", bound="Command")

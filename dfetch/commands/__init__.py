@@ -1,1 +1,1 @@
-"""All commandline related commands."""
+"""Contains all commandline-related commands."""

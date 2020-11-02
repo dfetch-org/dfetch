@@ -33,8 +33,8 @@ Update
 
 .. automodule:: dfetch.commands.update
 
-Validation
-----------
+Validate
+--------
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
