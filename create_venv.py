@@ -19,14 +19,12 @@ class MyEnvBuilder(venv.EnvBuilder):
     def __init__(
         self, *args: Any, requirements: str = "", **kwargs: Any
     ) -> None:  # pylint: disable=line-too-long
-        """
-        :param requirements: Can be any path. If non, this step is skipped.
-        """
+        """:param requirements: Can be any path. If non, this step is skipped."""
         super().__init__(*args, **kwargs)
         self.requirements = requirements or ["requirements.txt"]
 
     def post_setup(self, context: Any) -> None:
-        """Hook for setting up proper env for testing."""
+        """Setup proper env for testing."""
         super().post_setup(context)
 
         print("Upgrading pip")
