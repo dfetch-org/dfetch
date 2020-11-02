@@ -24,7 +24,7 @@ class MyEnvBuilder(venv.EnvBuilder):
         self.requirements = requirements or ["requirements.txt"]
 
     def post_setup(self, context: Any) -> None:
-        """Setup proper env for testing."""
+        """Set up proper environment for testing."""
         super().post_setup(context)
 
         print("Upgrading pip")
