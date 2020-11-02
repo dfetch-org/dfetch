@@ -14,7 +14,6 @@ import dfetch.manifest.validate
 import dfetch.project
 import dfetch.util
 
-SCRIPT_PATH = os.path.dirname(__file__)
 logger = logging.getLogger(__name__)
 
 
