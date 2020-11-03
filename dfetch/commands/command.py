@@ -8,12 +8,12 @@ from typing import Type, TypeVar
 class Command(ABC):
     """An abstract command that dfetch can perform.
 
-    When adding a new command to dfetch this class should be subclassed.
+    When adding a new command to dfetch this class should be sub-classed.
     That subclass should implement:
-    - :ref:`create_menu` which should add an appropriate subparser. Likely calling :ref:`parser` is enough
-    - :ref:`__call__` which will be called when the user selects the command.
 
-    Note that the
+    - ``create_menu`` which should add an appropriate subparser.
+        Likely calling parser is enough.
+    - ``__call__`` which will be called when the user selects the command.
     """
 
     CHILD_TYPE = TypeVar("CHILD_TYPE", bound="Command")  # noqa
@@ -21,7 +21,13 @@ class Command(ABC):
     @staticmethod
     @abstractmethod
     def create_menu(subparsers: "argparse._SubParsersAction") -> None:
-        """Add a sub-parser to the given parser."""
+        """Add a sub-parser to the given parser.
+
+        Args:
+            subparsers (argparse._SubParsersAction): subparser that the parser should be added to.
+
+        This method must be implemented by a subclass. It is called when the menu structure is built.
+        """
 
     @abstractmethod
     def __call__(self, args: argparse.Namespace) -> None:
