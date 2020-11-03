@@ -9,6 +9,8 @@
 ![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/dfetch-org/dfetch)
 ![Maintenance](https://img.shields.io/maintenance/yes/2020)
 ![GitHub issues](https://img.shields.io/github/issues/dfetch-org/dfetch)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dfetch)
+![PyPI](https://img.shields.io/pypi/v/dfetch)
 
 DFetch can manage dependencies
 
