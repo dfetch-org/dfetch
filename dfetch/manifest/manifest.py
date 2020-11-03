@@ -17,8 +17,8 @@ download and a section ``projects:`` that contains a list of projects to fetch.
           url-base: http://git.mycompany.local/mycompany/
 
         projects:
-         - name: somemodule
-           dst: external/somemodule/
+         - name: mymodule
+           dst: external/mymodule/
 """
 import io
 import logging

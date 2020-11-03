@@ -75,10 +75,10 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
 
         self._remote: str = yamldata.get("remote", "")
         self._remote_obj: Remote = default_remote
-        self._src: str = yamldata.get("src", "")
+        self._src: str = yamldata.get("src", "")  # noqa
         self._dst: str = yamldata.get("dst", ".")
         self._url: str = yamldata.get("url", "")
-        self._patch: str = yamldata.get("patch", "")
+        self._patch: str = yamldata.get("patch", "")  # noqa
         self._repo_path: str = yamldata.get("repo-path", "")
         self._branch: str = yamldata.get("branch", "")
 

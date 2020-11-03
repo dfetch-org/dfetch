@@ -16,7 +16,7 @@ class Command(ABC):
     Note that the
     """
 
-    CHILD_TYPE = TypeVar("CHILD_TYPE", bound="Command")
+    CHILD_TYPE = TypeVar("CHILD_TYPE", bound="Command")  # noqa
 
     @staticmethod
     @abstractmethod
