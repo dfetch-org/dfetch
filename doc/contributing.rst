@@ -43,12 +43,35 @@ For on-the-fly linting add the following to your ``.vscode/settings.json``:
 
 Quality
 -------
-To avoid any discussion about formatting `black <https://github.com/psf/black>` is used as code formatter.
-Next to that `isort <https://github.com/PyCQA/isort>` is used for sorting the imports.
+To avoid any discussion about formatting `black <https://github.com/psf/black>`_ is used as code formatter.
+Next to that `isort <https://github.com/PyCQA/isort>`_ is used for sorting the imports.
 
 Run `check_quality.bat` (or GitHub will run it for you).
 
 Creating documentation
 ----------------------
 Run ``create_docs.bat`` and open ``index.html`` in ``doc/_build/html`` to read it.
-See `This example <https://pythonhosted.org/an_example_pypi_project/sphinx.html>` for documenting the code.
+See `This example <https://pythonhosted.org/an_example_pypi_project/sphinx.html>`_ for documenting the code.
+
+
+Releasing
+---------
+
+- Update ``CHANGELOG.rst`` with release date.
+- Bump version number in ``dfetch/__init__.py``.
+- Create annotated tag and push it:
+
+.. code-block:: bash
+
+    git tag -a 'v0.0.2' -m "Release version v0.0.2"
+    git push --tags
+
+- If all tests ok, create release in the `GitHub webui <https://github.com/dfetch-org/dfetch/releases/new>`_.
+- When the release is created, a new package is automatically pushed to `PyPi <https://pypi.org/project/dfetch/>`_.
+
+- After release, add new header to ``CHANGELOG.rst``:
+
+.. code-block:: rst
+
+    Release 0.0.3 (In development)
+    ===================================
