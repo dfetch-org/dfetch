@@ -4,13 +4,13 @@
 [![Documentation Status](https://readthedocs.org/projects/dfetch/badge/?version=latest)](https://dfetch.readthedocs.io/en/latest/?badge=latest)
 [![Build](https://github.com/dfetch-org/dfetch/workflows/Test/badge.svg)](https://github.com/dfetch-org/dfetch/actions)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-![GitHub](https://img.shields.io/github/license/dfetch-org/dfetch)
+[![GitHub](https://img.shields.io/github/license/dfetch-org/dfetch)](https://github.com/dfetch-org/dfetch/blob/main/LICENSE)
 [![Gitter](https://badges.gitter.im/dfetch-org/community.svg)](https://gitter.im/dfetch-org/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 ![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/dfetch-org/dfetch)
 ![Maintenance](https://img.shields.io/maintenance/yes/2020)
-![GitHub issues](https://img.shields.io/github/issues/dfetch-org/dfetch)
+[![GitHub issues](https://img.shields.io/github/issues/dfetch-org/dfetch)](https://github.com/dfetch-org/dfetch/issues)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dfetch)
-![PyPI](https://img.shields.io/pypi/v/dfetch)
+[![PyPI](https://img.shields.io/pypi/v/dfetch)](https://pypi.org/project/dfetch/)
 
 DFetch can manage dependencies
 
