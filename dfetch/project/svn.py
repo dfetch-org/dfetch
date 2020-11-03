@@ -1,6 +1,7 @@
 """SVN specific implementation."""
 
 import os
+import logging
 from typing import Dict, Tuple
 
 from dfetch.project.vcs import VCS
@@ -19,6 +20,15 @@ class SvnRepo(VCS):
             return True
         except SubprocessCommandError:
             return False
+
+    @staticmethod
+    def list_tool_info(logger: logging.Logger) -> None:
+        """Print out version information."""
+        result = run_on_cmdline(logger, "svn --version")
+
+        first_line = result.stdout.decode().split("\n")[0]
+        tool, version = first_line.replace(",", "").split("version", maxsplit=1)
+        VCS._log_tool(logger, tool, version)
 
     def _check_impl(self) -> str:
         """Check if a newer version is available on the given branch."""

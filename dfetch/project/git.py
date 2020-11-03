@@ -1,6 +1,7 @@
 """Git specific implementation."""
 
 import os
+import logging
 from typing import Dict
 
 from dfetch.project.vcs import VCS
@@ -17,6 +18,15 @@ class GitRepo(VCS):
     def check(self) -> bool:
         """Check if is GIT."""
         return self._project.remote_url.endswith(".git")
+
+    @staticmethod
+    def list_tool_info(logger: logging.Logger) -> None:
+        """Print out version information."""
+        result = run_on_cmdline(logger, "git --version")
+
+        tool, version = result.stdout.decode().strip().split("version", maxsplit=1)
+
+        VCS._log_tool(logger, tool, version)
 
     def _check_impl(self) -> str:
         """Check if a newer version is available on the given branch."""

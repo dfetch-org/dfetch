@@ -95,6 +95,10 @@ class VCS(ABC):
     def _log_project(self, msg: str) -> None:
         self.logger.info(f"  {Fore.GREEN}- {self._project.name:20s}:{Fore.BLUE} {msg}")
 
+    @staticmethod
+    def _log_tool(logger: logging.Logger, name: str, msg: str) -> None:
+        logger.info(f"  {Fore.GREEN}- {name:20s}:{Fore.BLUE} {msg}")
+
     @property
     def local_path(self) -> str:
         """Get the local destination of this project."""
@@ -123,6 +127,11 @@ class VCS(ABC):
     @abstractmethod
     def check(self) -> bool:
         """Check if it can handle the type."""
+
+    @staticmethod
+    @abstractmethod
+    def list_tool_info(logger: logging.Logger) -> None:
+        """Print out version information."""
 
     @abstractmethod
     def _check_impl(self) -> str:
