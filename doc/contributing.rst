@@ -17,7 +17,7 @@ To debug or run directly from VSCode create the :ref:`virtual environment <envir
 Select the python from the virtual environment.
 Add the following configuration to the *launch.json*.
 
-.. code-block:: json
+.. code-block:: javascript
 
     "configurations": [
         {
