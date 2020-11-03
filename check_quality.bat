@@ -13,20 +13,17 @@ if not exist %VENV_DIR% (
 
 call .\venv\Scripts\activate.bat
 
-CALL :sub_display Pylint
-pylint dfetch --output-format=colorized
-
 CALL :sub_display isort
 isort dfetch
 
 CALL :sub_display black
 black dfetch
 
+CALL :sub_display Pylint
+pylint dfetch --output-format=colorized
+
 CALL :sub_display flake8
 flake8 dfetch
-
-CALL :sub_display pylint
-pylint dfetch
 
 CALL :sub_display mypy
 mypy --strict dfetch
