@@ -24,7 +24,14 @@ Other tools that do similar things are ``Zephyr's West``, ``CMake ExternalProjec
 
 [![asciicast](https://asciinema.org/a/X7RIrLtctOPBq2ekHr9DyVrRe.png)](https://asciinema.org/a/X7RIrLtctOPBq2ekHr9DyVrRe)
 
-## Install latest version
+## Install
+
+### Stable
+```bash
+pip install dfetch
+```
+
+### latest version
 ```bash
 pip install https://github.com/dfetch-org/dfetch/archive/main.zip
 ```
