@@ -4,8 +4,8 @@ Contributing
 ============
 Before implementing a feature please ask one of the maintainers to avoid any unnecessary or double work.
 
-Environment
------------
+Virtual Environment
+-------------------
 Create a virtual environment by double-clicking ``create_venv.py`` or by running the following command.
 
 .. code-block:: bash
@@ -14,7 +14,7 @@ Create a virtual environment by double-clicking ``create_venv.py`` or by running
 
 Running in VSCode
 -----------------
-To debug or run directly from VSCode create the :ref:`virtual environment <environment>`.
+To debug or run directly from VSCode create the :ref:`virtual environment`.
 Select the python from the virtual environment.
 Add the following configuration to the ``.vscode/launch.json``.
 

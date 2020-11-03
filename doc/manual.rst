@@ -42,3 +42,15 @@ Validate
    :path: validate
 
 .. automodule:: dfetch.commands.validate
+
+
+Environment
+-----------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: environment
+
+.. automodule:: dfetch.commands.environment
+
