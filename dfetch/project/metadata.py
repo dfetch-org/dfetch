@@ -13,7 +13,7 @@ import dfetch.manifest.manifest
 class Options(TypedDict):
     """Argument types for Metadata class construction."""
 
-    last_fetch: datetime.datetime
+    last_fetch: datetime.datetime  # noqa
     branch: str
     revision: str
     remote_url: str
