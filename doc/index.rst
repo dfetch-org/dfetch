@@ -13,6 +13,7 @@ Dfetch
    manual
    contributing
    technical
+   changelog
 
 
 What is Dfetch?
