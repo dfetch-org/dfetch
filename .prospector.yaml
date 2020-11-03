@@ -1,6 +1,10 @@
+requirements: "requirements.txt"
 strictness: veryhigh
 doc-warnings: true
 member-warnings: true
+test-warnings: true
+max-line-length: 120
+
 pep257:
   disable:
     - D203
@@ -8,26 +12,41 @@ pep257:
     - D406
     - D407
     - D413
+  options:
+    convention: google
+
+dodgy:
+  run: true
+
+pep8:
+  full: true
 
 pylint:
   disable:
-    - logging-fstring-interpolation
-  options:
-    max-line-length: 120
-pep8:
-  options:
-    max-line-length: 120
+     - logging-fstring-interpolation
+
+profile-validator:
+  run: true
 
 pyroma:
   run: true
 
 vulture:
-  run: false
+  run: true
 
 mypy:
   run: true
   options:
     strict: true
 
+pyflakes:
+  run: true
+
 bandit:
   run: true
+
+mccabe:
+  run: true
+  options:
+    max-complexity: 7
+
