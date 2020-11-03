@@ -7,18 +7,25 @@
 ![GitHub](https://img.shields.io/github/license/dfetch-org/dfetch)
 [![Gitter](https://badges.gitter.im/dfetch-org/community.svg)](https://gitter.im/dfetch-org/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 ![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/dfetch-org/dfetch)
+![Maintenance](https://img.shields.io/maintenance/yes/2020)
+![GitHub issues](https://img.shields.io/github/issues/dfetch-org/dfetch)
 
 DFetch can manage dependencies
 
 We needed a dependency manager that was flexible enough to retrieve dependencies as plain text
 from various sources. `svn externals`, `git submodules` and `git subtrees` solve a similar
-problem, but not in a vcs agnostic way or completely user friendly way.
+problem, but not in a VCS agnostic way or completely user friendly way.
 We want self-contained code repositories without any hassle for end-users.
 Dfetch must promote upstreaming changes, but allow for local customizations.
 
 Other tools that do similar things are ``Zephyr's West``, ``CMake ExternalProject`` and other meta tools.
 
 [![asciicast](https://asciinema.org/a/X7RIrLtctOPBq2ekHr9DyVrRe.png)](https://asciinema.org/a/X7RIrLtctOPBq2ekHr9DyVrRe)
+
+## Install latest version
+```bash
+pip install https://github.com/dfetch-org/dfetch/archive/main.zip
+```
 
 ## Logo
 -   Logo: [Beagle (3171) - The Noun Project.svg icon from the Noun Project](https://thenounproject.com/icon/3171)
