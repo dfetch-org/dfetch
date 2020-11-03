@@ -15,12 +15,11 @@ setup(
     packages=find_packages(include=["dfetch", "dfetch.*"]),
     package_data={"dfetch": ["resources/*.yaml"]},
     install_requires=[
-        "pyyaml",
-        "appdirs",
-        "coloredlogs",
-        "pykwalify",
-        "colorama",
-        "typing-extensions",
+        "PyYAML==5.3.1",
+        "coloredlogs==14.0",
+        "pykwalify==1.7.0",
+        "colorama==0.4.4",
+        "typing-extensions==3.7.4.3",
     ],
     entry_points={
         "console_scripts": ["dfetch = dfetch.__main__:main"],
