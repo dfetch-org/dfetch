@@ -1,7 +1,15 @@
 """Script for creating package."""
 
-from setuptools import setup, find_packages
+# read the contents of your README file
+from os import path
+
+from setuptools import find_packages, setup
+
 from dfetch import __version__
+
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
+    long_description = f.read()
 
 setup(
     name="dfetch",
@@ -14,6 +22,8 @@ setup(
     url="https://github.com/dfetch-org/dfetch",
     packages=find_packages(include=["dfetch", "dfetch.*"]),
     package_data={"dfetch": ["resources/*.yaml"]},
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     install_requires=[
         "PyYAML==5.3.1",
         "coloredlogs==14.0",
