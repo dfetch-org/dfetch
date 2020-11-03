@@ -63,7 +63,7 @@ rstcheck==3.3.1
 six==1.15.0
 smmap==3.0.4
 snowballstemmer==2.0.0
-Sphinx==3.2.1
+Sphinx==3.3.0
 sphinx-argparse==0.2.5
 sphinx-autodoc-annotation==1.0.post1
 sphinxcontrib-applehelp==1.0.2
