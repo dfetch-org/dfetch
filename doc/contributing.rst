@@ -12,6 +12,8 @@ Create a virtual environment by double-clicking ``create_venv.py`` or by running
 
     python create_venv.py
 
+.. important :: *dfetch* is primarily developed with python 3.7
+
 Running in VSCode
 -----------------
 To debug or run directly from VSCode create the :ref:`virtual environment`.
@@ -38,13 +40,22 @@ For on-the-fly linting add the following to your ``.vscode/settings.json``:
     {
         "python.pythonPath": "${workspaceFolder}/venv/Scripts/python",
         "python.linting.prospectorEnabled": true,
-        "python.linting.lintOnSave": true
+        "python.linting.lintOnSave": true,
+
+        "restructuredtext.linter.name": "doc8",
+        "restructuredtext.builtDocumentationPath" : "${workspaceRoot}/doc/_build/html",
+        "restructuredtext.confPath"               : "${workspaceRoot}/doc",
+        "restructuredtext.linter.run": "onType",
+        "restructuredtext.linter.extraArgs": [
+            "--config", "${workspaceFolder}/setup.cfg"
+        ]
     }
 
 Quality
 -------
 To avoid any discussion about formatting `black <https://github.com/psf/black>`_ is used as code formatter.
 Next to that `isort <https://github.com/PyCQA/isort>`_ is used for sorting the imports.
+And `doc8 <https://github.com/pycqa/doc8>`_ is used as rst linter.
 
 Run `check_quality.bat` (or GitHub will run it for you).
 
