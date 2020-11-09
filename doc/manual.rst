@@ -54,3 +54,14 @@ Environment
 
 .. automodule:: dfetch.commands.environment
 
+
+Import
+------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: import
+
+.. automodule:: dfetch.commands.import_
+

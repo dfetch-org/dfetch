@@ -1,6 +1,10 @@
-"""*Dfetch* can generate a starting manifest.
+"""*Dfetch* can convert your git submodules based project to dfetch.
 
-It will be created in the current folder.
+Dfetch will look for all submodules in the current project and generate
+a manifest with the current versions of the repository.
+
+After importing you will have to remove the submodules and you can let dfetch
+update by running :ref:`dfetch update <update>`.
 """
 
 import argparse
