@@ -1,12 +1,18 @@
 """Git specific implementation."""
 
 import os
+import re
 import logging
-from typing import Dict
+from typing import Dict, List
+from collections import namedtuple
 
 from dfetch.project.vcs import VCS
 from dfetch.util.cmdline import run_on_cmdline
 from dfetch.util.util import in_directory, safe_rmtree
+
+Submodule = namedtuple(
+    "Submodule", ["name", "toplevel", "path", "sha", "url", "branch"]
+)
 
 
 class GitRepo(VCS):
@@ -14,6 +20,59 @@ class GitRepo(VCS):
 
     METADATA_DIR = ".git"
     DEFAULT_BRANCH = "master"
+
+    @staticmethod
+    def submodules(logger: logging.Logger) -> List[Submodule]:
+        """Get a list of submodules in the current directory."""
+        result = run_on_cmdline(
+            logger,
+            [
+                "git",
+                "submodule",
+                "foreach",
+                "--quiet",
+                "echo $name $sm_path $sha1 $toplevel",
+            ],
+        )
+
+        submodules = []
+        for line in result.stdout.decode().split("\n"):
+            if line:
+                name, sm_path, sha, toplevel = line.split(" ")
+                url = GitRepo._get_submodule_urls(logger, toplevel)[name]
+                submodules += [
+                    Submodule(
+                        name=name,
+                        toplevel=toplevel,
+                        path=sm_path,
+                        sha=sha,
+                        url=url,
+                        branch="",
+                    )
+                ]
+        return submodules
+
+    @staticmethod
+    def _get_submodule_urls(logger: logging.Logger, toplevel: str) -> Dict[str, str]:
+
+        result = run_on_cmdline(
+            logger,
+            [
+                "git",
+                "config",
+                "--file",
+                toplevel + "/.gitmodules",
+                "--get-regexp",
+                "url",
+            ],
+        )
+
+        return {
+            str(match.group(1)): str(match.group(2))
+            for match in re.finditer(
+                r"submodule\.(.*)\.url\s+(.*)", result.stdout.decode()
+            )
+        }
 
     def check(self) -> bool:
         """Check if is GIT."""
