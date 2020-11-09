@@ -81,3 +81,16 @@ class Remote:
     def is_default(self) -> bool:
         """Check if this is a default remote."""
         return self._default
+
+    def __repr__(self) -> str:
+        """Get a string representation of this remote."""
+        return str(self.as_yaml())
+
+    def as_yaml(self) -> RemoteDict:
+        """Get this remote as yaml data."""
+        yamldata: RemoteDict = {
+            "name": self._name,
+            "url-base": self._url_base,
+            "default": self.is_default,
+        }
+        return yamldata
