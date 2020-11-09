@@ -24,9 +24,9 @@ logger = logging.getLogger(__name__)
 
 
 class Import(dfetch.commands.command.Command):
-    """Import a manifest.
+    """Generate manifest from existing submodules.
 
-    Generate a manifest that can be used as basis for a project.
+    Look for submodules in a git project and create a manifest based on that.
     """
 
     @staticmethod
