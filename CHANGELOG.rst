@@ -1,4 +1,4 @@
-Release 0.0.3 (In development)
+Release 0.0.3 (released 2020-11-09)
 ===================================
 
 * Added release procedure.
