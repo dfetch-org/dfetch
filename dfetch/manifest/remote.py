@@ -29,6 +29,11 @@ class Remote:
         self._default: bool = bool(yamldata.get("default", False))
 
     @property
+    def name(self) -> str:
+        """Get the name of the remote."""
+        return self._name
+
+    @property
     def url(self) -> str:
         """Get the url of the remote."""
         return self._url_base
