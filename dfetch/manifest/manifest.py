@@ -53,18 +53,7 @@ class Manifest:
         """Create the manifest."""
         self.__version: str = manifest.get("version", self.CURRENT_VERSION)
 
-        default_remotes: List[Remote] = []
-        self._remotes: Dict[str, Remote] = {}
-        for remote in manifest["remotes"]:
-            if isinstance(remote, dict):
-                last_remote = self._remotes[remote["name"]] = Remote.from_yaml(remote)
-            elif isinstance(remote, Remote):
-                last_remote = self._remotes[remote.name] = Remote.copy(remote)
-            else:
-                raise RuntimeError(f"{remote} has unknown type")
-
-            if last_remote.is_default:
-                default_remotes.append(last_remote)
+        self._remotes, default_remotes = self._determine_remotes(manifest["remotes"])
 
         if not default_remotes:
             default_remotes = list(self._remotes.values())[0:1]
@@ -84,6 +73,25 @@ class Manifest:
 
             if last_project.remote:
                 last_project.set_remote(self._remotes[last_project.remote])
+
+    @staticmethod
+    def _determine_remotes(
+        remotes_from_manifest: Sequence[Union[RemoteDict, Remote]]
+    ) -> Tuple[Dict[str, Remote], List[Remote]]:
+        default_remotes: List[Remote] = []
+        remotes: Dict[str, Remote] = {}
+        for remote in remotes_from_manifest:
+            if isinstance(remote, dict):
+                last_remote = remotes[remote["name"]] = Remote.from_yaml(remote)
+            elif isinstance(remote, Remote):
+                last_remote = remotes[remote.name] = Remote.copy(remote)
+            else:
+                raise RuntimeError(f"{remote} has unknown type")
+
+            if last_remote.is_default:
+                default_remotes.append(last_remote)
+
+        return (remotes, default_remotes)
 
     @staticmethod
     def from_yaml(text: Union[io.TextIOWrapper, str, IO[str]]) -> "Manifest":
