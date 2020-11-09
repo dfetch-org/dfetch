@@ -65,7 +65,7 @@ def run_on_cmdline(
     return proc
 
 
-def _log_output(proc: subprocess.CompletedProcess, logger: logging.Logger) -> None:
+def _log_output(proc: subprocess.CompletedProcess, logger: logging.Logger) -> None:  # type: ignore
     stdout, stderr = proc.stdout, proc.stderr
     logger.debug(f"Return code: {proc.returncode}")
 
