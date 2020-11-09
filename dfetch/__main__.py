@@ -12,6 +12,7 @@ from colorama import Fore
 import dfetch.commands.check
 import dfetch.commands.environment
 import dfetch.commands.init
+import dfetch.commands.import_
 import dfetch.commands.update
 import dfetch.commands.validate
 import dfetch.log
@@ -31,6 +32,7 @@ def create_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(help="commands")
 
     dfetch.commands.init.Init.create_menu(subparsers)
+    dfetch.commands.import_.Import.create_menu(subparsers)
     dfetch.commands.check.Check.create_menu(subparsers)
     dfetch.commands.environment.Environment.create_menu(subparsers)
     dfetch.commands.update.Update.create_menu(subparsers)
