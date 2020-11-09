@@ -69,6 +69,7 @@ def _import_from_git() -> Sequence[ProjectEntry]:
                     "revision": submodule.sha,
                     "url": submodule.url,
                     "dst": submodule.path,
+                    "branch": submodule.branch,
                 }
             )
         )

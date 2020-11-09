@@ -40,6 +40,9 @@ class GitRepo(VCS):
             if line:
                 name, sm_path, sha, toplevel = line.split(" ")
                 url = GitRepo._get_submodule_urls(logger, toplevel)[name]
+                branch = GitRepo._guess_branch_of_sha(
+                    os.path.join(toplevel, sm_path), sha, logger
+                )
                 submodules += [
                     Submodule(
                         name=name,
@@ -47,7 +50,7 @@ class GitRepo(VCS):
                         path=sm_path,
                         sha=sha,
                         url=url,
-                        branch="",
+                        branch=branch,
                     )
                 ]
         return submodules
@@ -73,6 +76,24 @@ class GitRepo(VCS):
                 r"submodule\.(.*)\.url\s+(.*)", result.stdout.decode()
             )
         }
+
+    @staticmethod
+    def _guess_branch_of_sha(repo_path: str, sha: str, logger: logging.Logger) -> str:
+
+        with in_directory(repo_path):
+            result = run_on_cmdline(
+                logger,
+                ["git", "branch", "--contains", sha],
+            )
+
+        branches: List[str] = []
+        for branch in result.stdout.decode().split("*"):
+            branch = branch.strip()
+
+            if branch and "HEAD detached at" not in branch:
+                branches.append(branch)
+
+        return branches[0] if len(branches) == 1 else ""
 
     def check(self) -> bool:
         """Check if is GIT."""
