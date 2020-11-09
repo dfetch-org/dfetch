@@ -55,6 +55,18 @@ def run_on_cmdline(
 
     stdout, stderr = proc.stdout, proc.stderr
 
+    _log_output(proc, logger)
+
+    if proc.returncode:
+        raise SubprocessCommandError(
+            cmd, stdout.decode(), stderr.decode().strip(), proc.returncode
+        )
+
+    return proc
+
+
+def _log_output(proc: subprocess.CompletedProcess, logger: logging.Logger) -> None:
+    stdout, stderr = proc.stdout, proc.stderr
     logger.debug(f"Return code: {proc.returncode}")
 
     logger.debug("stdout:")
@@ -64,10 +76,3 @@ def run_on_cmdline(
     logger.debug("stderr:")
     for line in stderr.decode().split("\n\n"):
         logger.debug(line)
-
-    if proc.returncode:
-        raise SubprocessCommandError(
-            cmd, stdout.decode(), stderr.decode().strip(), proc.returncode
-        )
-
-    return proc
