@@ -130,9 +130,44 @@ class Manifest:
         return self.__version
 
     @property
-    def projects(self) -> List[ProjectEntry]:
+    def projects(self) -> Sequence[ProjectEntry]:
         """Get a list of Projects from the manifest."""
         return list(self._projects.values())
+
+    def __repr__(self) -> str:
+        """Get string representing this object."""
+        return str(self._as_dict())
+
+    def _as_dict(self) -> Dict[str, ManifestDict]:
+        """Get this manifest as dict."""
+        remotes: Sequence[RemoteDict] = [
+            remote.as_yaml() for remote in self._remotes.values()
+        ]
+
+        if len(remotes) == 1:
+            remotes[0].pop("default", None)
+
+        projects: List[Dict[str, str]] = []
+        for project in self.projects:
+            project_yaml: Dict[str, str] = project.as_yaml()
+            if len(remotes) == 1:
+                project_yaml.pop("remote", None)
+            projects.append(project_yaml)
+
+        return {
+            "manifest": {
+                "version": self.version,
+                "remotes": remotes,
+                "projects": projects,
+            }
+        }
+
+    def dump(self, path: str) -> None:
+        """Dump metadata file to correct path."""
+        with open(path, "w+") as manifest_file:
+            yaml.dump(
+                self._as_dict(), manifest_file, Dumper=ManifestDumper, sort_keys=False
+            )
 
 
 def find_manifest() -> str:
@@ -158,3 +193,18 @@ def get_manifest() -> Tuple[Manifest, str]:
         dfetch.manifest.manifest.Manifest.from_file(manifest_path),
         manifest_path,
     )
+
+
+class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
+    """Dump a manifest YAML.
+
+    HACK: insert blank lines between top-level objects
+    inspired by https://stackoverflow.com/a/44284819/3786245
+    """
+
+    def write_line_break(self, data: Any = None) -> None:
+        """Write a line break."""
+        super().write_line_break(data)  # type: ignore
+
+        if len(self.indents) == 3:
+            super().write_line_break()  # type: ignore
