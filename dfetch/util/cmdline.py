@@ -3,7 +3,7 @@
 import logging
 import os
 import subprocess  # nosec
-from typing import Any  # pylint: disable=unused-import
+from typing import Any, Union, List  # pylint: disable=unused-import
 
 
 class SubprocessCommandError(Exception):
@@ -13,10 +13,11 @@ class SubprocessCommandError(Exception):
     contains all the results for easier usage later on.
     """
 
-    def __init__(self, cmd: str, stdout: str, stderr: str, returncode: int):
+    def __init__(self, cmd: List[str], stdout: str, stderr: str, returncode: int):
         """Error."""
-        self._message = f"{cmd} returned {returncode}:{os.linesep}{stderr}"
-        self.cmd = cmd
+        cmd_str: str = " ".join(cmd)
+        self._message = f"{cmd_str} returned {returncode}:{os.linesep}{stderr}"
+        self.cmd = cmd_str
         self.stderr = stdout
         self.stdout = stderr
         self.returncode = returncode
@@ -29,14 +30,17 @@ class SubprocessCommandError(Exception):
 
 
 def run_on_cmdline(
-    logger: logging.Logger, cmd: str
+    logger: logging.Logger, cmd: Union[str, List[str]]
 ) -> "subprocess.CompletedProcess[Any]":
     """Run a command and log the output, and raise if something goes wrong."""
     logger.debug(f"Running {cmd}")
 
+    if not isinstance(cmd, list):
+        cmd = cmd.split(" ")
+
     try:
         proc = subprocess.run(  # nosec
-            cmd.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
         )
     except subprocess.CalledProcessError as exc:
         raise SubprocessCommandError(
@@ -46,7 +50,7 @@ def run_on_cmdline(
             exc.returncode,
         ) from exc
     except FileNotFoundError as exc:
-        cmd = cmd.split(" ")[0]
+        cmd = cmd[0]
         raise RuntimeError(f"{cmd} not available on system, please install") from exc
 
     stdout, stderr = proc.stdout, proc.stderr
