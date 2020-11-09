@@ -183,4 +183,19 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             if (self.branch or self.revision)
             else "latest"
         )
-        return f"{self.name:20s} [{version}]"
+        return f"{self.name:20s} {version} {self.remote_url} {self.destination}"
+
+    def as_yaml(self) -> Dict[str, str]:
+        """Get this project as yaml dictionary."""
+        yamldata = {
+            "name": self._name,
+            "revision": self._revision,
+            "remote": self._remote,
+            "src": self._src,
+            "dst": self._dst,
+            "url": self._url,
+            "patch": self._patch,
+            "branch": self._branch,
+        }
+
+        return {k: v for k, v in yamldata.items() if v}
