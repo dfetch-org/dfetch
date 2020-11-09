@@ -2,7 +2,7 @@ Release 0.0.3 (In development)
 ===================================
 
 * Added release procedure.
-
+* Added ``import`` command.
 
 Release 0.0.2 (released 2020-11-03)
 ===================================
