@@ -59,39 +59,97 @@ We can also list multiple projects.
            dst: external/myothermodule
 
 """
+import copy
+from typing import Dict, Optional, Union
 
-from typing import Dict
+from typing_extensions import TypedDict
 
 from dfetch.manifest.remote import Remote
+
+ProjectEntryDict = TypedDict(
+    "ProjectEntryDict",
+    {
+        "name": str,
+        "revision": str,
+        "remote": str,
+        "src": str,
+        "dst": str,
+        "url": str,
+        "patch": str,
+        "repo": str,
+        "branch": str,
+        "repo-path": str,
+        "default_remote": Optional[Remote],
+    },
+    total=False,
+)
 
 
 class ProjectEntry:  # pylint: disable=too-many-instance-attributes
     """A single Project entry in the manifest file."""
 
-    def __init__(self, yamldata: Dict[str, str], default_remote: Remote) -> None:
+    def __init__(self, kwargs: ProjectEntryDict) -> None:
         """Create the project entry."""
-        self._name: str = yamldata["name"]
-        self._revision: str = yamldata.get("revision", "")
+        self._name: str = kwargs["name"]
+        self._revision: str = kwargs.get("revision", "")
 
-        self._remote: str = yamldata.get("remote", "")
-        self._remote_obj: Remote = default_remote
-        self._src: str = yamldata.get("src", "")  # noqa
-        self._dst: str = yamldata.get("dst", ".")
-        self._url: str = yamldata.get("url", "")
-        self._patch: str = yamldata.get("patch", "")  # noqa
-        self._repo_path: str = yamldata.get("repo-path", "")
-        self._branch: str = yamldata.get("branch", "")
+        self._remote: str = kwargs.get("remote", "")
+        self._remote_obj: Optional[Remote] = kwargs.get("default_remote", None)
+        self._src: str = kwargs.get("src", "")  # noqa
+        self._dst: str = kwargs.get("dst", ".")
+        self._url: str = kwargs.get("url", "")
+        self._patch: str = kwargs.get("patch", "")  # noqa
+        self._repo_path: str = kwargs.get("repo-path", "")
+        self._branch: str = kwargs.get("branch", "")
+
+    @classmethod
+    def from_yaml(
+        cls,
+        yamldata: Union[Dict[str, str], ProjectEntryDict],
+        default_remote: Optional[Remote] = None,
+    ) -> "ProjectEntry":
+        """Create a Project Entry from yaml data.
+
+        Returns:
+            ProjectEntry:  An immutable ProjectEntry
+        """
+        kwargs: ProjectEntryDict = {}
+        for key in ProjectEntryDict.__annotations__.keys():
+            try:
+                kwargs[str(key)] = yamldata[key]  # type: ignore
+            except KeyError:
+                pass
+        kwargs["default_remote"] = default_remote
+        return cls(kwargs)
+
+    @classmethod
+    def copy(
+        cls, other: "ProjectEntry", default_remote: Optional[Remote] = None
+    ) -> "ProjectEntry":
+        """Create a Project Entry copy from a Project Entry."""
+        # pylint: disable=protected-access
+        the_copy = copy.copy(other)
+        if not the_copy._remote_obj:
+            the_copy._remote_obj = default_remote
+        return the_copy
 
     def set_remote(self, remote: Remote) -> None:
         """Set the remote."""
         self._remote_obj = remote
+        self._remote = remote.name
+        if self._url.startswith(remote.url):
+            self._url = self._url.replace(remote.url, "").strip("/")
 
     @property
     def remote_url(self) -> str:
         """Get the remote url of the project."""
-        return self._url or "/".join(
-            self._remote_obj.url.strip("/").split("/") + self._repo_path.split("/")
-        )
+        if self._url:
+            return self._url
+        if self._remote_obj:
+            return "/".join(
+                self._remote_obj.url.strip("/").split("/") + self._repo_path.split("/")
+            )
+        return ""
 
     @property
     def remote(self) -> str:
