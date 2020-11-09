@@ -1,9 +1,6 @@
 """A manifest file is a ``.yaml`` file describing what external projects are used in this project.
 
 This can be any external repository (git, svn).
-A manifest must consist of a ``manifest:`` section with the ``version:`` of the manifest syntax.
-In the section two subsections are present.
-
 A section ``remotes`` (see :ref:`remotes`) which contains a list of sources of the projects to
 download and a section ``projects:`` that contains a list of projects to fetch.
 
@@ -23,16 +20,25 @@ download and a section ``projects:`` that contains a list of projects to fetch.
 import io
 import logging
 import os
-from typing import IO, Any, Dict, List, Tuple, Union
+from typing import IO, Any, Dict, List, Sequence, Tuple, Union
 
 import yaml
+from typing_extensions import TypedDict
 
 import dfetch.manifest.validate
-from dfetch.manifest.project import ProjectEntry
-from dfetch.manifest.remote import Remote
+from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
+from dfetch.manifest.remote import Remote, RemoteDict
 from dfetch.util.util import find_file
 
 logger = logging.getLogger(__name__)
+
+
+class ManifestDict(TypedDict):
+    """Serialized dict types."""
+
+    version: str
+    remotes: Sequence[Union[RemoteDict, Remote]]
+    projects: Sequence[Union[ProjectEntryDict, ProjectEntry, Dict[str, str]]]
 
 
 class Manifest:
@@ -41,9 +47,48 @@ class Manifest:
     This class is created from the manifest file a project has.
     """
 
-    def __init__(self, manifest_text: Union[io.TextIOWrapper, str, IO[str]]) -> None:
+    CURRENT_VERSION = "0.0"
+
+    def __init__(self, manifest: ManifestDict) -> None:
         """Create the manifest."""
-        loaded_yaml = self._load_yaml(manifest_text)
+        self.__version: str = manifest.get("version", self.CURRENT_VERSION)
+
+        default_remotes: List[Remote] = []
+        self._remotes: Dict[str, Remote] = {}
+        for remote in manifest["remotes"]:
+            if isinstance(remote, dict):
+                last_remote = self._remotes[remote["name"]] = Remote.from_yaml(remote)
+            elif isinstance(remote, Remote):
+                last_remote = self._remotes[remote.name] = Remote.copy(remote)
+            else:
+                raise RuntimeError(f"{remote} has unknown type")
+
+            if last_remote.is_default:
+                default_remotes.append(last_remote)
+
+        if not default_remotes:
+            default_remotes = list(self._remotes.values())[0:1]
+
+        self._projects: Dict[str, ProjectEntry] = {}
+        for project in manifest["projects"]:
+            if isinstance(project, dict):
+                last_project = self._projects[project["name"]] = ProjectEntry.from_yaml(
+                    project, default_remotes[0]
+                )
+            elif isinstance(project, ProjectEntry):
+                last_project = self._projects[project.name] = ProjectEntry.copy(
+                    project, default_remotes[0]
+                )
+            else:
+                raise RuntimeError(f"{project} has unknown type")
+
+            if last_project.remote:
+                last_project.set_remote(self._remotes[last_project.remote])
+
+    @staticmethod
+    def from_yaml(text: Union[io.TextIOWrapper, str, IO[str]]) -> "Manifest":
+        """Create a manifest from a file like object."""
+        loaded_yaml = Manifest._load_yaml(text)
 
         if not loaded_yaml:
             raise RuntimeError("Manifest is not valid YAML")
@@ -53,24 +98,7 @@ class Manifest:
         if not manifest:
             raise RuntimeError("Missing manifest root element!")
 
-        self.__version: str = manifest["version"]
-
-        self._remotes = {
-            remote["name"]: Remote(remote) for remote in manifest["remotes"]
-        }
-
-        default_remotes = [
-            remote for remote in self._remotes.values() if remote.is_default
-        ] or list(self._remotes.values())[0:1]
-
-        self._projects: Dict[str, ProjectEntry] = {
-            project["name"]: ProjectEntry(project, default_remotes[0])
-            for project in manifest["projects"]
-        }
-
-        for project in self._projects.values():
-            if project.remote:
-                project.set_remote(self._remotes[project.remote])
+        return Manifest(manifest)
 
     @staticmethod
     def _load_yaml(text: Union[io.TextIOWrapper, str, IO[str]]) -> Any:
@@ -94,7 +122,7 @@ class Manifest:
             FileNotFoundError: Given path was not a file.
         """
         with open(path, "r") as opened_file:
-            return Manifest(opened_file)
+            return Manifest.from_yaml(opened_file)
 
     @property
     def version(self) -> str:
