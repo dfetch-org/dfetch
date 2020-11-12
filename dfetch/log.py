@@ -11,19 +11,19 @@ def setup_root(name: str) -> logging.Logger:
 
     msg_format = "%(message)s"
 
-    level_styles = {
-        "critical": {"bold": True, "color": "magenta"},
-        "debug": {"color": "green"},
-        "error": {"color": "red"},
-        "info": {"color": 4},
-        "notice": {"color": "magenta"},
+    level_style = {
+        "critical": {"color": "magenta", "bright": True, "bold": True},
+        "debug": {"color": "green", "bright": True, "bold": True},
+        "error": {"color": "red", "bright": True, "bold": True},
+        "info": {"color": 4, "bright": True, "bold": True},
+        "notice": {"color": "magenta", "bright": True, "bold": True},
         "spam": {"color": "green", "faint": True},
-        "success": {"bold": True, "color": "green"},
-        "verbose": {"color": "blue"},
-        "warning": {"color": "yellow"},
+        "success": {"color": "green", "bright": True, "bold": True},
+        "verbose": {"color": "blue", "bright": True, "bold": True},
+        "warning": {"color": "yellow", "bright": True, "bold": True},
     }
 
-    coloredlogs.install(fmt=msg_format, level_styles=level_styles, level="INFO")
+    coloredlogs.install(fmt=msg_format, level_styles=level_style, level="INFO")
 
     return logger
 
