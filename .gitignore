@@ -5,3 +5,4 @@ __pycache__
 doc/_build
 dist
 .coverage
+coverage.xml
