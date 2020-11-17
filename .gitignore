@@ -4,3 +4,4 @@ dfetch.egg-info
 __pycache__
 doc/_build
 dist
+.coverage
