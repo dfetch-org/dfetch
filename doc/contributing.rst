@@ -51,6 +51,19 @@ For on-the-fly linting add the following to your ``.vscode/settings.json``:
         ]
     }
 
+For configuring the testing, add below section to your workspace settings in ``.vscode/settings.json``:
+
+.. code-block:: javascript
+
+    {
+        "python.testing.pytestArgs": [
+            "tests"
+        ],
+        "python.testing.unittestEnabled": false,
+        "python.testing.nosetestsEnabled": false,
+        "python.testing.pytestEnabled": true
+    }
+
 Quality
 -------
 To avoid any discussion about formatting `black <https://github.com/psf/black>`_ is used as code formatter.
