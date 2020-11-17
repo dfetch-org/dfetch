@@ -77,6 +77,12 @@ Testing
 `pytest <https://docs.pytest.org/en/latest/>`_ is used as testing framework. All code contributed should be accompanied with unit tests.
 Tests can be found in the ``tests`` folder.
 
+To see coverage, in the virtual environment run ``pytest`` with coverage
+
+.. code-block:: bash
+
+    pytest --cov=dfetch tests
+
 Creating documentation
 ----------------------
 Run ``create_docs.bat`` and open ``index.html`` in ``doc/_build/html`` to read it.

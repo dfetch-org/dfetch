@@ -13,3 +13,4 @@ sphinx-argparse==0.2.5
 
 # Testing
 pytest==6.1.2
+pytest-cov==2.10.1
