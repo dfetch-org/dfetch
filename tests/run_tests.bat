@@ -14,4 +14,4 @@ if not exist %VENV_DIR% (
 call .\venv\Scripts\activate.bat
 
 echo Running tests....
-python tests/tests.py
+python -m pytest tests
