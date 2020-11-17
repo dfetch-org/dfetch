@@ -59,6 +59,11 @@ And `doc8 <https://github.com/pycqa/doc8>`_ is used as rst linter.
 
 Run `check_quality.bat` (or GitHub will run it for you).
 
+Testing
+-------
+`pytest <https://docs.pytest.org/en/latest/>`_ is used as testing framework. All code contributed should be accompanied with unit tests.
+Tests can be found in the ``tests`` folder.
+
 Creating documentation
 ----------------------
 Run ``create_docs.bat`` and open ``index.html`` in ``doc/_build/html`` to read it.
