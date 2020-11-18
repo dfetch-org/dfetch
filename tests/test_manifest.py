@@ -1,6 +1,6 @@
 """Test the manifest."""
 # mypy: ignore-errors
-
+# flake8: noqa
 
 from unittest.mock import patch, mock_open
 
@@ -23,7 +23,6 @@ def given_manifest_from_text(text: str) -> Manifest:
     """Given the manifest as specified."""
     with patch("dfetch.manifest.manifest.open", mock_open(read_data=text)):
         return Manifest.from_file("manifest.yaml")
-
 
 def test_can_read_version() -> None:
     """Test that the version can be read."""

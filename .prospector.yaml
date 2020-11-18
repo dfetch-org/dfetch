@@ -2,7 +2,7 @@ requirements: "requirements.txt"
 strictness: veryhigh
 doc-warnings: true
 member-warnings: true
-test-warnings: true
+test-warnings: false
 max-line-length: 120
 
 pep257:
