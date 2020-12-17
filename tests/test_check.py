@@ -14,30 +14,30 @@ from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 
 
-@pytest.fixture(ids=["empty", "single_project", "two_projects"],
-               params=[[], [{"name": "my_project"}], [{"name": "first"},{"name": "second"}]])
-def get_manifest(monkeypatch, request):
-    """Get empty manifest."""
+def mock_manifest(name, projects):
 
+    project_mocks = []
 
-    projects = []
-
-    for project in request.param:
+    for project in projects:
         mock_project = Mock(spec=ProjectEntry)
         mock_project.name = project['name']
-        projects += [mock_project]
+        project_mocks += [mock_project]
 
-    mocked_manifest = MagicMock(spec=Manifest, projects=projects)
+    return MagicMock(spec=Manifest, projects=project_mocks)
 
-    def mocked_get_manifest() -> Tuple[Manifest, str]:
-        return (mocked_manifest, "/")
-
-    monkeypatch.setattr(dfetch.manifest.manifest, "get_manifest", mocked_get_manifest)
-
-
-def test_check(get_manifest):
+@pytest.mark.parametrize('name, projects', [("empty", []),
+                                            ("single_project", [{"name": "my_project"}]),
+                                            ("two_projects", [{"name": "first"},{"name": "second"}])])
+def test_check(name, projects):
 
     check = Check()
 
-    with patch('dfetch.project.make'):
-        check(argparse.Namespace)
+    with patch('dfetch.manifest.manifest.get_manifest') as mocked_get_manifest:
+        with patch('dfetch.project.make') as mocked_make:
+
+            mocked_get_manifest.return_value = (mock_manifest(name, projects), "/")
+
+            check(argparse.Namespace)
+
+            for project in projects:
+                mocked_make.return_value.check_for_update.assert_called()
