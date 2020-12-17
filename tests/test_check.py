@@ -20,20 +20,26 @@ def mock_manifest(name, projects):
 
     for project in projects:
         mock_project = Mock(spec=ProjectEntry)
-        mock_project.name = project['name']
+        mock_project.name = project["name"]
         project_mocks += [mock_project]
 
     return MagicMock(spec=Manifest, projects=project_mocks)
 
-@pytest.mark.parametrize('name, projects', [("empty", []),
-                                            ("single_project", [{"name": "my_project"}]),
-                                            ("two_projects", [{"name": "first"},{"name": "second"}])])
+
+@pytest.mark.parametrize(
+    "name, projects",
+    [
+        ("empty", []),
+        ("single_project", [{"name": "my_project"}]),
+        ("two_projects", [{"name": "first"}, {"name": "second"}]),
+    ],
+)
 def test_check(name, projects):
 
     check = Check()
 
-    with patch('dfetch.manifest.manifest.get_manifest') as mocked_get_manifest:
-        with patch('dfetch.project.make') as mocked_make:
+    with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
+        with patch("dfetch.project.make") as mocked_make:
 
             mocked_get_manifest.return_value = (mock_manifest(name, projects), "/")
 
