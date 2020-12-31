@@ -27,7 +27,7 @@ setup(
     install_requires=[
         "PyYAML==5.3.1",
         "coloredlogs==15.0",
-        "pykwalify==1.7.0",
+        "pykwalify==1.8.0",
         "colorama==0.4.4",
         "typing-extensions==3.7.4.3",
     ],
