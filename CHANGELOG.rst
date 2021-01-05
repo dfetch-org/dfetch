@@ -1,7 +1,9 @@
 Release 0.0.5 (In development)
 ===================================
 
-* Fix ``dfetch import`` command
+* Fix ``dfetch import`` command.
+* Improve template.
+* If no ``dst`` is given for a project, use name of project instead.
 
 Release 0.0.4 (released 2020-11-12)
 ===================================
