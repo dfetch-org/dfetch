@@ -9,7 +9,7 @@
 [![GitHub](https://img.shields.io/github/license/dfetch-org/dfetch)](https://github.com/dfetch-org/dfetch/blob/main/LICENSE)
 [![Gitter](https://badges.gitter.im/dfetch-org/community.svg)](https://gitter.im/dfetch-org/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/dfetch-org/dfetch)](https://libraries.io/github/dfetch-org/dfetch)
-![Maintenance](https://img.shields.io/maintenance/yes/2020)
+![Maintenance](https://img.shields.io/maintenance/yes/2021)
 [![GitHub issues](https://img.shields.io/github/issues/dfetch-org/dfetch)](https://github.com/dfetch-org/dfetch/issues)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dfetch)
 [![PyPI](https://img.shields.io/pypi/v/dfetch)](https://pypi.org/project/dfetch/)
