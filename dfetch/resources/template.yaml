@@ -7,6 +7,6 @@ manifest:
 
   projects:
   - name: cpputest
-    dst: ../Tests/Utils/cpputest/src/                     # Destination of this project (relative to this file)
+    dst: cpputest/src/                                    # Destination of this project (relative to this file)
     repo-path: cpputest/cpputest.git                      # Use default github remote
     branch: v3.4                                          # branch / tag
