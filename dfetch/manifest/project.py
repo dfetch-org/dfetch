@@ -138,8 +138,8 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._remote_obj = remote
         self._remote = remote.name
         if self._url.startswith(remote.url):
-            self._url = ""
             self._repo_path = self._url.replace(remote.url, "").strip("/")
+            self._url = ""
 
     @property
     def remote_url(self) -> str:
@@ -197,6 +197,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             "url": self._url,
             "patch": self._patch,
             "branch": self._branch,
+            "repo-path": self._repo_path,
         }
 
         return {k: v for k, v in yamldata.items() if v}
