@@ -24,8 +24,6 @@ Dfetch must promote upstreaming changes, but allow for local customizations.
 
 Other tools that do similar things are ``Zephyr's West``, ``CMake ExternalProject`` and other meta tools.
 
-[![asciicast](https://asciinema.org/a/X7RIrLtctOPBq2ekHr9DyVrRe.png)](https://asciinema.org/a/X7RIrLtctOPBq2ekHr9DyVrRe)
-
 ## Install
 
 ### Stable
