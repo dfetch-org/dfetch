@@ -1,7 +1,7 @@
 Release 0.0.5 (In development)
 ===================================
 
-*
+* Fix ``dfetch import`` command
 
 Release 0.0.4 (released 2020-11-12)
 ===================================
