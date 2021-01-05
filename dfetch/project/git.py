@@ -169,7 +169,7 @@ class GitRepo(VCS):
 
     @staticmethod
     def _find_branch_or_tag_from_sha(info: Dict[str, str], rev: str) -> str:
-        info.pop('HEAD', None)
+        info.pop("HEAD", None)
         for reference, sha in info.items():
             if sha[:8] == rev[:8]:  # Also allow for shorter SHA's
                 return reference.replace("refs/heads/", "").replace("refs/tags/", "")
