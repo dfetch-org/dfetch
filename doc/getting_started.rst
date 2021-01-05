@@ -53,8 +53,8 @@ From a command-line perform the following command:
 
    dfetch update
 
-*Dfetch* will search through all directories down untill it finds the ``manifest.yaml``
-and it will perform the update.
+*Dfetch* will search through all directories down untill it finds the ``dfetch.yaml``
+manifest and it will perform the update.
 
 After *Dfetch* finishes, the version of the dependency as listed in your manifest is
 downloaded at the target location. You can now commit it to your version control system.
