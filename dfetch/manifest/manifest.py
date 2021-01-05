@@ -29,6 +29,7 @@ import dfetch.manifest.validate
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
 from dfetch.util.util import find_file
+from dfetch import DEFAULT_MANIFEST_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -180,7 +181,7 @@ class Manifest:
 
 def find_manifest() -> str:
     """Find a manifest."""
-    paths = find_file("manifest.yaml", ".")
+    paths = find_file(DEFAULT_MANIFEST_NAME, ".")
 
     if len(paths) == 0:
         raise RuntimeError("No manifests were found!")

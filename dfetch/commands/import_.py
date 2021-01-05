@@ -21,6 +21,7 @@ from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.remote import Remote
 from dfetch.project.git import GitRepo
+from dfetch import DEFAULT_MANIFEST_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +57,8 @@ class Import(dfetch.commands.command.Command):
             {"version": "0.0", "remotes": remotes, "projects": projects}
         )
 
-        manifest.dump("manifest.yaml")
-        logger.info(f"Created manifest (manifest.yaml) in {os.getcwd()}")
+        manifest.dump(DEFAULT_MANIFEST_NAME)
+        logger.info(f"Created manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}")
 
 
 def _import_from_git() -> Sequence[ProjectEntry]:

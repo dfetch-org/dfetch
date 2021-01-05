@@ -9,6 +9,7 @@ import pytest
 
 import dfetch.manifest.manifest
 from dfetch.manifest.manifest import Manifest, find_manifest
+from dfetch import DEFAULT_MANIFEST_NAME
 
 BASIC_MANIFEST = u"""
 manifest:
@@ -41,7 +42,7 @@ DICTIONARY_MANIFEST = {
 def given_manifest_from_text(text: str) -> Manifest:
     """Given the manifest as specified."""
     with patch("dfetch.manifest.manifest.open", mock_open(read_data=text)):
-        return Manifest.from_file("manifest.yaml")
+        return Manifest.from_file(DEFAULT_MANIFEST_NAME)
 
 
 def test_can_read_version() -> None:
@@ -80,7 +81,7 @@ def test_multiple_manifests_found() -> None:
 
     with patch("dfetch.manifest.manifest.find_file") as find_file_mock:
 
-        find_file_mock.return_value = ["manifest.yaml", "manifest2.yaml"]
+        find_file_mock.return_value = [DEFAULT_MANIFEST_NAME, "manifest2.yaml"]
 
         with pytest.raises(RuntimeError):
             find_manifest()
@@ -90,6 +91,6 @@ def test_single_manifest_found() -> None:
 
     with patch("dfetch.manifest.manifest.find_file") as find_file_mock:
 
-        find_file_mock.return_value = ["manifest.yaml"]
+        find_file_mock.return_value = [DEFAULT_MANIFEST_NAME]
 
-        assert os.path.join(os.getcwd(), "manifest.yaml") == find_manifest()
+        assert os.path.join(os.getcwd(), DEFAULT_MANIFEST_NAME) == find_manifest()
