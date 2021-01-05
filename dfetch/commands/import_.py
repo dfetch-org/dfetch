@@ -5,6 +5,8 @@ a manifest with the current versions of the repository.
 
 After importing you will have to remove the submodules and you can let dfetch
 update by running :ref:`dfetch update <update>`.
+
+.. note:: For git projects all submodules must have been fetched before importing.
 """
 
 import argparse
