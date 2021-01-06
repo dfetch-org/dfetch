@@ -41,7 +41,7 @@ class GitRepo(VCS):
                 name, sm_path, sha, toplevel = line.split(" ")
                 url = GitRepo._get_submodule_urls(logger, toplevel)[name]
                 branch = GitRepo._guess_branch_of_sha(
-                    os.path.join(toplevel, sm_path), sha, logger
+                    os.path.join(os.getcwd(), sm_path), sha, logger
                 )
                 submodules += [
                     Submodule(
