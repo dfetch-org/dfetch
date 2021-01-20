@@ -17,11 +17,12 @@ from itertools import combinations
 from typing import List, Sequence, Set, Tuple
 
 import dfetch.commands.command
+from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.remote import Remote
 from dfetch.project.git import GitRepo
-from dfetch import DEFAULT_MANIFEST_NAME
+from dfetch.project.svn import SvnRepo
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ class Import(dfetch.commands.command.Command):
 
     def __call__(self, _: argparse.Namespace) -> None:
         """Perform the import."""
-        projects = _import_from_git()
+        projects = _import_projects()
 
         if not projects:
             raise RuntimeError(f"No submodules found in {os.getcwd()}!")
@@ -60,6 +61,41 @@ class Import(dfetch.commands.command.Command):
 
         manifest.dump(DEFAULT_MANIFEST_NAME)
         logger.info(f"Created manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}")
+
+
+def _import_projects() -> Sequence[ProjectEntry]:
+    """Find out what type of VCS is used and import projects."""
+    if SvnRepo.check_path(logger):
+        projects = _import_from_svn()
+    elif GitRepo.check_path(logger):
+        projects = _import_from_git()
+    else:
+        raise RuntimeError(
+            "Only git or SVN projects can be imported.",
+            "Run this command within either a git or SVN repository",
+        )
+    return projects
+
+
+def _import_from_svn() -> Sequence[ProjectEntry]:
+    projects: List[ProjectEntry] = []
+
+    for external in SvnRepo.externals(logger):
+        projects.append(
+            ProjectEntry(
+                {
+                    "name": external.name,
+                    "revision": external.revision,
+                    "url": external.url,
+                    "dst": external.path,
+                    "branch": external.branch,
+                    "src": external.src,
+                }
+            )
+        )
+        logger.info(f"Found {external.name}")
+
+    return projects
 
 
 def _import_from_git() -> Sequence[ProjectEntry]:
