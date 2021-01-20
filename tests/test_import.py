@@ -1,4 +1,4 @@
-"""Test the check command."""
+"""Test the import command."""
 # mypy: ignore-errors
 # flake8: noqa
 
@@ -12,6 +12,7 @@ import dfetch
 from dfetch.commands.import_ import Import
 from dfetch.manifest.manifest import Manifest
 from dfetch.project.git import Submodule
+from dfetch.project.svn import External
 
 FIRST_SUBMODULE = Submodule(
     name="submod1",
@@ -42,7 +43,7 @@ SECOND_SUBMODULE = Submodule(
         ),
     ],
 )
-def test_import(name, submodules):
+def test_git_import(name, submodules):
 
     import_ = Import()
 
@@ -61,8 +62,67 @@ def test_import(name, submodules):
 
                 args = mocked_manifest.call_args_list[0][0][0]
 
-                for project_entry in args['projects']:
+                for project_entry in args["projects"]:
                     assert project_entry.name in [subm.name for subm in submodules]
 
                 # Manifest should have been dumped
                 mocked_manifest.return_value.dump.assert_called()
+
+
+FIRST_EXTERNAL = External(
+    name="external1",
+    revision="1234",
+    url="http://www.github.com/mod1/",
+    toplevel="",
+    path="somepath1",
+    branch="trunk",
+    src="some/sub/folder",
+)
+SECOND_EXTERNAL = External(
+    name="external2",
+    revision="1235",
+    url="http://www.github.com/mod2/",
+    toplevel="",
+    path="somepath2",
+    branch="tags/0.0.2",
+    src="some/sub/folder2/",
+)
+
+
+@pytest.mark.parametrize(
+    "name, externals",
+    [
+        ("empty", []),
+        ("single_external", [FIRST_EXTERNAL]),
+        (
+            "two_externals",
+            [FIRST_EXTERNAL, SECOND_EXTERNAL],
+        ),
+    ],
+)
+def test_svn_import(name, externals):
+
+    import_ = Import()
+
+    with patch("dfetch.commands.import_.SvnRepo.check_path") as check_path:
+        with patch("dfetch.commands.import_.SvnRepo.externals") as mocked_externals:
+            with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
+
+                check_path.return_value = True
+                mocked_externals.return_value = externals
+
+                if len(externals) == 0:
+                    with pytest.raises(RuntimeError):
+                        import_(argparse.Namespace)
+                else:
+                    import_(argparse.Namespace)
+
+                    mocked_manifest.assert_called()
+
+                    args = mocked_manifest.call_args_list[0][0][0]
+
+                    for project_entry in args["projects"]:
+                        assert project_entry.name in [ext.name for ext in externals]
+
+                    # Manifest should have been dumped
+                    mocked_manifest.return_value.dump.assert_called()
