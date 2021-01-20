@@ -52,6 +52,7 @@ class Import(dfetch.commands.command.Command):
             for remote in reversed(sorted(remotes, key=lambda remote: len(remote.url))):
                 if project.remote_url.startswith(remote.url):
                     project.set_remote(remote)
+                    break
 
         manifest = Manifest(
             {"version": "0.0", "remotes": remotes, "projects": projects}
