@@ -1,13 +1,13 @@
 """Git specific implementation."""
 
+import logging
 import os
 import re
-import logging
-from typing import Dict, List
 from collections import namedtuple
+from typing import Dict, List
 
 from dfetch.project.vcs import VCS
-from dfetch.util.cmdline import run_on_cmdline
+from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import in_directory, safe_rmtree
 
 Submodule = namedtuple(
@@ -98,6 +98,16 @@ class GitRepo(VCS):
     def check(self) -> bool:
         """Check if is GIT."""
         return self._project.remote_url.endswith(".git")
+
+    @staticmethod
+    def check_path(logger: logging.Logger, path: str = ".") -> bool:
+        """Check if is git."""
+        try:
+            with in_directory(path):
+                run_on_cmdline(logger, "git status")
+            return True
+        except SubprocessCommandError:
+            return False
 
     @staticmethod
     def list_tool_info(logger: logging.Logger) -> None:

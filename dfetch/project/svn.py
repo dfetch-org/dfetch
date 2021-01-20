@@ -6,6 +6,7 @@ from typing import Dict, Tuple
 
 from dfetch.project.vcs import VCS
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
+from dfetch.util.util import in_directory
 
 
 class SvnRepo(VCS):
@@ -17,6 +18,16 @@ class SvnRepo(VCS):
         """Check if is SVN."""
         try:
             run_on_cmdline(self._logger, f"svn info {self._project.remote_url}")
+            return True
+        except SubprocessCommandError:
+            return False
+
+    @staticmethod
+    def check_path(logger: logging.Logger, path: str = ".") -> bool:
+        """Check if is SVN."""
+        try:
+            with in_directory(path):
+                run_on_cmdline(logger, "svn info")
             return True
         except SubprocessCommandError:
             return False
