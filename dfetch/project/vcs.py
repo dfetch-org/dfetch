@@ -8,7 +8,7 @@ from colorama import Fore
 
 import dfetch.manifest.manifest
 from dfetch.project.metadata import Metadata
-from dfetch.util.util import safe_rmtree
+from dfetch.util.util import safe_rm
 
 
 class VCS(ABC):
@@ -35,8 +35,8 @@ class VCS(ABC):
             return
 
         if os.path.exists(self.local_path):
-            self.logger.debug(f"Clearing destination directory {self.local_path}")
-            safe_rmtree(self.local_path)
+            self.logger.debug(f"Clearing destination {self.local_path}")
+            safe_rm(self.local_path)
 
         self.logger.debug(
             f"fetching {self._project.name} {self._project.revision} from {self._project.remote_url}"
