@@ -20,3 +20,8 @@ manifest:
     revision: '3948'
     vcs: svn                                                      # (optionally) explicitly state vcs type
     repo-path: cpputest/cpputest                                  # Use external git directly
+
+  - name: cpputest-src
+    dst: ../Tests/cpputest-src
+    repo-path: cpputest/cpputest.git                              # Use external git directly
+    src: src
