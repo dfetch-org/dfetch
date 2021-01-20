@@ -44,7 +44,7 @@ class SvnRepo(VCS):
     def _check_impl(self) -> str:
         """Check if a newer version is available on the given branch."""
         info = self._get_info(self.branch)
-        return info["Revision"]
+        return info["Last Changed Rev"]
 
     def _fetch_impl(self) -> None:
         """Get the revision of the remote and place it at the local path."""
