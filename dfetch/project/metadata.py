@@ -23,7 +23,9 @@ class Options(TypedDict):
 class Metadata:
     """Metadata about a single versioned control system."""
 
-    FILENAME = ".dfetch_data.yaml"
+    BASENAME = ".dfetch_data"
+    EXT = "yaml"
+    FILENAME = f"{BASENAME}.{EXT}"
 
     def __init__(self, kwargs: Options) -> None:
         """Create the metadata."""
@@ -81,7 +83,13 @@ class Metadata:
     @property
     def path(self) -> str:
         """Path to metadata file."""
-        return os.path.realpath(os.path.join(self._destination, self.FILENAME))
+        if os.path.isdir(self._destination):
+            return os.path.realpath(os.path.join(self._destination, self.FILENAME))
+
+        filename = f"{self.BASENAME}-{os.path.basename(self._destination)}.{self.EXT}"
+        return os.path.realpath(
+            os.path.join(os.path.dirname(self._destination), filename)
+        )
 
     def __eq__(self, other: object) -> bool:
         """Check if other object is the same."""
