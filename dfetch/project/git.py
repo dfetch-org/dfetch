@@ -1,7 +1,9 @@
 """Git specific implementation."""
 
 import os
+import pathlib
 import re
+import shutil
 from collections import namedtuple
 from typing import Dict, List
 
@@ -121,11 +123,32 @@ class GitRepo(VCS):
         """Get the revision of the remote and place it at the local path."""
         # also allow for revision
         branch = self.branch or self.DEFAULT_BRANCH
-        cmd = f"git clone --branch {branch} --depth 1 {self.remote} {self.local_path}"
 
-        run_on_cmdline(logger, cmd)
+        if self._project.source:
+            self._sparse_checkout(branch)
+        else:
+            cmd = (
+                f"git clone --branch {branch} --depth 1 {self.remote} {self.local_path}"
+            )
+            run_on_cmdline(logger, cmd)
 
         self._cleanup()
+
+    def _sparse_checkout(self, branch: str) -> None:
+        """Checkout only a subpart of a git repository."""
+        pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
+
+        with in_directory(self.local_path):
+            run_on_cmdline(logger, "git init")
+            run_on_cmdline(logger, f"git remote add origin {self.remote}")
+            run_on_cmdline(logger, f"git checkout -b '{branch}'")
+            run_on_cmdline(logger, "git config core.sparsecheckout true")
+            with open(".git/info/sparse-checkout", "a") as sparse_checkout_file:
+                sparse_checkout_file.write("/" + self._project.source)
+            run_on_cmdline(logger, f"git pull origin {branch}")
+            for file_to_copy in os.listdir(self._project.source):
+                shutil.move(self._project.source + "/" + file_to_copy, ".")
+            safe_rmtree(self._project.source)
 
     @staticmethod
     def _ls_remote(remote: str) -> Dict[str, str]:
