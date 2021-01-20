@@ -163,6 +163,11 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         return self._name
 
     @property
+    def source(self) -> str:
+        """Get the path within the remote project."""
+        return self._src
+
+    @property
     def destination(self) -> str:
         """Get the local path the project should be copied to."""
         return self._dst
