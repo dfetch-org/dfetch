@@ -2,7 +2,7 @@
 
 import os
 import logging
-from typing import Dict, Tuple
+import pathlib
 
 from dfetch.project.vcs import VCS
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -49,17 +49,28 @@ class SvnRepo(VCS):
     def _fetch_impl(self) -> None:
         """Get the revision of the remote and place it at the local path."""
         rev, branch = self._determine_rev_and_branch()
-        cmd = f"svn export {rev} {self.remote}/{branch} {self.local_path}"
+
+        complete_path = "/".join([self.remote, branch, self._project.source]).strip("/")
+
+        # When exporting a file, the destination directory must already exist
+        pathlib.Path(os.path.dirname(self.local_path)).mkdir(
+            parents=True, exist_ok=True
+        )
+
+        cmd = f"svn export {rev} {complete_path} {self.local_path}"
 
         run_on_cmdline(self.logger, cmd)
 
     def _determine_rev_and_branch(self) -> Tuple[str, str]:
         rev = ""
-        branch = "trunk"
+        branch = self.DEFAULT_BRANCH
 
         if self.revision and self.revision.isdigit():
             rev = f"--revision {self.revision}"
-        if self.branch and self.branch != self.DEFAULT_BRANCH:
+
+        if self.branch.startswith("tags"):
+            branch = self.branch
+        elif self.branch and self.branch != self.DEFAULT_BRANCH:
             branch = f"branches/{self.branch}"
 
         return (rev, branch)
