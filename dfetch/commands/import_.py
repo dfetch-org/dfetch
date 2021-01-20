@@ -1,9 +1,9 @@
-"""*Dfetch* can convert your git submodules based project to dfetch.
+"""*Dfetch* can convert your git submodules or svn externals based project to dfetch.
 
-Dfetch will look for all submodules in the current project and generate
+Dfetch will look for all submodules or externals in the current project and generate
 a manifest with the current versions of the repository.
 
-After importing you will have to remove the submodules and you can let dfetch
+After importing you will have to remove the submodules or externals and you can let dfetch
 update by running :ref:`dfetch update <update>`.
 
 .. note:: For git projects all submodules must have been fetched before importing.
@@ -28,9 +28,10 @@ logger = logging.getLogger(__name__)
 
 
 class Import(dfetch.commands.command.Command):
-    """Generate manifest from existing submodules.
+    """Generate manifest from existing submodules or externals.
 
-    Look for submodules in a git project and create a manifest based on that.
+    Look for submodules in a git project or externals in a svn project
+    and create a manifest based on that.
     """
 
     @staticmethod
