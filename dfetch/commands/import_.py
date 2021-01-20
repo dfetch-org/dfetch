@@ -112,7 +112,7 @@ def _create_remotes(projects: Sequence[ProjectEntry]) -> Sequence[Remote]:
     return [
         Remote(
             {
-                "name": re.sub(r"[./\\@:]", "-", remote),
+                "name": _generate_remote_name(remote),
                 "url-base": remote,
                 "default": False,
             }
@@ -121,6 +121,14 @@ def _create_remotes(projects: Sequence[ProjectEntry]) -> Sequence[Remote]:
             {project.remote_url for project in projects}
         )
     ]
+
+
+def _generate_remote_name(remote_url: str) -> str:
+    """Generate a kind-of human readable name based on a url."""
+    filtered = (
+        re.sub(r"[./\\@:\^]", "-", remote_url).replace("https", "").replace("http", "")
+    )
+    return re.sub(r"[-]{2,}", "-", filtered).strip("-")
 
 
 def _determine_best_remotes(projects_urls: Set[str]) -> Tuple[str, ...]:
