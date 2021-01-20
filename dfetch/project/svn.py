@@ -1,18 +1,94 @@
 """SVN specific implementation."""
 
-import os
+import itertools
 import logging
+import os
 import pathlib
+import re
+from collections import namedtuple
+from typing import Dict, List, Tuple
 
 from dfetch.project.vcs import VCS
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import in_directory
+
+External = namedtuple(
+    "External", ["name", "toplevel", "path", "revision", "url", "branch", "src"]
+)
 
 
 class SvnRepo(VCS):
     """A svn repository."""
 
     DEFAULT_BRANCH = "trunk"
+
+    @staticmethod
+    def externals(logger: logging.Logger) -> List[External]:
+        """Get list of externals."""
+        result = run_on_cmdline(
+            logger,
+            [
+                "svn",
+                "propget",
+                "svn:externals",
+                "-R",
+            ],
+        )
+
+        repo_root = SvnRepo._get_info_from_target(logger)["Repository Root"]
+
+        externals = []
+        for entry in result.stdout.decode().split(os.linesep * 2):
+
+            match = None
+            for match in re.finditer(r"([^\s]*)\s+-", entry):
+                pass
+            if match:
+                local_path = match.group(1)
+
+            for match in itertools.chain(
+                re.finditer(r"([^\s]*)@(\d+)\s+([^\s]*)", entry),
+                re.finditer(r"\.\s-\s+([^\s]+)(\s+)([^\s]+)", entry),
+            ):
+
+                url, branch, src = SvnRepo._split_url(match.group(1), repo_root)
+
+                externals += [
+                    External(
+                        name=match.group(3),
+                        toplevel=os.getcwd(),
+                        path="/".join(
+                            os.path.join(local_path, match.group(3)).split(os.sep)
+                        ),
+                        revision=match.group(2).strip(),
+                        url=url,
+                        branch=branch,
+                        src=src,
+                    )
+                ]
+
+        return externals
+
+    @staticmethod
+    def _split_url(url: str, repo_root: str) -> Tuple[str, str, str]:
+
+        # ../   Relative to the URL of the directory on which the svn:externals property is set
+        # ^/    Relative to the root of the repository in which the svn:externals property is versioned
+        # //    Relative to the scheme of the URL of the directory on which the svn:externals property is set
+        # /     Relative to the root URL of the server on which the svn:externals property is versioned
+        url = re.sub(r"^\^", repo_root, url)
+        branch = ""
+        src = ""
+
+        for match in re.finditer(
+            r"(.*)\/(branches\/[^\/]+|tags\/[^\/]+|trunk)[\/]*(.*)", url
+        ):
+
+            url = match.group(1)
+            branch = match.group(2) if match.group(2) != SvnRepo.DEFAULT_BRANCH else ""
+            src = match.group(3)
+
+        return (url, branch, src)
 
     def check(self) -> bool:
         """Check if is SVN."""
