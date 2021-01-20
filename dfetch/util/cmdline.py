@@ -3,7 +3,7 @@
 import logging
 import os
 import subprocess  # nosec
-from typing import Any, Union, List  # pylint: disable=unused-import
+from typing import Any, List, Union  # pylint: disable=unused-import
 
 
 class SubprocessCommandError(Exception):
@@ -66,13 +66,17 @@ def run_on_cmdline(
 
 
 def _log_output(proc: subprocess.CompletedProcess, logger: logging.Logger) -> None:  # type: ignore
-    stdout, stderr = proc.stdout, proc.stderr
     logger.debug(f"Return code: {proc.returncode}")
 
-    logger.debug("stdout:")
-    for line in stdout.decode().split("\n\n"):
-        logger.debug(line)
+    _log_output_stream("stdout", proc.stdout, logger)
+    _log_output_stream("stderr", proc.stderr, logger)
 
-    logger.debug("stderr:")
-    for line in stderr.decode().split("\n\n"):
-        logger.debug(line)
+
+def _log_output_stream(name: str, stream: Any, logger: logging.Logger) -> None:
+    logger.debug(f"{name}:")
+    try:
+        for line in stream.decode().split("\n\n"):
+            logger.debug(line)
+    except UnicodeDecodeError:
+        for line in stream.decode(encoding="cp1252").split("\n\n"):
+            logger.debug(line)
