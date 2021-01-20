@@ -31,7 +31,7 @@ RELATIVE_TO_ROOT_EXPECTATIONS = [
     External(
         name="Settings",
         toplevel=CWD,
-        path="Settings",
+        path="Data/Settings",
         revision="8349",
         url=REPO_ROOT + "/PROJECT-123/SOME-TOOL",
         branch="",
@@ -40,7 +40,7 @@ RELATIVE_TO_ROOT_EXPECTATIONS = [
     External(
         name="Images",
         toplevel=CWD,
-        path="Images",
+        path="Data/Images",
         revision="8571",
         url=REPO_ROOT + "/PROJECT-123/SOME-TOOL",
         branch="",

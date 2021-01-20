@@ -41,7 +41,7 @@ class SvnRepo(VCS):
         for entry in result.stdout.decode().split(os.linesep * 2):
 
             match = None
-            for match in re.finditer(r"([^\s]*)\s+-", entry):
+            for match in re.finditer(r"([^\s^-]+)\s+-", entry):
                 pass
             if match:
                 local_path = match.group(1)
