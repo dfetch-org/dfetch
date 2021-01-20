@@ -133,7 +133,7 @@ class SvnRepo(VCS):
             parents=True, exist_ok=True
         )
 
-        cmd = f"svn export {rev} {complete_path} {self.local_path}"
+        cmd = f"svn export --force {rev} {complete_path} {self.local_path}"
 
         run_on_cmdline(self.logger, cmd)
 
