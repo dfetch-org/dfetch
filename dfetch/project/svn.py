@@ -76,7 +76,13 @@ class SvnRepo(VCS):
         return (rev, branch)
 
     def _get_info(self, branch: str) -> Dict[str, str]:
-        result = run_on_cmdline(self.logger, f"svn info {self.remote}/{branch}")
+        return self._get_info_from_target(self.logger, f"{self.remote}/{branch}")
+
+    @staticmethod
+    def _get_info_from_target(
+        logger: logging.Logger, target: str = ""
+    ) -> Dict[str, str]:
+        result = run_on_cmdline(logger, f"svn info {target}")
 
         info = {}
         for line in result.stdout.decode().split(os.linesep):
