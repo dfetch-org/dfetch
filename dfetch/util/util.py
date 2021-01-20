@@ -12,6 +12,14 @@ def _remove_readonly(func: Any, path: str, _: Any) -> None:
     func(path)
 
 
+def safe_rm(path: str) -> None:
+    """Delete an file or directory safely."""
+    if os.path.isdir(path):
+        safe_rmtree(path)
+    else:
+        os.remove(path)
+
+
 def safe_rmtree(path: str) -> None:
     """Delete an entire directory and all its subfolders and files."""
     try:
