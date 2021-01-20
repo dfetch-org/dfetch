@@ -13,7 +13,7 @@ import argparse
 import logging
 import os
 import re
-from itertools import permutations
+from itertools import combinations
 from typing import List, Sequence, Set, Tuple
 
 import dfetch.commands.command
@@ -140,16 +140,23 @@ def _determine_best_remotes(projects_urls: Set[str]) -> Tuple[str, ...]:
     Returns:
         Tuple[str, ...]: A set of remote urls.
     """
+    max_remote_length = 50
+    max_remotes = 5
+
     # Determine all possible remotes
     potential_remotes: Set[str] = set()
     for url in projects_urls:
-        potential_remotes.add(url.rsplit("/", maxsplit=1)[0])
-        potential_remotes.add(url.rsplit(":", maxsplit=1)[0])
+        potential_remotes.add(url[:max_remote_length].rsplit("/", maxsplit=1)[0])
+        potential_remotes.add(url[:max_remote_length].rsplit("/", maxsplit=2)[0])
+        potential_remotes.add(url[:max_remote_length].rsplit(":", maxsplit=1)[0])
+
+    useless_potential = set(["http", "https"])
+    potential_remotes = potential_remotes - useless_potential
 
     # For each permutation of any length, calculate the solution score
     solutions = []
-    for i in range(len(potential_remotes)):
-        for solution in permutations(potential_remotes, i):
+    for i in range(min(len(potential_remotes), max_remotes)):
+        for solution in combinations(potential_remotes, i):
             score = _calculate_solution_score(solution, projects_urls)
             solutions += [(score, solution)]
 
