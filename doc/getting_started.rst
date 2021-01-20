@@ -24,6 +24,8 @@ My first manifest
 For a complete description of the manifest, see :ref:`Manifest`.
 
 *Dfetch* can generate a basic manifest as starting point with :ref:`dfetch init <init>`.
+Alternatively, *Dfetch* can generate a manifest based on the git submodules or svn externals
+in an existing project using :ref:`dfetch import <import>`.
 
 Below manifest will retrieve the given revision of *mymodule* from the remote listed.
 
