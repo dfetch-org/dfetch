@@ -88,9 +88,9 @@ class Remote:
 
     def as_yaml(self) -> RemoteDict:
         """Get this remote as yaml data."""
-        yamldata: RemoteDict = {
-            "name": self._name,
-            "url-base": self._url_base,
-            "default": self.is_default,
-        }
+        yamldata: RemoteDict = {"name": self._name, "url-base": self._url_base}
+
+        if self.is_default:
+            yamldata["default"] = True
+
         return yamldata
