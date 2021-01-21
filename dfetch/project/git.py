@@ -40,7 +40,9 @@ class GitRepo(VCS):
             if line:
                 name, sm_path, sha, toplevel = line.split(" ")
                 url = GitRepo._get_submodule_urls(logger, toplevel)[name]
-                branch = GitRepo._guess_branch_of_sha(
+                branch = GitRepo._find_branch_or_tag_from_sha(
+                    GitRepo._ls_remote(url, logger), sha
+                ) or GitRepo._guess_branch_of_sha(
                     os.path.join(os.getcwd(), sm_path), sha, logger
                 )
                 submodules += [
@@ -136,8 +138,12 @@ class GitRepo(VCS):
         self._cleanup()
 
     def __ls_remote(self) -> Dict[str, str]:
+        return GitRepo._ls_remote(self.remote, self.logger)
 
-        result = run_on_cmdline(self.logger, f"git ls-remote {self.remote}")
+    @staticmethod
+    def _ls_remote(remote: str, logger: logging.Logger) -> Dict[str, str]:
+
+        result = run_on_cmdline(logger, f"git ls-remote {remote}")
 
         info = {}
         for line in result.stdout.decode().split("\n"):
