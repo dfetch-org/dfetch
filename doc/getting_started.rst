@@ -16,6 +16,9 @@ your dependencies.
 location of your choice. If the folder already exists and the version was updated
 *Dfetch* will overwrite the folder with the changes.
 
+Since the version control information (`.git` or `svn`) is removed, *Dfetch* stores some
+general information about the project in a `.dfetch_data.yaml` file inside the fetched project.
+
 You can then review the changes in your favorite version control system and commit
 the changes as you please.
 
@@ -49,17 +52,20 @@ My first update
 After creating the manifest we can let *Dfetch* perform an update.
 Make sure that you have installed *Dfetch* as described in :ref:`Installation`.
 
-From a command-line perform the following command:
-
-.. code-block::
+From a command-line perform the following command::
 
    dfetch update
 
-*Dfetch* will search through all directories down untill it finds the ``dfetch.yaml``
+*Dfetch* will search through all directories down until it finds the ``dfetch.yaml``
 manifest and it will perform the update.
 
 After *Dfetch* finishes, the version of the dependency as listed in your manifest is
 downloaded at the target location. You can now commit it to your version control system.
+
+Inside the project folder, *Dfetch* will add a metadata file ``.dfetch_data.yaml``
+containing information needed for knowing what version is present.
+*Dfetch* can function perfectly without this file, but since it will have no knowledge
+of the current contents, updates will always just blindly update.
 
 My first version change
 -----------------------
