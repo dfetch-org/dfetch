@@ -6,7 +6,25 @@ a manifest with the current versions of the repository.
 After importing you will have to remove the submodules or externals and you can let dfetch
 update by running :ref:`dfetch update <update>`.
 
-.. note:: For git projects all submodules must have been fetched before importing.
+Migrating from git submodules
+=============================
+
+* Make sure your repository is up-to-date.
+* Make sure your submodules are up-to-date (``git submodules update --init``).
+* Generate a manifest using :ref:`dfetch import<import>`.
+* Remove all git submodules (see `How do I remove a submodule <https://stackoverflow.com/questions/1260748/>`_ ).
+* Download all your projects using :ref:`dfetch update<update>`.
+* Commit your projects as part of your project.
+
+Migrating from SVN externals
+============================
+
+* Make sure your repository is up-to-date.
+* Generate a manifest using :ref:`dfetch import<import>`.
+* Remove all svn externals (see `How do I remove svn::externals <https://stackoverflow.com/questions/1044649/>`_ ).
+* Download all your projects using :ref:`dfetch update<update>`.
+* Commit your projects as part of your project.
+
 """
 
 import argparse
