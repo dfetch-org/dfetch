@@ -11,6 +11,7 @@ Dfetch
    getting_started
    manifest
    manual
+   troubleshooting
    contributing
    technical
    changelog
