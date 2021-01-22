@@ -42,10 +42,8 @@ class GitRepo(VCS):
             if line:
                 name, sm_path, sha, toplevel = line.split(" ")
                 url = GitRepo._get_submodule_urls(toplevel)[name]
-                branch = GitRepo._find_branch_or_tag_from_sha(
-                    GitRepo._ls_remote(url), sha
-                ) or GitRepo._guess_branch_of_sha(
-                    os.path.join(os.getcwd(), sm_path), sha
+                branch = GitRepo._determine_branch_or_tag(
+                    url, os.path.join(os.getcwd(), sm_path), sha
                 )
                 submodules += [
                     Submodule(
@@ -159,6 +157,12 @@ class GitRepo(VCS):
             branch = self._find_branch_or_tag_from_sha(info, rev)
 
         self._metadata.fetched(rev, branch)
+
+    @staticmethod
+    def _determine_branch_or_tag(url: str, repo_path: str, sha: str) -> str:
+        return GitRepo._find_branch_or_tag_from_sha(
+            GitRepo._ls_remote(url), sha
+        ) or GitRepo._guess_branch_of_sha(repo_path, sha)
 
     @staticmethod
     def _guess_branch_of_sha(repo_path: str, sha: str) -> str:
