@@ -143,30 +143,28 @@ class GitRepo(VCS):
 
     def _update_metadata(self) -> None:
 
-        info = self.__ls_remote()
-
-        rev = self._metadata.revision
+        sha = self._metadata.revision
         branch = self._metadata.branch
 
-        if not branch and not rev:
+        if not branch and not sha:
             branch = self.DEFAULT_BRANCH
 
-        if branch and not rev:
-            rev = self._find_sha_of_branch_or_tag(info, branch)
-        elif not branch and rev:
-            branch = self._find_branch_or_tag_from_sha(info, rev)
+        if branch and not sha:
+            info = self.__ls_remote()
+            sha = self._find_sha_of_branch_or_tag(info, branch)
+        elif not branch and sha:
+            branch = self._determine_branch_or_tag(self.remote, self.local_path, sha)
 
-        self._metadata.fetched(rev, branch)
+        self._metadata.fetched(sha, branch)
 
     @staticmethod
     def _determine_branch_or_tag(url: str, repo_path: str, sha: str) -> str:
-        return GitRepo._find_branch_or_tag_from_sha(
+        return GitRepo._find_branch_tip_or_tag_from_sha(
             GitRepo._ls_remote(url), sha
-        ) or GitRepo._guess_branch_of_sha(repo_path, sha)
+        ) or GitRepo._find_branch_containing_sha(repo_path, sha)
 
     @staticmethod
-    def _guess_branch_of_sha(repo_path: str, sha: str) -> str:
-
+    def _find_branch_containing_sha(repo_path: str, sha: str) -> str:
         with in_directory(repo_path):
             result = run_on_cmdline(
                 logger,
@@ -190,7 +188,8 @@ class GitRepo(VCS):
         return ""
 
     @staticmethod
-    def _find_branch_or_tag_from_sha(info: Dict[str, str], rev: str) -> str:
+    def _find_branch_tip_or_tag_from_sha(info: Dict[str, str], rev: str) -> str:
+        """Check all branch tips and tags and see if the sha is one of them."""
         info.pop("HEAD", None)
         for reference, sha in info.items():
             if sha[:8] == rev[:8]:  # Also allow for shorter SHA's
