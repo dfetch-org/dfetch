@@ -81,24 +81,6 @@ class GitRepo(VCS):
             )
         }
 
-    @staticmethod
-    def _guess_branch_of_sha(repo_path: str, sha: str) -> str:
-
-        with in_directory(repo_path):
-            result = run_on_cmdline(
-                logger,
-                ["git", "branch", "--contains", sha],
-            )
-
-        branches: List[str] = []
-        for branch in result.stdout.decode().split("*"):
-            branch = branch.strip()
-
-            if branch and "HEAD detached at" not in branch:
-                branches.append(branch)
-
-        return branches[0] if len(branches) == 1 else ""
-
     def check(self) -> bool:
         """Check if is GIT."""
         return self._project.remote_url.endswith(".git")
@@ -177,6 +159,24 @@ class GitRepo(VCS):
             branch = self._find_branch_or_tag_from_sha(info, rev)
 
         self._metadata.fetched(rev, branch)
+
+    @staticmethod
+    def _guess_branch_of_sha(repo_path: str, sha: str) -> str:
+
+        with in_directory(repo_path):
+            result = run_on_cmdline(
+                logger,
+                ["git", "branch", "--contains", sha],
+            )
+
+        branches: List[str] = []
+        for branch in result.stdout.decode().split("*"):
+            branch = branch.strip()
+
+            if branch and "HEAD detached at" not in branch:
+                branches.append(branch)
+
+        return branches[0] if len(branches) == 1 else ""
 
     @staticmethod
     def _find_sha_of_branch_or_tag(info: Dict[str, str], branch: str) -> str:
