@@ -116,7 +116,7 @@ def test_externals(name, externals, expectations):
                 target_info_mock.return_value = {"Repository Root": REPO_ROOT}
 
                 cwd_mock.return_value = CWD
-                parsed_externals = SvnRepo.externals(MagicMock())
+                parsed_externals = SvnRepo.externals()
 
                 for actual, expected in zip(parsed_externals, expectations):
                     assert actual == expected
