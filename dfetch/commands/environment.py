@@ -23,4 +23,4 @@ class Environment(dfetch.commands.command.Command):
     def __call__(self, _: argparse.Namespace) -> None:
         """Perform listing the environment."""
         for vcs in SUPPORTED_PROJECT_TYPES:
-            vcs.list_tool_info(logger)
+            vcs.list_tool_info()

@@ -1,14 +1,16 @@
 """Version Control system."""
 
-import logging
 import os
 from abc import ABC, abstractmethod
 
 from colorama import Fore
 
+from dfetch.log import get_logger
 import dfetch.manifest.manifest
 from dfetch.project.metadata import Metadata
 from dfetch.util.util import safe_rm
+
+logger = get_logger(__name__)
 
 
 class VCS(ABC):
@@ -18,11 +20,8 @@ class VCS(ABC):
     It can be updated.
     """
 
-    def __init__(
-        self, project: dfetch.manifest.project.ProjectEntry, logger: logging.Logger
-    ) -> None:
+    def __init__(self, project: dfetch.manifest.project.ProjectEntry) -> None:
         """Create the VCS."""
-        self._logger = logger
         self._project = project
         self._metadata = Metadata.from_project_entry(self._project)
 
@@ -35,17 +34,17 @@ class VCS(ABC):
             return
 
         if os.path.exists(self.local_path):
-            self.logger.debug(f"Clearing destination {self.local_path}")
+            logger.debug(f"Clearing destination {self.local_path}")
             safe_rm(self.local_path)
 
-        self.logger.debug(
+        logger.debug(
             f"fetching {self._project.name} {self._project.revision} from {self._project.remote_url}"
         )
 
         self._fetch_impl()
         self._metadata.fetched(self.revision, self.branch)
 
-        self.logger.debug(f"Writing repo metadata to: {self._metadata.path}")
+        logger.debug(f"Writing repo metadata to: {self._metadata.path}")
         self._metadata.dump()
 
     def check_for_update(self) -> None:
@@ -93,10 +92,10 @@ class VCS(ABC):
         return True
 
     def _log_project(self, msg: str) -> None:
-        self.logger.info(f"  {Fore.GREEN}- {self._project.name:20s}:{Fore.BLUE} {msg}")
+        logger.info(f"  {Fore.GREEN}- {self._project.name:20s}:{Fore.BLUE} {msg}")
 
     @staticmethod
-    def _log_tool(logger: logging.Logger, name: str, msg: str) -> None:
+    def _log_tool(name: str, msg: str) -> None:
         logger.info(f"  {Fore.GREEN}- {name:20s}:{Fore.BLUE} {msg}")
 
     @property
@@ -119,18 +118,13 @@ class VCS(ABC):
         """Get the remote URL of this VCS."""
         return self._metadata.remote_url
 
-    @property
-    def logger(self) -> logging.Logger:
-        """Return the logger for this VCS."""
-        return self._logger
-
     @abstractmethod
     def check(self) -> bool:
         """Check if it can handle the type."""
 
     @staticmethod
     @abstractmethod
-    def list_tool_info(logger: logging.Logger) -> None:
+    def list_tool_info() -> None:
         """Print out version information."""
 
     @abstractmethod

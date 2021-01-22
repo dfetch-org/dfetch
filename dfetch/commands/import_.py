@@ -84,9 +84,9 @@ class Import(dfetch.commands.command.Command):
 
 def _import_projects() -> Sequence[ProjectEntry]:
     """Find out what type of VCS is used and import projects."""
-    if SvnRepo.check_path(logger):
+    if SvnRepo.check_path():
         projects = _import_from_svn()
-    elif GitRepo.check_path(logger):
+    elif GitRepo.check_path():
         projects = _import_from_git()
     else:
         raise RuntimeError(
@@ -99,7 +99,7 @@ def _import_projects() -> Sequence[ProjectEntry]:
 def _import_from_svn() -> Sequence[ProjectEntry]:
     projects: List[ProjectEntry] = []
 
-    for external in SvnRepo.externals(logger):
+    for external in SvnRepo.externals():
         projects.append(
             ProjectEntry(
                 {
@@ -120,7 +120,7 @@ def _import_from_svn() -> Sequence[ProjectEntry]:
 def _import_from_git() -> Sequence[ProjectEntry]:
     projects: List[ProjectEntry] = []
     toplevel: str = ""
-    for submodule in GitRepo.submodules(logger):
+    for submodule in GitRepo.submodules():
         projects.append(
             ProjectEntry(
                 {
