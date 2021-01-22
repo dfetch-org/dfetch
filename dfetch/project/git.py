@@ -104,7 +104,7 @@ class GitRepo(VCS):
 
     def _check_impl(self) -> str:
         """Check if a newer version is available on the given branch."""
-        info = self.__ls_remote()
+        info = self._ls_remote(self.remote)
         branch = self.branch or self.DEFAULT_BRANCH
 
         return self._find_sha_of_branch_or_tag(info, branch)
@@ -118,9 +118,6 @@ class GitRepo(VCS):
         run_on_cmdline(logger, cmd)
 
         self._cleanup()
-
-    def __ls_remote(self) -> Dict[str, str]:
-        return GitRepo._ls_remote(self.remote)
 
     @staticmethod
     def _ls_remote(remote: str) -> Dict[str, str]:
@@ -150,7 +147,7 @@ class GitRepo(VCS):
             branch = self.DEFAULT_BRANCH
 
         if branch and not sha:
-            info = self.__ls_remote()
+            info = self._ls_remote(self.remote)
             sha = self._find_sha_of_branch_or_tag(info, branch)
         elif not branch and sha:
             branch = self._determine_branch_or_tag(self.remote, self.local_path, sha)
