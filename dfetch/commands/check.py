@@ -36,9 +36,7 @@ class Check(dfetch.commands.command.Command):
             exceptions = []
             for project in manifest.projects:
                 try:
-                    dfetch.project.make(
-                        project, logger.getChild(project.name)
-                    ).check_for_update()
+                    dfetch.project.make(project).check_for_update()
                 except RuntimeError as exc:
                     exceptions += [str(exc)]
 

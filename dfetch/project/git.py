@@ -1,14 +1,16 @@
 """Git specific implementation."""
 
-import logging
 import os
 import re
 from collections import namedtuple
 from typing import Dict, List
 
+from dfetch.log import get_logger
 from dfetch.project.vcs import VCS
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import in_directory, safe_rmtree
+
+logger = get_logger(__name__)
 
 Submodule = namedtuple(
     "Submodule", ["name", "toplevel", "path", "sha", "url", "branch"]
@@ -22,7 +24,7 @@ class GitRepo(VCS):
     DEFAULT_BRANCH = "master"
 
     @staticmethod
-    def submodules(logger: logging.Logger) -> List[Submodule]:
+    def submodules() -> List[Submodule]:
         """Get a list of submodules in the current directory."""
         result = run_on_cmdline(
             logger,
@@ -39,11 +41,11 @@ class GitRepo(VCS):
         for line in result.stdout.decode().split("\n"):
             if line:
                 name, sm_path, sha, toplevel = line.split(" ")
-                url = GitRepo._get_submodule_urls(logger, toplevel)[name]
+                url = GitRepo._get_submodule_urls(toplevel)[name]
                 branch = GitRepo._find_branch_or_tag_from_sha(
-                    GitRepo._ls_remote(url, logger), sha
+                    GitRepo._ls_remote(url), sha
                 ) or GitRepo._guess_branch_of_sha(
-                    os.path.join(os.getcwd(), sm_path), sha, logger
+                    os.path.join(os.getcwd(), sm_path), sha
                 )
                 submodules += [
                     Submodule(
@@ -58,7 +60,7 @@ class GitRepo(VCS):
         return submodules
 
     @staticmethod
-    def _get_submodule_urls(logger: logging.Logger, toplevel: str) -> Dict[str, str]:
+    def _get_submodule_urls(toplevel: str) -> Dict[str, str]:
 
         result = run_on_cmdline(
             logger,
@@ -80,7 +82,7 @@ class GitRepo(VCS):
         }
 
     @staticmethod
-    def _guess_branch_of_sha(repo_path: str, sha: str, logger: logging.Logger) -> str:
+    def _guess_branch_of_sha(repo_path: str, sha: str) -> str:
 
         with in_directory(repo_path):
             result = run_on_cmdline(
@@ -102,7 +104,7 @@ class GitRepo(VCS):
         return self._project.remote_url.endswith(".git")
 
     @staticmethod
-    def check_path(logger: logging.Logger, path: str = ".") -> bool:
+    def check_path(path: str = ".") -> bool:
         """Check if is git."""
         try:
             with in_directory(path):
@@ -112,13 +114,13 @@ class GitRepo(VCS):
             return False
 
     @staticmethod
-    def list_tool_info(logger: logging.Logger) -> None:
+    def list_tool_info() -> None:
         """Print out version information."""
         result = run_on_cmdline(logger, "git --version")
 
         tool, version = result.stdout.decode().strip().split("version", maxsplit=1)
 
-        VCS._log_tool(logger, tool, version)
+        VCS._log_tool(tool, version)
 
     def _check_impl(self) -> str:
         """Check if a newer version is available on the given branch."""
@@ -133,15 +135,15 @@ class GitRepo(VCS):
         branch = self.branch or self.DEFAULT_BRANCH
         cmd = f"git clone --branch {branch} --depth 1 {self.remote} {self.local_path}"
 
-        run_on_cmdline(self.logger, cmd)
+        run_on_cmdline(logger, cmd)
 
         self._cleanup()
 
     def __ls_remote(self) -> Dict[str, str]:
-        return GitRepo._ls_remote(self.remote, self.logger)
+        return GitRepo._ls_remote(self.remote)
 
     @staticmethod
-    def _ls_remote(remote: str, logger: logging.Logger) -> Dict[str, str]:
+    def _ls_remote(remote: str) -> Dict[str, str]:
 
         result = run_on_cmdline(logger, f"git ls-remote {remote}")
 
@@ -198,4 +200,4 @@ class GitRepo(VCS):
     def _checkout(self, revision: str) -> None:
         with in_directory(self.local_path):
             cmd = f"git checkout {revision}"
-            run_on_cmdline(self.logger, cmd)
+            run_on_cmdline(logger, cmd)

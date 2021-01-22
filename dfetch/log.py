@@ -31,3 +31,8 @@ def setup_root(name: str) -> logging.Logger:
 def increase_verbosity() -> None:
     """Increase the verbosity of the logger."""
     coloredlogs.increase_verbosity()
+
+
+def get_logger(name: str) -> logging.Logger:
+    """Get logger for a module."""
+    return logging.getLogger(name)

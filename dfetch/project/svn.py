@@ -1,16 +1,19 @@
 """SVN specific implementation."""
 
 import itertools
-import logging
 import os
 import pathlib
 import re
 from collections import namedtuple
 from typing import Dict, List, Tuple
 
+from dfetch.log import get_logger
 from dfetch.project.vcs import VCS
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import in_directory
+
+logger = get_logger(__name__)
+
 
 External = namedtuple(
     "External", ["name", "toplevel", "path", "revision", "url", "branch", "src"]
@@ -23,7 +26,7 @@ class SvnRepo(VCS):
     DEFAULT_BRANCH = "trunk"
 
     @staticmethod
-    def externals(logger: logging.Logger) -> List[External]:
+    def externals() -> List[External]:
         """Get list of externals."""
         result = run_on_cmdline(
             logger,
@@ -35,7 +38,7 @@ class SvnRepo(VCS):
             ],
         )
 
-        repo_root = SvnRepo._get_info_from_target(logger)["Repository Root"]
+        repo_root = SvnRepo._get_info_from_target()["Repository Root"]
 
         externals = []
         for entry in result.stdout.decode().split(os.linesep * 2):
@@ -93,13 +96,13 @@ class SvnRepo(VCS):
     def check(self) -> bool:
         """Check if is SVN."""
         try:
-            run_on_cmdline(self._logger, f"svn info {self._project.remote_url}")
+            run_on_cmdline(logger, f"svn info {self._project.remote_url}")
             return True
         except SubprocessCommandError:
             return False
 
     @staticmethod
-    def check_path(logger: logging.Logger, path: str = ".") -> bool:
+    def check_path(path: str = ".") -> bool:
         """Check if is SVN."""
         try:
             with in_directory(path):
@@ -109,13 +112,13 @@ class SvnRepo(VCS):
             return False
 
     @staticmethod
-    def list_tool_info(logger: logging.Logger) -> None:
+    def list_tool_info() -> None:
         """Print out version information."""
         result = run_on_cmdline(logger, "svn --version")
 
         first_line = result.stdout.decode().split("\n")[0]
         tool, version = first_line.replace(",", "").split("version", maxsplit=1)
-        VCS._log_tool(logger, tool, version)
+        VCS._log_tool(tool, version)
 
     def _check_impl(self) -> str:
         """Check if a newer version is available on the given branch."""
@@ -135,7 +138,7 @@ class SvnRepo(VCS):
 
         cmd = f"svn export --force {rev} {complete_path} {self.local_path}"
 
-        run_on_cmdline(self.logger, cmd)
+        run_on_cmdline(logger, cmd)
 
     def _determine_rev_and_branch(self) -> Tuple[str, str]:
         rev = ""
@@ -152,12 +155,10 @@ class SvnRepo(VCS):
         return (rev, branch)
 
     def _get_info(self, branch: str) -> Dict[str, str]:
-        return self._get_info_from_target(self.logger, f"{self.remote}/{branch}")
+        return self._get_info_from_target(f"{self.remote}/{branch}")
 
     @staticmethod
-    def _get_info_from_target(
-        logger: logging.Logger, target: str = ""
-    ) -> Dict[str, str]:
+    def _get_info_from_target(target: str = "") -> Dict[str, str]:
         result = run_on_cmdline(logger, f"svn info {target}")
 
         info = {}
