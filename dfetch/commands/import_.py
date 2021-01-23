@@ -84,10 +84,10 @@ class Import(dfetch.commands.command.Command):
 
 def _import_projects() -> Sequence[ProjectEntry]:
     """Find out what type of VCS is used and import projects."""
-    if SvnRepo.check_path():
-        projects = _import_from_svn()
-    elif GitRepo.check_path():
+    if GitRepo.check_path():
         projects = _import_from_git()
+    elif SvnRepo.check_path():
+        projects = _import_from_svn()
     else:
         raise RuntimeError(
             "Only git or SVN projects can be imported.",
