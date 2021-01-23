@@ -90,7 +90,7 @@ class GitRepo(VCS):
             with in_directory(path):
                 run_on_cmdline(logger, "git status")
             return True
-        except SubprocessCommandError:
+        except (SubprocessCommandError, RuntimeError):
             return False
 
     @staticmethod

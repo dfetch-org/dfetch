@@ -108,7 +108,7 @@ class SvnRepo(VCS):
             with in_directory(path):
                 run_on_cmdline(logger, "svn info")
             return True
-        except SubprocessCommandError:
+        except (SubprocessCommandError, RuntimeError):
             return False
 
     @staticmethod
