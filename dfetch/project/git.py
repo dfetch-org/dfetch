@@ -81,7 +81,14 @@ class GitRepo(VCS):
 
     def check(self) -> bool:
         """Check if is GIT."""
-        return self._project.remote_url.endswith(".git")
+        if self.remote.endswith(".git"):
+            return True
+
+        try:
+            run_on_cmdline(logger, f"git ls-remote --heads {self.remote}")
+            return True
+        except (SubprocessCommandError, RuntimeError):
+            return False
 
     @staticmethod
     def check_path(path: str = ".") -> bool:
