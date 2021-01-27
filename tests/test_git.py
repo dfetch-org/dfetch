@@ -32,10 +32,25 @@ def test_check_path(name, cmd_result, expectation):
 @pytest.mark.parametrize(
     "name, project, cmd_result, expectation",
     [
-        ("SSH url", ProjectEntry({'name': "sshProject", 'url':"some.git"}), [], True),
-        ("http url", ProjectEntry({'name': "httpProject", 'url':"some/bla"}), ["Yep!"], True),
-        ("Failed command", ProjectEntry({'name': "proj1", 'url':"some/bla"}), [SubprocessCommandError()], False),
-        ("No git", ProjectEntry({'name': "proj2", 'url':"some/bla"}), [RuntimeError()], False),
+        ("SSH url", ProjectEntry({"name": "sshProject", "url": "some.git"}), [], True),
+        (
+            "http url",
+            ProjectEntry({"name": "httpProject", "url": "some/bla"}),
+            ["Yep!"],
+            True,
+        ),
+        (
+            "Failed command",
+            ProjectEntry({"name": "proj1", "url": "some/bla"}),
+            [SubprocessCommandError()],
+            False,
+        ),
+        (
+            "No git",
+            ProjectEntry({"name": "proj2", "url": "some/bla"}),
+            [RuntimeError()],
+            False,
+        ),
     ],
 )
 def test_check(name, project, cmd_result, expectation):
