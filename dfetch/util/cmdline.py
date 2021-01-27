@@ -3,7 +3,7 @@
 import logging
 import os
 import subprocess  # nosec
-from typing import Any, List, Union  # pylint: disable=unused-import
+from typing import Any, List, Optional, Union  # pylint: disable=unused-import
 
 
 class SubprocessCommandError(Exception):
@@ -13,9 +13,15 @@ class SubprocessCommandError(Exception):
     contains all the results for easier usage later on.
     """
 
-    def __init__(self, cmd: List[str], stdout: str, stderr: str, returncode: int):
+    def __init__(
+        self,
+        cmd: Optional[List[str]] = None,
+        stdout: str = "",
+        stderr: str = "",
+        returncode: int = 0,
+    ):
         """Error."""
-        cmd_str: str = " ".join(cmd)
+        cmd_str: str = " ".join(cmd or [])
         self._message = f"{cmd_str} returned {returncode}:{os.linesep}{stderr}"
         self.cmd = cmd_str
         self.stderr = stdout
