@@ -9,8 +9,8 @@ import sys
 
 import dfetch.commands.check
 import dfetch.commands.environment
-import dfetch.commands.init
 import dfetch.commands.import_
+import dfetch.commands.init
 import dfetch.commands.update
 import dfetch.commands.validate
 import dfetch.log

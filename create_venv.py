@@ -4,7 +4,6 @@
 import argparse
 import subprocess  # nosec
 import venv
-
 from typing import Any
 
 
