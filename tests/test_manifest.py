@@ -8,8 +8,8 @@ from unittest.mock import mock_open, patch
 import pytest
 
 import dfetch.manifest.manifest
-from dfetch.manifest.manifest import Manifest, find_manifest
 from dfetch import DEFAULT_MANIFEST_NAME
+from dfetch.manifest.manifest import Manifest, find_manifest
 
 BASIC_MANIFEST = u"""
 manifest:
