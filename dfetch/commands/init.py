@@ -4,15 +4,15 @@ It will be created in the current folder.
 """
 
 import argparse
-import logging
 import os
 import shutil
 
 import dfetch.commands.command
-from dfetch.resources import TEMPLATE_PATH
 from dfetch import DEFAULT_MANIFEST_NAME
+from dfetch.log import get_logger
+from dfetch.resources import TEMPLATE_PATH
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Init(dfetch.commands.command.Command):

@@ -7,8 +7,6 @@ Created on 28/04/2020
 import argparse
 import sys
 
-from colorama import Fore
-
 import dfetch.commands.check
 import dfetch.commands.environment
 import dfetch.commands.init
@@ -17,7 +15,6 @@ import dfetch.commands.update
 import dfetch.commands.validate
 import dfetch.log
 import dfetch.util.cmdline
-from dfetch import __version__
 
 logger = dfetch.log.setup_root(__name__)
 
@@ -48,7 +45,7 @@ def _help(args: argparse.Namespace) -> None:
 
 def main() -> None:
     """Start dfetch."""
-    logger.info(f"{Fore.BLUE}Dfetch ({__version__})")
+    logger.print_title()
     args = create_parser().parse_args()
 
     if args.verbose:

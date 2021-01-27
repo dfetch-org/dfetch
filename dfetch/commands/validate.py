@@ -4,16 +4,14 @@ This will parse your :ref:`Manifest` and check if all fields can be parsed.
 """
 
 import argparse
-import logging
 import os
 
-from colorama import Fore
-
 import dfetch.commands.command
+from dfetch.log import get_logger
 from dfetch.manifest.manifest import find_manifest
 from dfetch.manifest.validate import validate
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Validate(dfetch.commands.command.Command):
@@ -35,4 +33,4 @@ class Validate(dfetch.commands.command.Command):
         manifest_path = find_manifest()
         validate(manifest_path)
         manifest_path = os.path.relpath(manifest_path, os.getcwd())
-        logger.info(f"{manifest_path}: {Fore.GREEN}valid")
+        logger.print_info_line(manifest_path, "valid")

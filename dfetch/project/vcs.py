@@ -3,10 +3,8 @@
 import os
 from abc import ABC, abstractmethod
 
-from colorama import Fore
-
-from dfetch.log import get_logger
 import dfetch.manifest.manifest
+from dfetch.log import get_logger
 from dfetch.project.metadata import Metadata
 from dfetch.util.util import safe_rm
 
@@ -92,11 +90,11 @@ class VCS(ABC):
         return True
 
     def _log_project(self, msg: str) -> None:
-        logger.info(f"  {Fore.GREEN}- {self._project.name:20s}:{Fore.BLUE} {msg}")
+        logger.print_info_line(self._project.name, msg)
 
     @staticmethod
     def _log_tool(name: str, msg: str) -> None:
-        logger.info(f"  {Fore.GREEN}- {name:20s}:{Fore.BLUE} {msg}")
+        logger.print_info_line(name, msg.strip())
 
     @property
     def local_path(self) -> str:

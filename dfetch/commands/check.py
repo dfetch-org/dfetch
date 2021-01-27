@@ -5,7 +5,6 @@ revision on that branch. If there are new versions available this will be shown.
 """
 
 import argparse
-import logging
 import os
 
 import dfetch.commands.command
@@ -13,8 +12,9 @@ import dfetch.manifest.manifest
 import dfetch.manifest.validate
 import dfetch.project
 import dfetch.util
+from dfetch.log import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Check(dfetch.commands.command.Command):

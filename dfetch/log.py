@@ -1,13 +1,29 @@
 """Logging related items."""
 
 import logging
+from typing import cast
 
 import coloredlogs
+from colorama import Fore
+
+from dfetch import __version__
 
 
-def setup_root(name: str) -> logging.Logger:
+class DLogger(logging.Logger):
+    """Logging class extended with specific log items for dfetch."""
+
+    def print_info_line(self, name: str, info: str) -> None:
+        """Print a line of info."""
+        self.info(f"  {Fore.GREEN}{name:20s}:{Fore.BLUE} {info}")
+
+    def print_title(self) -> None:
+        """Print the DFetch tool title and version."""
+        self.info(f"{Fore.BLUE}Dfetch ({__version__})")
+
+
+def setup_root(name: str) -> DLogger:
     """Create the root logger."""
-    logger = logging.getLogger(name)
+    logger = get_logger(name)
 
     msg_format = "%(message)s"
 
@@ -33,6 +49,7 @@ def increase_verbosity() -> None:
     coloredlogs.increase_verbosity()
 
 
-def get_logger(name: str) -> logging.Logger:
+def get_logger(name: str) -> DLogger:
     """Get logger for a module."""
-    return logging.getLogger(name)
+    logging.setLoggerClass(DLogger)
+    return cast(DLogger, logging.getLogger(name))
