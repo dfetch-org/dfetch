@@ -14,10 +14,11 @@ if not exist %VENV_DIR% (
 call .\venv\Scripts\activate.bat
 
 CALL :sub_display isort
-isort dfetch
+isort --recursive dfetch
+isort --recursive tests
 
 CALL :sub_display black
-black dfetch
+black dfetch tests
 
 CALL :sub_display Pylint
 pylint dfetch --output-format=colorized
