@@ -5,7 +5,6 @@ It tries to determine what kind of vcs it is: git, svn or something else.
 """
 
 import argparse
-import logging
 import os
 
 import dfetch.commands.command
@@ -14,8 +13,9 @@ import dfetch.manifest.project
 import dfetch.manifest.validate
 import dfetch.project.git
 import dfetch.project.svn
+from dfetch.log import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Update(dfetch.commands.command.Command):

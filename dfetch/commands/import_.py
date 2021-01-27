@@ -28,7 +28,6 @@ Migrating from SVN externals
 """
 
 import argparse
-import logging
 import os
 import re
 from itertools import combinations
@@ -36,13 +35,14 @@ from typing import List, Sequence, Set, Tuple
 
 import dfetch.commands.command
 from dfetch import DEFAULT_MANIFEST_NAME
+from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.remote import Remote
 from dfetch.project.git import GitRepo
 from dfetch.project.svn import SvnRepo
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Import(dfetch.commands.command.Command):

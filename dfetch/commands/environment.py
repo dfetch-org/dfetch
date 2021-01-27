@@ -4,9 +4,10 @@ import argparse
 import logging
 
 import dfetch.commands.command
+from dfetch.log import get_logger
 from dfetch.project import SUPPORTED_PROJECT_TYPES
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Environment(dfetch.commands.command.Command):

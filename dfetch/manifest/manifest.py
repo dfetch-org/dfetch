@@ -18,7 +18,6 @@ download and a section ``projects:`` that contains a list of projects to fetch.
            dst: external/mymodule/
 """
 import io
-import logging
 import os
 from typing import IO, Any, Dict, List, Sequence, Tuple, Union
 
@@ -26,12 +25,13 @@ import yaml
 from typing_extensions import TypedDict
 
 import dfetch.manifest.validate
+from dfetch import DEFAULT_MANIFEST_NAME
+from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
 from dfetch.util.util import find_file
-from dfetch import DEFAULT_MANIFEST_NAME
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ManifestDict(TypedDict):
