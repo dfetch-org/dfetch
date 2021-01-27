@@ -7,7 +7,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from dfetch.project.svn import SvnRepo, External
+from dfetch.project.svn import External, SvnRepo
+from dfetch.util.cmdline import SubprocessCommandError
 
 REPO_ROOT = "repo-root"
 CWD = "C:\\mydir"
@@ -120,3 +121,20 @@ def test_externals(name, externals, expectations):
 
                 for actual, expected in zip(parsed_externals, expectations):
                     assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "name, cmd_result, expectation",
+    [
+        ("svn repo", ["Yep!"], True),
+        ("not a svn repo", [SubprocessCommandError("", "", "", -1)], False),
+        ("no svn", [RuntimeError()], False),
+    ],
+)
+def test_check_path(name, cmd_result, expectation):
+
+    with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
+
+        run_on_cmdline_mock.side_effect = cmd_result
+
+        assert SvnRepo.check_path() == expectation
