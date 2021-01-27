@@ -107,7 +107,9 @@ def test_svn_import(name, externals):
     with patch("dfetch.commands.import_.SvnRepo.check_path") as check_path:
         with patch("dfetch.commands.import_.SvnRepo.externals") as mocked_externals:
             with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
-                with patch("dfetch.commands.import_.GitRepo.check_path") as check_path_git:
+                with patch(
+                    "dfetch.commands.import_.GitRepo.check_path"
+                ) as check_path_git:
 
                     check_path_git.return_value = False
                     check_path.return_value = True
