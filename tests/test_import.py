@@ -107,22 +107,24 @@ def test_svn_import(name, externals):
     with patch("dfetch.commands.import_.SvnRepo.check_path") as check_path:
         with patch("dfetch.commands.import_.SvnRepo.externals") as mocked_externals:
             with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
+                with patch("dfetch.commands.import_.GitRepo.check_path") as check_path_git:
 
-                check_path.return_value = True
-                mocked_externals.return_value = externals
+                    check_path_git.return_value = False
+                    check_path.return_value = True
+                    mocked_externals.return_value = externals
 
-                if len(externals) == 0:
-                    with pytest.raises(RuntimeError):
+                    if len(externals) == 0:
+                        with pytest.raises(RuntimeError):
+                            import_(argparse.Namespace)
+                    else:
                         import_(argparse.Namespace)
-                else:
-                    import_(argparse.Namespace)
 
-                    mocked_manifest.assert_called()
+                        mocked_manifest.assert_called()
 
-                    args = mocked_manifest.call_args_list[0][0][0]
+                        args = mocked_manifest.call_args_list[0][0][0]
 
-                    for project_entry in args["projects"]:
-                        assert project_entry.name in [ext.name for ext in externals]
+                        for project_entry in args["projects"]:
+                            assert project_entry.name in [ext.name for ext in externals]
 
-                    # Manifest should have been dumped
-                    mocked_manifest.return_value.dump.assert_called()
+                        # Manifest should have been dumped
+                        mocked_manifest.return_value.dump.assert_called()
