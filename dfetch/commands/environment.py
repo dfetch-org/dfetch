@@ -1,7 +1,7 @@
 """*Dfetch* can generate output about its working environment."""
 
 import argparse
-import logging
+import platform
 
 import dfetch.commands.command
 from dfetch.log import get_logger
@@ -23,5 +23,6 @@ class Environment(dfetch.commands.command.Command):
 
     def __call__(self, _: argparse.Namespace) -> None:
         """Perform listing the environment."""
+        logger.print_info_line("platform", f"{platform.system()} {platform.release()}")
         for vcs in SUPPORTED_PROJECT_TYPES:
             vcs.list_tool_info()
