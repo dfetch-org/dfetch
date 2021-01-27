@@ -98,7 +98,7 @@ class SvnRepo(VCS):
         try:
             run_on_cmdline(logger, f"svn info {self._project.remote_url}")
             return True
-        except SubprocessCommandError:
+        except (SubprocessCommandError, RuntimeError):
             return False
 
     @staticmethod

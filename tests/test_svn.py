@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from dfetch.manifest.project import ProjectEntry
 from dfetch.project.svn import External, SvnRepo
 from dfetch.util.cmdline import SubprocessCommandError
 
@@ -138,3 +139,30 @@ def test_check_path(name, cmd_result, expectation):
         run_on_cmdline_mock.side_effect = cmd_result
 
         assert SvnRepo.check_path() == expectation
+
+
+@pytest.mark.parametrize(
+    "name, project, cmd_result, expectation",
+    [
+        ("Ok url", ProjectEntry({"name": "proj1", "url": "some_url"}), ["Yep!"], True),
+        (
+            "Failed command",
+            ProjectEntry({"name": "proj2", "url": "some_url"}),
+            [SubprocessCommandError],
+            False,
+        ),
+        (
+            "No svn",
+            ProjectEntry({"name": "proj3", "url": "some_url"}),
+            [RuntimeError],
+            False,
+        ),
+    ],
+)
+def test_check(name, project, cmd_result, expectation):
+
+    with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
+
+        run_on_cmdline_mock.side_effect = cmd_result
+
+        assert SvnRepo(project).check() == expectation
