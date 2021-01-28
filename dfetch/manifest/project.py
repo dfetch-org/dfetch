@@ -58,6 +58,35 @@ We can also list multiple projects.
            revision: bea84ba8f
            dst: external/myothermodule
 
+VCS type
+########
+*DFetch* does it best to find out what type of version control system (vcs) the remote url is,
+but sometimes both is possible. For example, GitHub provides an svn and git interface at
+the same url
+(`docs <https://docs.github.com/en/github/importing-your-projects-to-github/support-for-subversion-clients>`_).
+
+To provide you an option to explicitly state the vcs, with the ``vcs:`` key. In the below example
+the same project is fetched as SVN and as Git repository. *Dfetch* will default to the latest revision
+from trunk for svn and master from git.
+
+.. code-block:: yaml
+
+    manifest:
+        version: 0.0
+
+        remotes:
+        - name: github
+          url-base: https://github.com/
+
+        projects:
+        - name: cpputest
+          vcs: git
+          repo-path: cpputest/cpputest
+
+        - name: cpputestSVN
+          vcs: svn
+          repo-path: cpputest/cpputest
+
 """
 import copy
 from typing import Dict, Optional, Union
@@ -79,6 +108,7 @@ ProjectEntryDict = TypedDict(
         "repo": str,
         "branch": str,
         "repo-path": str,
+        "vcs": str,
         "default_remote": Optional[Remote],
     },
     total=False,
@@ -101,6 +131,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._patch: str = kwargs.get("patch", "")  # noqa
         self._repo_path: str = kwargs.get("repo-path", "")
         self._branch: str = kwargs.get("branch", "")
+        self._vcs: str = kwargs.get("vcs", "")
 
     @classmethod
     def from_yaml(
@@ -182,6 +213,11 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         """Get the revision that should be fetched."""
         return self._revision
 
+    @property
+    def vcs(self) -> str:
+        """Get the type of version control system."""
+        return self._vcs
+
     def __repr__(self) -> str:
         """Get a string representation of this project entry."""
         version = (
@@ -203,6 +239,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             "patch": self._patch,
             "branch": self._branch,
             "repo-path": self._repo_path,
+            "vcs": self._vcs,
         }
 
         return {k: v for k, v in yamldata.items() if v}

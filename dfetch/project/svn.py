@@ -24,6 +24,7 @@ class SvnRepo(VCS):
     """A svn repository."""
 
     DEFAULT_BRANCH = "trunk"
+    NAME = "svn"
 
     @staticmethod
     def externals() -> List[External]:

@@ -18,4 +18,5 @@ manifest:
     remote: github
     branch: trunk
     revision: '3948'
+    vcs: svn                                                      # (optionally) explicitly state vcs type
     repo-path: cpputest/cpputest                                  # Use external git directly
