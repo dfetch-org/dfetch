@@ -10,6 +10,10 @@ SUPPORTED_PROJECT_TYPES = [GitRepo, SvnRepo]
 def make(project_entry: dfetch.manifest.project.ProjectEntry) -> VCS:
     """Create a new VCS based on a project from the manifest."""
     for project_type in SUPPORTED_PROJECT_TYPES:
+        if project_type.NAME == project_entry.vcs:
+            return project_type(project_entry)
+
+    for project_type in SUPPORTED_PROJECT_TYPES:
         project = project_type(project_entry)
 
         if project.check():

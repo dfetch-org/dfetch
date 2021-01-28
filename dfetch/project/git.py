@@ -22,6 +22,7 @@ class GitRepo(VCS):
 
     METADATA_DIR = ".git"
     DEFAULT_BRANCH = "master"
+    NAME = "git"
 
     @staticmethod
     def submodules() -> List[Submodule]:

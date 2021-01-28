@@ -18,6 +18,8 @@ class VCS(ABC):
     It can be updated.
     """
 
+    NAME = ""
+
     def __init__(self, project: dfetch.manifest.project.ProjectEntry) -> None:
         """Create the VCS."""
         self._project = project
