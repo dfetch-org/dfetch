@@ -100,6 +100,11 @@ class Metadata:
         return self._remote_url
 
     @property
+    def last_fetch(self) -> str:
+        """Last fetch as stored in the metadata."""
+        return str(self._last_fetch)
+
+    @property
     def hash(self) -> str:
         """Hash of directory."""
         return self._hash
