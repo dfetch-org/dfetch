@@ -6,6 +6,9 @@ manifest:
     url-base: https://github.com/                                  # Allow git modules
     default: true                                                 # Set it as default
 
+  - name: github-com-google
+    url-base: https://github.com/google
+
   projects:
 
   - name: cpputest
@@ -25,3 +28,9 @@ manifest:
     dst: ../Tests/cpputest-src
     repo-path: cpputest/cpputest.git                              # Use external git directly
     src: src
+
+  - name: tests/googletest
+    revision: dcc92d0ab6c4ce022162a23566d44f673251eee4
+    remote: github-com-google
+    dst: ../Tests/googletest
+    repo-path: googletest.git
