@@ -121,13 +121,13 @@ class GitRepo(VCS):
 
     def _fetch_impl(self) -> None:
         """Get the revision of the remote and place it at the local path."""
-        if self._project.revision:
+        if 0 < len(self._project.revision) < 40:
             logger.warning(
-                "  Currently explicit revision in manifest is ignored for git,"
-                " use branch (or tags instead)"
+                "  Currently explicit short revisions in manifest will fail for git,"
+                " use complete revision or a branch (or tags instead)"
             )
 
-        branch_or_tag = self.branch or self.DEFAULT_BRANCH
+        branch_or_tag = self._project.revision or self.branch or self.DEFAULT_BRANCH
 
         pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
 
@@ -182,7 +182,9 @@ class GitRepo(VCS):
             info = self._ls_remote(self.remote)
             sha = self._find_sha_of_branch_or_tag(info, branch)
         elif not branch and sha:
-            branch = self._determine_branch_or_tag(self.remote, self.local_path, sha)
+            branch = GitRepo._find_branch_tip_or_tag_from_sha(
+                GitRepo._ls_remote(self.remote), sha
+            )
 
         self._metadata.fetched(sha, branch)
 
@@ -190,11 +192,16 @@ class GitRepo(VCS):
     def _determine_branch_or_tag(url: str, repo_path: str, sha: str) -> str:
         return GitRepo._find_branch_tip_or_tag_from_sha(
             GitRepo._ls_remote(url), sha
-        ) or GitRepo._find_branch_containing_sha(repo_path, sha)
+        ) or GitRepo._find_branch_in_local_repo_containing_sha(repo_path, sha)
 
     @staticmethod
-    def _find_branch_containing_sha(repo_path: str, sha: str) -> str:
+    def _find_branch_in_local_repo_containing_sha(repo_path: str, sha: str) -> str:
+        if not os.path.isdir(repo_path):
+            return ""
+
         with in_directory(repo_path):
+            if not os.path.isdir(GitRepo.METADATA_DIR):
+                return ""
             result = run_on_cmdline(
                 logger,
                 ["git", "branch", "--contains", sha],
