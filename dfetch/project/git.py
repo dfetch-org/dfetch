@@ -121,7 +121,12 @@ class GitRepo(VCS):
 
     def _fetch_impl(self) -> None:
         """Get the revision of the remote and place it at the local path."""
-        rev_or_branch_or_tag = self.revision or self.branch or self.DEFAULT_BRANCH
+        if self.revision:
+            logger.warning(
+                "  Currently revision is ignored for git, use branch (or tags instead)"
+            )
+
+        branch_or_tag = self.branch or self.DEFAULT_BRANCH
 
         pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
 
@@ -135,7 +140,7 @@ class GitRepo(VCS):
                 with open(".git/info/sparse-checkout", "a") as sparse_checkout_file:
                     sparse_checkout_file.write("/" + self._project.source)
 
-            run_on_cmdline(logger, f"git fetch origin {rev_or_branch_or_tag}")
+            run_on_cmdline(logger, f"git fetch --depth 1 origin {branch_or_tag}")
             run_on_cmdline(logger, "git reset --hard FETCH_HEAD")
 
             if self._project.source:
