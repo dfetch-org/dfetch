@@ -121,9 +121,10 @@ class GitRepo(VCS):
 
     def _fetch_impl(self) -> None:
         """Get the revision of the remote and place it at the local path."""
-        if self.revision:
+        if self._project.revision:
             logger.warning(
-                "  Currently revision is ignored for git, use branch (or tags instead)"
+                "  Currently explicit revision in manifest is ignored for git,"
+                " use branch (or tags instead)"
             )
 
         branch_or_tag = self.branch or self.DEFAULT_BRANCH
