@@ -58,6 +58,14 @@ class GitRepo(VCS):
                         branch=branch,
                     )
                 ]
+
+        if not submodules and os.path.isfile(".gitmodules"):
+            logger.warning(
+                "This repository probably has submodules, "
+                "but they might not have been initialized yet. "
+                "Try updating the with 'git submodule update --init' and rerun the command."
+            )
+
         return submodules
 
     @staticmethod
