@@ -5,17 +5,14 @@ such as timestamp of last fetch, revision, remote url, etc.
 """
 
 import argparse
-import logging
 import os
-
-from colorama import Fore
 
 import dfetch.commands.command
 import dfetch.manifest.manifest
+from dfetch.log import get_logger
 from dfetch.project.metadata import Metadata
 
-
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class List(dfetch.commands.command.Command):
@@ -36,9 +33,9 @@ class List(dfetch.commands.command.Command):
         with dfetch.util.util.in_directory(os.path.dirname(path)):
             for project in manifest.projects:
                 metadata = Metadata.from_file(Metadata.from_project_entry(project).path)
-                logger.info(f"  {Fore.GREEN}- {project.name}")
-                logger.info(f"     {Fore.RED}{'remote':12s}: {project.remote}")
-                logger.info(f"     {Fore.RED}{'remote url':12s}: {metadata.remote_url}")
-                logger.info(f"     {Fore.RED}{'branch':12s}: {metadata.branch}")
-                logger.info(f"     {Fore.RED}{'last fetch':12s}: {metadata.last_fetch}")
-                logger.info(f"     {Fore.RED}{'revision':12s}: {metadata.revision}")
+                logger.print_info_line("project", project.name)
+                logger.print_info_line("    remote", project.remote)
+                logger.print_info_line("    remote url", metadata.remote_url)
+                logger.print_info_line("    branch", metadata.branch)
+                logger.print_info_line("    last fetch", metadata.last_fetch)
+                logger.print_info_line("    revision", metadata.revision)
