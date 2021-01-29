@@ -1,10 +1,12 @@
 Release 0.0.6 (under development)
 ===================================
 
-* Make import command available for svn projects with externals
-* Improve documentation
-* Fix #73: Don't fail if svn or git is not installed
-* Fix #74: Don't default to SVN for non-ssh url
+* Make import command available for svn projects with externals.
+* Improve documentation.
+* Fix #73: Don't fail if svn or git is not installed.
+* Fix #74: Don't default to SVN for non-ssh url.
+* Add ``vcs:`` field to manifest.
+* Make ``src:`` partial checkouts available for git.
 
 Release 0.0.5 (released 2021-01-05)
 ===================================
