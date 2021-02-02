@@ -228,7 +228,7 @@ class GitRepo(VCS):
         """Check all branch tips and tags and see if the sha is one of them."""
         info.pop("HEAD", None)
         for reference, sha in info.items():
-            if sha[:8] == rev[:8]:  # Also allow for shorter SHA's
+            if sha.startswith(rev):  # Also allow for shorter SHA's
                 return reference.replace("refs/heads/", "").replace("refs/tags/", "")
         return ""
 
