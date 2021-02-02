@@ -122,7 +122,7 @@ class GitRepo(VCS):
     def _fetch_impl(self) -> None:
         """Get the revision of the remote and place it at the local path."""
         if 0 < len(self._project.revision) < 40:
-            logger.warning(
+            raise RuntimeError(
                 "  Currently explicit short revisions in manifest will fail for git,"
                 " use complete revision or a branch (or tags instead)"
             )
