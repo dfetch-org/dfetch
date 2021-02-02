@@ -57,30 +57,26 @@ class VCS(ABC):
         remote_revision = self._check_impl()
 
         if not on_disk_revision:
-            self._log_project(f"available ({remote_revision[:8]})")
-        elif remote_revision[:8] == on_disk_revision[:8]:
-            self._log_project(f"up-to-date ({on_disk.branch} - {on_disk_revision[:8]})")
+            self._log_project(f"available ({remote_revision})")
+        elif remote_revision == on_disk_revision:
+            self._log_project(f"up-to-date ({on_disk.branch} - {on_disk_revision})")
         else:
             pinned: str = (
-                "and pinned "
-                if self._project.revision[:8] == on_disk_revision[:8]
-                else ""
+                "and pinned " if self._project.revision == on_disk_revision else ""
             )
             self._log_project(
-                f"installed {pinned}({on_disk.branch} - {on_disk_revision[:8]}), available ({remote_revision[:8]})"
+                f"installed {pinned}({on_disk.branch} - {on_disk_revision}), available ({remote_revision})"
             )
 
     def _update_required(self) -> bool:
 
-        wanted_version_string = (
-            f"({self._metadata.branch} - {self._metadata.revision[:8]})"
-        )
+        wanted_version_string = f"({self._metadata.branch} - {self._metadata.revision})"
         if os.path.exists(self.local_path) and os.path.exists(self._metadata.path):
 
             on_disk = Metadata.from_file(self._metadata.path)
             if self._metadata != on_disk:
                 self._log_project(
-                    f"updating ({on_disk.branch} - {on_disk.revision[:8]})"
+                    f"updating ({on_disk.branch} - {on_disk.revision})"
                     f" --> {wanted_version_string}",
                 )
                 return True
