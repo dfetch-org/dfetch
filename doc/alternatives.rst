@@ -20,6 +20,7 @@ Dfetch_                    True   True    True      True
 `Google Repo`_             True   False   True      True
 `Grit`_                    True   False   True      True
 `Kitenet mr`_              True   True    ?         True
+`mdlr`_                    True   False   Beta      True
 `Quack`_                   True   False   False     True
 `SVN Externals`_           False  True    True      True
 `tsrc`_                    True   False   True      True
@@ -34,6 +35,7 @@ Dfetch_                    True   True    True      True
 .. _`Google Repo`: https://android.googlesource.com/tools/repo
 .. _`Grit`: https://github.com/rabarberpie/grit
 .. _`Kitenet mr`: https://github.com/toddr/kitenet-mr
+.. _`mdlr`: https://github.com/exlinc/mdlr
 .. _`Quack`: https://github.com/autodesk/quack
 .. _`SVN externals`: https://tortoisesvn.net/docs/release/TortoiseSVN_en/tsvn-dug-externals.html
 .. _`tsrc`: https://github.com/dmerejkowsky/tsrc
