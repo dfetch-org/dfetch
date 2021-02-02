@@ -15,6 +15,7 @@ Dfetch
    contributing
    technical
    changelog
+   alternatives
 
 
 What is Dfetch?
