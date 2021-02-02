@@ -16,7 +16,7 @@ Dfetch_                    True   True    True      True
 `CMake ExternalProject`_   True   False   True      True
 `Git submodules`_          True   False   True      True
 `Git subtree`_             True   False   True      True
-`Gitslave`_                True   False   True      True
+`Gitslave`_                True   False   False     True
 `Google Repo`_             True   False   True      True
 `Grit`_                    True   False   True      True
 `Kitenet mr`_              True   True    ?         True
