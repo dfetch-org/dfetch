@@ -178,13 +178,11 @@ class GitRepo(VCS):
         if not branch and not sha:
             branch = self.DEFAULT_BRANCH
 
+        info = self._ls_remote(self.remote)
         if branch and not sha:
-            info = self._ls_remote(self.remote)
             sha = self._find_sha_of_branch_or_tag(info, branch)
         elif not branch and sha:
-            branch = GitRepo._find_branch_tip_or_tag_from_sha(
-                GitRepo._ls_remote(self.remote), sha
-            )
+            branch = GitRepo._find_branch_tip_or_tag_from_sha(info, sha)
 
         self._metadata.fetched(sha, branch)
 
