@@ -1,10 +1,10 @@
-"""Projects are specific repository or sources to download from a remote location.
+"""Projects are a specific repository or sources to download from a remote location.
 
-In its most basic form a project only has a 'name:'. This would make `Dfetch`
+In its most basic form a project only has a ``name:``. This would make `Dfetch`
 retrieve the mymodule project from the only remote listed (`mycompany-git-modules`)
 and place it in a folder ``mymodule`` in the same folder as the manifest.
 
-.. note:: A project name *must* be unique.
+A project name **must** be unique and each manifest must have at least one project.
 
 .. code-block:: yaml
 
@@ -18,27 +18,13 @@ and place it in a folder ``mymodule`` in the same folder as the manifest.
         projects:
          - name: mymodule
 
-Destination and revision
-########################
-Since we want more control on what project is retrieved and where it is placed
-the ``revision:``, ``branch:`` and ``dst:`` attributes can help. Below manifest
-will download tag ``v1.13`` of the mymodule and place it in the path listed by ``dst:``.
+Revision/Branch/Tag
+###################
+Since we want more control on what project is retrieved the ``revision:`` and ``branch:``
+attributes can help. Below manifest will download tag ``v1.13`` of ``mymodule``.
 
-.. code-block:: yaml
-
-    manifest:
-        version: 0.0
-
-        remotes:
-        - name: mycompany-git-modules
-          url-base: http://git.mycompany.local/mycompany/
-
-        projects:
-         - name: mymodule
-           branch: v1.13
-           dst: external/mymodule
-
-We can also list multiple projects.
+With ``revision:`` a specific commit (git) or revision (svn) is retrieved.  For git,
+revisions must be complete 40 character long SHA-hashes.
 
 .. code-block:: yaml
 
@@ -52,22 +38,89 @@ We can also list multiple projects.
         projects:
          - name: mymodule
            branch: v1.13
-           dst: external/mymodule
 
          - name: myothermodule
-           revision: b81fc3a10f5e69ecca767625f88f6b90e5b84119
-           dst: external/myothermodule
+           revision: dcc92d0ab6c4ce022162a23566d44f673251eee4
 
-.. note:: For git, revisions must be complete 40 character long sha-hashes.
+For svn a `standard layout`_ is assumed. Meaning the top of the repository has a ``trunk``, ``branches`` and ``tags`` folder.
+
+.. _`standard layout`: https://stackoverflow.com/questions/3859009/how-to-create-a-subversion-repository-with-standard-layout
+
+Destination
+###########
+To control where the project is placed, the ``dst:`` attribute can be used. Below manifest
+will place ``mymodule`` at the relative path listed by ``dst:`` (relative to the manifest location).
+
+.. code-block:: yaml
+
+    manifest:
+        version: 0.0
+
+        remotes:
+        - name: mycompany-git-modules
+          url-base: http://git.mycompany.local/mycompany/
+
+        projects:
+         - name: mymodule
+           dst: external/mymodule
+
+Repo-path
+#########
+When working with remotes_ by default *Dfetch* will take the ``url-base`` of the remote
+and concatenate that with the name of the project. Sometimes you want more control
+of the name, you can use the ``repo-path:`` attribute to list it explicitly.
+
+For instance, below example will look for the remote project at ``<url-base>:<repo-path>``,
+which would be ``https://github.com/cpputest/cpputest``.
+
+.. code-block:: yaml
+
+    manifest:
+        version: 0.0
+
+        remotes:
+        - name: github
+          url-base: https://github.com/
+
+        projects:
+        - name: cpputest
+          repo-path: cpputest/cpputest
+
+Source
+######
+In larger projects or mono-repo's it is often desirable to retrieve only a subfolder
+of an external project. *Dfetch* makes this possible through the ``src:`` attribute.
+
+For instance if you are only interested in the ``src`` folder of ``cpputest`` you can
+limit the checkout to only that folder.
+
+.. note::
+    *Dfetch* (currently) will only checkout that folder, it could be that you are not compliant
+    with a software license. Please check the original project's license and also comply with that.
+
+.. code-block:: yaml
+
+    manifest:
+        version: 0.0
+
+        remotes:
+        - name: github
+          url-base: https://github.com/
+
+        projects:
+        - name: cpputest
+          src: src
+          repo-path: cpputest/cpputest
 
 VCS type
 ########
 *DFetch* does it best to find out what type of version control system (vcs) the remote url is,
-but sometimes both is possible. For example, GitHub provides an svn and git interface at
-the same url
-(`docs <https://docs.github.com/en/github/importing-your-projects-to-github/support-for-subversion-clients>`_).
+but sometimes both is possible. For example, GitHub provides an `svn and git interface at
+the same url`_.
 
-To provide you an option to explicitly state the vcs, with the ``vcs:`` key. In the below example
+.. _`svn and git interface at the same url`: https://docs.github.com/en/github/importing-your-projects-to-github/support-for-subversion-clients
+
+To provide you an option to explicitly state the vcs, the ``vcs:`` attribute was introduced. In the below example
 the same project is fetched as SVN and as Git repository. *Dfetch* will default to the latest revision
 from trunk for svn and master from git.
 
