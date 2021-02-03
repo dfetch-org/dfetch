@@ -1,4 +1,4 @@
-Release 0.0.6 (under development)
+Release 0.0.6 (released 2021-02-03)
 ===================================
 
 * Make import command available for svn projects with externals.
