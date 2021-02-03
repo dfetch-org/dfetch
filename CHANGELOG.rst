@@ -7,6 +7,7 @@ Release 0.0.6 (under development)
 * Fix #74: Don't default to SVN for non-ssh url.
 * Add ``vcs:`` field to manifest.
 * Make ``src:`` partial checkouts available for git.
+* Drop support for shortened git sha (#80).
 
 Release 0.0.5 (released 2021-01-05)
 ===================================
