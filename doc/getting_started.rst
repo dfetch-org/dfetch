@@ -45,7 +45,7 @@ Below manifest will retrieve the given revision of *mymodule* from the remote li
          - name: mymodule
            repo-path: mymodule.git
            dst: external/mycompany/
-           revision: eff03340c
+           revision: b81fc3a10f5e69ecca767625f88f6b90e5b84119
 
 My first update
 ---------------
@@ -94,7 +94,7 @@ you can manually update the revision of the project.
          - name: mymodule
            repo-path: mymodule.git
            dst: external/mycompany/
-           revision: dgh45vb435
+           revision: b81fc3a10f5e69ecca767625f88f6b90e5b84119
 
 And after that rerunning `update`:
 

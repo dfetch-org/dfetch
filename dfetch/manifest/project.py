@@ -55,8 +55,10 @@ We can also list multiple projects.
            dst: external/mymodule
 
          - name: myothermodule
-           revision: bea84ba8f
+           revision: b81fc3a10f5e69ecca767625f88f6b90e5b84119
            dst: external/myothermodule
+
+.. note:: For git, revisions must be complete 40 character long sha-hashes.
 
 VCS type
 ########
