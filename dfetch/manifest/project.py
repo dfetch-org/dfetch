@@ -42,9 +42,11 @@ revisions must be complete 40 character long SHA-hashes.
          - name: myothermodule
            revision: dcc92d0ab6c4ce022162a23566d44f673251eee4
 
-For svn a `standard layout`_ is assumed. Meaning the top of the repository has a ``trunk``, ``branches`` and ``tags`` folder.
+For svn a `standard layout`_ is assumed. Meaning the top of the repository has a ``trunk``,
+``branches`` and ``tags`` folder.
 
-.. _`standard layout`: https://stackoverflow.com/questions/3859009/how-to-create-a-subversion-repository-with-standard-layout
+.. _`standard layout`:
+    https://stackoverflow.com/questions/3859009/how-to-create-a-subversion-repository-with-standard-layout
 
 Destination
 ###########
@@ -118,7 +120,8 @@ VCS type
 but sometimes both is possible. For example, GitHub provides an `svn and git interface at
 the same url`_.
 
-.. _`svn and git interface at the same url`: https://docs.github.com/en/github/importing-your-projects-to-github/support-for-subversion-clients
+.. _`svn and git interface at the same url`:
+   https://docs.github.com/en/github/importing-your-projects-to-github/support-for-subversion-clients
 
 To provide you an option to explicitly state the vcs, the ``vcs:`` attribute was introduced. In the below example
 the same project is fetched as SVN and as Git repository. *Dfetch* will default to the latest revision
