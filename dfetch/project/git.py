@@ -131,7 +131,7 @@ class GitRepo(VCS):
         """Get the revision of the remote and place it at the local path."""
         if 0 < len(self._project.revision) < 40:
             raise RuntimeError(
-                "  Currently explicit short revisions in manifest will fail for git,"
+                "Shortened revisions (SHA) in manifests cannot be used,"
                 " use complete revision or a branch (or tags instead)"
             )
 
