@@ -123,7 +123,7 @@ class GitRepo(VCS):
     def _check_impl(self) -> str:
         """Check if a newer version is available on the given branch."""
         info = self._ls_remote(self.remote)
-        branch = self.branch or self.DEFAULT_BRANCH
+        branch = self.tag or self.branch or self.DEFAULT_BRANCH
 
         return self._find_sha_of_branch_or_tag(info, branch)
 
@@ -135,7 +135,9 @@ class GitRepo(VCS):
                 " use complete revision or a branch (or tags instead)"
             )
 
-        branch_or_tag = self._project.revision or self.branch or self.DEFAULT_BRANCH
+        branch_or_tag = (
+            self._project.revision or self.tag or self.branch or self.DEFAULT_BRANCH
+        )
 
         pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
 
@@ -179,20 +181,20 @@ class GitRepo(VCS):
         return info
 
     def _update_metadata(self) -> None:
-
         sha = self._metadata.revision
         branch = self._metadata.branch
+        tag = self._metadata.tag
 
-        if not branch and not sha:
+        if not tag and not branch and not sha:
             branch = self.DEFAULT_BRANCH
 
         info = self._ls_remote(self.remote)
-        if branch and not sha:
-            sha = self._find_sha_of_branch_or_tag(info, branch)
-        elif not branch and sha:
+        if (tag or branch) and not sha:
+            sha = self._find_sha_of_branch_or_tag(info, tag or branch)
+        elif not tag and not branch and sha:
             branch = GitRepo._find_branch_tip_or_tag_from_sha(info, sha)
 
-        self._metadata.fetched(sha, branch)
+        self._metadata.fetched(sha, branch, tag)
 
     @staticmethod
     def _determine_branch_or_tag(url: str, repo_path: str, sha: str) -> str:

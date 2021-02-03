@@ -124,7 +124,7 @@ class SvnRepo(VCS):
     def _check_impl(self) -> str:
         """Check if a newer version is available on the given branch."""
         info = self._get_info(self.branch)
-        return info["Last Changed Rev"]
+        return info["Revision"]
 
     def _fetch_impl(self) -> None:
         """Get the revision of the remote and place it at the local path."""
@@ -148,8 +148,8 @@ class SvnRepo(VCS):
         if self.revision and self.revision.isdigit():
             rev = f"--revision {self.revision}"
 
-        if self.branch.startswith("tags"):
-            branch = self.branch
+        if self.tag:
+            branch = f"tags/{self.tag}/"
         elif self.branch and self.branch != self.DEFAULT_BRANCH:
             branch = f"branches/{self.branch}"
 
@@ -176,11 +176,12 @@ class SvnRepo(VCS):
 
         rev = self._metadata.revision
         branch = self._metadata.branch
+        tag = self._metadata.tag
 
-        if not branch and not rev:
+        if not tag and not branch and not rev:
             branch = self.DEFAULT_BRANCH
 
-        if branch and not rev:
-            rev = self._get_info(branch)["Revision"]
+        if tag or branch and not rev:
+            rev = self._get_info(tag or branch)["Revision"]
 
-        self._metadata.fetched(rev, branch)
+        self._metadata.fetched(rev, branch, tag)

@@ -165,6 +165,7 @@ ProjectEntryDict = TypedDict(
         "patch": str,
         "repo": str,
         "branch": str,
+        "tag": str,
         "repo-path": str,
         "vcs": str,
         "default_remote": Optional[Remote],
@@ -189,6 +190,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._patch: str = kwargs.get("patch", "")  # noqa
         self._repo_path: str = kwargs.get("repo-path", "")
         self._branch: str = kwargs.get("branch", "")
+        self._tag: str = kwargs.get("tag", "")
         self._vcs: str = kwargs.get("vcs", "")
 
     @classmethod
@@ -267,6 +269,11 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         return self._branch
 
     @property
+    def tag(self) -> str:
+        """Get the tag that should be fetched."""
+        return self._tag
+
+    @property
     def revision(self) -> str:
         """Get the revision that should be fetched."""
         return self._revision
@@ -296,6 +303,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             "url": self._url,
             "patch": self._patch,
             "branch": self._branch,
+            "tag": self._tag,
             "repo-path": self._repo_path,
             "vcs": self._vcs,
         }
