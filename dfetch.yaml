@@ -6,31 +6,41 @@ manifest:
     url-base: https://github.com/                                  # Allow git modules
     default: true                                                 # Set it as default
 
-  - name: github-com-google
-    url-base: https://github.com/google
-
   projects:
 
-  - name: cpputest
-    dst: ../Tests/cpputest
+  - name: cpputest-git-tag
+    dst: ../Tests/cpputest-git-tag
     url: https://github.com/cpputest/cpputest.git                 # Use external git directly
-    branch: v3.4                                                  # revision can also be a tag
+    tag: v3.4                                                  # revision can also be a tag
 
-  - name: cpputestSVN
-    dst: ../Tests/cpputestSVN/
+  - name: cpputest-svn-branch-rev
+    dst: ../Tests/cpputest-svn-branch-rev/
     remote: github
     branch: trunk
-    revision: '3948'
+    revision: '3973'
     vcs: svn                                                      # (optionally) explicitly state vcs type
     repo-path: cpputest/cpputest                                  # Use external git directly
 
-  - name: cpputest-src
-    dst: ../Tests/cpputest-src
+  # - name: cpputest-svn-tag
+  #   dst: ../Tests/cpputest-svn-tag/
+  #   remote: github
+  #   tag: v3.4
+  #   vcs: svn                                                      # (optionally) explicitly state vcs type
+  #   repo-path: cpputest/cpputest                                  # Use external git directly
+
+  - name: cpputest-git-src
+    dst: ../Tests/cpputest-git-src
     repo-path: cpputest/cpputest.git                              # Use external git directly
     src: src
 
-  - name: tests/googletest
-    revision: dcc92d0ab6c4ce022162a23566d44f673251eee4
-    remote: github-com-google
-    dst: ../Tests/googletest
-    repo-path: googletest.git
+  - name: cpputest-svn-src
+    dst: ../Tests/cpputest-svn-src
+    repo-path: cpputest/cpputest
+    vcs: svn
+    src: src
+
+  - name: cpputest-git-rev-only
+    dst: ../Tests/cpputest-git-rev-only
+    revision: d14505cc9191fcf17ccbd92af1c3409eb3969890
+    repo-path: cpputest/cpputest.git                              # Use external git directly
+

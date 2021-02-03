@@ -15,6 +15,7 @@ class Options(TypedDict):
 
     last_fetch: datetime.datetime  # noqa
     branch: str
+    tag: str
     revision: str
     remote_url: str
     destination: str
@@ -34,6 +35,7 @@ class Metadata:
         )
 
         self._branch: str = str(kwargs.get("branch", ""))
+        self._tag: str = str(kwargs.get("tag", ""))
         self._revision: str = str(kwargs.get("revision", ""))
         self._remote_url: str = str(kwargs.get("remote_url", ""))
         self._destination: str = str(kwargs.get("destination", ""))
@@ -45,6 +47,7 @@ class Metadata:
         """Create a metadata object from a project entry."""
         data: Options = {
             "branch": project.branch,
+            "tag": project.tag,
             "revision": project.revision,
             "remote_url": project.remote_url,
             "destination": project.destination,
@@ -59,16 +62,22 @@ class Metadata:
             data: Options = yaml.safe_load(metadata_file)["dfetch"]
             return cls(data)
 
-    def fetched(self, rev: str, branch: str) -> None:
+    def fetched(self, rev: str, branch: str, tag: str) -> None:
         """Update metadata."""
         self._last_fetch = datetime.datetime.now()
         self._branch = branch
+        self._tag = tag
         self._revision = rev
 
     @property
     def branch(self) -> str:
         """Branch as stored in the metadata."""
         return self._branch
+
+    @property
+    def tag(self) -> str:
+        """Tag as stored in the metadata."""
+        return self._tag
 
     @property
     def revision(self) -> str:

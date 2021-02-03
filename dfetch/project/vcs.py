@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 import dfetch.manifest.manifest
 from dfetch.log import get_logger
 from dfetch.project.metadata import Metadata
-from dfetch.util.util import safe_rm
+from dfetch.util.util import hash_directory, safe_rm
 
 logger = get_logger(__name__)
 
@@ -27,7 +27,9 @@ class VCS(ABC):
 
     def update(self) -> None:
         """Update this VCS if required."""
-        if not (self._metadata.branch and self._metadata.revision):
+        if not (
+            (self._metadata.branch and self._metadata.revision) or self._metadata.tag
+        ):
             self._update_metadata()
 
         if not self._update_required():
@@ -42,10 +44,12 @@ class VCS(ABC):
         )
 
         self._fetch_impl()
-        self._metadata.fetched(self.revision, self.branch)
+        self._metadata.fetched(self.revision, self.branch, self.tag)
 
         logger.debug(f"Writing repo metadata to: {self._metadata.path}")
         self._metadata.dump()
+
+        logger.info(hash_directory(self.local_path, skiplist=[self._metadata.FILENAME]))
 
     def check_for_update(self) -> None:
         """Check if there is an update available."""
@@ -70,7 +74,10 @@ class VCS(ABC):
 
     def _update_required(self) -> bool:
 
-        wanted_version_string = f"({self._metadata.branch} - {self._metadata.revision})"
+        wanted_version_string = self._metadata.tag or " - ".join(
+            [self._metadata.branch, self._metadata.revision]
+        )
+        wanted_version_string = f"({wanted_version_string})"
         if os.path.exists(self.local_path) and os.path.exists(self._metadata.path):
 
             on_disk = Metadata.from_file(self._metadata.path)
@@ -103,6 +110,11 @@ class VCS(ABC):
     def branch(self) -> str:
         """Get the required branch of this VCS."""
         return self._metadata.branch
+
+    @property
+    def tag(self) -> str:
+        """Get the required tag of this VCS."""
+        return self._metadata.tag
 
     @property
     def revision(self) -> str:
