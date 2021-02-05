@@ -23,6 +23,16 @@ Check
 
 .. automodule:: dfetch.commands.check
 
+List
+----
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: list
+
+.. automodule:: dfetch.commands.list
+
 Update
 ------
 .. argparse::
