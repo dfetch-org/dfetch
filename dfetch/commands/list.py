@@ -26,7 +26,7 @@ class List(dfetch.commands.command.Command):
         """Add the parser menu for this action."""
         parser = dfetch.commands.command.Command.parser(subparsers, List)
         parser.add_argument(
-            "--project", "-p", action="append", help="list selected projects"
+            "--project", "-p", action="append", help="Only list selected projects"
         )
 
     def __call__(self, args: argparse.Namespace) -> None:
