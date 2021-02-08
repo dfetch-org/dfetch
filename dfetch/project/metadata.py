@@ -120,6 +120,7 @@ class Metadata:
                 "branch": self.branch,
                 "revision": self.revision,
                 "last_fetch": self._last_fetch.strftime("%d/%m/%Y, %H:%M:%S"),
+                "tag": self.tag,
             }
         }
 
