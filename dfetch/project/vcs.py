@@ -29,7 +29,7 @@ class VCS(ABC):
         self._metadata = Metadata.from_project_entry(self._project)
 
     def check_wanted_with_local(self) -> Tuple[Optional[Version], Optional[Version]]:
-        """Given the project entry in the manifest, get the relevant version from disk
+        """Given the project entry in the manifest, get the relevant version from disk.
 
         Returns:
             Tuple[Optional[Version], Optional[Version]]: Wanted, Have
@@ -114,23 +114,23 @@ class VCS(ABC):
 
     def check_for_update(self) -> None:
         """Check if there is an update available."""
-        on_disk_revision: str = ""
+        on_disk_version = None
         if os.path.exists(self.local_path) and os.path.exists(self._metadata.path):
-            on_disk = Metadata.from_file(self._metadata.path)
-            on_disk_revision = on_disk.revision
+            on_disk_version = Metadata.from_file(self._metadata.path).version
 
-        remote_revision = self._check_impl()
+        latest_version = self._check_impl()
 
-        if not on_disk_revision:
-            self._log_project(f"available ({remote_revision})")
-        elif remote_revision == on_disk_revision:
-            self._log_project(f"up-to-date ({on_disk.branch} - {on_disk_revision})")
-        else:
-            pinned: str = (
-                "and pinned " if self._project.revision == on_disk_revision else ""
-            )
+        if not on_disk_version:
+            self._log_project(f"available ({latest_version})")
+        elif latest_version == on_disk_version:
+            self._log_project(f"up-to-date ({latest_version})")
+        elif on_disk_version == self.wanted_version:
             self._log_project(
-                f"installed {pinned}({on_disk.branch} - {on_disk_revision}), available ({remote_revision})"
+                f"wanted & current ({on_disk_version}), available ({latest_version})"
+            )
+        else:
+            self._log_project(
+                f"wanted ({self.wanted_version}), current ({on_disk_version}), available ({latest_version})"
             )
 
     def _determine_version_to_fetch(self) -> Version:
@@ -180,6 +180,11 @@ class VCS(ABC):
         return self._project.destination
 
     @property
+    def wanted_version(self) -> Version:
+        """Get the wanted version of this VCS."""
+        return self._metadata.version
+
+    @property
     def branch(self) -> str:
         """Get the required branch of this VCS."""
         return self._metadata.branch
@@ -218,7 +223,7 @@ class VCS(ABC):
         """Print out version information."""
 
     @abstractmethod
-    def _check_impl(self) -> str:
+    def _check_impl(self) -> Version:
         """Check the given version of the VCS, should be implemented by the child class."""
 
     @abstractmethod
