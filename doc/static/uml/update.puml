@@ -1,0 +1,55 @@
+@startuml
+start
+
+!include theme.puml
+
+partition "Update required" {
+
+    if (Project + Metadata on disk?) then (no)
+    elseif (Revision or tag in metadata,\nsame as in manifest?) then (no)
+    else (yes)
+        stop
+    endif
+}
+
+partition "Prepare for update" {
+    :Hash directory;
+    if (Hash in manifest == hash?) then (no)
+        stop
+    else (yes)
+    endif
+    :Clear target folder;
+}
+
+partition "Perform Update" {
+
+    if (Tag given?) then (yes)
+        :Use tag;
+    elseif (Revision only given\nand enough?) then (yes)
+        :Use exact revision;
+    elseif (Branch given?) then (yes)
+        :Use branch
+        and optionally
+         revision;
+    else
+        :Use default branch
+        and optionally
+         revision;
+    endif
+
+    :Fetch target:
+    revision/tag/branch;
+}
+
+    if (Succesfull?) then (no)
+        stop
+    else (yes)
+    endif
+
+partition "Update administration" {
+    :Hash directory;
+    :Update Metadata;
+}
+
+stop
+@enduml
