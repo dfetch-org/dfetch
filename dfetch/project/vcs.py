@@ -1,8 +1,8 @@
 """Version Control system."""
 
 import os
-import pathlib
 from abc import ABC, abstractmethod
+from typing import Optional, Tuple
 
 import dfetch.manifest.manifest
 from dfetch.log import get_logger
@@ -28,44 +28,68 @@ class VCS(ABC):
         self._project = project
         self._metadata = Metadata.from_project_entry(self._project)
 
-    def update_is_required(self) -> bool:
-        """Check if this project should be upgraded."""
+    def check_wanted_with_local(self) -> Tuple[Optional[Version], Optional[Version]]:
+        """Given the project entry in the manifest, get the relevant version from disk
+
+        Returns:
+            Tuple[Optional[Version], Optional[Version]]: Wanted, Have
+        """
         if os.path.exists(self.local_path) and os.path.exists(self._metadata.path):
-            on_disk = Metadata.from_file(self._metadata.path)
+            on_disk = Metadata.from_file(self._metadata.path).version
 
             if on_disk.tag and on_disk.tag == self._metadata.tag:
-                logger.print_info_line(
-                    self._project.name, f"up-to-date on disk tag {on_disk.tag}"
-                )
-                return False
+                return (Version(tag=self._metadata.tag), Version(tag=on_disk.tag))
 
             if on_disk.revision and on_disk.revision == self._metadata.revision:
                 if self.revision_is_enough():
-                    logger.print_info_line(
-                        self._project.name,
-                        f"up-to-date on disk revision {on_disk.revision}",
+                    return (
+                        Version(revision=self._metadata.revision),
+                        Version(revision=on_disk.revision),
                     )
-                    return False
 
                 if self._metadata.branch and self._metadata.branch in [
                     on_disk.branch,
                     self.DEFAULT_BRANCH,
                 ]:
-                    logger.print_info_line(
-                        self._project.name,
-                        f"up-to-date on disk {self._metadata.branch} revision {on_disk.revision}",
+                    return (
+                        Version(
+                            revision=self._metadata.revision,
+                            branch=self._metadata.branch,
+                        ),
+                        Version(
+                            revision=on_disk.revision,
+                            branch=on_disk.branch or self.DEFAULT_BRANCH,
+                        ),
                     )
-                    return False
 
+            # Branch only
             if not on_disk.tag and not self._metadata.revision:
                 branch = self._metadata.branch or self.DEFAULT_BRANCH
                 latest_revision = self._latest_revision_on_branch(branch)
-                logger.print_info_line(
-                    self._project.name,
-                    f"latest revision on branch {branch} is {latest_revision} on disk we have {on_disk.revision}",
-                )
-                return bool(on_disk.revision != latest_revision)
 
+                return (
+                    Version(revision=latest_revision, branch=branch),
+                    Version(revision=on_disk.revision, branch=on_disk.branch),
+                )
+
+        return (
+            Version(
+                tag=self._metadata.tag,
+                branch=self._metadata.branch,
+                revision=self._metadata.revision,
+            ),
+            None,
+        )
+
+    def update_is_required(self) -> bool:
+        """Check if this project should be upgraded."""
+        wanted, current = self.check_wanted_with_local()
+
+        if wanted == current:
+            logger.print_info_line(self._project.name, f"up-to-date ({current})")
+            return False
+
+        logger.debug(self._project.name, f"Current ({current}), Available ({wanted})")
         return True
 
     def update(self) -> None:
@@ -76,11 +100,6 @@ class VCS(ABC):
         if os.path.exists(self.local_path):
             logger.debug(f"Clearing destination {self.local_path}")
             safe_rm(self.local_path)
-
-        # When exporting a file, the destination directory must already exist
-        pathlib.Path(os.path.dirname(self.local_path)).mkdir(
-            parents=True, exist_ok=True
-        )
 
         to_fetch = self._determine_version_to_fetch()
 

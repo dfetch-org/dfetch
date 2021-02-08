@@ -2,6 +2,7 @@
 
 import itertools
 import os
+import pathlib
 import re
 from collections import namedtuple
 from typing import Dict, List, Tuple
@@ -156,6 +157,12 @@ class SvnRepo(VCS):
         complete_path = "/".join(
             [self.remote, branch_path, self._project.source]
         ).strip("/")
+
+        # When exporting a file, the destination directory must already exist
+        pathlib.Path(os.path.dirname(self.local_path)).mkdir(
+            parents=True, exist_ok=True
+        )
+
         run_on_cmdline(
             logger, f"svn export --force {rev_arg} {complete_path} {self.local_path}"
         )
