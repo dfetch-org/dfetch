@@ -1,0 +1,33 @@
+@startuml
+start
+
+!include theme.puml
+
+if (Revision given?) then (yes)
+     stop
+endif
+
+if (Tag given?) then (yes)
+  :Get all tags;
+  :Parse tags;
+  if (Tag == latest?) then (yes)
+  else (no)
+     :Show available;
+  endif
+else (no)
+
+  if (Branch given?) then (no)
+    :Set branch to default;
+  else (yes)
+  endif
+    :Get latest
+     revision of
+      branch;
+  if (Revsion on disk == remote revision?) then (no)
+     :Show available;
+  else (yes)
+  endif
+endif
+
+stop
+@enduml
