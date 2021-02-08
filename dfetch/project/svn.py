@@ -2,13 +2,12 @@
 
 import itertools
 import os
-import pathlib
 import re
 from collections import namedtuple
 from typing import Dict, List, Tuple
 
 from dfetch.log import get_logger
-from dfetch.project.vcs import VCS
+from dfetch.project.vcs import VCS, Version
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import in_directory
 
@@ -113,6 +112,15 @@ class SvnRepo(VCS):
             return False
 
     @staticmethod
+    def revision_is_enough() -> bool:
+        """See if this VCS can uniquely distinguish branch with revision only."""
+        return False
+
+    def _latest_revision_on_branch(self, branch: str) -> str:
+        """Get the latest revision on a branch."""
+        return self._get_revision(branch)
+
+    @staticmethod
     def list_tool_info() -> None:
         """Print out version information."""
         result = run_on_cmdline(logger, "svn --version")
@@ -123,37 +131,35 @@ class SvnRepo(VCS):
 
     def _check_impl(self) -> str:
         """Check if a newer version is available on the given branch."""
-        info = self._get_info(self.branch)
+        info = self._get_info(self.branch)  # TODO: Add tag
         return info["Revision"]
 
-    def _fetch_impl(self) -> None:
+    def _fetch_impl(self, version: Version) -> Version:
         """Get the revision of the remote and place it at the local path."""
-        rev, branch = self._determine_rev_and_branch()
+        if version.tag:
+            branch_path = f"tags/{version.tag}/"
+            branch = ""
+        elif version.branch and version.branch != self.DEFAULT_BRANCH:
+            branch_path = f"branches/{version.branch}"
+            branch = version.branch
+        else:
+            branch = branch_path = self.DEFAULT_BRANCH
 
-        complete_path = "/".join([self.remote, branch, self._project.source]).strip("/")
+        revision = version.revision or self._get_revision(branch_path)
 
-        # When exporting a file, the destination directory must already exist
-        pathlib.Path(os.path.dirname(self.local_path)).mkdir(
-            parents=True, exist_ok=True
+        if not revision.isdigit():
+            raise RuntimeError(f"{revision} must be a number for SVN")
+
+        rev_arg = f"--revision {revision}" if revision else ""
+
+        complete_path = "/".join(
+            [self.remote, branch_path, self._project.source]
+        ).strip("/")
+        run_on_cmdline(
+            logger, f"svn export --force {rev_arg} {complete_path} {self.local_path}"
         )
 
-        cmd = f"svn export --force {rev} {complete_path} {self.local_path}"
-
-        run_on_cmdline(logger, cmd)
-
-    def _determine_rev_and_branch(self) -> Tuple[str, str]:
-        rev = ""
-        branch = self.DEFAULT_BRANCH
-
-        if self.revision and self.revision.isdigit():
-            rev = f"--revision {self.revision}"
-
-        if self.tag:
-            branch = f"tags/{self.tag}/"
-        elif self.branch and self.branch != self.DEFAULT_BRANCH:
-            branch = f"branches/{self.branch}"
-
-        return (rev, branch)
+        return Version(tag=version.tag, branch=branch, revision=revision)
 
     def _get_info(self, branch: str) -> Dict[str, str]:
         return self._get_info_from_target(f"{self.remote}/{branch}")
@@ -171,17 +177,3 @@ class SvnRepo(VCS):
 
     def _get_revision(self, branch: str) -> str:
         return self._get_info(branch)["Revision"]
-
-    def _update_metadata(self) -> None:
-
-        rev = self._metadata.revision
-        branch = self._metadata.branch
-        tag = self._metadata.tag
-
-        if not tag and not branch and not rev:
-            branch = self.DEFAULT_BRANCH
-
-        if tag or branch and not rev:
-            rev = self._get_info(tag or branch)["Revision"]
-
-        self._metadata.fetched(rev, branch, tag)
