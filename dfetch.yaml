@@ -21,12 +21,12 @@ manifest:
     vcs: svn                                                      # (optionally) explicitly state vcs type
     repo-path: cpputest/cpputest                                  # Use external git directly
 
-  # - name: cpputest-svn-tag
-  #   dst: ../Tests/cpputest-svn-tag/
-  #   remote: github
-  #   tag: v3.4
-  #   vcs: svn                                                      # (optionally) explicitly state vcs type
-  #   repo-path: cpputest/cpputest                                  # Use external git directly
+  - name: cpputest-svn-tag
+    dst: ../Tests/cpputest-svn-tag/
+    remote: github
+    tag: v3.4
+    vcs: svn                                                      # (optionally) explicitly state vcs type
+    repo-path: cpputest/cpputest                                  # Use external git directly
 
   - name: cpputest-git-src
     dst: ../Tests/cpputest-git-src
