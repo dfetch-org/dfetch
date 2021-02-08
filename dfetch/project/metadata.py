@@ -8,6 +8,7 @@ import yaml
 from typing_extensions import TypedDict
 
 import dfetch.manifest.manifest
+from dfetch.project.version import Version
 
 
 class Options(TypedDict):
@@ -62,12 +63,12 @@ class Metadata:
             data: Options = yaml.safe_load(metadata_file)["dfetch"]
             return cls(data)
 
-    def fetched(self, rev: str, branch: str, tag: str) -> None:
+    def fetched(self, version: Version) -> None:
         """Update metadata."""
         self._last_fetch = datetime.datetime.now()
-        self._branch = branch
-        self._tag = tag
-        self._revision = rev
+        self._branch = version.branch
+        self._tag = version.tag
+        self._revision = version.revision
 
     @property
     def branch(self) -> str:
