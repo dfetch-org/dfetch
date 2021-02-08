@@ -24,4 +24,5 @@ jobs:
       - run: dfetch validate
       - run: dfetch check
       - run: dfetch update
+      - run: dfetch update
       - run: dfetch check
