@@ -1,7 +1,9 @@
 """Version Control system."""
 
 import os
+import pathlib
 from abc import ABC, abstractmethod
+from typing import NamedTuple
 
 import dfetch.manifest.manifest
 from dfetch.log import get_logger
@@ -9,6 +11,14 @@ from dfetch.project.metadata import Metadata
 from dfetch.util.util import hash_directory, safe_rm
 
 logger = get_logger(__name__)
+
+
+class Version(NamedTuple):
+    """Version of a VCS."""
+
+    tag: str = ""
+    branch: str = ""
+    revision: str = ""
 
 
 class VCS(ABC):
@@ -19,32 +29,74 @@ class VCS(ABC):
     """
 
     NAME = ""
+    DEFAULT_BRANCH = ""
 
     def __init__(self, project: dfetch.manifest.project.ProjectEntry) -> None:
         """Create the VCS."""
         self._project = project
         self._metadata = Metadata.from_project_entry(self._project)
 
+    def update_is_required(self) -> bool:
+        """Check if this project should be upgraded."""
+        if os.path.exists(self.local_path) and os.path.exists(self._metadata.path):
+            on_disk = Metadata.from_file(self._metadata.path)
+
+            if on_disk.tag and on_disk.tag == self._metadata.tag:
+                logger.print_info_line(
+                    self._project.name, f"up-to-date on disk tag {on_disk.tag}"
+                )
+                return False
+
+            if on_disk.revision and on_disk.revision == self._metadata.revision:
+                if self.revision_is_enough():
+                    logger.print_info_line(
+                        self._project.name,
+                        f"up-to-date on disk revision {on_disk.revision}",
+                    )
+                    return False
+
+                if self._metadata.branch and self._metadata.branch in [
+                    on_disk.branch,
+                    self.DEFAULT_BRANCH,
+                ]:
+                    logger.print_info_line(
+                        self._project.name,
+                        f"up-to-date on disk {self._metadata.branch} revision {on_disk.revision}",
+                    )
+                    return False
+
+            if not on_disk.tag and not self._metadata.revision:
+                branch = self._metadata.branch or self.DEFAULT_BRANCH
+                latest_revision = self._latest_revision_on_branch(branch)
+                logger.print_info_line(
+                    self._project.name,
+                    f"latest revision on branch {branch} is {latest_revision} on disk we have {on_disk.revision}",
+                )
+                return bool(on_disk.revision != latest_revision)
+
+        return True
+
     def update(self) -> None:
         """Update this VCS if required."""
-        if not (
-            (self._metadata.branch and self._metadata.revision) or self._metadata.tag
-        ):
-            self._update_metadata()
-
-        if not self._update_required():
+        if not self.update_is_required():
             return
 
         if os.path.exists(self.local_path):
             logger.debug(f"Clearing destination {self.local_path}")
             safe_rm(self.local_path)
 
-        logger.debug(
-            f"fetching {self._project.name} {self._project.revision} from {self._project.remote_url}"
+        # When exporting a file, the destination directory must already exist
+        pathlib.Path(os.path.dirname(self.local_path)).mkdir(
+            parents=True, exist_ok=True
         )
 
-        self._fetch_impl()
-        self._metadata.fetched(self.revision, self.branch, self.tag)
+        to_fetch = self._determine_version_to_fetch()
+
+        actually_fetched = self._fetch_impl(to_fetch)
+        logger.print_info_line(self._project.name, f"Fetched {actually_fetched}")
+        self._metadata.fetched(
+            actually_fetched.revision, actually_fetched.branch, actually_fetched.tag
+        )
 
         logger.debug(f"Writing repo metadata to: {self._metadata.path}")
         self._metadata.dump()
@@ -71,6 +123,18 @@ class VCS(ABC):
             self._log_project(
                 f"installed {pinned}({on_disk.branch} - {on_disk_revision}), available ({remote_revision})"
             )
+
+    def _determine_version_to_fetch(self) -> Version:
+
+        if self._metadata.tag:
+            return Version(tag=self._metadata.tag)
+
+        return Version(
+            revision=self._metadata.revision,
+            branch=""
+            if self.revision_is_enough()
+            else self._metadata.branch or self.DEFAULT_BRANCH,
+        )
 
     def _update_required(self) -> bool:
 
@@ -132,6 +196,15 @@ class VCS(ABC):
 
     @staticmethod
     @abstractmethod
+    def revision_is_enough() -> bool:
+        """See if this VCS can uniquely distinguish branch with revision only."""
+
+    @abstractmethod
+    def _latest_revision_on_branch(self, branch: str) -> str:
+        """Get the latest revision on a branch."""
+
+    @staticmethod
+    @abstractmethod
     def list_tool_info() -> None:
         """Print out version information."""
 
@@ -140,9 +213,5 @@ class VCS(ABC):
         """Check the given version of the VCS, should be implemented by the child class."""
 
     @abstractmethod
-    def _fetch_impl(self) -> None:
+    def _fetch_impl(self, version: Version) -> Version:
         """Fetch the given version of the VCS, should be implemented by the child class."""
-
-    @abstractmethod
-    def _update_metadata(self) -> None:
-        """Update the metadata after performing a fetch."""

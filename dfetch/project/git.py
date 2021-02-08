@@ -1,14 +1,13 @@
 """Git specific implementation."""
 
 import os
-import pathlib
 import re
 import shutil
 from collections import namedtuple
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from dfetch.log import get_logger
-from dfetch.project.vcs import VCS
+from dfetch.project.vcs import VCS, Version
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import in_directory, safe_rmtree
 
@@ -112,6 +111,16 @@ class GitRepo(VCS):
             return False
 
     @staticmethod
+    def revision_is_enough() -> bool:
+        """See if this VCS can uniquely distinguish branch with revision only."""
+        return True
+
+    def _latest_revision_on_branch(self, branch: str) -> str:
+        """Get the latest revision on a branch."""
+        info = self._ls_remote(self.remote)
+        return self._find_sha_of_branch_or_tag(info, branch)
+
+    @staticmethod
     def list_tool_info() -> None:
         """Print out version information."""
         result = run_on_cmdline(logger, "git --version")
@@ -127,39 +136,64 @@ class GitRepo(VCS):
 
         return self._find_sha_of_branch_or_tag(info, branch)
 
-    def _fetch_impl(self) -> None:
+    def _fetch_impl(self, version: Version) -> Version:
         """Get the revision of the remote and place it at the local path."""
-        if 0 < len(self._project.revision) < 40:
+        rev_or_branch_or_tag = self._determine_what_to_fetch(version)
+
+        with in_directory(self.local_path):
+            self._checkout_version(
+                self.remote, rev_or_branch_or_tag, self._project.source
+            )
+
+        self._cleanup()
+
+        return self._determine_fetched_version(version)
+
+    def _determine_what_to_fetch(self, version: Version) -> str:
+        """Based on asked version, target to fetch."""
+        if version.revision and 0 < len(version.revision) < 40:
             raise RuntimeError(
                 "Shortened revisions (SHA) in manifests cannot be used,"
                 " use complete revision or a branch (or tags instead)"
             )
 
-        branch_or_tag = (
-            self._project.revision or self.tag or self.branch or self.DEFAULT_BRANCH
-        )
+        return version.revision or version.tag or version.branch or self.DEFAULT_BRANCH
 
-        pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
+    def _determine_fetched_version(self, version: Version) -> Version:
+        """Based on asked version, determine info of fetched version."""
+        branch = version.branch or self.DEFAULT_BRANCH
+        revision = version.revision
+        if not version.tag and not version.revision:
+            info = self._ls_remote(self.remote)
+            revision = self._find_sha_of_branch_or_tag(info, branch)
 
-        with in_directory(self.local_path):
-            run_on_cmdline(logger, "git init")
-            run_on_cmdline(logger, f"git remote add origin {self.remote}")
-            run_on_cmdline(logger, "git checkout -b dfetch-local-branch")
+        return Version(tag=version.tag, revision=revision, branch=branch)
 
-            if self._project.source:
-                run_on_cmdline(logger, "git config core.sparsecheckout true")
-                with open(".git/info/sparse-checkout", "a") as sparse_checkout_file:
-                    sparse_checkout_file.write("/" + self._project.source)
+    @staticmethod
+    def _checkout_version(remote: str, version: str, src: Optional[str]) -> None:
+        """Checkout a specific version from a given remote.
 
-            run_on_cmdline(logger, f"git fetch --depth 1 origin {branch_or_tag}")
-            run_on_cmdline(logger, "git reset --hard FETCH_HEAD")
+        Args:
+            remote (str): Url or path to a remote git repository
+            version (str): A target to checkout, can be branch, tag or sha
+            src (Optional[str]): Optional path to subdirectory or file in repo
+        """
+        run_on_cmdline(logger, "git init")
+        run_on_cmdline(logger, f"git remote add origin {remote}")
+        run_on_cmdline(logger, "git checkout -b dfetch-local-branch")
 
-            if self._project.source:
-                for file_to_copy in os.listdir(self._project.source):
-                    shutil.move(self._project.source + "/" + file_to_copy, ".")
-                safe_rmtree(self._project.source)
+        if src:
+            run_on_cmdline(logger, "git config core.sparsecheckout true")
+            with open(".git/info/sparse-checkout", "a") as sparse_checkout_file:
+                sparse_checkout_file.write("/" + src)
 
-        self._cleanup()
+        run_on_cmdline(logger, f"git fetch --depth 1 origin {version}")
+        run_on_cmdline(logger, "git reset --hard FETCH_HEAD")
+
+        if src:
+            for file_to_copy in os.listdir(src):
+                shutil.move(src + "/" + file_to_copy, ".")
+            safe_rmtree(src)
 
     @staticmethod
     def _ls_remote(remote: str) -> Dict[str, str]:
@@ -179,22 +213,6 @@ class GitRepo(VCS):
                         if value.strip() not in info:
                             info[value.strip()] = key.strip()
         return info
-
-    def _update_metadata(self) -> None:
-        sha = self._metadata.revision
-        branch = self._metadata.branch
-        tag = self._metadata.tag
-
-        if not tag and not branch and not sha:
-            branch = self.DEFAULT_BRANCH
-
-        info = self._ls_remote(self.remote)
-        if (tag or branch) and not sha:
-            sha = self._find_sha_of_branch_or_tag(info, tag or branch)
-        elif not tag and not branch and sha:
-            branch = GitRepo._find_branch_tip_or_tag_from_sha(info, sha)
-
-        self._metadata.fetched(sha, branch, tag)
 
     @staticmethod
     def _determine_branch_or_tag(url: str, repo_path: str, sha: str) -> str:
@@ -243,8 +261,3 @@ class GitRepo(VCS):
     def _cleanup(self) -> None:
         path = os.path.join(self.local_path, self.METADATA_DIR)
         safe_rmtree(path)
-
-    def _checkout(self, revision: str) -> None:
-        with in_directory(self.local_path):
-            cmd = f"git checkout {revision}"
-            run_on_cmdline(logger, cmd)
