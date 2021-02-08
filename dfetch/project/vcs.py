@@ -3,22 +3,14 @@
 import os
 import pathlib
 from abc import ABC, abstractmethod
-from typing import NamedTuple
 
 import dfetch.manifest.manifest
 from dfetch.log import get_logger
 from dfetch.project.metadata import Metadata
+from dfetch.project.version import Version
 from dfetch.util.util import hash_directory, safe_rm
 
 logger = get_logger(__name__)
-
-
-class Version(NamedTuple):
-    """Version of a VCS."""
-
-    tag: str = ""
-    branch: str = ""
-    revision: str = ""
 
 
 class VCS(ABC):
@@ -94,9 +86,7 @@ class VCS(ABC):
 
         actually_fetched = self._fetch_impl(to_fetch)
         logger.print_info_line(self._project.name, f"Fetched {actually_fetched}")
-        self._metadata.fetched(
-            actually_fetched.revision, actually_fetched.branch, actually_fetched.tag
-        )
+        self._metadata.fetched(actually_fetched)
 
         logger.debug(f"Writing repo metadata to: {self._metadata.path}")
         self._metadata.dump()
