@@ -14,4 +14,5 @@ class Version(NamedTuple):
         """Get the string representing this version."""
         if self.tag:
             return self.tag
-        return "-".join([self.branch, self.revision])
+
+        return " - ".join(filter(None, [self.branch, self.revision]))

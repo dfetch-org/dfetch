@@ -71,6 +71,11 @@ class Metadata:
         self._revision = version.revision
 
     @property
+    def version(self) -> Version:
+        """Get the version."""
+        return Version(tag=self.tag, branch=self.branch, revision=self.revision)
+
+    @property
     def branch(self) -> str:
         """Branch as stored in the metadata."""
         return self._branch

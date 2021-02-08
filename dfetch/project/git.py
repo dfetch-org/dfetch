@@ -1,6 +1,7 @@
 """Git specific implementation."""
 
 import os
+import pathlib
 import re
 import shutil
 from collections import namedtuple
@@ -140,6 +141,9 @@ class GitRepo(VCS):
     def _fetch_impl(self, version: Version) -> Version:
         """Get the revision of the remote and place it at the local path."""
         rev_or_branch_or_tag = self._determine_what_to_fetch(version)
+
+        # When exporting a file, the destination directory must already exist
+        pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
 
         with in_directory(self.local_path):
             self._checkout_version(
