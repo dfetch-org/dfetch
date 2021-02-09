@@ -139,9 +139,7 @@ class GitRepo(VCS):
         pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
 
         with in_directory(self.local_path):
-            self._checkout_version(
-                self.remote, rev_or_branch_or_tag, self._project.source
-            )
+            self._checkout_version(self.remote, rev_or_branch_or_tag, self.source)
 
         self._cleanup()
 
