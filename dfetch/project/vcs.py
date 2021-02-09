@@ -34,51 +34,29 @@ class VCS(ABC):
         Returns:
             Tuple[Optional[Version], Optional[Version]]: Wanted, Have
         """
-        if os.path.exists(self.local_path) and os.path.exists(self._metadata.path):
-            on_disk = Metadata.from_file(self._metadata.path).version
+        if not os.path.exists(self._metadata.path):
+            return (self._metadata.version, None)
 
-            if on_disk.tag and on_disk.tag == self._metadata.tag:
-                return (Version(tag=self._metadata.tag), Version(tag=on_disk.tag))
+        on_disk = Metadata.from_file(self._metadata.path).version
 
-            if on_disk.revision and on_disk.revision == self._metadata.revision:
-                if self.revision_is_enough():
-                    return (
-                        Version(revision=self._metadata.revision),
-                        Version(revision=on_disk.revision),
-                    )
+        if self._metadata.tag:
+            return (Version(tag=self._metadata.tag), Version(tag=on_disk.tag))
 
-                if self._metadata.branch and self._metadata.branch in [
-                    on_disk.branch,
-                    self.DEFAULT_BRANCH,
-                ]:
-                    return (
-                        Version(
-                            revision=self._metadata.revision,
-                            branch=self._metadata.branch,
-                        ),
-                        Version(
-                            revision=on_disk.revision,
-                            branch=on_disk.branch or self.DEFAULT_BRANCH,
-                        ),
-                    )
+        wanted_branch, on_disk_branch = "", ""
+        if not (self._metadata.revision and self.revision_is_enough()):
+            wanted_branch = self._metadata.branch or self.DEFAULT_BRANCH
+            on_disk_branch = on_disk.branch or self.DEFAULT_BRANCH
 
-            # Branch only
-            if not on_disk.tag and not self._metadata.revision:
-                branch = self._metadata.branch or self.DEFAULT_BRANCH
-                latest_revision = self._latest_revision_on_branch(branch)
-
-                return (
-                    Version(revision=latest_revision, branch=branch),
-                    Version(revision=on_disk.revision, branch=on_disk.branch),
-                )
+        wanted_revision = self._metadata.revision or self._latest_revision_on_branch(
+            wanted_branch
+        )
 
         return (
             Version(
-                tag=self._metadata.tag,
-                branch=self._metadata.branch,
-                revision=self._metadata.revision,
+                revision=wanted_revision,
+                branch=wanted_branch,
             ),
-            None,
+            Version(revision=on_disk.revision, branch=on_disk_branch),
         )
 
     def update_is_required(self) -> bool:
