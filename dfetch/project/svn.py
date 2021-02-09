@@ -131,16 +131,6 @@ class SvnRepo(VCS):
         tool, version = first_line.replace(",", "").split("version", maxsplit=1)
         VCS._log_tool(tool, version)
 
-    def _check_impl(self) -> Version:
-        """Check if a newer version is available on the given branch."""
-        if self.wanted_version.tag:
-            # We could interpret tags here
-            return Version(tag=self.wanted_version.tag)
-
-        branch = self.wanted_version.branch or self.DEFAULT_BRANCH
-        info = self._get_info(branch)
-        return Version(branch=branch, revision=info["Revision"])
-
     def _fetch_impl(self, version: Version) -> Version:
         """Get the revision of the remote and place it at the local path."""
         if version.tag:

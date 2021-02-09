@@ -174,9 +174,14 @@ class VCS(ABC):
     def list_tool_info() -> None:
         """Print out version information."""
 
-    @abstractmethod
     def _check_impl(self) -> Version:
-        """Check the given version of the VCS, should be implemented by the child class."""
+        """Check if a newer version is available on the given branch."""
+        if self.wanted_version.tag:
+            # We could interpret tags here
+            return Version(tag=self.wanted_version.tag)
+
+        branch = self.wanted_version.branch or self.DEFAULT_BRANCH
+        return Version(revision=self._latest_revision_on_branch(branch), branch=branch)
 
     @abstractmethod
     def _fetch_impl(self, version: Version) -> Version:

@@ -131,19 +131,6 @@ class GitRepo(VCS):
 
         VCS._log_tool(tool, version)
 
-    def _check_impl(self) -> Version:
-        """Check if a newer version is available on the given branch."""
-        if self.wanted_version.tag:
-            # We could interpret tags here
-            return Version(tag=self.wanted_version.tag)
-
-        info = self._ls_remote(self.remote)
-        branch = self.wanted_version.branch or self.DEFAULT_BRANCH
-
-        return Version(
-            revision=self._find_sha_of_branch_or_tag(info, branch), branch=branch
-        )
-
     def _fetch_impl(self, version: Version) -> Version:
         """Get the revision of the remote and place it at the local path."""
         rev_or_branch_or_tag = self._determine_what_to_fetch(version)
