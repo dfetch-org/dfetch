@@ -26,7 +26,7 @@ class VCS(ABC):
     def __init__(self, project: dfetch.manifest.project.ProjectEntry) -> None:
         """Create the VCS."""
         self._project = project
-        self._metadata = Metadata.from_project_entry(self._project)
+        self.__metadata = Metadata.from_project_entry(self._project)
 
     def check_wanted_with_local(self) -> Tuple[Optional[Version], Optional[Version]]:
         """Given the project entry in the manifest, get the relevant version from disk.
@@ -34,10 +34,10 @@ class VCS(ABC):
         Returns:
             Tuple[Optional[Version], Optional[Version]]: Wanted, Have
         """
-        if not os.path.exists(self._metadata.path):
+        if not os.path.exists(self.__metadata.path):
             return (self.wanted_version, None)
 
-        on_disk = Metadata.from_file(self._metadata.path).version
+        on_disk = Metadata.from_file(self.__metadata.path).version
 
         if self.wanted_version.tag:
             return (Version(tag=self.wanted_version.tag), Version(tag=on_disk.tag))
@@ -84,18 +84,20 @@ class VCS(ABC):
 
         actually_fetched = self._fetch_impl(to_fetch)
         logger.print_info_line(self._project.name, f"Fetched {actually_fetched}")
-        self._metadata.fetched(actually_fetched)
+        self.__metadata.fetched(actually_fetched)
 
-        logger.debug(f"Writing repo metadata to: {self._metadata.path}")
-        self._metadata.dump()
+        logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
+        self.__metadata.dump()
 
-        logger.info(hash_directory(self.local_path, skiplist=[self._metadata.FILENAME]))
+        logger.info(
+            hash_directory(self.local_path, skiplist=[self.__metadata.FILENAME])
+        )
 
     def check_for_update(self) -> None:
         """Check if there is an update available."""
         on_disk_version = None
-        if os.path.exists(self._metadata.path):
-            on_disk_version = Metadata.from_file(self._metadata.path).version
+        if os.path.exists(self.__metadata.path):
+            on_disk_version = Metadata.from_file(self.__metadata.path).version
 
         latest_version = self._check_for_newer_version()
 
@@ -114,14 +116,14 @@ class VCS(ABC):
 
     def _update_required(self) -> bool:
 
-        wanted_version_string = self._metadata.tag or " - ".join(
-            [self._metadata.branch, self._metadata.revision]
+        wanted_version_string = self.__metadata.tag or " - ".join(
+            [self.__metadata.branch, self.__metadata.revision]
         )
         wanted_version_string = f"({wanted_version_string})"
-        if os.path.exists(self.local_path) and os.path.exists(self._metadata.path):
+        if os.path.exists(self.local_path) and os.path.exists(self.__metadata.path):
 
-            on_disk = Metadata.from_file(self._metadata.path)
-            if self._metadata != on_disk:
+            on_disk = Metadata.from_file(self.__metadata.path)
+            if self.__metadata != on_disk:
                 self._log_project(
                     f"updating ({on_disk.branch} - {on_disk.revision})"
                     f" --> {wanted_version_string}",
@@ -149,12 +151,12 @@ class VCS(ABC):
     @property
     def wanted_version(self) -> Version:
         """Get the wanted version of this VCS."""
-        return self._metadata.version
+        return self.__metadata.version
 
     @property
     def remote(self) -> str:
         """Get the remote URL of this VCS."""
-        return self._metadata.remote_url
+        return self.__metadata.remote_url
 
     @abstractmethod
     def check(self) -> bool:
