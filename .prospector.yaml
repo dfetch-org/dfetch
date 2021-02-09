@@ -41,6 +41,8 @@ mypy:
 
 pyflakes:
   run: true
+  disable:
+    - W503
 
 bandit:
   run: true
