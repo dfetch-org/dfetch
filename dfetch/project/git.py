@@ -133,12 +133,12 @@ class GitRepo(VCS):
 
     def _check_impl(self) -> Version:
         """Check if a newer version is available on the given branch."""
-        if self.tag:
+        if self.wanted_version.tag:
             # We could interpret tags here
-            return Version(tag=self.tag)
+            return Version(tag=self.wanted_version.tag)
 
         info = self._ls_remote(self.remote)
-        branch = self.branch or self.DEFAULT_BRANCH
+        branch = self.wanted_version.branch or self.DEFAULT_BRANCH
 
         return Version(
             revision=self._find_sha_of_branch_or_tag(info, branch), branch=branch

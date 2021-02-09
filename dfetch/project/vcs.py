@@ -35,20 +35,21 @@ class VCS(ABC):
             Tuple[Optional[Version], Optional[Version]]: Wanted, Have
         """
         if not os.path.exists(self._metadata.path):
-            return (self._metadata.version, None)
+            return (self.wanted_version, None)
 
         on_disk = Metadata.from_file(self._metadata.path).version
 
-        if self._metadata.tag:
-            return (Version(tag=self._metadata.tag), Version(tag=on_disk.tag))
+        if self.wanted_version.tag:
+            return (Version(tag=self.wanted_version.tag), Version(tag=on_disk.tag))
 
         wanted_branch, on_disk_branch = "", ""
-        if not (self._metadata.revision and self.revision_is_enough()):
-            wanted_branch = self._metadata.branch or self.DEFAULT_BRANCH
+        if not (self.wanted_version.revision and self.revision_is_enough()):
+            wanted_branch = self.wanted_version.branch or self.DEFAULT_BRANCH
             on_disk_branch = on_disk.branch or self.DEFAULT_BRANCH
 
-        wanted_revision = self._metadata.revision or self._latest_revision_on_branch(
-            wanted_branch
+        wanted_revision = (
+            self.wanted_version.revision
+            or self._latest_revision_on_branch(wanted_branch)
         )
 
         return (
@@ -93,7 +94,7 @@ class VCS(ABC):
     def check_for_update(self) -> None:
         """Check if there is an update available."""
         on_disk_version = None
-        if os.path.exists(self.local_path) and os.path.exists(self._metadata.path):
+        if os.path.exists(self._metadata.path):
             on_disk_version = Metadata.from_file(self._metadata.path).version
 
         latest_version = self._check_impl()
@@ -149,21 +150,6 @@ class VCS(ABC):
     def wanted_version(self) -> Version:
         """Get the wanted version of this VCS."""
         return self._metadata.version
-
-    @property
-    def branch(self) -> str:
-        """Get the required branch of this VCS."""
-        return self._metadata.branch
-
-    @property
-    def tag(self) -> str:
-        """Get the required tag of this VCS."""
-        return self._metadata.tag
-
-    @property
-    def revision(self) -> str:
-        """Get the required revision of this VCS."""
-        return self._metadata.revision
 
     @property
     def remote(self) -> str:

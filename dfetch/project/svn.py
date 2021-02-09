@@ -133,11 +133,11 @@ class SvnRepo(VCS):
 
     def _check_impl(self) -> Version:
         """Check if a newer version is available on the given branch."""
-        if self.tag:
+        if self.wanted_version.tag:
             # We could interpret tags here
-            return Version(tag=self.tag)
+            return Version(tag=self.wanted_version.tag)
 
-        branch = self.branch or self.DEFAULT_BRANCH
+        branch = self.wanted_version.branch or self.DEFAULT_BRANCH
         info = self._get_info(branch)
         return Version(branch=branch, revision=info["Revision"])
 
