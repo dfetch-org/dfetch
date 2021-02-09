@@ -20,6 +20,7 @@ class Options(TypedDict):
     revision: str
     remote_url: str
     destination: str
+    hash: str
 
 
 class Metadata:
@@ -40,6 +41,7 @@ class Metadata:
         self._revision: str = str(kwargs.get("revision", ""))
         self._remote_url: str = str(kwargs.get("remote_url", ""))
         self._destination: str = str(kwargs.get("destination", ""))
+        self._hash: str = str(kwargs.get("hash", ""))
 
     @classmethod
     def from_project_entry(
@@ -53,6 +55,7 @@ class Metadata:
             "remote_url": project.remote_url,
             "destination": project.destination,
             "last_fetch": datetime.datetime(2000, 1, 1, 0, 0, 0),
+            "hash": "",
         }
         return cls(data)
 
@@ -63,12 +66,13 @@ class Metadata:
             data: Options = yaml.safe_load(metadata_file)["dfetch"]
             return cls(data)
 
-    def fetched(self, version: Version) -> None:
+    def fetched(self, version: Version, hash_: str = "") -> None:
         """Update metadata."""
         self._last_fetch = datetime.datetime.now()
         self._branch = version.branch
         self._tag = version.tag
         self._revision = version.revision
+        self._hash = hash_
 
     @property
     def version(self) -> Version:
@@ -96,6 +100,11 @@ class Metadata:
         return self._remote_url
 
     @property
+    def hash(self) -> str:
+        """Hash of directory."""
+        return self._hash
+
+    @property
     def path(self) -> str:
         """Path to metadata file."""
         if os.path.isdir(self._destination):
@@ -113,8 +122,10 @@ class Metadata:
         return all(
             [
                 other.remote_url == self.remote_url,
+                other.tag == self.tag,
                 other.branch == self.branch,
                 other.revision == self.revision,
+                other.hash == self.hash,
             ]
         )
 
@@ -127,6 +138,7 @@ class Metadata:
                 "revision": self.revision,
                 "last_fetch": self._last_fetch.strftime("%d/%m/%Y, %H:%M:%S"),
                 "tag": self.tag,
+                "hash": self.hash,
             }
         }
 

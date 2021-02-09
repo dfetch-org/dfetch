@@ -84,14 +84,13 @@ class VCS(ABC):
 
         actually_fetched = self._fetch_impl(to_fetch)
         self._log_project(f"Fetched {actually_fetched}")
-        self.__metadata.fetched(actually_fetched)
+        self.__metadata.fetched(
+            actually_fetched,
+            hash_=hash_directory(self.local_path, skiplist=[self.__metadata.FILENAME]),
+        )
 
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
         self.__metadata.dump()
-
-        logger.info(
-            hash_directory(self.local_path, skiplist=[self.__metadata.FILENAME])
-        )
 
     def check_for_update(self) -> None:
         """Check if there is an update available."""
