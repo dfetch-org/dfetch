@@ -65,7 +65,7 @@ class VCS(ABC):
         wanted, current = self.check_wanted_with_local()
 
         if wanted == current:
-            logger.print_info_line(self._project.name, f"up-to-date ({current})")
+            self._log_project(f"up-to-date ({current})")
             return None
 
         logger.debug(self._project.name, f"Current ({current}), Available ({wanted})")
@@ -83,7 +83,7 @@ class VCS(ABC):
             safe_rm(self.local_path)
 
         actually_fetched = self._fetch_impl(to_fetch)
-        logger.print_info_line(self._project.name, f"Fetched {actually_fetched}")
+        self._log_project(f"Fetched {actually_fetched}")
         self.__metadata.fetched(actually_fetched)
 
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
