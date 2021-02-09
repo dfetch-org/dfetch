@@ -141,7 +141,7 @@ class GitRepo(VCS):
         with in_directory(self.local_path):
             self._checkout_version(self.remote, rev_or_branch_or_tag, self.source)
 
-        self._cleanup()
+        safe_rmtree(os.path.join(self.local_path, self.METADATA_DIR))
 
         return self._determine_fetched_version(version)
 
@@ -253,7 +253,3 @@ class GitRepo(VCS):
             if sha.startswith(rev):  # Also allow for shorter SHA's
                 return reference.replace("refs/heads/", "").replace("refs/tags/", "")
         return ""
-
-    def _cleanup(self) -> None:
-        path = os.path.join(self.local_path, self.METADATA_DIR)
-        safe_rmtree(path)
