@@ -45,7 +45,7 @@ class VCS(ABC):
         wanted_branch, on_disk_branch = "", ""
         if not (self.wanted_version.revision and self.revision_is_enough()):
             wanted_branch = self.wanted_version.branch or self.DEFAULT_BRANCH
-            on_disk_branch = on_disk.branch or self.DEFAULT_BRANCH
+            on_disk_branch = on_disk.branch
 
         wanted_revision = (
             self.wanted_version.revision
