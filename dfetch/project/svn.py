@@ -98,7 +98,7 @@ class SvnRepo(VCS):
     def check(self) -> bool:
         """Check if is SVN."""
         try:
-            run_on_cmdline(logger, f"svn info {self._project.remote_url}")
+            run_on_cmdline(logger, f"svn info {self.remote}")
             return True
         except (SubprocessCommandError, RuntimeError):
             return False
@@ -149,9 +149,7 @@ class SvnRepo(VCS):
 
         rev_arg = f"--revision {revision}" if revision else ""
 
-        complete_path = "/".join(
-            [self.remote, branch_path, self._project.source]
-        ).strip("/")
+        complete_path = "/".join([self.remote, branch_path, self.source]).strip("/")
 
         # When exporting a file, the destination directory must already exist
         pathlib.Path(os.path.dirname(self.local_path)).mkdir(

@@ -25,8 +25,8 @@ class VCS(ABC):
 
     def __init__(self, project: dfetch.manifest.project.ProjectEntry) -> None:
         """Create the VCS."""
-        self._project = project
-        self.__metadata = Metadata.from_project_entry(self._project)
+        self.__project = project
+        self.__metadata = Metadata.from_project_entry(self.__project)
 
     def check_wanted_with_local(self) -> Tuple[Optional[Version], Optional[Version]]:
         """Given the project entry in the manifest, get the relevant version from disk.
@@ -68,7 +68,7 @@ class VCS(ABC):
             self._log_project(f"up-to-date ({current})")
             return None
 
-        logger.debug(self._project.name, f"Current ({current}), Available ({wanted})")
+        logger.debug(self.__project.name, f"Current ({current}), Available ({wanted})")
         return wanted
 
     def update(self) -> None:
@@ -115,7 +115,7 @@ class VCS(ABC):
             )
 
     def _log_project(self, msg: str) -> None:
-        logger.print_info_line(self._project.name, msg)
+        logger.print_info_line(self.__project.name, msg)
 
     @staticmethod
     def _log_tool(name: str, msg: str) -> None:
@@ -124,7 +124,7 @@ class VCS(ABC):
     @property
     def local_path(self) -> str:
         """Get the local destination of this project."""
-        return self._project.destination
+        return self.__project.destination
 
     @property
     def wanted_version(self) -> Version:
@@ -135,6 +135,11 @@ class VCS(ABC):
     def remote(self) -> str:
         """Get the remote URL of this VCS."""
         return self.__metadata.remote_url
+
+    @property
+    def source(self) -> str:
+        """Get the source folder of this VCS."""
+        return self.__project.source
 
     @abstractmethod
     def check(self) -> bool:
