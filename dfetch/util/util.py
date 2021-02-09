@@ -51,22 +51,28 @@ def find_file(name: str, path: str = ".") -> List[str]:
 
 def hash_directory(path: str, skiplist: Optional[List[str]]) -> str:
     """Hash a directory with all its files."""
-    digest = hashlib.sha256()
+    digest = hashlib.md5()  # nosec
+    skiplist = skiplist or []
 
     for root, _, files in os.walk(path):
         for name in files:
-            if not skiplist or name not in skiplist:
+            if name not in skiplist:
                 file_path = os.path.join(root, name)
 
                 # Hash the path and add to the digest to account for empty files/directories
-                digest.update(hashlib.sha256(name.encode()).digest())
-
-                if os.path.isfile(file_path):
-                    with open(file_path, "rb") as f_obj:
-                        while True:
-                            buf = f_obj.read(1024 * 1024)
-                            if not buf:
-                                break
-                            digest.update(buf)
+                digest.update(hashlib.md5(name.encode()).digest())  # nosec
+                digest = hash_file(file_path, digest)
 
     return digest.hexdigest()
+
+
+def hash_file(file_path: str, digest: "hashlib._Hash") -> "hashlib._Hash":
+    """Hash the file at path."""
+    if os.path.isfile(file_path):
+        with open(file_path, "rb") as f_obj:
+            buf = f_obj.read(1024 * 1024)
+            while buf:
+                digest.update(buf)
+                buf = f_obj.read(1024 * 1024)
+
+    return digest
