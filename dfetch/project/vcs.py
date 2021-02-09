@@ -59,27 +59,27 @@ class VCS(ABC):
             Version(revision=on_disk.revision, branch=on_disk_branch),
         )
 
-    def update_is_required(self) -> bool:
+    def update_is_required(self) -> Optional[Version]:
         """Check if this project should be upgraded."""
         wanted, current = self.check_wanted_with_local()
 
         if wanted == current:
             logger.print_info_line(self._project.name, f"up-to-date ({current})")
-            return False
+            return None
 
         logger.debug(self._project.name, f"Current ({current}), Available ({wanted})")
-        return True
+        return wanted
 
     def update(self) -> None:
         """Update this VCS if required."""
-        if not self.update_is_required():
+        to_fetch = self.update_is_required()
+
+        if not to_fetch:
             return
 
         if os.path.exists(self.local_path):
             logger.debug(f"Clearing destination {self.local_path}")
             safe_rm(self.local_path)
-
-        to_fetch = self._determine_version_to_fetch()
 
         actually_fetched = self._fetch_impl(to_fetch)
         logger.print_info_line(self._project.name, f"Fetched {actually_fetched}")
@@ -110,18 +110,6 @@ class VCS(ABC):
             self._log_project(
                 f"wanted ({self.wanted_version}), current ({on_disk_version}), available ({latest_version})"
             )
-
-    def _determine_version_to_fetch(self) -> Version:
-
-        if self._metadata.tag:
-            return Version(tag=self._metadata.tag)
-
-        return Version(
-            revision=self._metadata.revision,
-            branch=""
-            if self.revision_is_enough()
-            else self._metadata.branch or self.DEFAULT_BRANCH,
-        )
 
     def _update_required(self) -> bool:
 
