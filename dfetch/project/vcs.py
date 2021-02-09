@@ -97,7 +97,7 @@ class VCS(ABC):
         if os.path.exists(self._metadata.path):
             on_disk_version = Metadata.from_file(self._metadata.path).version
 
-        latest_version = self._check_impl()
+        latest_version = self._check_for_newer_version()
 
         if not on_disk_version:
             self._log_project(f"available ({latest_version})")
@@ -174,7 +174,7 @@ class VCS(ABC):
     def list_tool_info() -> None:
         """Print out version information."""
 
-    def _check_impl(self) -> Version:
+    def _check_for_newer_version(self) -> Version:
         """Check if a newer version is available on the given branch."""
         if self.wanted_version.tag:
             # We could interpret tags here
