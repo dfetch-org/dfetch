@@ -114,28 +114,6 @@ class VCS(ABC):
                 f"wanted ({self.wanted_version}), current ({on_disk_version}), available ({latest_version})"
             )
 
-    def _update_required(self) -> bool:
-
-        wanted_version_string = self.__metadata.tag or " - ".join(
-            [self.__metadata.branch, self.__metadata.revision]
-        )
-        wanted_version_string = f"({wanted_version_string})"
-        if os.path.exists(self.local_path) and os.path.exists(self.__metadata.path):
-
-            on_disk = Metadata.from_file(self.__metadata.path)
-            if self.__metadata != on_disk:
-                self._log_project(
-                    f"updating ({on_disk.branch} - {on_disk.revision})"
-                    f" --> {wanted_version_string}",
-                )
-                return True
-            self._log_project(f"up-to-date {wanted_version_string}")
-            return False
-        self._log_project(
-            f"fetching {wanted_version_string}",
-        )
-        return True
-
     def _log_project(self, msg: str) -> None:
         logger.print_info_line(self._project.name, msg)
 
