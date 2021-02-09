@@ -20,10 +20,11 @@ A project name **must** be unique and each manifest must have at least one proje
 
 Revision/Branch/Tag
 ###################
-Since we want more control on what project is retrieved the ``revision:`` and ``branch:``
+Since we want more control on what project is retrieved the ``revision:``, ``branch:`` and ``tag:``
 attributes can help. Below manifest will download tag ``v1.13`` of ``mymodule``.
 
-With ``revision:`` a specific commit (git) or revision (svn) is retrieved.  For git,
+The ``tag:`` attribute takes priority over ``revision:`` and ``branch:``.
+With ``revision:`` a specific commit (git) or revision (svn) is retrieved. For git,
 revisions must be complete 40 character long SHA-hashes.
 
 .. code-block:: yaml
@@ -37,7 +38,7 @@ revisions must be complete 40 character long SHA-hashes.
 
         projects:
          - name: mymodule
-           branch: v1.13
+           tag: v1.13
 
          - name: myothermodule
            revision: dcc92d0ab6c4ce022162a23566d44f673251eee4

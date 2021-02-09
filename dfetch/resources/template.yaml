@@ -9,7 +9,7 @@ manifest:
   - name: cpputest
     dst: cpputest/src/                                    # Destination of this project (relative to this file)
     repo-path: cpputest/cpputest.git                      # Use default github remote
-    branch: v3.4                                          # branch / tag
+    tag: v3.4                                             # tag
 
   - name: jsmn                                            # without destination, defaults to project name
     repo-path: zserge/jsmn.git                            # only repo-path is enough

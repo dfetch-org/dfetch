@@ -16,6 +16,7 @@ from dfetch.util.util import in_directory
 logger = get_logger(__name__)
 
 
+# TODO: Add tags?
 External = namedtuple(
     "External", ["name", "toplevel", "path", "revision", "url", "branch", "src"]
 )

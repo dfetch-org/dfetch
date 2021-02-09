@@ -15,11 +15,10 @@ from dfetch.util.util import in_directory, safe_rmtree
 
 logger = get_logger(__name__)
 
+# TODO: Add tags?
 Submodule = namedtuple(
     "Submodule", ["name", "toplevel", "path", "sha", "url", "branch"]
 )
-
-
 class GitRepo(VCS):
     """A git repository."""
 
