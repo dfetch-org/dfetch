@@ -1,7 +1,7 @@
 """To check if your projects are up-to-date, you can let dfetch check it.
 
-For each project the local revision will be compared against the available
-revision on that branch. If there are new versions available this will be shown.
+For each project the local version (based on tag or revision) will be compared against
+the available version. If there are new versions available this will be shown.
 """
 
 import argparse
