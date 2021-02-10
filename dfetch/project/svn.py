@@ -16,9 +16,8 @@ from dfetch.util.util import in_directory
 logger = get_logger(__name__)
 
 
-# TODO: Add tags?
 External = namedtuple(
-    "External", ["name", "toplevel", "path", "revision", "url", "branch", "src"]
+    "External", ["name", "toplevel", "path", "revision", "url", "branch", "tag", "src"]
 )
 
 
@@ -57,7 +56,7 @@ class SvnRepo(VCS):
                 re.finditer(r"\.\s-\s+([^\s]+)(\s+)([^\s]+)", entry),
             ):
 
-                url, branch, src = SvnRepo._split_url(match.group(1), repo_root)
+                url, branch, tag, src = SvnRepo._split_url(match.group(1), repo_root)
 
                 externals += [
                     External(
@@ -69,6 +68,7 @@ class SvnRepo(VCS):
                         revision=match.group(2).strip(),
                         url=url,
                         branch=branch,
+                        tag=tag,
                         src=src,
                     )
                 ]
@@ -76,7 +76,7 @@ class SvnRepo(VCS):
         return externals
 
     @staticmethod
-    def _split_url(url: str, repo_root: str) -> Tuple[str, str, str]:
+    def _split_url(url: str, repo_root: str) -> Tuple[str, str, str, str]:
 
         # ../   Relative to the URL of the directory on which the svn:externals property is set
         # ^/    Relative to the root of the repository in which the svn:externals property is versioned
@@ -84,6 +84,7 @@ class SvnRepo(VCS):
         # /     Relative to the root URL of the server on which the svn:externals property is versioned
         url = re.sub(r"^\^", repo_root, url)
         branch = ""
+        tag = ""
         src = ""
 
         for match in re.finditer(
@@ -94,7 +95,14 @@ class SvnRepo(VCS):
             branch = match.group(2) if match.group(2) != SvnRepo.DEFAULT_BRANCH else ""
             src = match.group(3)
 
-        return (url, branch, src)
+        path = branch.split("/")
+        if path[0] == "branches":
+            branch = path[1]
+        elif path[0] == "tags":
+            tag = path[1]
+            branch = ""
+
+        return (url, branch, tag, src)
 
     def check(self) -> bool:
         """Check if is SVN."""

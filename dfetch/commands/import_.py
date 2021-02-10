@@ -108,6 +108,7 @@ def _import_from_svn() -> Sequence[ProjectEntry]:
                     "url": external.url,
                     "dst": external.path,
                     "branch": external.branch,
+                    "tag": external.tag,
                     "src": external.src,
                 }
             )
