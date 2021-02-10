@@ -2,7 +2,7 @@
 
 import os
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import dfetch.manifest.manifest
 from dfetch.log import get_logger
@@ -153,6 +153,10 @@ class VCS(ABC):
     def _latest_revision_on_branch(self, branch: str) -> str:
         """Get the latest revision on a branch."""
 
+    @abstractmethod
+    def _list_of_tags(self) -> List[str]:
+        """Get list of all available tags."""
+
     @staticmethod
     @abstractmethod
     def list_tool_info() -> None:
@@ -161,8 +165,11 @@ class VCS(ABC):
     def _check_for_newer_version(self) -> Version:
         """Check if a newer version is available on the given branch."""
         if self.wanted_version.tag:
-            # We could interpret tags here
-            return Version(tag=self.wanted_version.tag)
+            return Version(
+                tag=self._latest_tag_from_list(
+                    self.wanted_version.tag, self._list_of_tags()
+                )
+            )
 
         branch = self.wanted_version.branch or self.DEFAULT_BRANCH
         return Version(revision=self._latest_revision_on_branch(branch), branch=branch)
@@ -170,3 +177,7 @@ class VCS(ABC):
     @abstractmethod
     def _fetch_impl(self, version: Version) -> Version:
         """Fetch the given version of the VCS, should be implemented by the child class."""
+
+    def _latest_tag_from_list(self, tag: str, tags: List[str]) -> str:
+        logger.warning(tags)
+        return tag
