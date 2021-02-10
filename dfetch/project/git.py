@@ -5,7 +5,7 @@ import pathlib
 import re
 import shutil
 from collections import namedtuple
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from dfetch.log import get_logger
 from dfetch.project.vcs import VCS
@@ -15,10 +15,11 @@ from dfetch.util.util import in_directory, safe_rmtree
 
 logger = get_logger(__name__)
 
-# TODO: Add tags?
 Submodule = namedtuple(
-    "Submodule", ["name", "toplevel", "path", "sha", "url", "branch"]
+    "Submodule", ["name", "toplevel", "path", "sha", "url", "branch", "tag"]
 )
+
+
 class GitRepo(VCS):
     """A git repository."""
 
@@ -45,7 +46,7 @@ class GitRepo(VCS):
             if line:
                 name, sm_path, sha, toplevel = line.split(" ")
                 url = GitRepo._get_submodule_urls(toplevel)[name]
-                branch = GitRepo._determine_branch_or_tag(
+                branch, tag = GitRepo._determine_branch_or_tag(
                     url, os.path.join(os.getcwd(), sm_path), sha
                 )
                 submodules += [
@@ -56,6 +57,7 @@ class GitRepo(VCS):
                         sha=sha,
                         url=url,
                         branch=branch,
+                        tag=tag,
                     )
                 ]
 
@@ -210,10 +212,15 @@ class GitRepo(VCS):
         return info
 
     @staticmethod
-    def _determine_branch_or_tag(url: str, repo_path: str, sha: str) -> str:
-        return GitRepo._find_branch_tip_or_tag_from_sha(
+    def _determine_branch_or_tag(url: str, repo_path: str, sha: str) -> Tuple[str, str]:
+        branch, tag = GitRepo._find_branch_tip_or_tag_from_sha(
             GitRepo._ls_remote(url), sha
-        ) or GitRepo._find_branch_in_local_repo_containing_sha(repo_path, sha)
+        )
+
+        if not (branch or tag):
+            branch = GitRepo._find_branch_in_local_repo_containing_sha(repo_path, sha)
+
+        return (branch, tag)
 
     @staticmethod
     def _find_branch_in_local_repo_containing_sha(repo_path: str, sha: str) -> str:
@@ -245,10 +252,17 @@ class GitRepo(VCS):
         return ""
 
     @staticmethod
-    def _find_branch_tip_or_tag_from_sha(info: Dict[str, str], rev: str) -> str:
+    def _find_branch_tip_or_tag_from_sha(
+        info: Dict[str, str], rev: str
+    ) -> Tuple[str, str]:
         """Check all branch tips and tags and see if the sha is one of them."""
+        branch, tag = "", ""
         info.pop("HEAD", None)
         for reference, sha in info.items():
             if sha.startswith(rev):  # Also allow for shorter SHA's
-                return reference.replace("refs/heads/", "").replace("refs/tags/", "")
-        return ""
+                if reference.startswith("refs/heads/"):
+                    branch = reference.replace("refs/heads/", "")
+                elif reference.startswith("refs/tags/"):
+                    tag = reference.replace("refs/tags/", "")
+                break
+        return (branch, tag)

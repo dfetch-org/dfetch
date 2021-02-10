@@ -129,6 +129,7 @@ def _import_from_git() -> Sequence[ProjectEntry]:
                     "url": submodule.url,
                     "dst": submodule.path,
                     "branch": submodule.branch,
+                    "tag": submodule.tag,
                 }
             )
         )
