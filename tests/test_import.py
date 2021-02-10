@@ -21,7 +21,7 @@ FIRST_SUBMODULE = Submodule(
     toplevel="",
     path="somepath1",
     branch="master",
-    tag=""
+    tag="",
 )
 SECOND_SUBMODULE = Submodule(
     name="submod2",
@@ -30,7 +30,7 @@ SECOND_SUBMODULE = Submodule(
     toplevel="",
     path="somepath2",
     branch="",
-    tag="v1.2.3"
+    tag="v1.2.3",
 )
 
 
