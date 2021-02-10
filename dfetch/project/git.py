@@ -123,6 +123,16 @@ class GitRepo(VCS):
         info = self._ls_remote(self.remote)
         return self._find_sha_of_branch_or_tag(info, branch)
 
+    def _list_of_tags(self) -> List[str]:
+        """Get list of all available tags."""
+        info = self._ls_remote(self.remote)
+
+        return [
+            reference.replace("refs/tags/", "")
+            for reference, _ in info.items()
+            if reference.startswith("refs/tags/")
+        ]
+
     @staticmethod
     def list_tool_info() -> None:
         """Print out version information."""
