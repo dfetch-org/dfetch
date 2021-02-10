@@ -23,6 +23,7 @@ PINNED_SUBFOLDER_EXPECTATION = [
         revision="564",
         url="http://svn.mycompany.eu/MYCOMPANY/SomeModule",
         branch="",
+        tag="",
         src="Core/Modules/Database",
     )
 ]
@@ -37,6 +38,7 @@ RELATIVE_TO_ROOT_EXPECTATIONS = [
         revision="8349",
         url=REPO_ROOT + "/PROJECT-123/SOME-TOOL",
         branch="",
+        tag="",
         src="python/Settings",
     ),
     External(
@@ -46,6 +48,7 @@ RELATIVE_TO_ROOT_EXPECTATIONS = [
         revision="8571",
         url=REPO_ROOT + "/PROJECT-123/SOME-TOOL",
         branch="",
+        tag="",
         src="path/Images",
     ),
 ]
@@ -59,7 +62,8 @@ PINNED_SINGLE_FILE_EXPECTATION = [
         path="Module2/Binaries/SomeExe.exe",
         revision="6905",
         url=REPO_ROOT + "/PROJECT-123/SOMEXE",
-        branch="tags/v0.3.0",
+        branch="",
+        tag="v0.3.0",
         src="SomeExe/bin/SomeExe.exe",
     )
 ]
@@ -72,7 +76,8 @@ PINNED_MODULE_NO_SUBFOLDER_EXPECTATION = [
         path="Module3/Module3",
         revision="681",
         url="http://svn.mycompany.eu/MYCOMPANY/Jenkins/SomeProject/Resources",
-        branch="branches/my_branch",
+        branch="my_branch",
+        tag="",
         src="",
     )
 ]

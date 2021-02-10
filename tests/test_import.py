@@ -21,6 +21,7 @@ FIRST_SUBMODULE = Submodule(
     toplevel="",
     path="somepath1",
     branch="master",
+    tag=""
 )
 SECOND_SUBMODULE = Submodule(
     name="submod2",
@@ -28,7 +29,8 @@ SECOND_SUBMODULE = Submodule(
     url="http://www.github.com/mod2.git",
     toplevel="",
     path="somepath2",
-    branch="master",
+    branch="",
+    tag="v1.2.3"
 )
 
 
@@ -76,6 +78,7 @@ FIRST_EXTERNAL = External(
     toplevel="",
     path="somepath1",
     branch="trunk",
+    tag="",
     src="some/sub/folder",
 )
 SECOND_EXTERNAL = External(
@@ -84,7 +87,8 @@ SECOND_EXTERNAL = External(
     url="http://www.github.com/mod2/",
     toplevel="",
     path="somepath2",
-    branch="tags/0.0.2",
+    branch="",
+    tag="0.0.2",
     src="some/sub/folder2/",
 )
 
