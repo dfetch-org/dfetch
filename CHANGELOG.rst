@@ -1,7 +1,10 @@
 Release 0.0.7 (under development)
 ===================================
 
-* something
+* Add ``tag:`` attribute to manifest (#92)
+* Remove branches/tags prefix for svn in manifest (#88)
+* Branch name missing when not in manifest (#82)
+*
 
 
 Release 0.0.6 (released 2021-02-03)
