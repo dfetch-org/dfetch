@@ -33,21 +33,19 @@ def coerce(version: str) -> Tuple[str, VersionInfo, str]:
         belong to a basic version.
     :rtype: tuple(None, str | :class:`Version` | None, str)
     """
-    if not version:
-        return ("", None, version or "")
-    match = BASEVERSION.search(version)
+    match = None if not version else BASEVERSION.search(version)
     if not match:
         return ("", None, version)
 
     ver = {
         key: 0 if value is None else value for key, value in match.groupdict().items()
     }
-    ver = VersionInfo(**ver)
-    prefix, rest = (
+
+    return (
         match.string[: match.start()],
+        VersionInfo(**ver),
         match.string[match.end() :],  # noqa:E203
     )
-    return prefix, ver, rest
 
 
 def latest_tag_from_list(current_tag: str, available_tags: List[str]) -> str:
