@@ -1,7 +1,6 @@
-"""Main entry point of command-line tool.
+"""Find the complete documentation here:
 
-Created on 28/04/2020
-@author: Ben Spoor
+https://dfetch.rtfd.org
 """
 
 import argparse
@@ -21,7 +20,7 @@ logger = dfetch.log.setup_root(__name__)
 
 def create_parser() -> argparse.ArgumentParser:
     """Create the main argument parser."""
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, epilog=__doc__)
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Increase verbosity"
     )
