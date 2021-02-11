@@ -134,7 +134,9 @@ class SvnRepo(VCS):
     def _list_of_tags(self) -> List[str]:
         """Get list of all available tags."""
         result = run_on_cmdline(logger, f"svn ls {self.remote}/tags")
-        return [str(tag).strip("/\r") for tag in result.stdout.decode().split("\n") if tag]
+        return [
+            str(tag).strip("/\r") for tag in result.stdout.decode().split("\n") if tag
+        ]
 
     @staticmethod
     def list_tool_info() -> None:

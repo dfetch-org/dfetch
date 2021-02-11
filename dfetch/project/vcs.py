@@ -9,6 +9,7 @@ from dfetch.log import get_logger
 from dfetch.project.metadata import Metadata
 from dfetch.project.version import Version
 from dfetch.util.util import hash_directory, safe_rm
+from dfetch.util.versions import latest_tag_from_list
 
 logger = get_logger(__name__)
 
@@ -166,9 +167,7 @@ class VCS(ABC):
         """Check if a newer version is available on the given branch."""
         if self.wanted_version.tag:
             return Version(
-                tag=self._latest_tag_from_list(
-                    self.wanted_version.tag, self._list_of_tags()
-                )
+                tag=latest_tag_from_list(self.wanted_version.tag, self._list_of_tags())
             )
 
         branch = self.wanted_version.branch or self.DEFAULT_BRANCH
@@ -177,7 +176,3 @@ class VCS(ABC):
     @abstractmethod
     def _fetch_impl(self, version: Version) -> Version:
         """Fetch the given version of the VCS, should be implemented by the child class."""
-
-    def _latest_tag_from_list(self, tag: str, tags: List[str]) -> str:
-        logger.warning(tags)
-        return tag
