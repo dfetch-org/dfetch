@@ -34,6 +34,9 @@ class ConcreteVCS(VCS):
     def wanted_version(self):
         return self._wanted_version
 
+    def _list_of_tags(self):
+        return []
+
 
 @pytest.mark.parametrize(
     "name, given_on_disk, given_wanted, expect_wanted, expect_have",
