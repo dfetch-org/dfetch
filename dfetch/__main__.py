@@ -1,4 +1,4 @@
-"""Find the complete documentation here:
+"""Find the complete documentation online.
 
 https://dfetch.rtfd.org
 """
@@ -20,7 +20,9 @@ logger = dfetch.log.setup_root(__name__)
 
 def create_parser() -> argparse.ArgumentParser:
     """Create the main argument parser."""
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, epilog=__doc__)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter, epilog=__doc__
+    )
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Increase verbosity"
     )
