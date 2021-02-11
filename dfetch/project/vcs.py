@@ -102,7 +102,10 @@ class VCS(ABC):
         latest_version = self._check_for_newer_version()
 
         if not on_disk_version:
-            self._log_project(f"available ({latest_version})")
+            wanted = (
+                f"wanted ({self.wanted_version}), " if any(self.wanted_version) else ""
+            )
+            self._log_project(f"{wanted}available ({latest_version})")
         elif latest_version == on_disk_version:
             self._log_project(f"up-to-date ({latest_version})")
         elif on_disk_version == self.wanted_version:
