@@ -16,6 +16,7 @@ Dfetch
    technical
    changelog
    alternatives
+   legal
 
 
 What is Dfetch?

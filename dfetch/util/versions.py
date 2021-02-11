@@ -1,5 +1,4 @@
-"""Module for handling version information from strings.
-"""
+"""Module for handling version information from strings."""
 
 import re
 from collections import defaultdict
