@@ -16,9 +16,10 @@ call .\venv\Scripts\activate.bat
 CALL :sub_display isort
 isort --recursive dfetch
 isort --recursive tests
+isort --recursive features
 
 CALL :sub_display black
-black dfetch tests
+black dfetch tests features
 
 CALL :sub_display Pylint
 pylint dfetch --output-format=colorized

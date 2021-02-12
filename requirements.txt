@@ -14,3 +14,4 @@ sphinx-argparse==0.2.5
 # Testing
 pytest==6.2.2
 pytest-cov==2.11.1
+behave==1.2.6
