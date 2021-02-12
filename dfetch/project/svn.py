@@ -1,6 +1,5 @@
 """SVN specific implementation."""
 
-import itertools
 import os
 import pathlib
 import re
@@ -51,10 +50,7 @@ class SvnRepo(VCS):
             if match:
                 local_path = match.group(1)
 
-            for match in itertools.chain(
-                re.finditer(r"([^\s]*)@(\d+)\s+([^\s]*)", entry),
-                re.finditer(r"\.\s-\s+([^\s]+)(\s+)([^\s]+)", entry),
-            ):
+            for match in re.finditer(r"([^\s]+)(?:@)(\d+)\s+([^\s]+)", entry):
 
                 url, branch, tag, src = SvnRepo._split_url(match.group(1), repo_root)
 
