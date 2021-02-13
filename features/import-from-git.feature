@@ -1,8 +1,8 @@
-Feature: Importing submodules from an exiting git repository
+Feature: Importing submodules from an existing git repository
 
-    One alternative to *Dfetch* is git submodules. To make the transistion
+    One alternative to *Dfetch* is git submodules. To make the transition
     as easy as possible, a user should be able to generate a manifest that
-    is filled with the submodules and their pinned verions.
+    is filled with the submodules and their pinned versions.
 
     Scenario: Multiple submodules are imported
         Given a git repo with the following submodules
