@@ -9,7 +9,9 @@ version: 2
 sphinx:
   configuration: doc/conf.py
 
-formats: all
+formats:
+   - epub
+   - htmlzip
 
 # Optionally set the version of Python and requirements required to build your docs
 python:
