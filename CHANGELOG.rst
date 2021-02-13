@@ -1,4 +1,4 @@
-Release 0.0.7 (under development)
+Release 0.0.7 (released 2021-02-13)
 ===================================
 
 * Add ``tag:`` attribute to manifest (#92)
