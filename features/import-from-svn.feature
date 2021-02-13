@@ -1,8 +1,8 @@
-Feature: Importing externals from an exiting svn repository
+Feature: Importing externals from an existing svn repository
 
-    One alternative to *Dfetch* is svn externals. To make the transistion
+    One alternative to *Dfetch* is svn externals. To make the transition
     as easy as possible, a user should be able to generate a manifest that
-    is filled with the externals and their pinned verions.
+    is filled with the externals and their pinned versions.
 
     Scenario: Multiple externals are imported
         Given a svn repo with the following externals
