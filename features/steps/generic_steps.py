@@ -1,15 +1,42 @@
 """Steps for features tests."""
 
+import difflib
 import os
+import re
 import subprocess
 
-from behave import then, when  # pylint: disable=no-name-in-module
+from behave import given, then, when  # pylint: disable=no-name-in-module
+
+ansi_escape = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
+
+
+@given("all projects are updated")
+def step_impl(context):
+    context.execute_steps('When I run "dfetch update"')
 
 
 @when('I run "{cmd}"')
 def step_impl(context, cmd):
     """Call a command."""
-    assert subprocess.call(cmd.split()) == 0
+    context.cmd_output = dfetch_title.sub(
+        "", subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT, text=True)
+    )
+
+
+@then("the output shows")
+def step_impl(context):
+    expected_text = dfetch_title.sub("", context.text).splitlines()
+    actual_text = ansi_escape.sub("", context.cmd_output)
+
+    diff = difflib.ndiff(actual_text.splitlines(), expected_text)
+
+    diffs = [x for x in diff if x[0] in ("+", "-")]
+    if diffs:
+        comp = "\n".join(diffs)
+        print(actual_text)
+        print(comp)
+        assert False, "Output not as expected!"
 
 
 @then("the following projects are fetched")
