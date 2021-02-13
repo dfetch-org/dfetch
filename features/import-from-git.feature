@@ -29,6 +29,7 @@ Feature: Importing submodules from an exiting git repository
             - name: ext/test-repo2
                 revision: 8df389d0524863b85f484f15a91c5f2c40aefda1
                 dst: ext/test-repo2
+                tag: v1
                 repo-path: test-repo
 
             """
