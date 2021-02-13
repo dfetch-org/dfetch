@@ -5,6 +5,7 @@ Release 0.0.7 (under development)
 * Remove branches/tags prefix for svn in manifest (#88)
 * Branch name missing when not in manifest (#82)
 * Interpret tags when checking for updates (#46)
+* Add feature tests (#84)
 
 Release 0.0.6 (released 2021-02-03)
 ===================================
