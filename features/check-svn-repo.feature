@@ -1,4 +1,3 @@
-@wip
 Feature: Checking dependencies from a svn repository
 
     *DFetch* can check if there are new versions.
