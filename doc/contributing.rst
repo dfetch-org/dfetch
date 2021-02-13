@@ -78,6 +78,9 @@ Run `check_quality.bat` (or GitHub will run it for you).
 
 Testing
 -------
+
+Unit tests
+~~~~~~~~~~
 `pytest <https://docs.pytest.org/en/latest/>`_ is used as testing framework. All code contributed should be accompanied with unit tests.
 Tests can be found in the ``tests`` folder.
 
@@ -86,6 +89,39 @@ To see coverage, in the virtual environment run ``pytest`` with coverage
 .. code-block:: bash
 
     pytest --cov=dfetch tests
+
+Feature tests
+~~~~~~~~~~~~~
+Feature tests are used for higher-level integration testing of functionality.
+For this `behave <https://behave.readthedocs.io/en/latest/>`_ is used as testing framework.
+Features are specified in *Gherkin* in so-called feature files in the ``features`` folder.
+The sentences in the feature files, map to steps in the ``features/steps`` folder.
+
+Test can be run directly from the command-line
+
+.. code-block:: bash
+
+    behave features
+
+To debug these tests, mark the ``Feature:`` or ``Scenario:`` to debug with the ``@wip`` tag
+and add the following configuration to your ``launch.json``.
+
+.. code-block:: javascript
+
+    "configurations": [
+
+        {
+            "name": "Feature tests (wip)",
+            "type": "python",
+            "justMyCode": false,
+            "console": "integratedTerminal",
+            "request": "launch",
+            "module": "behave",
+            "args": [
+                "features", "--wip"
+            ]
+        },
+    ]
 
 Creating documentation
 ----------------------
