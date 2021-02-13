@@ -19,9 +19,14 @@ def step_impl(context):
 @when('I run "{cmd}"')
 def step_impl(context, cmd):
     """Call a command."""
-    context.cmd_output = dfetch_title.sub(
-        "", subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT, text=True)
-    )
+    try:
+        context.cmd_output = dfetch_title.sub(
+            "", subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT, text=True)
+        )
+        context.cmd_returncode = 0
+    except subprocess.CalledProcessError as exc:
+        context.cmd_output = dfetch_title.sub("", exc.stdout)
+        context.cmd_returncode = exc.returncode
 
 
 @then("the output shows")
