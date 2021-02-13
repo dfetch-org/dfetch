@@ -5,6 +5,9 @@ member-warnings: true
 test-warnings: false
 max-line-length: 120
 
+ignore-paths:
+  - features
+
 pep257:
   disable:
     - D203
