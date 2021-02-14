@@ -164,7 +164,7 @@ class VCS(ABC):
         """Print out version information."""
 
     def _on_disk_version(self) -> Optional[Version]:
-        """Get the version of the project on disk
+        """Get the version of the project on disk.
 
         Returns:
             Version: Could be None of no on disk version
