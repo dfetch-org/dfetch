@@ -84,3 +84,41 @@ Feature: Checking dependencies from a git repository
               ext/test-rev-and-branch: wanted & current (main - 8df389d0524863b85f484f15a91c5f2c40aefda1), available (main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
             """
 
+    Scenario: Tag is updated in manifest
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              remotes:
+                - name: something
+                  url-base: unused
+
+              projects:
+                - name: ext/test-repo-tag
+                  url: https://github.com/dfetch-org/test-repo
+                  tag: v1
+
+            """
+        And all projects are updated
+        When the manifest 'dfetch.yaml' is changed to
+            """
+            manifest:
+              version: '0.0'
+
+              remotes:
+                - name: something
+                  url-base: unused
+
+              projects:
+                - name: ext/test-repo-tag
+                  url: https://github.com/dfetch-org/test-repo
+                  tag: v2.0
+
+            """
+        And I run "dfetch check"
+        Then the output shows
+            """
+            Dfetch (0.0.6)
+              ext/test-repo-tag   : wanted (v2.0), current (v1), available (v2.0)
+            """
