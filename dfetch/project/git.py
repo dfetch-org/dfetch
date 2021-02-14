@@ -205,20 +205,19 @@ class GitRepo(VCS):
     @staticmethod
     def _ls_remote(remote: str) -> Dict[str, str]:
 
-        result = run_on_cmdline(logger, f"git ls-remote --heads --tags {remote}")
+        result = run_on_cmdline(
+            logger, f"git ls-remote --heads --tags {remote}"
+        ).stdout.decode()
 
         info = {}
-        for line in result.stdout.decode().split("\n"):
-            if line:
-                key, value = f"{line} ".split("\t", 1)
-                if not value.startswith("refs/pull"):
+        for line in filter(lambda x: x, result.split("\n")):
+            sha, ref = [part.strip() for part in f"{line} ".split("\t", maxsplit=1)]
 
-                    # Annotated tag commit (more important)
-                    if value.strip().endswith("^{}"):
-                        info[value.strip().strip("^{}")] = key.strip()
-                    else:
-                        if value.strip() not in info:
-                            info[value.strip()] = key.strip()
+            # Annotated tag commit (more important)
+            if ref.endswith("^{}"):
+                info[ref.strip("^{}")] = sha
+            elif ref not in info:
+                info[ref] = sha
         return info
 
     @staticmethod
