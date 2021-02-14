@@ -143,8 +143,18 @@ class SvnRepo(VCS):
         tool, version = first_line.replace(",", "").split("version", maxsplit=1)
         VCS._log_tool(tool, version)
 
-    def _fetch_impl(self, version: Version) -> Version:
-        """Get the revision of the remote and place it at the local path."""
+    def _determine_what_to_fetch(self, version: Version) -> Tuple[str, str, str]:
+        """Based on the given version, determine what to fetch.
+
+        Args:
+            version (Version): Version that needs to be fetched
+
+        Raises:
+            RuntimeError: Invalid revision
+
+        Returns:
+            Tuple[str, str, str]: branch, branch_path, revision
+        """
         if version.tag:
             branch_path = f"tags/{version.tag}/"
             branch = ""
@@ -159,6 +169,11 @@ class SvnRepo(VCS):
         if not revision.isdigit():
             raise RuntimeError(f"{revision} must be a number for SVN")
 
+        return (branch, branch_path, revision)
+
+    def _fetch_impl(self, version: Version) -> Version:
+        """Get the revision of the remote and place it at the local path."""
+        branch, branch_path, revision = self._determine_what_to_fetch(version)
         rev_arg = f"--revision {revision}" if revision else ""
 
         complete_path = "/".join([self.remote, branch_path, self.source]).strip("/")
