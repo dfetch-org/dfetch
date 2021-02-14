@@ -12,12 +12,13 @@ class Version(NamedTuple):
 
     def __eq__(self, other: Any) -> bool:
         """Check if two versions can be considered as equal."""
-        return other and any(
-            [
-                (self.tag and self.tag == other.tag),
-                (self.branch == other.branch) and (self.revision == other.revision),
-            ]
-        )
+        if not other:
+            return False
+
+        if self.tag or other.tag:
+            return bool(self.tag == other.tag)
+
+        return bool(self.branch == other.branch and self.revision == other.revision)
 
     def __repr__(self) -> str:
         """Get the string representing this version."""
