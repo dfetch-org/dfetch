@@ -35,10 +35,10 @@ class VCS(ABC):
         Returns:
             Tuple[Optional[Version], Optional[Version]]: Wanted, Have
         """
-        if not os.path.exists(self.__metadata.path):
-            return (self.wanted_version, None)
+        on_disk = self._on_disk_version()
 
-        on_disk = Metadata.from_file(self.__metadata.path).version
+        if not on_disk:
+            return (self.wanted_version, None)
 
         if self.wanted_version.tag:
             return (Version(tag=self.wanted_version.tag), Version(tag=on_disk.tag))
