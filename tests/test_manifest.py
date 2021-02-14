@@ -32,6 +32,16 @@ manifest:
      url-base: "http://www.myremote.com/"
 """
 
+
+MANIFEST_NO_REMOTES = u"""
+manifest:
+   version: 0
+
+   projects:
+   - name: my-project
+     url: "http://www.somewhere.com"
+"""
+
 DICTIONARY_MANIFEST = {
     "version": 0,
     "remotes": [{"name": "my-remote", "url-base": "http://www.myremote.com/"}],
@@ -56,6 +66,17 @@ def test_no_projects() -> None:
 
     with pytest.raises(KeyError):
         manifest = given_manifest_from_text(MANIFEST_NO_PROJECTS)
+
+
+def test_no_remotes() -> None:
+    """Test that manifest without remotes can be read."""
+
+    manifest = given_manifest_from_text(MANIFEST_NO_REMOTES)
+
+    assert len(manifest.projects) == 1
+    assert manifest.projects[0].name == "my-project"
+    assert manifest.projects[0].remote_url == "http://www.somewhere.com"
+    assert len(manifest._remotes) == 0
 
 
 def test_construct_from_dict() -> None:
