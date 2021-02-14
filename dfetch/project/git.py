@@ -234,25 +234,22 @@ class GitRepo(VCS):
 
     @staticmethod
     def _find_branch_in_local_repo_containing_sha(repo_path: str, sha: str) -> str:
-        if not os.path.isdir(repo_path):
+        if not os.path.isdir(os.path.join(repo_path, GitRepo.METADATA_DIR)):
             return ""
 
         with in_directory(repo_path):
-            if not os.path.isdir(GitRepo.METADATA_DIR):
-                return ""
             result = run_on_cmdline(
                 logger,
                 ["git", "branch", "--contains", sha],
             )
 
-        branches: List[str] = []
-        for branch in result.stdout.decode().split("*"):
-            branch = branch.strip()
+        branches: List[str] = [
+            branch.strip()
+            for branch in result.stdout.decode().split("*")
+            if branch.strip() and "HEAD detached at" not in branch.strip()
+        ]
 
-            if branch and "HEAD detached at" not in branch:
-                branches.append(branch)
-
-        return branches[0] if len(branches) == 1 else ""
+        return "" if not branches else branches[0]
 
     @staticmethod
     def _find_sha_of_branch_or_tag(info: Dict[str, str], branch: str) -> str:
