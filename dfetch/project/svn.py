@@ -158,11 +158,13 @@ class SvnRepo(VCS):
         if version.tag:
             branch_path = f"tags/{version.tag}/"
             branch = ""
-        elif version.branch and version.branch != self.DEFAULT_BRANCH:
-            branch_path = f"branches/{version.branch}"
-            branch = version.branch
         else:
-            branch = branch_path = self.DEFAULT_BRANCH
+            branch = version.branch or self.DEFAULT_BRANCH
+            branch_path = (
+                f"branches/{branch}"
+                if branch != self.DEFAULT_BRANCH
+                else self.DEFAULT_BRANCH
+            )
 
         revision = version.revision or self._get_revision(branch_path)
 
