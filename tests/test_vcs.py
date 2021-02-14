@@ -55,7 +55,7 @@ class ConcreteVCS(VCS):
             Version(tag="0.0.4"),
             Version(tag="0.0.3"),
         ),
-        ("nothing-on-disk", None, Version(tag="0.0.4"), Version(tag="0.0.3"), None),
+        ("nothing-on-disk", None, Version(tag="0.0.4"), Version(tag="0.0.4"), None),
         (
             "rev-only",
             Version(revision="123"),
