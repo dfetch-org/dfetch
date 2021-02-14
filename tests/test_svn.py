@@ -171,3 +171,43 @@ def test_check(name, project, cmd_result, expectation):
         run_on_cmdline_mock.side_effect = cmd_result
 
         assert SvnRepo(project).check() == expectation
+
+
+SVN_INFO = u"""
+Path: cpputest
+URL: https://github.com/cpputest/cpputest
+Relative URL: ^/
+Repository Root: https://github.com/cpputest/cpputest
+Repository UUID: 077c9a1d-76f4-0596-57cc-ce57b7db7bff
+Revision: 3976
+Node Kind: directory
+Last Changed Author: bas.vodde
+Last Changed Rev: 3976
+Last Changed Date: 2021-02-06 13:57:00 +0100 (za, 06 feb 2021)
+
+"""
+
+
+def test_get_info():
+
+    with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
+
+        run_on_cmdline_mock.return_value.stdout = os.linesep.join(
+            SVN_INFO.split("\n")
+        ).encode()
+        result = SvnRepo._get_info_from_target("bla")
+
+        expectation = {
+            "Path": "cpputest",
+            "URL": "https://github.com/cpputest/cpputest",
+            "Relative URL": "^/",
+            "Repository Root": "https://github.com/cpputest/cpputest",
+            "Repository UUID": "077c9a1d-76f4-0596-57cc-ce57b7db7bff",
+            "Revision": "3976",
+            "Node Kind": "directory",
+            "Last Changed Author": "bas.vodde",
+            "Last Changed Rev": "3976",
+            "Last Changed Date": "2021-02-06 13:57:00 +0100 (za, 06 feb 2021)",
+        }
+
+        assert result == expectation

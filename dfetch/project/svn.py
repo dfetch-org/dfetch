@@ -194,14 +194,14 @@ class SvnRepo(VCS):
 
     @staticmethod
     def _get_info_from_target(target: str = "") -> Dict[str, str]:
-        result = run_on_cmdline(logger, f"svn info {target}")
+        result = run_on_cmdline(logger, f"svn info {target}").stdout.decode()
 
-        info = {}
-        for line in result.stdout.decode().split(os.linesep):
-            if line:
-                key, value = f"{line} ".split(":", 1)
-                info[key.strip()] = value.strip()
-        return info
+        return {
+            key.strip(): value.strip()
+            for key, value in (
+                line.split(":", maxsplit=1) for line in result.split(os.linesep) if line
+            )
+        }
 
     def _get_revision(self, branch: str) -> str:
         return self._get_info(branch)["Revision"]
