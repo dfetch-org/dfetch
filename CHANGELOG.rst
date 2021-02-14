@@ -2,6 +2,7 @@ Release 0.0.8 (under development)
 =================================
 
 * Fix wrong version check (#101)
+* Don't mandate remote section in manifest (#102)
 
 Release 0.0.7 (released 2021-02-13)
 ===================================

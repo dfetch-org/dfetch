@@ -90,10 +90,6 @@ Feature: Checking dependencies from a git repository
             manifest:
               version: '0.0'
 
-              remotes:
-                - name: something
-                  url-base: unused
-
               projects:
                 - name: ext/test-repo-tag
                   url: https://github.com/dfetch-org/test-repo
@@ -105,10 +101,6 @@ Feature: Checking dependencies from a git repository
             """
             manifest:
               version: '0.0'
-
-              remotes:
-                - name: something
-                  url-base: unused
 
               projects:
                 - name: ext/test-repo-tag

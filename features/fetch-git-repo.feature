@@ -36,15 +36,12 @@ Feature: Fetching dependencies from a git repository
             | ext/test-rev-and-branch    |
             | ext/test-repo-tag-v1       |
 
+    @wip
     Scenario: Tag is updated in manifest
         Given the manifest 'dfetch.yaml'
             """
             manifest:
               version: '0.0'
-
-              remotes:
-                - name: something
-                  url-base: unused
 
               projects:
                 - name: ext/test-repo-tag
@@ -57,10 +54,6 @@ Feature: Fetching dependencies from a git repository
             """
             manifest:
               version: '0.0'
-
-              remotes:
-                - name: something
-                  url-base: unused
 
               projects:
                 - name: ext/test-repo-tag

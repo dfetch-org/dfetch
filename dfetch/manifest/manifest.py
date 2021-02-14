@@ -54,20 +54,24 @@ class Manifest:
         """Create the manifest."""
         self.__version: str = manifest.get("version", self.CURRENT_VERSION)
 
-        self._remotes, default_remotes = self._determine_remotes(manifest["remotes"])
+        self._remotes, default_remotes = self._determine_remotes(
+            manifest.get("remotes", [])
+        )
 
         if not default_remotes:
             default_remotes = list(self._remotes.values())[0:1]
+
+        default_remote = None if not default_remotes else default_remotes[0]
 
         self._projects: Dict[str, ProjectEntry] = {}
         for project in manifest["projects"]:
             if isinstance(project, dict):
                 last_project = self._projects[project["name"]] = ProjectEntry.from_yaml(
-                    project, default_remotes[0]
+                    project, default_remote
                 )
             elif isinstance(project, ProjectEntry):
                 last_project = self._projects[project.name] = ProjectEntry.copy(
-                    project, default_remotes[0]
+                    project, default_remote
                 )
             else:
                 raise RuntimeError(f"{project} has unknown type")
