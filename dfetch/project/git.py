@@ -253,7 +253,10 @@ class GitRepo(VCS):
     @staticmethod
     def _find_sha_of_branch_or_tag(info: Dict[str, str], branch_or_tag: str) -> str:
         for reference, sha in info.items():
-            if reference in [f"refs/heads/{branch_or_tag}", f"refs/tags/{branch_or_tag}"]:
+            if reference in [
+                f"refs/heads/{branch_or_tag}",
+                f"refs/tags/{branch_or_tag}",
+            ]:
                 return sha
         return ""
 
