@@ -61,23 +61,40 @@ class Manifest:
         if not default_remotes:
             default_remotes = list(self._remotes.values())[0:1]
 
-        default_remote = None if not default_remotes else default_remotes[0]
+        self._default_remote = None if not default_remotes else default_remotes[0]
+        self._projects = self._init_projects(manifest["projects"])
 
-        self._projects: Dict[str, ProjectEntry] = {}
-        for project in manifest["projects"]:
+    def _init_projects(
+        self, projects: Sequence[Union[ProjectEntryDict, ProjectEntry, Dict[str, str]]]
+    ) -> Dict[str, ProjectEntry]:
+        """Iterates over projects from manifest and initializes ProjectEntries from it.
+
+        Args:
+            projects (Sequence[Union[ProjectEntryDict, ProjectEntry, Dict[str, str]]]): Iterable with projects
+
+        Raises:
+            RuntimeError: Project unknown
+
+        Returns:
+            Dict[str, ProjectEntry]: Dictionary with key: Name of project, Value: ProjectEntry
+        """
+        _projects: Dict[str, ProjectEntry] = {}
+        for project in projects:
             if isinstance(project, dict):
-                last_project = self._projects[project["name"]] = ProjectEntry.from_yaml(
-                    project, default_remote
+                last_project = _projects[project["name"]] = ProjectEntry.from_yaml(
+                    project, self._default_remote
                 )
             elif isinstance(project, ProjectEntry):
-                last_project = self._projects[project.name] = ProjectEntry.copy(
-                    project, default_remote
+                last_project = _projects[project.name] = ProjectEntry.copy(
+                    project, self._default_remote
                 )
             else:
                 raise RuntimeError(f"{project} has unknown type")
 
             if last_project.remote:
                 last_project.set_remote(self._remotes[last_project.remote])
+
+        return _projects
 
     @staticmethod
     def _determine_remotes(
