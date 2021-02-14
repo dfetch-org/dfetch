@@ -35,3 +35,43 @@ Feature: Fetching dependencies from a git repository
             | ext/test-repo-rev-only     |
             | ext/test-rev-and-branch    |
             | ext/test-repo-tag-v1       |
+
+    @wip
+    Scenario: Tag is updated in manifest
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              remotes:
+                - name: something
+                  url-base: unused
+
+              projects:
+                - name: ext/test-repo-tag
+                  url: https://github.com/dfetch-org/test-repo
+                  tag: v1
+
+            """
+        And all projects are updated
+        When the manifest 'dfetch.yaml' is changed to
+            """
+            manifest:
+              version: '0.0'
+
+              remotes:
+                - name: something
+                  url-base: unused
+
+              projects:
+                - name: ext/test-repo-tag
+                  url: https://github.com/dfetch-org/test-repo
+                  tag: v2.0
+
+            """
+        And I run "dfetch update"
+        Then the output shows
+            """
+            Dfetch (0.0.6)
+              ext/test-repo-tag   : Fetched v2.0
+            """

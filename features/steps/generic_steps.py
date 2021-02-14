@@ -21,7 +21,8 @@ def step_impl(context, cmd):
     """Call a command."""
     try:
         context.cmd_output = dfetch_title.sub(
-            "", subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT, text=True)
+            "",
+            subprocess.check_output(cmd.split(), stderr=subprocess.STDOUT, text=True),
         )
         context.cmd_returncode = 0
     except subprocess.CalledProcessError as exc:

@@ -5,6 +5,7 @@ from behave import given, then  # pylint: disable=no-name-in-module
 
 
 @given("the manifest '{name}'")
+@when("the manifest '{name}' is changed to")
 def step_impl(context, name):
     with open(name, "w") as manifest:
         for line in context.text.splitlines():
