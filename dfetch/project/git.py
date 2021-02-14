@@ -205,7 +205,7 @@ class GitRepo(VCS):
     @staticmethod
     def _ls_remote(remote: str) -> Dict[str, str]:
 
-        result = run_on_cmdline(logger, f"git ls-remote {remote}")
+        result = run_on_cmdline(logger, f"git ls-remote --heads --tags {remote}")
 
         info = {}
         for line in result.stdout.decode().split("\n"):
