@@ -1,7 +1,7 @@
 Release 0.0.8 (under development)
 =================================
 
-* something
+* Fix wrong version check (#101)
 
 Release 0.0.7 (released 2021-02-13)
 ===================================
