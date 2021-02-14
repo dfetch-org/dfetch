@@ -263,12 +263,11 @@ class GitRepo(VCS):
     ) -> Tuple[str, str]:
         """Check all branch tips and tags and see if the sha is one of them."""
         branch, tag = "", ""
-        info.pop("HEAD", None)
         for reference, sha in info.items():
             if sha.startswith(rev):  # Also allow for shorter SHA's
-                if reference.startswith("refs/heads/"):
-                    branch = reference.replace("refs/heads/", "")
-                elif reference.startswith("refs/tags/"):
+                if reference.startswith("refs/tags/"):
                     tag = reference.replace("refs/tags/", "")
+                elif reference.startswith("refs/heads/"):
+                    branch = reference.replace("refs/heads/", "")
                 break
         return (branch, tag)
