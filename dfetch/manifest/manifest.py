@@ -67,7 +67,7 @@ class Manifest:
     def _init_projects(
         self, projects: Sequence[Union[ProjectEntryDict, ProjectEntry, Dict[str, str]]]
     ) -> Dict[str, ProjectEntry]:
-        """Iterates over projects from manifest and initializes ProjectEntries from it.
+        """Iterate over projects from manifest and initialize ProjectEntries from it.
 
         Args:
             projects (Sequence[Union[ProjectEntryDict, ProjectEntry, Dict[str, str]]]): Iterable with projects
