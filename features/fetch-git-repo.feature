@@ -36,7 +36,6 @@ Feature: Fetching dependencies from a git repository
             | ext/test-rev-and-branch    |
             | ext/test-repo-tag-v1       |
 
-    @wip
     Scenario: Tag is updated in manifest
         Given the manifest 'dfetch.yaml'
             """
