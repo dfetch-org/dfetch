@@ -30,22 +30,18 @@ For a complete description of the manifest, see :ref:`Manifest`.
 Alternatively, *Dfetch* can generate a manifest based on the git submodules or svn externals
 in an existing project using :ref:`dfetch import <import>`.
 
-Below manifest will retrieve the given revision of *mymodule* from the remote listed.
+Below manifest will retrieve the given tag of *mymodule* from the url listed.
+For more options such as ``branch`` and ``revision`` see :ref:`Manifest`.
 
 .. code-block:: yaml
 
     manifest:
-        version: 0.0
+      version: '0.0'
 
-        remotes:
-        - name: mycompany-git-modules
-          url-base: http://git.mycompany.local/mycompany/
-
-        projects:
-         - name: mymodule
-           repo-path: mymodule.git
-           dst: external/mycompany/
-           revision: b81fc3a10f5e69ecca767625f88f6b90e5b84119
+      projects:
+        - name: ext/test-repo-tag
+          tag: v1
+          url: https://github.com/dfetch-org/test-repo
 
 My first update
 ---------------
@@ -71,35 +67,73 @@ My first version change
 -----------------------
 During development of your project you can periodically check for update with.
 
-.. code-block::
+.. code-block:: console
 
-   dfetch check
+  dfetch check
 
-*Dfetch* will check for each project if a newer version is avaiable.
-If you want to update and have an explicit revision in your :ref:`Manifest`:,
-you can manually update the revision of the project.
+*Dfetch* will check for each project if a newer version is available.
+
+.. code-block:: console
+
+  Dfetch (0.0.7)
+    ext/test-repo-tag   : wanted & current (v1), available (v2.0)
+
+As can be seen a newer tag is available. If you want to update,
+you can manually update the tag of the project in the manifest.
 
 .. note:: If you only have a branch specified, *Dfetch* will update automatically.
 
 .. code-block:: yaml
 
-    manifest:
-        version: 0.0
+  manifest:
+    version: '0.0'
 
-        remotes:
-        - name: mycompany-git-modules
-          url-base: http://git.mycompany.local/mycompany/
-
-        projects:
-         - name: mymodule
-           repo-path: mymodule.git
-           dst: external/mycompany/
-           revision: b81fc3a10f5e69ecca767625f88f6b90e5b84119
+    projects:
+      - name: ext/test-repo-tag
+        url: https://github.com/dfetch-org/test-repo
+        tag: v2.0
 
 And after that rerunning `update`:
 
-.. code-block::
+.. code-block:: console
 
    dfetch update
 
 Now you can review the changes and commit them once again if you are happy.
+
+My First remote
+---------------
+Typically your project will have multiple dependencies. For instance take the below manifest.
+
+.. code-block:: yaml
+
+  manifest:
+    version: '0.0'
+
+    projects:
+      - name: ext/test-repo-tag
+        url: https://github.com/dfetch-org/test-repo
+
+      - name: cpputest
+        url: https://github.com/cpputest/cpputest
+
+Both projects have a very similar url. To simplify your manifest,
+it is possible to create a single remote with the common part of the URL.
+Below manifest is completely equivalent to the manifest above. For more
+details on working with remotes see :ref:`Remotes`.
+
+.. code-block:: yaml
+
+  manifest:
+    version: '0.0'
+
+    remotes:
+      - name: github
+        url-base: https://github.com/
+
+    projects:
+      - name: ext/test-repo-tag
+        url: dfetch-org/test-repo
+
+      - name: cpputest
+        url: cpputest/cpputest
