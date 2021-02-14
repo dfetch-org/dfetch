@@ -1,7 +1,9 @@
 """Remotes are the external repository where the code should be retrieved from.
 
+The ``remotes:`` section is not mandatory.
 If only one remote is added this is assumed to be the default.
 If multiple remotes are listed ``default:`` can be explicitly specified.
+If multiple remotes are marked as default, the first marked as default is chosen.
 
 .. code-block:: yaml
 
