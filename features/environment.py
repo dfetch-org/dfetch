@@ -1,5 +1,4 @@
 import os
-import shutil
 import tempfile
 
 from behave import fixture, use_fixture
@@ -13,6 +12,9 @@ def tmpdir(context):
     context.orig_cwd = os.getcwd()
     context.tmpdir = tempfile.mkdtemp()
     os.chdir(context.tmpdir)
+    context.remotes_dir_path = os.path.abspath(
+        os.path.join(os.getcwd(), "some-remote-server")
+    )
     yield context.tmpdir
     # -- CLEANUP-FIXTURE PART:
     os.chdir(context.orig_cwd)
@@ -21,3 +23,7 @@ def tmpdir(context):
 
 def before_feature(context, feature):
     use_fixture(tmpdir, context)
+
+
+def before_all(context):
+    context.remotes_dir = "some-remote-server"
