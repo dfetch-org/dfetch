@@ -20,7 +20,8 @@ The DFetch logo was created using:
 Third-party libraries
 ---------------------
 *DFetch* stands on the shoulders of giants, see below for their copyright notices.
-Note that their names may be listed below, but they did not endorse *DFetch* in any shape or form, but are welcome to :).
+Note that their names may be listed below, but they did not endorse *DFetch* in any
+shape or form, but are welcome to :).
 
 python-semver
 ~~~~~~~~~~~~~~
