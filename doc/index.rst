@@ -13,7 +13,6 @@ Dfetch
    manual
    troubleshooting
    contributing
-   technical
    changelog
    alternatives
    legal
