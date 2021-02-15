@@ -6,6 +6,17 @@ Legal
 .. warning:: We try our best to give credit where credit is due,
              if we forgot to mention your project or contribution, please let us know!
 
+Logo
+----
+The DFetch logo was created using:
+
+-   Logo: `Beagle (3171) - The Noun Project.svg icon from the Noun Project <https://thenounproject.com/icon/3171>`_
+-   Date: 7 March 2018
+-   Author: NATAPON CHANTABUTR
+-   License: cc0
+-   Source: `Wikimedia <https://commons.wikimedia.org/wiki/File:Beagle_(3171)_-_The_Noun_Project.svg>`_
+
+
 Third-party libraries
 ---------------------
 
