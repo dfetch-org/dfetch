@@ -1,7 +1,7 @@
 Release 0.0.9 (under development)
 ===================================
 
-* something
+* Add copyright notices to documentation
 
 Release 0.0.8 (released 2021-02-14)
 ===================================
