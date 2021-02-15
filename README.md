@@ -37,10 +37,3 @@ pip install dfetch
 ```bash
 pip install https://github.com/dfetch-org/dfetch/archive/main.zip
 ```
-
-## Logo
--   Logo: [Beagle (3171) - The Noun Project.svg icon from the Noun Project](https://thenounproject.com/icon/3171)
--   Date: 7 March 2018
--   Author: NATAPON CHANTABUTR
--   License: cc0
--   Source: [Wikimedia](https://commons.wikimedia.org/wiki/File:Beagle_(3171)_-_The_Noun_Project.svg)
