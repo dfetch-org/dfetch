@@ -2,6 +2,9 @@
 
 For each project the local version (based on tag or revision) will be compared against
 the available version. If there are new versions available this will be shown.
+
+.. uml:: /static/uml/check.puml
+
 """
 
 import argparse

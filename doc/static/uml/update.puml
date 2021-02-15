@@ -1,23 +1,19 @@
 @startuml
 start
 
-!include theme.puml
+skinparam monochrome true
+skinparam defaultFontName Frutiger
 
 partition "Update required" {
 
     if (Project + Metadata on disk?) then (no)
-    elseif (Revision or tag in metadata,\nsame as in manifest?) then (no)
+    elseif (Version in metadata,\nsame as in manifest?) then (no)
     else (yes)
         stop
     endif
 }
 
 partition "Prepare for update" {
-    :Hash directory;
-    if (Hash in manifest == hash?) then (no)
-        stop
-    else (yes)
-    endif
     :Clear target folder;
 }
 

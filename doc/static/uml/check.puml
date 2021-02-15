@@ -1,32 +1,28 @@
 @startuml
 start
 
-!include theme.puml
+skinparam monochrome true
+skinparam defaultFontName Frutiger
 
-if (Revision given?) then (yes)
-     stop
-endif
+:Get version on disk;
 
 if (Tag given?) then (yes)
   :Get all tags;
   :Parse tags;
-  if (Tag == latest?) then (yes)
-  else (no)
-     :Show available;
-  endif
+  :Show versions:
+   - wanted tag
+   - on disk tag
+   - available tag;
 else (no)
-
   if (Branch given?) then (no)
-    :Set branch to default;
-  else (yes)
+    :Use default branch;
   endif
-    :Get latest
-     revision of
-      branch;
-  if (Revsion on disk == remote revision?) then (no)
-     :Show available;
-  else (yes)
-  endif
+
+  :Get latest revsion of branch;
+  :Show versions:
+   - wanted revision / branch
+   - on disk revision / branch
+   - available revision / branch;
 endif
 
 stop
