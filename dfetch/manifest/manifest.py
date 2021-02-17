@@ -19,7 +19,7 @@ download and a section ``projects:`` that contains a list of projects to fetch.
 """
 import io
 import os
-from typing import IO, Any, Dict, List, Sequence, Tuple, Union
+from typing import IO, Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import yaml
 from typing_extensions import TypedDict
@@ -154,6 +154,11 @@ class Manifest:
         with open(path, "r") as opened_file:
             return Manifest.from_yaml(opened_file)
 
+    def set_parent(self, parent: ProjectEntry) -> None:
+        """Set a parent project for this manifest."""
+        for _, project in self._projects.items():
+            project.set_parent(parent.name)
+
     @property
     def version(self) -> str:
         """Version of the manifest file."""
@@ -207,7 +212,7 @@ def find_manifest() -> str:
     if len(paths) == 0:
         raise RuntimeError("No manifests were found!")
     if len(paths) != 1:
-        raise RuntimeError(f"Multiple manifests found: {paths}")
+        logger.warning(f"Multiple manifests found, using {paths[0]}")
 
     return os.path.realpath(paths[0])
 
@@ -223,6 +228,27 @@ def get_manifest() -> Tuple[Manifest, str]:
         dfetch.manifest.manifest.Manifest.from_file(manifest_path),
         manifest_path,
     )
+
+
+def get_submanifests(
+    parent: ProjectEntry, skip: Optional[List[str]] = None
+) -> List[Tuple[Manifest, str]]:
+    """Get manifest and its path."""
+    skip = skip or []
+    logger.debug("Looking for sub-manifests")
+
+    submanifests = []
+    for path in find_file(DEFAULT_MANIFEST_NAME, "."):
+        path = os.path.realpath(path)
+        if path not in skip:
+            logger.debug(f"Found sub-manifests {path}")
+            # TODO: validate submanifests
+            # dfetch.manifest.validate.validate(path)
+            submanifest = dfetch.manifest.manifest.Manifest.from_file(path)
+            submanifest.set_parent(parent)
+            submanifests += [(submanifest, path)]
+
+    return submanifests
 
 
 class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors

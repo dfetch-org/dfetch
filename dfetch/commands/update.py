@@ -44,5 +44,15 @@ class Update(dfetch.commands.command.Command):
                 except RuntimeError as exc:
                     exceptions += [str(exc)]
 
+                for submanifest, subpath in dfetch.manifest.manifest.get_submanifests(
+                    project, skip=[path]
+                ):
+                    with dfetch.util.util.in_directory(os.path.dirname(subpath)):
+                        for subproject in submanifest.projects:
+                            try:
+                                dfetch.project.make(subproject).update()
+                            except RuntimeError as exc:
+                                exceptions += [str(exc)]
+
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
