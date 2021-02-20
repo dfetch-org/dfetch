@@ -42,6 +42,18 @@ def in_directory(path: str) -> Generator[str, None, None]:
     os.chdir(pwd)
 
 
+@contextmanager
+def catch_runtime_exceptions(
+    exc_list: Optional[List[str]] = None,
+) -> Generator[List[str], None, None]:
+    """Catch all runtime errors and add it to list of strings."""
+    exc_list = exc_list or []
+    try:
+        yield exc_list
+    except RuntimeError as exc:
+        exc_list += [str(exc)]
+
+
 def find_file(name: str, path: str = ".") -> List[str]:
     """Find all files with a specific name recursively in a directory."""
     return [
