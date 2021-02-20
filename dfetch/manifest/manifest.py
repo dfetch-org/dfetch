@@ -212,7 +212,7 @@ def find_manifest() -> str:
     if len(paths) == 0:
         raise RuntimeError("No manifests were found!")
     if len(paths) != 1:
-        logger.warning(f"Multiple manifests found, using {paths[0]}")
+        raise RuntimeError("Multiple manifests found!")
 
     return os.path.realpath(paths[0])
 
