@@ -8,6 +8,7 @@ It tries to determine what kind of vcs it is: git, svn or something else.
 
 import argparse
 import os
+from typing import List
 
 import dfetch.commands.command
 import dfetch.manifest.manifest
@@ -16,6 +17,7 @@ import dfetch.manifest.validate
 import dfetch.project.git
 import dfetch.project.svn
 from dfetch.log import get_logger
+from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
 
@@ -36,23 +38,19 @@ class Update(dfetch.commands.command.Command):
         """Perform the update."""
         manifest, path = dfetch.manifest.manifest.get_manifest()
 
-        with dfetch.util.util.in_directory(os.path.dirname(path)):
-            exceptions = []
+        exceptions: List[str] = []
+        with in_directory(os.path.dirname(path)):
             for project in manifest.projects:
-                try:
+                with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).update()
-                except RuntimeError as exc:
-                    exceptions += [str(exc)]
 
                 for submanifest, subpath in dfetch.manifest.manifest.get_submanifests(
                     project, skip=[path]
                 ):
-                    with dfetch.util.util.in_directory(os.path.dirname(subpath)):
+                    with in_directory(os.path.dirname(subpath)):
                         for subproject in submanifest.projects:
-                            try:
+                            with catch_runtime_exceptions(exceptions) as exceptions:
                                 dfetch.project.make(subproject).update()
-                            except RuntimeError as exc:
-                                exceptions += [str(exc)]
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
