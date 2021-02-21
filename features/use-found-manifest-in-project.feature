@@ -1,3 +1,4 @@
+@wip
 Feature: Use found manifest in project
 
     When a project has dependencies of its own, *Dfetch* should also fetch any dependencies in
@@ -66,7 +67,7 @@ Feature: Use found manifest in project
             """
             Dfetch (0.0.6)
               SomeProject         : Fetched v1
-            ThirdParty\SomeProject\dfetch.yaml: Schema validation failed:
+            ThirdParty/SomeProject/dfetch.yaml: Schema validation failed:
              - Value 'very-invalid-manifest' is not a dict. Value path: ''.
             """
         And 'MyProject' looks like:
