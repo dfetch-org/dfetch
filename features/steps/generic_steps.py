@@ -45,6 +45,7 @@ def list_dir(path):
 @given("all projects are updated")
 def step_impl(context):
     context.execute_steps('When I run "dfetch update"')
+    assert not context.cmd_returncode, context.cmd_output
 
 
 @when('I run "{cmd}" in {path}')
