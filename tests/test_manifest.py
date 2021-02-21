@@ -9,7 +9,8 @@ import pytest
 
 import dfetch.manifest.manifest
 from dfetch import DEFAULT_MANIFEST_NAME
-from dfetch.manifest.manifest import Manifest, find_manifest
+from dfetch.manifest.manifest import Manifest, find_manifest, get_submanifests
+from dfetch.manifest.project import ProjectEntry
 
 BASIC_MANIFEST = u"""
 manifest:
@@ -115,3 +116,36 @@ def test_single_manifest_found() -> None:
         find_file_mock.return_value = [DEFAULT_MANIFEST_NAME]
 
         assert os.path.join(os.getcwd(), DEFAULT_MANIFEST_NAME) == find_manifest()
+
+
+@pytest.mark.parametrize(
+    "name, manifest_paths",
+    [
+        (
+            "no-submanifests",
+            [],
+        ),
+        (
+            "single-submanifest",
+            ["some-manifest.yaml"],
+        ),
+        (
+            "multi-submanifests",
+            ["some-manifest.yaml", "some-other-manifest.yaml"],
+        ),
+    ],
+)
+def test_get_submanifests(name, manifest_paths) -> None:
+
+    parent = ProjectEntry({"name": "parent"})
+
+    with patch("dfetch.manifest.manifest.find_file") as find_file_mock:
+        with patch("dfetch.manifest.validate.validate"):
+            with patch("dfetch.manifest.manifest.Manifest"):
+                find_file_mock.return_value = manifest_paths
+
+                found_submanifests = get_submanifests(parent)
+
+                assert len(found_submanifests) == len(manifest_paths)
+                for path, result in zip(manifest_paths, found_submanifests):
+                    assert os.path.realpath(path) == result[1]
