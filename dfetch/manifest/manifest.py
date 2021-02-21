@@ -19,6 +19,7 @@ download and a section ``projects:`` that contains a list of projects to fetch.
 """
 import io
 import os
+import pathlib
 from typing import IO, Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import yaml
@@ -242,7 +243,9 @@ def get_submanifests(
         path = os.path.realpath(path)
         if path not in skip:
             logger.debug(f"Found sub-manifests {path}")
-            with prefix_runtime_exceptions(os.path.relpath(path, os.getcwd())):
+            with prefix_runtime_exceptions(
+                pathlib.Path(path).relative_to(os.getcwd()).as_posix()
+            ):
                 dfetch.manifest.validate.validate(path)
             submanifest = dfetch.manifest.manifest.Manifest.from_file(path)
             submanifest.set_parent(parent)
