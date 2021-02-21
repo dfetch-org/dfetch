@@ -105,8 +105,7 @@ def test_multiple_manifests_found() -> None:
 
         find_file_mock.return_value = [DEFAULT_MANIFEST_NAME, "manifest2.yaml"]
 
-        with pytest.raises(RuntimeError):
-            find_manifest()
+        assert os.path.realpath(DEFAULT_MANIFEST_NAME) == find_manifest()
 
 
 def test_single_manifest_found() -> None:
