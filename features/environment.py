@@ -21,7 +21,7 @@ def tmpdir(context):
     safe_rmtree(context.tmpdir)
 
 
-def before_feature(context, feature):
+def before_scenario(context, scenario):
     use_fixture(tmpdir, context)
 
 
