@@ -79,3 +79,48 @@ Feature: Use found manifest in project
                         dfetch.yaml
                 dfetch.yaml
             """
+
+    Scenario: A second update is performed
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: SomeProject
+                      dst: ThirdParty/SomeProject
+                      url: some-remote-server/SomeProject.git
+                      tag: v1
+            """
+        And a git-repository "SomeProject.git" with the manifest:
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: SomeOtherProject
+                      dst: ../SomeOtherProject
+                      url: some-remote-server/SomeOtherProject.git
+                      tag: v1
+            """
+        And a git repository "SomeOtherProject.git"
+        And all projects are updated
+        When I run "dfetch update" in MyProject
+        Then the output shows
+            """
+            Dfetch (0.0.6)
+            Multiple manifests found, using .\dfetch.yaml
+              SomeProject         : up-to-date (v1)
+              SomeProject/SomeOtherProject: up-to-date (v1)
+            """
+        And 'MyProject' looks like:
+            """
+            MyProject/
+                ThirdParty/
+                    SomeOtherProject/
+                        .dfetch_data.yaml
+                        README.md
+                    SomeProject/
+                        .dfetch_data.yaml
+                        README.md
+                        dfetch.yaml
+                dfetch.yaml
+            """
