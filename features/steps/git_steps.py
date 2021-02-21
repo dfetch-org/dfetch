@@ -12,7 +12,7 @@ from features.steps.manifest_steps import generate_manifest
 
 
 def create_repo():
-    subprocess.call(["git", "init"])
+    subprocess.call(["git", "init", "--initial-branch=master"])
     subprocess.call(["git", "config", "user.email", "you@example.com"])
     subprocess.call(["git", "config", "user.name", "John Doe"])
 
