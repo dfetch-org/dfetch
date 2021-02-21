@@ -54,6 +54,17 @@ def catch_runtime_exceptions(
         exc_list += [str(exc)]
 
 
+@contextmanager
+def prefix_runtime_exceptions(
+    prefix: str,
+) -> Generator[None, None, None]:
+    """Prefix any runtime error with given string."""
+    try:
+        yield None
+    except RuntimeError as exc:
+        raise RuntimeError(f"{prefix}: {exc}") from exc
+
+
 def find_file(name: str, path: str = ".") -> List[str]:
     """Find all files with a specific name recursively in a directory."""
     return [

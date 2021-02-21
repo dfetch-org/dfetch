@@ -29,7 +29,7 @@ from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
-from dfetch.util.util import find_file
+from dfetch.util.util import find_file, prefix_runtime_exceptions
 
 logger = get_logger(__name__)
 
@@ -242,8 +242,8 @@ def get_submanifests(
         path = os.path.realpath(path)
         if path not in skip:
             logger.debug(f"Found sub-manifests {path}")
-            # TODO: validate submanifests
-            # dfetch.manifest.validate.validate(path)
+            with prefix_runtime_exceptions(os.path.relpath(path, os.getcwd())):
+                dfetch.manifest.validate.validate(path)
             submanifest = dfetch.manifest.manifest.Manifest.from_file(path)
             submanifest.set_parent(parent)
             submanifests += [(submanifest, path)]
