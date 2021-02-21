@@ -5,14 +5,14 @@ import pykwalify
 from pykwalify.core import Core, SchemaError
 from yaml.scanner import ScannerError
 
-from dfetch.resources import SCHEMA_PATH
+import dfetch.resources
 
 
 def validate(path: str) -> None:
     """Validate the given manifest."""
     logging.getLogger(pykwalify.__name__).setLevel(logging.CRITICAL)
 
-    with SCHEMA_PATH as schema_path:
+    with dfetch.resources.schema_path() as schema_path:
         try:
             validator = Core(source_file=path, schema_files=[str(schema_path)])
         except ScannerError as err:
