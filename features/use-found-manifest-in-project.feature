@@ -46,7 +46,7 @@ Feature: Use found manifest in project
                 dfetch.yaml
             """
 
-    Scenario: A subproject has an invalid manifest
+    Scenario: A child-project has an invalid manifest
         Given the manifest 'dfetch.yaml' in MyProject
             """
             manifest:
