@@ -60,13 +60,13 @@ class Check(dfetch.commands.command.Command):
                     dfetch.project.make(project).check_for_update()
 
                 if not args.non_recursive:
-                    exceptions += Check.__check_child_manifests(project, path)
+                    exceptions += Check._check_child_manifests(project, path)
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
 
     @staticmethod
-    def __check_child_manifests(project: ProjectEntry, path: str) -> List[str]:
+    def _check_child_manifests(project: ProjectEntry, path: str) -> List[str]:
         exceptions: List[str] = []
         for (
             childmanifest,
