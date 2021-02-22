@@ -14,6 +14,8 @@ from dfetch.manifest.manifest import Manifest
 from dfetch.project.git import Submodule
 from dfetch.project.svn import External
 
+DEFAULT_ARGS = argparse.Namespace(non_recursive=False)
+
 FIRST_SUBMODULE = Submodule(
     name="submod1",
     sha="1234",

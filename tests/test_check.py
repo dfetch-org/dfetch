@@ -13,6 +13,8 @@ from dfetch.commands.check import Check
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 
+DEFAULT_ARGS = argparse.Namespace(non_recursive=False)
+
 
 def mock_manifest(name, projects):
 
@@ -39,11 +41,15 @@ def test_check(name, projects):
     check = Check()
 
     with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
-        with patch("dfetch.project.make") as mocked_make:
+        with patch(
+            "dfetch.manifest.manifest.get_childmanifests"
+        ) as mocked_get_childmanifests:
+            with patch("dfetch.project.make") as mocked_make:
 
-            mocked_get_manifest.return_value = (mock_manifest(name, projects), "/")
+                mocked_get_manifest.return_value = (mock_manifest(name, projects), "/")
+                mocked_get_childmanifests.return_value = []
 
-            check(argparse.Namespace)
+                check(DEFAULT_ARGS)
 
-            for project in projects:
-                mocked_make.return_value.check_for_update.assert_called()
+                for project in projects:
+                    mocked_make.return_value.check_for_update.assert_called()
