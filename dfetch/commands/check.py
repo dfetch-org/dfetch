@@ -59,8 +59,9 @@ class Check(dfetch.commands.command.Command):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).check_for_update()
 
-                if not args.non_recursive:
-                    exceptions += Check._check_child_manifests(project, path)
+                if not args.non_recursive and os.path.exists(project.destination):
+                    with in_directory(project.destination):
+                        exceptions += Check._check_child_manifests(project, path)
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))

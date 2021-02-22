@@ -246,7 +246,7 @@ def get_childmanifests(
         if path not in skip:
             logger.debug(f"Found sub-manifests {path}")
             with prefix_runtime_exceptions(
-                pathlib.Path(path).relative_to(os.getcwd()).as_posix()
+                pathlib.Path(path).relative_to(os.path.dirname(os.getcwd())).as_posix()
             ):
                 dfetch.manifest.validate.validate(path)
             childmanifest = dfetch.manifest.manifest.Manifest.from_file(path)
