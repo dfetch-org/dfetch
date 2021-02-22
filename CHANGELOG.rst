@@ -2,6 +2,7 @@ Release 0.0.9 (under development)
 ===================================
 
 * Add copyright notices to documentation
+* Make it possible to check/update child-projects (#99)
 
 Release 0.0.8 (released 2021-02-14)
 ===================================
