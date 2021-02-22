@@ -17,6 +17,7 @@ import dfetch.manifest.validate
 import dfetch.project.git
 import dfetch.project.svn
 from dfetch.log import get_logger
+from dfetch.manifest.project import ProjectEntry
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -50,16 +51,20 @@ class Update(dfetch.commands.command.Command):
                     dfetch.project.make(project).update()
 
                 if not args.non_recursive:
-                    for (
-                        childmanifest,
-                        childpath,
-                    ) in dfetch.manifest.manifest.get_childmanifests(
-                        project, skip=[path]
-                    ):
-                        with in_directory(os.path.dirname(childpath)):
-                            for childproject in childmanifest.projects:
-                                with catch_runtime_exceptions(exceptions) as exceptions:
-                                    dfetch.project.make(childproject).update()
+                    exceptions += Update.__update_child_manifests(project, path)
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
+
+    @staticmethod
+    def __update_child_manifests(project: ProjectEntry, path: str) -> List[str]:
+        exceptions: List[str] = []
+        for (
+            childmanifest,
+            childpath,
+        ) in dfetch.manifest.manifest.get_childmanifests(project, skip=[path]):
+            with in_directory(os.path.dirname(childpath)):
+                for childproject in childmanifest.projects:
+                    with catch_runtime_exceptions(exceptions) as exceptions:
+                        dfetch.project.make(childproject).update()
+        return exceptions
