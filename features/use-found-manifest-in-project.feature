@@ -104,6 +104,26 @@ Feature: Use found manifest in project
             """
         And a git repository "SomeOtherProject.git"
         And all projects are updated
+        Then the output shows
+            """
+            Dfetch (0.0.6)
+              SomeProject         : Fetched v1
+              SomeProject/SomeOtherProject: Fetched v1
+            """
+        Then 'MyProject' looks like:
+            """
+            MyProject/
+                ThirdParty/
+                    SomeOtherProject/
+                        .dfetch_data.yaml
+                        README.md
+                    SomeProject/
+                        .dfetch_data.yaml
+                        README.md
+                        dfetch.yaml
+                dfetch.yaml
+            """
+
         When I run "dfetch update" in MyProject
         Then the output shows
             """
