@@ -1,4 +1,3 @@
-@wip
 Feature: Use found manifest in project
 
     When a project has dependencies of its own, *Dfetch* should also fetch any dependencies in
@@ -128,7 +127,7 @@ Feature: Use found manifest in project
         Then the output shows
             """
             Dfetch (0.0.6)
-            Multiple manifests found, using .\dfetch.yaml
+            Multiple manifests found, using dfetch.yaml
               SomeProject         : up-to-date (v1)
               SomeProject/SomeOtherProject: up-to-date (v1)
             """
