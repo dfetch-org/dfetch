@@ -29,7 +29,7 @@ class Update(dfetch.commands.command.Command):
     """
 
     @staticmethod
-    def create_menu(subparsers: "argparse._ChildParsersAction") -> None:
+    def create_menu(subparsers: "argparse._SubParsersAction") -> None:
         """Add the menu for the update action."""
         parser = dfetch.commands.command.Command.parser(subparsers, Update)
         parser.add_argument("--dry-run", "-n", action="store_true", help="Only check")
