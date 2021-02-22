@@ -16,6 +16,55 @@ Migrating from git submodules
 * Download all your projects using :ref:`dfetch update<update>`.
 * Commit your projects as part of your project.
 
+Switching branches
+~~~~~~~~~~~~~~~~~~
+After importing submodules into a manifest in a branch, you might have some difficulties switching branches.
+If one branch has submodules in the place were your *DFetched* project dependencies should be, or other way around.
+Below both situations, assume a branch ``feature/use-dfetch`` with a manifest and ``master`` with the orignal submodules
+in their place.
+
+Switching from branch with submodules to branch with manifest
+-------------------------------------------------------------
+When switching from branch with submodules to branch without git will warn that the
+*Dfetched* project dependencies will overwrite the submodule that is currently in the
+same spot.
+
+.. code-block:: console
+
+    $ git checkout feature/use-dfetch
+    error: The following untracked working tree files would be overwritten by checkout:
+        MySubmodule/somefile.c
+        MySubmodule/someotherfile.c
+
+But ``git status`` will show nothing:
+
+.. code-block:: console
+
+    $ git status
+    On branch master
+    Your branch is up to date with 'origin/master'.
+
+    nothing to commit, working tree clean
+
+To overcome this, remove the submodule folder and checkout branch ``feature/use-dfetch``:
+
+.. code-block:: console
+
+    $ rm -rf MySubmodule
+    $ git checkout feature/use-dfetch
+
+Switching from branch with manifest to branch with submodules
+-------------------------------------------------------------
+This situation gives no problem, *but* the submodules are gone and need to be initialized again.
+To solve this:
+
+.. code-block:: console
+
+    $ git checkout master
+    $ git submodule update --init
+    Submodule path 'MySubmodule': checked out '08f95e01b297d8b8c1c9101bde58e75cd4d428ce'
+
+
 Migrating from SVN externals
 ============================
 
