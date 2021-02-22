@@ -32,7 +32,12 @@ class Update(dfetch.commands.command.Command):
     def create_menu(subparsers: "argparse._SubParsersAction") -> None:
         """Add the menu for the update action."""
         parser = dfetch.commands.command.Command.parser(subparsers, Update)
-        parser.add_argument("--dry-run", "-n", action="store_true", help="Only check")
+        parser.add_argument(
+            "--non-recursive",
+            "-N",
+            action="store_true",
+            help="Don't recursively check for child manifests.",
+        )
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the update."""
@@ -44,14 +49,17 @@ class Update(dfetch.commands.command.Command):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).update()
 
-                for (
-                    childmanifest,
-                    childpath,
-                ) in dfetch.manifest.manifest.get_childmanifests(project, skip=[path]):
-                    with in_directory(os.path.dirname(childpath)):
-                        for childproject in childmanifest.projects:
-                            with catch_runtime_exceptions(exceptions) as exceptions:
-                                dfetch.project.make(childproject).update()
+                if not args.non_recursive:
+                    for (
+                        childmanifest,
+                        childpath,
+                    ) in dfetch.manifest.manifest.get_childmanifests(
+                        project, skip=[path]
+                    ):
+                        with in_directory(os.path.dirname(childpath)):
+                            for childproject in childmanifest.projects:
+                                with catch_runtime_exceptions(exceptions) as exceptions:
+                                    dfetch.project.make(childproject).update()
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
