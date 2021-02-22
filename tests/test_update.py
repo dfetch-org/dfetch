@@ -13,6 +13,8 @@ from dfetch.commands.update import Update
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 
+DEFAULT_ARGS = argparse.Namespace(non_recursive=False)
+
 
 def mock_manifest(name, projects):
 
@@ -47,7 +49,7 @@ def test_update(name, projects):
                 mocked_get_manifest.return_value = (mock_manifest(name, projects), "/")
                 mocked_get_childmanifests.return_value = []
 
-                update(argparse.Namespace)
+                update(DEFAULT_ARGS)
 
                 for project in projects:
                     mocked_make.return_value.update.assert_called()
