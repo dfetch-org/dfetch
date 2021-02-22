@@ -18,6 +18,13 @@ def generate_file(path, content):
             print(line, file=new_file)
 
 
+def extend_file(path, content):
+
+    with open(path, "a") as existing_file:
+        for line in content.splitlines():
+            print(line, file=existing_file)
+
+
 def list_dir(path):
 
     # Get list of all nodes

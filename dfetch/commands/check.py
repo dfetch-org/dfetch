@@ -42,5 +42,14 @@ class Check(dfetch.commands.command.Command):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).check_for_update()
 
+                for (
+                    childmanifest,
+                    childpath,
+                ) in dfetch.manifest.manifest.get_childmanifests(project, skip=[path]):
+                    with in_directory(os.path.dirname(childpath)):
+                        for childproject in childmanifest.projects:
+                            with catch_runtime_exceptions(exceptions) as exceptions:
+                                dfetch.project.make(childproject).check_for_update()
+
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
