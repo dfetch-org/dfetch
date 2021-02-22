@@ -42,9 +42,14 @@ def list_dir(path):
     return result
 
 
+@given("all projects are updated in {path}")
 @given("all projects are updated")
-def step_impl(context):
-    context.execute_steps('When I run "dfetch update"')
+def step_impl(context, path=None):
+
+    if path:
+        context.execute_steps(f'When I run "dfetch update" in {path}')
+    else:
+        context.execute_steps('When I run "dfetch update"')
     assert not context.cmd_returncode, context.cmd_output
 
 

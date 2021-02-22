@@ -103,7 +103,7 @@ Feature: Use found manifest in project
                       tag: v1
             """
         And a git repository "SomeOtherProject.git"
-        And all projects are updated
+        And all projects are updated in MyProject
         Then the output shows
             """
             Dfetch (0.0.6)
