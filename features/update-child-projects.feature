@@ -1,4 +1,4 @@
-Feature: Use found manifest in project
+Feature: Update child-projects in projects
 
     When a project has dependencies of its own, *Dfetch* should also fetch any dependencies in
     a manifest of that project.
