@@ -45,11 +45,15 @@ def test_update(name, projects):
             "dfetch.manifest.manifest.get_childmanifests"
         ) as mocked_get_childmanifests:
             with patch("dfetch.project.make") as mocked_make:
+                with patch("os.path.exists"):
+                    with patch("dfetch.commands.update.in_directory"):
+                        mocked_get_manifest.return_value = (
+                            mock_manifest(name, projects),
+                            "/",
+                        )
+                        mocked_get_childmanifests.return_value = []
 
-                mocked_get_manifest.return_value = (mock_manifest(name, projects), "/")
-                mocked_get_childmanifests.return_value = []
+                        update(DEFAULT_ARGS)
 
-                update(DEFAULT_ARGS)
-
-                for project in projects:
-                    mocked_make.return_value.update.assert_called()
+                        for project in projects:
+                            mocked_make.return_value.update.assert_called()

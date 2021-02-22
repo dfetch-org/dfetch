@@ -9,40 +9,48 @@ Feature: Update child-projects in projects
             manifest:
                 version: 0.0
                 projects:
-                    - name: SomeProject
-                      dst: ThirdParty/SomeProject
-                      url: some-remote-server/SomeProject.git
+                    - name: SomeProjectWithChild
+                      dst: ThirdParty/SomeProjectWithChild
+                      url: some-remote-server/SomeProjectWithChild.git
+                      tag: v1
+                    - name: SomeProjectWithoutChild
+                      dst: ThirdParty/SomeProjectWithoutChild
+                      url: some-remote-server/SomeProjectWithoutChild.git
                       tag: v1
             """
-        And a git-repository "SomeProject.git" with the manifest:
+        And a git-repository "SomeProjectWithChild.git" with the manifest:
             """
             manifest:
                 version: 0.0
                 projects:
-                    - name: SomeOtherProject
-                      dst: ../SomeOtherProject
-                      url: some-remote-server/SomeOtherProject.git
+                    - name: SomeProjectWithoutChild2
+                      dst: ../SomeProjectWithoutChild2
+                      url: some-remote-server/SomeProjectWithoutChild.git
                       tag: v1
             """
-        And a git repository "SomeOtherProject.git"
+        And a git repository "SomeProjectWithoutChild.git"
         When I run "dfetch update" in MyProject
         Then the output shows
             """
             Dfetch (0.0.6)
-              SomeProject         : Fetched v1
-              SomeProject/SomeOtherProject: Fetched v1
+              SomeProjectWithChild: Fetched v1
+              SomeProjectWithChild/SomeProjectWithoutChild2: Fetched v1
+              SomeProjectWithoutChild: Fetched v1
             """
         And 'MyProject' looks like:
             """
             MyProject/
                 ThirdParty/
-                    SomeOtherProject/
-                        .dfetch_data.yaml
-                        README.md
-                    SomeProject/
+                    SomeProjectWithChild/
                         .dfetch_data.yaml
                         README.md
                         dfetch.yaml
+                    SomeProjectWithoutChild/
+                        .dfetch_data.yaml
+                        README.md
+                    SomeProjectWithoutChild2/
+                        .dfetch_data.yaml
+                        README.md
                 dfetch.yaml
             """
 
@@ -66,7 +74,7 @@ Feature: Update child-projects in projects
             """
             Dfetch (0.0.6)
               SomeProject         : Fetched v1
-            ThirdParty/SomeProject/dfetch.yaml: Schema validation failed:
+            SomeProject/dfetch.yaml: Schema validation failed:
              - Value 'very-invalid-manifest' is not a dict. Value path: ''.
             """
         And 'MyProject' looks like:
