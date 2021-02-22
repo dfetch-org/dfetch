@@ -4,6 +4,18 @@ You can add Projects to your :ref:`Manifest` and update will fetch the version s
 It tries to determine what kind of vcs it is: git, svn or something else.
 
 .. uml:: /static/uml/update.puml
+
+Child-manifests
+~~~~~~~~~~~~~~~
+
+It is possible that projects have manifests of their own.
+After the projects of the main manifest are fetched,
+*Dfetch* will look for new manifests and update these as well following the same logic as above.
+If you don't what this, you can prevent *Dfetch*
+checking child-manifests with ``--non-recursive``.
+
+.. note:: Any name or destination clashes are currently up to the user.
+
 """
 
 import argparse

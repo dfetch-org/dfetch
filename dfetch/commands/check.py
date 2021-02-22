@@ -5,6 +5,16 @@ the available version. If there are new versions available this will be shown.
 
 .. uml:: /static/uml/check.puml
 
+Child-manifests
+~~~~~~~~~~~~~~~
+
+It is possible that fetched projects have manifests of their own.
+After these projects are fetched (with ``dfetch update``), the manifests are fetched as well
+and will be checked. If you don't what this, you can prevent *Dfetch*
+checking child-manifests with ``--non-recursive``.
+
+.. note:: Any name or destination clashes are currently up to the user.
+
 """
 
 import argparse
