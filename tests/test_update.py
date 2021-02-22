@@ -40,12 +40,12 @@ def test_update(name, projects):
 
     with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
         with patch(
-            "dfetch.manifest.manifest.get_submanifests"
-        ) as mocked_get_submanifests:
+            "dfetch.manifest.manifest.get_childmanifests"
+        ) as mocked_get_childmanifests:
             with patch("dfetch.project.make") as mocked_make:
 
                 mocked_get_manifest.return_value = (mock_manifest(name, projects), "/")
-                mocked_get_submanifests.return_value = []
+                mocked_get_childmanifests.return_value = []
 
                 update(argparse.Namespace)
 

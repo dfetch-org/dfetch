@@ -29,7 +29,7 @@ class Update(dfetch.commands.command.Command):
     """
 
     @staticmethod
-    def create_menu(subparsers: "argparse._SubParsersAction") -> None:
+    def create_menu(subparsers: "argparse._ChildParsersAction") -> None:
         """Add the menu for the update action."""
         parser = dfetch.commands.command.Command.parser(subparsers, Update)
         parser.add_argument("--dry-run", "-n", action="store_true", help="Only check")
@@ -44,13 +44,14 @@ class Update(dfetch.commands.command.Command):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).update()
 
-                for submanifest, subpath in dfetch.manifest.manifest.get_submanifests(
-                    project, skip=[path]
-                ):
-                    with in_directory(os.path.dirname(subpath)):
-                        for subproject in submanifest.projects:
+                for (
+                    childmanifest,
+                    childpath,
+                ) in dfetch.manifest.manifest.get_childmanifests(project, skip=[path]):
+                    with in_directory(os.path.dirname(childpath)):
+                        for childproject in childmanifest.projects:
                             with catch_runtime_exceptions(exceptions) as exceptions:
-                                dfetch.project.make(subproject).update()
+                                dfetch.project.make(childproject).update()
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))

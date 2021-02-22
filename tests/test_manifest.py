@@ -9,7 +9,7 @@ import pytest
 
 import dfetch.manifest.manifest
 from dfetch import DEFAULT_MANIFEST_NAME
-from dfetch.manifest.manifest import Manifest, find_manifest, get_submanifests
+from dfetch.manifest.manifest import Manifest, find_manifest, get_childmanifests
 from dfetch.manifest.project import ProjectEntry
 
 BASIC_MANIFEST = u"""
@@ -121,20 +121,20 @@ def test_single_manifest_found() -> None:
     "name, manifest_paths",
     [
         (
-            "no-submanifests",
+            "no-childmanifests",
             [],
         ),
         (
-            "single-submanifest",
+            "single-childmanifest",
             ["some-manifest.yaml"],
         ),
         (
-            "multi-submanifests",
+            "multi-childmanifests",
             ["some-manifest.yaml", "some-other-manifest.yaml"],
         ),
     ],
 )
-def test_get_submanifests(name, manifest_paths) -> None:
+def test_get_childmanifests(name, manifest_paths) -> None:
 
     parent = ProjectEntry({"name": "parent"})
 
@@ -143,8 +143,8 @@ def test_get_submanifests(name, manifest_paths) -> None:
             with patch("dfetch.manifest.manifest.Manifest"):
                 find_file_mock.return_value = manifest_paths
 
-                found_submanifests = get_submanifests(parent)
+                found_childmanifests = get_childmanifests(parent)
 
-                assert len(found_submanifests) == len(manifest_paths)
-                for path, result in zip(manifest_paths, found_submanifests):
+                assert len(found_childmanifests) == len(manifest_paths)
+                for path, result in zip(manifest_paths, found_childmanifests):
                     assert os.path.realpath(path) == result[1]

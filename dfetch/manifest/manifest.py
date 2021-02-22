@@ -233,14 +233,14 @@ def get_manifest() -> Tuple[Manifest, str]:
     )
 
 
-def get_submanifests(
+def get_childmanifests(
     parent: ProjectEntry, skip: Optional[List[str]] = None
 ) -> List[Tuple[Manifest, str]]:
     """Get manifest and its path."""
     skip = skip or []
     logger.debug("Looking for sub-manifests")
 
-    submanifests = []
+    childmanifests = []
     for path in find_file(DEFAULT_MANIFEST_NAME, "."):
         path = os.path.realpath(path)
         if path not in skip:
@@ -249,11 +249,11 @@ def get_submanifests(
                 pathlib.Path(path).relative_to(os.getcwd()).as_posix()
             ):
                 dfetch.manifest.validate.validate(path)
-            submanifest = dfetch.manifest.manifest.Manifest.from_file(path)
-            submanifest.set_parent(parent)
-            submanifests += [(submanifest, path)]
+            childmanifest = dfetch.manifest.manifest.Manifest.from_file(path)
+            childmanifest.set_parent(parent)
+            childmanifests += [(childmanifest, path)]
 
-    return submanifests
+    return childmanifests
 
 
 class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
