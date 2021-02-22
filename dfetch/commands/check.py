@@ -30,7 +30,13 @@ class Check(dfetch.commands.command.Command):
     @staticmethod
     def create_menu(subparsers: "argparse._SubParsersAction") -> None:
         """Add the parser menu for this action."""
-        dfetch.commands.command.Command.parser(subparsers, Check)
+        parser = dfetch.commands.command.Command.parser(subparsers, Check)
+        parser.add_argument(
+            "--non-recursive",
+            "-N",
+            action="store_true",
+            help="Don't recursively check for child manifests.",
+        )
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
@@ -42,14 +48,17 @@ class Check(dfetch.commands.command.Command):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).check_for_update()
 
-                for (
-                    childmanifest,
-                    childpath,
-                ) in dfetch.manifest.manifest.get_childmanifests(project, skip=[path]):
-                    with in_directory(os.path.dirname(childpath)):
-                        for childproject in childmanifest.projects:
-                            with catch_runtime_exceptions(exceptions) as exceptions:
-                                dfetch.project.make(childproject).check_for_update()
+                if not args.non_recursive:
+                    for (
+                        childmanifest,
+                        childpath,
+                    ) in dfetch.manifest.manifest.get_childmanifests(
+                        project, skip=[path]
+                    ):
+                        with in_directory(os.path.dirname(childpath)):
+                            for childproject in childmanifest.projects:
+                                with catch_runtime_exceptions(exceptions) as exceptions:
+                                    dfetch.project.make(childproject).check_for_update()
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
