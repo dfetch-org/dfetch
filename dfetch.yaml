@@ -43,4 +43,3 @@ manifest:
     dst: ../Tests/cpputest-git-rev-only
     revision: d14505cc9191fcf17ccbd92af1c3409eb3969890
     repo-path: cpputest/cpputest.git                              # Use external git directly
-

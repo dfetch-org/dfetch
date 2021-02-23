@@ -37,7 +37,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinxarg.ext",
     "sphinx.ext.autosectionlabel",
-    "plantweb.directive"
+    "plantweb.directive",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

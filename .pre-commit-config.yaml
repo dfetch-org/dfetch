@@ -1,0 +1,80 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+-   repo: local
+    hooks:
+    -   id: isort
+        name: Sort import
+        entry: isort
+        language: system
+        types: [file, python]
+    -   id: black
+        name: Black (auto-format)
+        entry: black
+        language: system
+        types: [file, python]
+    -   id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        files: ^dfetch/
+        types: [file, python]
+    -   id: flake8
+        name: flake8
+        entry: flake8
+        language: system
+        files: ^dfetch/
+        types: [file, python]
+    -   id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        files: ^dfetch/
+        args: [--strict]
+        types: [file, python]
+    -   id: doc8
+        name: doc8
+        entry: doc8
+        language: system
+        files: ^doc/
+        types: [file]
+    -   id: pydocstyle
+        name: pydocstyle
+        entry: pydocstyle
+        language: system
+        files: ^dfetch/
+        types: [file, python]
+    -   id: bandit
+        name: bandit
+        entry: bandit
+        language: system
+        files: ^dfetch/
+        types: [file, python]
+    -   id: radon (maintenance index)
+        name: radon (maintenance index)
+        entry: radon
+        language: system
+        files: ^dfetch/
+        args: [mi, -nb]
+        types: [file, python]
+    -   id: radon (cyclomatic complexity)
+        name: radon (cyclomatic complexity)
+        entry: radon
+        language: system
+        files: ^dfetch/
+        args: [cc, -nb]
+        types: [file, python]
+    -   id: xenon
+        name: xenon
+        entry: xenon
+        language: system
+        files: ^dfetch/
+        args: [-b, B, -m, A, -a, A]
+        types: [file, python]
