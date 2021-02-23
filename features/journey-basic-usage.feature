@@ -45,4 +45,3 @@ Feature: Basic usage journey
         Then the following projects are fetched
             | path                    |
             | ext/test-repo-tag       |
-

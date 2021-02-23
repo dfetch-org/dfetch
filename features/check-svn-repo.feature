@@ -88,4 +88,3 @@ Feature: Checking dependencies from a svn repository
               ext/test-repo-rev-only: wanted (2), current (trunk - 2), available (trunk - 4)
               ext/test-rev-and-branch: wanted & current (trunk - 1), available (trunk - 4)
             """
-

@@ -30,7 +30,7 @@ setup(
         "pykwalify==1.8.0",
         "colorama==0.4.4",
         "typing-extensions==3.7.4.3",
-        "semver==2.13.0"
+        "semver==2.13.0",
     ],
     entry_points={
         "console_scripts": ["dfetch = dfetch.__main__:main"],

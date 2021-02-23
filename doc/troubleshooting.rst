@@ -13,4 +13,3 @@ Each command *Dfetch* performs and its result can be shown with increasing the v
 with the `-v` flag. For example, if an :ref:`dfetch import<import>` is giving strange results, re-run it with::
 
     dfetch -v import
-
