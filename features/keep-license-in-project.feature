@@ -1,0 +1,38 @@
+Feature: Keep license in project
+
+    A lot of people in the world do a lot of hard work to create software
+    to use freely. They only ask to keep the license with their code.
+    When fetching only a part of a repository with the 'src:' tag, the risk
+    is you forget the license file.
+
+    Scenario:
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: SomeProjectWithLicense
+                      url: some-remote-server/SomeProjectWithLicense.git
+                      src: SomeFolder/
+                      tag: v1
+            """
+        And a git-repository "SomeProjectWithLicense.git" with the files
+            | path                                  |
+            | LICENSE                               |
+            | SomeFolder/SomeFile.txt               |
+            | SomeOtherFolder/SomeOtherFile.txt     |
+        When I run "dfetch update"
+        Then the output shows
+            """
+            Dfetch (0.0.6)
+              SomeProjectWithLicense: Fetched v1
+            """
+        Then 'MyProject' looks like:
+            """
+            MyProject/
+                SomeProjectWithLicense/
+                    .dfetch_data.yaml
+                    LICENSE
+                    SomeFile.txt
+                dfetch.yaml
+            """
