@@ -2,6 +2,7 @@
 
 import difflib
 import os
+import pathlib
 import re
 import subprocess
 
@@ -12,6 +13,11 @@ dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
 
 
 def generate_file(path, content):
+
+    opt_dir = path.rsplit("/", maxsplit=1)
+
+    if len(opt_dir) > 1:
+        pathlib.Path(opt_dir[0]).mkdir(parents=True, exist_ok=True)
 
     with open(path, "w") as new_file:
         for line in content.splitlines():

@@ -67,3 +67,18 @@ def step_impl(context, name):
 
         commit_all("Initial commit")
         tag("v1")
+
+
+@given('a git-repository "{name}" with the files')
+def step_impl(context, name):
+    remote_path = os.path.join(context.remotes_dir, name)
+    pathlib.Path(remote_path).mkdir(parents=True, exist_ok=True)
+
+    with in_directory(remote_path):
+        create_repo()
+
+        for file in context.table:
+            generate_file(file["path"], "some content")
+
+        commit_all("Initial commit")
+        tag("v1")
