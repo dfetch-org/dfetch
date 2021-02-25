@@ -69,7 +69,7 @@ class VCS(ABC):
             self._log_project(f"up-to-date ({current})")
             return None
 
-        logger.debug(self.__project.name, f"Current ({current}), Available ({wanted})")
+        logger.debug(f"{self.__project.name} Current ({current}), Available ({wanted})")
         return wanted
 
     def update(self) -> None:
