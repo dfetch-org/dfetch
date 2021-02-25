@@ -189,6 +189,17 @@ class SvnRepo(VCS):
             logger, f"svn export --force {rev_arg} {complete_path} {self.local_path}"
         )
 
+        if self.source:
+            root_branch_path = "/".join([self.remote, branch_path]).strip("/")
+            try:
+                run_on_cmdline(logger, f"svn info {root_branch_path}/LICENSE")
+                run_on_cmdline(
+                    logger,
+                    f"svn export --force {rev_arg} {root_branch_path}/LICENSE {self.local_path}",
+                )
+            except SubprocessCommandError:
+                pass
+
         return Version(tag=version.tag, branch=branch, revision=revision)
 
     def _get_info(self, branch: str) -> Dict[str, str]:
