@@ -23,6 +23,7 @@ def mock_manifest(name, projects):
     for project in projects:
         mock_project = Mock(spec=ProjectEntry)
         mock_project.name = project["name"]
+        mock_project.destination = "some_dest"
         project_mocks += [mock_project]
 
     return MagicMock(spec=Manifest, projects=project_mocks)
