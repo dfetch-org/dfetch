@@ -213,9 +213,12 @@ class SvnRepo(VCS):
 
     @staticmethod
     def _files_in_path(url_path: str) -> List[str]:
-        return (
-            run_on_cmdline(logger, f"svn list {url_path}").stdout.decode().splitlines()
-        )
+        return [
+            str(line)
+            for line in run_on_cmdline(logger, f"svn list {url_path}")
+            .stdout.decode()
+            .splitlines()
+        ]
 
     @staticmethod
     def _license_files(url_path: str) -> List[str]:
