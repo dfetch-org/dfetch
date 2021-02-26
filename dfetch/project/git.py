@@ -192,7 +192,7 @@ class GitRepo(VCS):
         if src:
             run_on_cmdline(logger, "git config core.sparsecheckout true")
             with open(".git/info/sparse-checkout", "a") as sparse_checkout_file:
-                sparse_checkout_file.write("\n".join(["/" + src, "LICENSE", "COPYING"]))
+                sparse_checkout_file.write("\n".join(["/" + src, "LICENSE*", "COPYING*"]))
 
         run_on_cmdline(logger, f"git fetch --depth 1 origin {version}")
         run_on_cmdline(logger, "git reset --hard FETCH_HEAD")
