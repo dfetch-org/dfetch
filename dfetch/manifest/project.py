@@ -95,11 +95,8 @@ In larger projects or mono-repo's it is often desirable to retrieve only a subfo
 of an external project. *Dfetch* makes this possible through the ``src:`` attribute.
 
 For instance if you are only interested in the ``src`` folder of ``cpputest`` you can
-limit the checkout to only that folder.
-
-.. note::
-    *Dfetch* (currently) will only checkout that folder, it could be that you are not compliant
-    with a software license. Please check the original project's license and also comply with that.
+limit the checkout to only that folder. *Dfetch* will retain any license file in the
+root of the repository.
 
 .. code-block:: yaml
 
