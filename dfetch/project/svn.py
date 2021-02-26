@@ -191,7 +191,11 @@ class SvnRepo(VCS):
             root_branch_path = "/".join([self.remote, branch_path]).strip("/")
 
             for file in SvnRepo._license_files(root_branch_path):
-                dest = self.local_path if os.path.isdir(self.local_path) else os.path.dirname(self.local_path)
+                dest = (
+                    self.local_path
+                    if os.path.isdir(self.local_path)
+                    else os.path.dirname(self.local_path)
+                )
                 SvnRepo._export(f"{root_branch_path}/{file}", rev_arg, dest)
                 break
 
