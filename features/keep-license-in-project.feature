@@ -67,3 +67,34 @@ Feature: Keep license in project
                     SomeFile.txt
                 dfetch.yaml
             """
+
+    Scenario: A single file is fetched from svn repo
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: SomeProjectWithLicense
+                      dst: SomeFile.txt
+                      url: some-remote-server/SomeProjectWithLicense
+                      src: SomeFolder/SomeFile.txt
+            """
+        And a svn-server "SomeProjectWithLicense" with the files
+            | path                                  |
+            | COPYING.txt                           |
+            | SomeFolder/SomeFile.txt               |
+            | SomeOtherFolder/SomeOtherFile.txt     |
+        When I run "dfetch update"
+        Then the output shows
+            """
+            Dfetch (0.0.6)
+              SomeProjectWithLicense: Fetched trunk - 1
+            """
+        Then 'MyProject' looks like:
+            """
+            MyProject/
+                .dfetch_data-SomeFile.txt.yaml
+                COPYING.txt
+                SomeFile.txt
+                dfetch.yaml
+            """

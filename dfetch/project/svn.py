@@ -185,25 +185,41 @@ class SvnRepo(VCS):
             parents=True, exist_ok=True
         )
 
-        run_on_cmdline(
-            logger, f"svn export --force {rev_arg} {complete_path} {self.local_path}"
-        )
+        SvnRepo._export(complete_path, rev_arg, self.local_path)
 
         if self.source:
             root_branch_path = "/".join([self.remote, branch_path]).strip("/")
-            try:
-                run_on_cmdline(logger, f"svn info {root_branch_path}/LICENSE")
-                run_on_cmdline(
-                    logger,
-                    f"svn export --force {rev_arg} {root_branch_path}/LICENSE {self.local_path}",
-                )
-            except SubprocessCommandError:
-                pass
+
+            for file in SvnRepo._license_files(root_branch_path):
+                dest = self.local_path if os.path.isdir(self.local_path) else os.path.dirname(self.local_path)
+                SvnRepo._export(f"{root_branch_path}/{file}", rev_arg, dest)
+                break
 
         return Version(tag=version.tag, branch=branch, revision=revision)
 
     def _get_info(self, branch: str) -> Dict[str, str]:
         return self._get_info_from_target(f"{self.remote}/{branch}")
+
+    @staticmethod
+    def _export(url: str, rev: str = "", dst: str = ".") -> None:
+        run_on_cmdline(
+            logger,
+            f"svn export --force {rev} {url} {dst}",
+        )
+
+    @staticmethod
+    def _files_in_path(url_path: str) -> List[str]:
+        return (
+            run_on_cmdline(logger, f"svn list {url_path}").stdout.decode().splitlines()
+        )
+
+    @staticmethod
+    def _license_files(url_path: str) -> List[str]:
+        return [
+            file
+            for file in SvnRepo._files_in_path(url_path)
+            if file.startswith("LICENSE") or file.startswith("COPYING")
+        ]
 
     @staticmethod
     def _get_info_from_target(target: str = "") -> Dict[str, str]:
