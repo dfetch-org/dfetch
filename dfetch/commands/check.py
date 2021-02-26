@@ -59,7 +59,7 @@ class Check(dfetch.commands.command.Command):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).check_for_update()
 
-                if not args.non_recursive and os.path.exists(project.destination):
+                if not args.non_recursive and os.path.isdir(project.destination):
                     with in_directory(project.destination):
                         exceptions += Check._check_child_manifests(project, path)
 
