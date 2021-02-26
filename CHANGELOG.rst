@@ -3,6 +3,7 @@ Release 0.0.9 (under development)
 
 * Add copyright notices to documentation
 * Make it possible to check/update child-projects (#99)
+* Keep license files from repo, even when only checking only subdir (#50)
 
 Release 0.0.8 (released 2021-02-14)
 ===================================
