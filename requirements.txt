@@ -18,4 +18,4 @@ pytest-cov==2.11.1
 behave==1.2.6
 
 # Automation
-pre-commit==2.10.1
+pre-commit==2.11.0
