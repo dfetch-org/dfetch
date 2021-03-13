@@ -192,7 +192,7 @@ class VCS(ABC):
         )
 
     def _on_disk_hash(self) -> Optional[str]:
-        """Get the hash of the project on disk
+        """Get the hash of the project on disk.
 
         Returns:
             Str: Could be None if no on disk version
@@ -217,11 +217,12 @@ class VCS(ABC):
         """Check if there are local changes.
 
         Returns:
-           Bool: True if there are local changes, false if no were detected or no hash was found."""
+          Bool: True if there are local changes, false if no were detected or no hash was found.
+        """
         logger.debug(f"Checking if there were local changes in {self.local_path}")
         on_disk_hash = self._on_disk_hash()
 
-        return on_disk_hash and on_disk_hash != hash_directory(
+        return bool(on_disk_hash) and on_disk_hash != hash_directory(
             self.local_path, skiplist=[self.__metadata.FILENAME]
         )
 
