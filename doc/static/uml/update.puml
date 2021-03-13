@@ -6,11 +6,20 @@ skinparam defaultFontName Frutiger
 
 partition "Update required" {
 
-    if (Project + Metadata on disk?) then (no)
-    elseif (Version in metadata,\nsame as in manifest?) then (no)
-    else (yes)
+    if (Project +\nMetadata on disk?) then (no)
+    elseif (Force flag given?) then (yes)
+    elseif (Version in metadata,\nsame as in manifest?) then (yes)
         stop
+    elseif (Hash on disk same\nas in metadata?) then (yes)
+    else (no)
+       stop
     endif
+
+    ' if (Hash on disk same\nas in metadata?) then (yes)
+    ' elseif (Force flag given?) then (yes)
+    ' else
+    '     stop
+    ' endif
 }
 
 partition "Prepare for update" {
