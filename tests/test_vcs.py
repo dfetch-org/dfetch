@@ -97,3 +97,24 @@ def test_check_wanted_with_local(
 
             assert wanted == expect_wanted
             assert have == expect_have
+
+
+@pytest.mark.parametrize(
+    "name, hash_in_metadata, current_hash, expectation",
+    [
+        ("no-hash", "", "1234", False),
+        ("different-hash", "5678", "1234", True),
+        ("same-hash", "1234", "1234", False),
+    ],
+)
+def test_are_there_local_changes(name, hash_in_metadata, current_hash, expectation):
+
+    with patch("dfetch.project.vcs.hash_directory") as mocked_hash_directory:
+        with patch("dfetch.project.vcs.VCS._on_disk_hash") as mocked_on_disk_hash:
+
+            vcs = ConcreteVCS(ProjectEntry({"name": "proj1"}))
+
+            mocked_on_disk_hash.return_value = hash_in_metadata
+            mocked_hash_directory.return_value = current_hash
+
+            assert expectation == vcs._are_there_local_changes()
