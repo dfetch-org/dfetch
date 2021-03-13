@@ -61,25 +61,35 @@ class VCS(ABC):
             Version(revision=on_disk.revision, branch=on_disk_branch),
         )
 
-    def update_is_required(self) -> Optional[Version]:
-        """Check if this project should be upgraded."""
+    def update_is_required(self, force: bool = False) -> Optional[Version]:
+        """Check if this project should be upgraded.
+
+        Args:
+            force (bool, optional): Ignore if versions match.
+                                    Defaults to False.
+        """
         wanted, current = self.check_wanted_with_local()
 
-        if wanted == current:
+        if not force and wanted == current:
             self._log_project(f"up-to-date ({current})")
             return None
 
         logger.debug(f"{self.__project.name} Current ({current}), Available ({wanted})")
         return wanted
 
-    def update(self) -> None:
-        """Update this VCS if required."""
-        to_fetch = self.update_is_required()
+    def update(self, force: bool = False) -> None:
+        """Update this VCS if required.
+
+        Args:
+            force (bool, optional): Ignore if version is ok or any local changes were done.
+                                    Defaults to False.
+        """
+        to_fetch = self.update_is_required(force)
 
         if not to_fetch:
             return
 
-        if self._are_there_local_changes():
+        if not force and self._are_there_local_changes():
             self._log_project(
                 "skipped - local changes after last update (use --force to overwrite)"
             )
