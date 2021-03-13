@@ -59,3 +59,29 @@ def test_update(name, projects):
 
                         for project in projects:
                             mocked_make.return_value.update.assert_called()
+
+
+def test_forced_update():
+
+    update = Update()
+
+    with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
+        mocked_get_manifest.return_value = (
+            mock_manifest("MyProject", [{"name": "some_project"}]),
+            "/",
+        )
+        with patch(
+            "dfetch.manifest.manifest.get_childmanifests"
+        ) as mocked_get_childmanifests:
+            with patch("dfetch.project.make") as mocked_make:
+                with patch("os.path.exists"):
+                    with patch("dfetch.commands.update.in_directory"):
+                        mocked_get_childmanifests.return_value = []
+
+                        args = DEFAULT_ARGS
+                        args.force = True
+
+                        update(args)
+                        mocked_make.return_value.update.assert_called_once_with(
+                            force=True
+                        )
