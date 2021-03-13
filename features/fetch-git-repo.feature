@@ -66,3 +66,23 @@ Feature: Fetching dependencies from a git repository
             Dfetch (0.0.6)
               ext/test-repo-tag   : Fetched v2.0
             """
+
+    Scenario: Version check ignored when force flag is given
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: ext/test-repo-tag
+                  url: https://github.com/dfetch-org/test-repo
+                  tag: v1
+
+            """
+        And all projects are updated
+        When I run "dfetch update --force"
+        Then the output shows
+            """
+            Dfetch (0.0.6)
+              ext/test-repo-tag   : Fetched v1
+            """
