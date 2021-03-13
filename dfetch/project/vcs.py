@@ -79,6 +79,12 @@ class VCS(ABC):
         if not to_fetch:
             return
 
+        if self._are_there_local_changes():
+            self._log_project(
+                "skipped - local changes after last update (use --force to overwrite)"
+            )
+            return
+
         if os.path.exists(self.local_path):
             logger.debug(f"Clearing destination {self.local_path}")
             safe_rm(self.local_path)
@@ -175,6 +181,18 @@ class VCS(ABC):
             else Metadata.from_file(self.__metadata.path).version
         )
 
+    def _on_disk_hash(self) -> Optional[str]:
+        """Get the hash of the project on disk
+
+        Returns:
+            Str: Could be None if no on disk version
+        """
+        return (
+            None
+            if not os.path.exists(self.__metadata.path)
+            else Metadata.from_file(self.__metadata.path).hash
+        )
+
     def _check_for_newer_version(self) -> Version:
         """Check if a newer version is available on the given branch."""
         if self.wanted_version.tag:
@@ -184,6 +202,18 @@ class VCS(ABC):
 
         branch = self.wanted_version.branch or self.DEFAULT_BRANCH
         return Version(revision=self._latest_revision_on_branch(branch), branch=branch)
+
+    def _are_there_local_changes(self) -> bool:
+        """Check if there are local changes.
+
+        Returns:
+           Bool: True if there are local changes, false if no were detected or no hash was found."""
+        logger.debug(f"Checking if there were local changes in {self.local_path}")
+        on_disk_hash = self._on_disk_hash()
+
+        return on_disk_hash and on_disk_hash != hash_directory(
+            self.local_path, skiplist=[self.__metadata.FILENAME]
+        )
 
     @abstractmethod
     def _fetch_impl(self, version: Version) -> Version:
