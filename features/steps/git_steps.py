@@ -82,3 +82,32 @@ def step_impl(context, name):
 
         commit_all("Initial commit")
         tag("v1")
+
+
+@given('MyProject with dependency "SomeProject.git" that must be updated')
+def step_impl(context):
+    context.execute_steps(
+        '''
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: SomeProject
+                      url: some-remote-server/SomeProject.git
+                      tag: v1
+            """
+        And a git repository "SomeProject.git"
+        And all projects are updated in MyProject
+        And a new tag "v2" is added to git-repository "SomeProject.git"
+        When the manifest 'dfetch.yaml' in MyProject is changed to
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: SomeProject
+                      url: some-remote-server/SomeProject.git
+                      tag: v2
+            """
+        '''
+    )

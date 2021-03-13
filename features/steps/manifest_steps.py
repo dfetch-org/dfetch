@@ -21,6 +21,7 @@ def generate_manifest(context, name="dfetch.yaml", path=None):
 @given("the manifest '{name}' in {path}")
 @given("the manifest '{name}'")
 @when("the manifest '{name}' is changed to")
+@when("the manifest '{name}' in {path} is changed to")
 def step_impl(context, name, path=None):
 
     if path:
