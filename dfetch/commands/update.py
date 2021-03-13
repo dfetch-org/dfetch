@@ -51,6 +51,12 @@ class Update(dfetch.commands.command.Command):
             action="store_true",
             help="Don't recursively check for child manifests.",
         )
+        parser.add_argument(
+            "--force",
+            "-f",
+            action="store_true",
+            help="Always perform update, ignoring version check or local changes.",
+        )
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the update."""
@@ -60,17 +66,21 @@ class Update(dfetch.commands.command.Command):
         with in_directory(os.path.dirname(path)):
             for project in manifest.projects:
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    dfetch.project.make(project).update()
+                    dfetch.project.make(project).update(force=args.force)
 
                 if not args.non_recursive and os.path.isdir(project.destination):
                     with in_directory(project.destination):
-                        exceptions += Update.__update_child_manifests(project, path)
+                        exceptions += Update.__update_child_manifests(
+                            project, path, force=args.force
+                        )
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
 
     @staticmethod
-    def __update_child_manifests(project: ProjectEntry, path: str) -> List[str]:
+    def __update_child_manifests(
+        project: ProjectEntry, path: str, force: bool = False
+    ) -> List[str]:
         exceptions: List[str] = []
         for (
             childmanifest,
@@ -79,5 +89,5 @@ class Update(dfetch.commands.command.Command):
             with in_directory(os.path.dirname(childpath)):
                 for childproject in childmanifest.projects:
                     with catch_runtime_exceptions(exceptions) as exceptions:
-                        dfetch.project.make(childproject).update()
+                        dfetch.project.make(childproject).update(force)
         return exceptions

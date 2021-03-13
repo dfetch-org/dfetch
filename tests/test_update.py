@@ -14,6 +14,7 @@ from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 
 DEFAULT_ARGS = argparse.Namespace(non_recursive=False)
+DEFAULT_ARGS.force = False
 
 
 def mock_manifest(name, projects):
