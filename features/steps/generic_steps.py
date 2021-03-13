@@ -8,6 +8,8 @@ import subprocess
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 
+from dfetch.util.util import in_directory
+
 ansi_escape = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
 
@@ -81,6 +83,13 @@ def step_impl(context, cmd, path=None):
     except subprocess.CalledProcessError as exc:
         context.cmd_output = dfetch_title.sub("", exc.stdout)
         context.cmd_returncode = exc.returncode
+
+
+@when('"{path}" in {directory} is changed locally')
+def step_impl(context, directory, path):
+
+    with in_directory(directory):
+        extend_file(path, "Some text")
 
 
 @then("the output shows")
