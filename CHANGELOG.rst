@@ -1,3 +1,8 @@
+Release 0.0.10 (In development)
+===================================
+
+* A new functionality
+
 Release 0.0.9 (released 2021-03-16)
 ===================================
 
