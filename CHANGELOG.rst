@@ -1,4 +1,4 @@
-Release 0.0.9 (under development)
+Release 0.0.9 (released 2021-03-16)
 ===================================
 
 * Add copyright notices to documentation
