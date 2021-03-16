@@ -46,14 +46,14 @@ class Update(dfetch.commands.command.Command):
         """Add the menu for the update action."""
         parser = dfetch.commands.command.Command.parser(subparsers, Update)
         parser.add_argument(
-            "--non-recursive",
             "-N",
+            "--non-recursive",
             action="store_true",
             help="Don't recursively check for child manifests.",
         )
         parser.add_argument(
-            "--force",
             "-f",
+            "--force",
             action="store_true",
             help="Always perform update, ignoring version check or local changes.",
         )
