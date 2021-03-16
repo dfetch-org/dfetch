@@ -85,3 +85,21 @@ def test_forced_update():
                         mocked_make.return_value.update.assert_called_once_with(
                             force=True
                         )
+
+
+def test_create_menu():
+
+    subparsers = argparse.ArgumentParser().add_subparsers()
+
+    Update.create_menu(subparsers)
+
+    assert "update" in subparsers.choices
+
+    options = [
+        ["-h", "--help"],
+        ["-N", "--non-recursive"],
+        ["-f", "--force"],
+    ]
+
+    for action, expected_options in zip(subparsers.choices["update"]._actions, options):
+        assert action.option_strings == expected_options
