@@ -13,7 +13,7 @@ sphinx-argparse==0.2.5
 plantweb==1.2.1
 
 # Testing
-pytest==6.2.2
+pytest==6.2.3
 pytest-cov==2.11.1
 behave==1.2.6
 
