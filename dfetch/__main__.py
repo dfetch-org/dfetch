@@ -5,6 +5,7 @@ https://dfetch.rtfd.org
 
 import argparse
 import sys
+from typing import Sequence
 
 import dfetch.commands.check
 import dfetch.commands.environment
@@ -16,6 +17,10 @@ import dfetch.log
 import dfetch.util.cmdline
 
 logger = dfetch.log.setup_root(__name__)
+
+
+class DfetchFatalException(Exception):
+    """Exception thrown when dfetch did not run successfully."""
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -44,10 +49,10 @@ def _help(args: argparse.Namespace) -> None:
     raise RuntimeError("Select a function")
 
 
-def main() -> None:
+def run(argv: Sequence[str]) -> None:
     """Start dfetch."""
     logger.print_title()
-    args = create_parser().parse_args()
+    args = create_parser().parse_args(argv)
 
     if args.verbose:
         dfetch.log.increase_verbosity()
@@ -57,9 +62,17 @@ def main() -> None:
     except RuntimeError as exc:
         for msg in exc.args:
             logger.error(msg, stack_info=False)
-        sys.exit(1)
+        raise DfetchFatalException from exc
     except dfetch.util.cmdline.SubprocessCommandError as exc:
         logger.error(exc.message)
+        raise DfetchFatalException from exc
+
+
+def main() -> None:
+    """Start dfetch and let it collect arguments from the command-line."""
+    try:
+        run(sys.argv[1:])
+    except DfetchFatalException:
         sys.exit(1)
 
 
