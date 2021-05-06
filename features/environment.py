@@ -26,4 +26,7 @@ def before_scenario(context, scenario):
 
 
 def before_all(context):
+    context.config.log_capture = True
+    context.config.logging_format = "%(message)s"
+
     context.remotes_dir = "some-remote-server"
