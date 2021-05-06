@@ -8,6 +8,7 @@ import subprocess
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 
+from dfetch.__main__ import DfetchFatalException, run
 from dfetch.util.util import in_directory
 
 ansi_escape = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
@@ -68,21 +69,21 @@ def step_impl(context, path=None):
     assert not context.cmd_returncode, context.cmd_output
 
 
-@when('I run "{cmd}" in {path}')
-@when('I run "{cmd}"')
-def step_impl(context, cmd, path=None):
+@when('I run "dfetch {args}" in {path}')
+@when('I run "dfetch {args}"')
+def step_impl(context, args, path=None):
     """Call a command."""
-    try:
-        context.cmd_output = dfetch_title.sub(
-            "",
-            subprocess.check_output(
-                cmd.split(), stderr=subprocess.STDOUT, text=True, cwd=path
-            ),
-        )
-        context.cmd_returncode = 0
-    except subprocess.CalledProcessError as exc:
-        context.cmd_output = dfetch_title.sub("", exc.stdout)
-        context.cmd_returncode = exc.returncode
+    context.log_capture.buffer = []
+    with in_directory(path or "."):
+        try:
+            run(args.split())
+            context.cmd_returncode = 0
+        except DfetchFatalException:
+            context.cmd_returncode = 1
+    # Remove the color code + title
+    context.cmd_output = dfetch_title.sub(
+        "", ansi_escape.sub("", context.log_capture.getvalue())
+    )
 
 
 @when('"{path}" in {directory} is changed locally')
