@@ -1,6 +1,6 @@
 Feature: Checking dependencies from a svn repository
 
-    *DFetch* can check if there are new versions.
+    *DFetch* can check if there are new versions in a SVN repository.
 
     Scenario: SVN projects are specified in the manifest
         Given the manifest 'dfetch.yaml'
@@ -87,4 +87,23 @@ Feature: Checking dependencies from a svn repository
             Dfetch (0.0.7)
               ext/test-repo-rev-only: wanted (2), current (trunk - 2), available (trunk - 4)
               ext/test-rev-and-branch: wanted & current (trunk - 1), available (trunk - 4)
+            """
+
+    Scenario: A non-standard SVN repository can be checked
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: SomeProject
+                      url: some-remote-server/SomeProject
+                      branch: ' '
+            """
+        And a non-standard svn-server "SomeProject"
+        And all projects are updated
+        When I run "dfetch check" in MyProject
+        Then the output shows
+            """
+            Dfetch (0.0.7)
+              SomeProject         : up-to-date (1)
             """
