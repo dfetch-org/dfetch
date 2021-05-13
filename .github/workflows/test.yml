@@ -27,6 +27,7 @@ jobs:
       - run: pydocstyle dfetch                             # Checks doc strings
       - run: bandit dfetch                                 # Checks security issues
       - run: xenon -b B -m A -a A dfetch                   # Check code quality
+      - run: behave features                               # Run features tests
       - run: pytest --cov=dfetch --cov-report xml tests    # Run tests
 
       - name: Run codacy-coverage-reporter
@@ -35,4 +36,4 @@ jobs:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: coverage.xml
 
-      - run: behave features                               # Run features tests
+
