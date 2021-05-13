@@ -209,8 +209,10 @@ class VCS(ABC):
             return Version(
                 tag=latest_tag_from_list(self.wanted_version.tag, self._list_of_tags())
             )
-
-        branch = self.wanted_version.branch or self.DEFAULT_BRANCH
+        if self.wanted_version.branch == " ":
+            branch = ""
+        else:
+            branch = self.wanted_version.branch or self.DEFAULT_BRANCH
         return Version(revision=self._latest_revision_on_branch(branch), branch=branch)
 
     def _are_there_local_changes(self) -> bool:
