@@ -70,5 +70,5 @@
 [24.11692, "o", "\u001b[?2004l\r"]
 [24.118742, "o", "manifest:\r\n  version: '0.0'\r\n  remotes:\r\n\r\n  - name: github-com-beltoforion\r\n    url-base: https://github.com/beltoforion\r\n\r\n  - name: github-com-google\r\n    url-base: https://github.com/google\r\n  projects:\r\n\r\n  - name: libraries/muparser\r\n    revision: 207d5b77c05c9111ff51ab91082701221220c477\r\n    remote: github-com-beltoforion\r\n    dst: libraries/muparser\r\n    tag: v2.3.2\r\n    repo-path: muparser.git\r\n\r\n  - name: tests/googletest\r\n    revision: dcc92d0ab6c4ce022162a23566d44f673251eee4\r\n    remote: github-com-google\r\n    dst: tests/googletest\r\n    repo-path: googletest.git\r\n"]
 [24.119212, "o", "\u001b]0;me@my-computer:~/ModbusScope\u0007"]
-[24.119487, "o", "\u001b[?2004h[me@my-computer ModbusScope]$ "]
+[29.119487, "o", "\u001b[?2004h[me@my-computer ModbusScope]$ "]
 
