@@ -201,13 +201,11 @@ class GitRepo(VCS):
 
         if src:
             if os.path.isfile(src):
-                dest_dir = os.path.dirname(src)
-            else:
-                dest_dir = src
+                src = os.path.dirname(src)
 
-            for file_to_copy in os.listdir(dest_dir):
-                shutil.move(dest_dir + "/" + file_to_copy, ".")
-            safe_rmtree(dest_dir)
+            for file_to_copy in os.listdir(src):
+                shutil.move(src + "/" + file_to_copy, ".")
+            safe_rmtree(src)
 
     @staticmethod
     def _ls_remote(remote: str) -> Dict[str, str]:
