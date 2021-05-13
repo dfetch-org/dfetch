@@ -11,6 +11,9 @@ After implementing (with tests and documentation) create a PR on Github and let 
 Virtual Environment
 -------------------
 Create a virtual environment by double-clicking ``create_venv.py`` or by running the following command.
+This will install all develop dependencies from ``requirements.txt``, install `DFetch` as
+`editable package <https://pip.pypa.io/en/stable/cli/pip_wheel/?highlight=editable#cmdoption-e>`_ and
+install all runtime dependencies from ``setup.py``.
 
 .. code-block:: bash
 

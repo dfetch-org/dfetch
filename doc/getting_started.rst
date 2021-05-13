@@ -3,7 +3,7 @@
 Getting Started
 ===============
 
-Main Concepts
+Main concepts
 -------------
 Your project depends on other projects to build or run. In order keep the dependencies
 with your project. *Dfetch* can fetch these dependencies and place them with your code.
@@ -101,7 +101,7 @@ And after that rerunning `update`:
 
 Now you can review the changes and commit them once again if you are happy.
 
-My First remote
+My first remote
 ---------------
 Typically your project will have multiple dependencies. For instance take the below manifest.
 
