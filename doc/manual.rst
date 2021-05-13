@@ -11,6 +11,8 @@ Init
    :prog: dfetch
    :path: init
 
+.. asciinema:: asciicasts/init.cast
+
 .. automodule:: dfetch.commands.init
 
 Check
@@ -20,6 +22,8 @@ Check
    :func: create_parser
    :prog: dfetch
    :path: check
+
+.. asciinema:: asciicasts/check.cast
 
 .. automodule:: dfetch.commands.check
 
@@ -31,6 +35,8 @@ Update
    :prog: dfetch
    :path: update
 
+.. asciinema:: asciicasts/update.cast
+
 .. automodule:: dfetch.commands.update
 
 Validate
@@ -40,6 +46,8 @@ Validate
    :func: create_parser
    :prog: dfetch
    :path: validate
+
+.. asciinema:: asciicasts/validate.cast
 
 .. automodule:: dfetch.commands.validate
 
@@ -52,6 +60,8 @@ Environment
    :prog: dfetch
    :path: environment
 
+.. asciinema:: asciicasts/environment.cast
+
 .. automodule:: dfetch.commands.environment
 
 
@@ -62,5 +72,7 @@ Import
    :func: create_parser
    :prog: dfetch
    :path: import
+
+.. asciinema:: asciicasts/import.cast
 
 .. automodule:: dfetch.commands.import_

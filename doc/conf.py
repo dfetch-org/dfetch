@@ -38,6 +38,7 @@ extensions = [
     "sphinxarg.ext",
     "sphinx.ext.autosectionlabel",
     "plantweb.directive",
+    "sphinxcontrib.asciinema"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -182,3 +183,10 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
+
+# Options for asciicasts
+sphinxcontrib_asciinema_defaults = {
+    'theme': 'solarized-dark',
+    'preload': 1,
+    'font-size': '15px'
+}
