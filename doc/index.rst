@@ -1,8 +1,8 @@
 .. Dfetch documentation master file
 
-Dfetch
-======
-.. warning:: Dfetch is in a proof-of-concept state and will have breaking changes!
+.. image:: images/dfetch_header.png
+   :scale: 60
+   :align: center
 
 .. toctree::
    :maxdepth: 2
@@ -16,11 +16,13 @@ Dfetch
    alternatives
    legal
 
+Dfetch
+======
 
 What is Dfetch?
 ---------------
 
-Dfetch is source-only no-hassle project-dependency aggregator.
+**Dfetch is source-only no-hassle project-dependency aggregator.**
 
 We needed a dependency manager that was flexible enough to retrieve dependencies as plain text
 from various sources. `svn externals`, `git submodules` and `git subtrees` solve a similar
@@ -28,7 +30,8 @@ problem, but not in a vcs agnostic way or completely user friendly way.
 We want self-contained code repositories without any hassle for end-users.
 Dfetch must promote upstreaming changes, but allow for local customizations.
 
-Other tools that do similar things are ``Zephyr's West``, ``CMake ExternalProject`` and other meta tools.
+Other tools that do similar things are `Zephyr's West`, `CMake ExternalProject` and other meta tools.
+See :ref:`alternatives` for a complete list.
 
 Installation
 ------------
@@ -38,10 +41,3 @@ To install it either install the python package or download the binary and place
 .. code-block::
 
    dfetch --version
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
