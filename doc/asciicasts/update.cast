@@ -73,4 +73,4 @@
 [27.069144, "o", "\r\n\u001b[?2004l\r"]
 [27.071596, "o", "\u001b[0m\u001b[01;34mcpputest-git-rev-only\u001b[0m/  \u001b[01;34mcpputest-git-src\u001b[0m/  \u001b[01;34mcpputest-git-tag\u001b[0m/  \u001b[01;34mcpputest-svn-branch-rev\u001b[0m/  \u001b[01;34mcpputest-svn-src\u001b[0m/  \u001b[01;34mcpputest-svn-tag\u001b[0m/\r\n"]
 [27.071829, "o", "\u001b]0;me@my-computer:~/dfetch/example/Tests\u0007"]
-[27.071936, "o", "\u001b[?2004h[me@my-computer Tests]$ "]
+[32.071936, "o", "\u001b[?2004h[me@my-computer Tests]$ "]
