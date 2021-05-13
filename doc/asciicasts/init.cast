@@ -37,4 +37,3 @@
 [12.433752, "o", "manifest:\r\n  version: 0.0                                            # DFetch Module syntax version\r\n\r\n  remotes:                                                # declare common sources in one place\r\n  - name: github\r\n    url-base: https://github.com/\r\n\r\n  projects:\r\n  - name: cpputest\r\n    dst: cpputest/src/                                    # Destination of this project (relative to this file)\r\n    repo-path: cpputest/cpputest.git                      # Use default github remote\r\n    tag: v3.4                                             # tag\r\n\r\n  - name: jsmn                                            # without destination, defaults to project name\r\n    repo-path: zserge/jsmn.git                            # only repo-path is enough\r\n"]
 [12.434164, "o", "\u001b]0;me@my-computer:~/dfetch\u0007"]
 [12.434293, "o", "\u001b[?2004h[me@my-computer dfetch]$ "]
-[14.62084, "o", "\u001b[?2004l\r\r\nexit\r\n"]
