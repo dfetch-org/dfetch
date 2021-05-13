@@ -1,7 +1,7 @@
 Release 0.0.10 (In development)
 ===================================
 
-* A new functionality
+* Support for non-standard SVN repositories (#135)
 
 Release 0.0.9 (released 2021-03-16)
 ===================================
