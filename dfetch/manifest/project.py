@@ -43,8 +43,9 @@ revisions must be complete 40 character long SHA-hashes.
          - name: myothermodule
            revision: dcc92d0ab6c4ce022162a23566d44f673251eee4
 
-.. note:: For svn a `standard layout`_ is assumed. Meaning the top of the repository has a ``trunk``,
-          ``branches`` and ``tags`` folder.
+.. note:: For svn a `standard layout`_ is adviced. Meaning the top of the repository has a ``trunk``,
+          ``branches`` and ``tags`` folder. If this is not the case, you can indicate this by using
+          ``branch: ' '``.
 
 .. _`standard layout`:
     https://stackoverflow.com/questions/3859009/how-to-create-a-subversion-repository-with-standard-layout

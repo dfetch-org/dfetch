@@ -158,6 +158,9 @@ class SvnRepo(VCS):
         if version.tag:
             branch_path = f"tags/{version.tag}/"
             branch = ""
+        elif version.branch == " ":
+            branch_path = ""
+            branch = ""
         else:
             branch = version.branch or self.DEFAULT_BRANCH
             branch_path = (
@@ -178,7 +181,9 @@ class SvnRepo(VCS):
         branch, branch_path, revision = self._determine_what_to_fetch(version)
         rev_arg = f"--revision {revision}" if revision else ""
 
-        complete_path = "/".join([self.remote, branch_path, self.source]).strip("/")
+        complete_path = "/".join(
+            filter(None, [self.remote, branch_path, self.source])
+        ).strip("/")
 
         # When exporting a file, the destination directory must already exist
         pathlib.Path(os.path.dirname(self.local_path)).mkdir(
