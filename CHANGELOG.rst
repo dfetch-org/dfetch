@@ -1,9 +1,7 @@
-Release 0.1.0 (released 2021-05-13)
+Release 0.X.0 (under development)
 ===================================
 
-* Support for non-standard SVN repositories (#135)
-* Fix `dst` usage for single source file with git (#120)
-
+* New logo
 
 Release 0.1.0 (released 2021-05-13)
 ===================================
