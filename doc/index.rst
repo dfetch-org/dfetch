@@ -36,8 +36,26 @@ See :ref:`alternatives` for a complete list.
 Installation
 ------------
 `Dfetch` is a python based cross-platform cli tool.
-To install it either install the python package or download the binary and place it in your system PATH.
+
+Install the latest release with:
+
+.. code-block::
+
+   pip install dfetch
+
+Or install the latest version from the main branch:
+
+.. code-block::
+
+   pip install https://github.com/dfetch-org/dfetch/archive/main.zip
+
+Once installed dfetch output can be seen.
 
 .. code-block::
 
    dfetch --version
+
+Basic usage
+-----------
+
+.. asciinema:: asciicasts/basic.cast
