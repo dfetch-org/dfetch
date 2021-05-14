@@ -1,4 +1,4 @@
-# DFetch
+![](doc/images/dfetch_header.png)
 [![](https://codescene.io/projects/10989/status-badges/code-health)](https://codescene.io/projects/10989)
 [![](https://codescene.io/projects/10989/status-badges/system-mastery)](https://codescene.io/projects/10989)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/431474d43db0420a92ebc10c1886df8d)](https://app.codacy.com/gh/dfetch-org/dfetch?utm_source=github.com&utm_medium=referral&utm_content=dfetch-org/dfetch&utm_campaign=Badge_Grade)
@@ -14,7 +14,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dfetch)
 [![PyPI](https://img.shields.io/pypi/v/dfetch)](https://pypi.org/project/dfetch/)
 
-DFetch can manage dependencies
+**DFetch can manage dependencies**
 
 We needed a dependency manager that was flexible enough to retrieve dependencies as plain text
 from various sources. `svn externals`, `git submodules` and `git subtrees` solve a similar
