@@ -8,7 +8,7 @@ xenon==0.7.1
 prospector[with_bandit,with_mypy,with_pyroma,with_flake8,with_vulture]==1.3.1
 
 # Documentation
-sphinx==4.0.1
+sphinx==4.0.2
 sphinx-argparse==0.2.5
 plantweb==1.2.1
 sphinxcontrib.asciinema==0.3.2
