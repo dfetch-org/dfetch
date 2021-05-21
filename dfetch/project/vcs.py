@@ -10,6 +10,7 @@ from dfetch.manifest.version import Version
 from dfetch.project.metadata import Metadata
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
+from patch_ng import fromfile
 
 logger = get_logger(__name__)
 
@@ -101,6 +102,10 @@ class VCS(ABC):
 
         actually_fetched = self._fetch_impl(to_fetch)
         self._log_project(f"Fetched {actually_fetched}")
+
+        if self.__project.patch and os.path.exists(self.__project.patch):
+            self.apply_patch()
+
         self.__metadata.fetched(
             actually_fetched,
             hash_=hash_directory(self.local_path, skiplist=[self.__metadata.FILENAME]),
@@ -108,6 +113,24 @@ class VCS(ABC):
 
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
         self.__metadata.dump()
+
+
+    def apply_patch(self) -> None:
+        """ Apply the specified patch to the destination """
+        
+        # TODO: Tunnel command line output to logger
+
+        patch = fromfile(self.__project.patch)
+
+        if patch:
+            patch.apply(0, root=self.__project.destination, fuzz=True)
+
+            # TODO: Handle errors
+
+            self._log_project(f"Applied path {self.__project.patch}")
+        else:
+            self._log_project(f"Patching {self.__project.patch} failed")
+
 
     def check_for_update(self) -> None:
         """Check if there is an update available."""
