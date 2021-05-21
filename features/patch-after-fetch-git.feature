@@ -12,13 +12,13 @@ Feature: Patch after fetching from git repo
 
                 remotes:
                 - name: github-com-dfetch-org
-                    url-base: https://github.com/dfetch-org/test-repo
+                  url-base: https://github.com/dfetch-org/test-repo
 
                 projects:
-                - name: ext/test-repo-tag-v1
-                    tag: v1
-                    dst: ext/test-repo-tag-v1
-                    patch: diff.patch
+                - name: ext/test-repo-tag
+                  tag: v2.0
+                  dst: ext/test-repo-tag
+                  patch: diff.patch
             """
         And the patch file 'diff.patch'
             """
@@ -43,7 +43,7 @@ Feature: Patch after fetching from git repo
             2.27.0
             """
         When I run "dfetch update"
-        Then the resulting file after patching should be 'README.md'
+        Then the resulting file after patching should be 'ext/test-repo-tag/README.md'
             """
             # Test-repo
             A test repo for testing patch.
