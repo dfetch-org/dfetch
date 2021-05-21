@@ -15,6 +15,19 @@ ansi_escape = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
 
 
+def check_file(path, content):
+    """Check a file."""
+    with open(path, "r") as file_to_check:
+
+        for actual, expected in zip(
+            content.splitlines(True), file_to_check.readlines()
+        ):
+
+            assert (
+                actual.strip() == expected.strip()
+            ), f"Actual {actual.strip()} != Expected {expected.strip()}"
+
+
 def generate_file(path, content):
 
     opt_dir = path.rsplit("/", maxsplit=1)
@@ -58,6 +71,12 @@ def list_dir(path):
     return result
 
 
+@given("the patch file '{name}'")
+def step_impl(context, name):
+
+    generate_file(os.path.join(os.getcwd(), name), context.text)
+
+
 @given("all projects are updated in {path}")
 @given("all projects are updated")
 def step_impl(context, path=None):
@@ -91,6 +110,12 @@ def step_impl(context, directory, path):
 
     with in_directory(directory):
         extend_file(path, "Some text")
+
+
+@then("the resulting file after patching should be '{name}'")
+def step_impl(context, name):
+    """Check a manifest."""
+    check_file(name, context.text)
 
 
 @then("the output shows")

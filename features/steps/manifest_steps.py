@@ -5,7 +5,7 @@ import pathlib
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 
-from features.steps.generic_steps import generate_file
+from features.steps.generic_steps import generate_file, check_file
 
 
 def generate_manifest(context, name="dfetch.yaml", path=None):
@@ -34,12 +34,4 @@ def step_impl(context, name, path=None):
 @then("it should generate the manifest '{name}'")
 def step_impl(context, name):
     """Check a manifest."""
-    with open(name, "r") as manifest:
-
-        for actual, expected in zip(
-            context.text.splitlines(True), manifest.readlines()
-        ):
-
-            assert (
-                actual.strip() == expected.strip()
-            ), f"Actual {actual.strip()} != Expected {expected.strip()}"
+    check_file(name, context.text)
