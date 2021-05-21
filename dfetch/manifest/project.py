@@ -290,6 +290,11 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         return self._dst
 
     @property
+    def patch(self) -> str:
+        """Get the patch that should be applied."""
+        return self._patch
+
+    @property
     def branch(self) -> str:
         """Get the branch that should be fetched."""
         return self._branch
