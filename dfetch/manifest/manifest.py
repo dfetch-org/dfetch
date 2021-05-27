@@ -170,6 +170,11 @@ class Manifest:
         """Get a list of Projects from the manifest."""
         return list(self._projects.values())
 
+    @property
+    def remotes(self) -> Sequence[Remote]:
+        """Get a list of Remotes from the manifest."""
+        return list(self._remotes.values())
+
     def __repr__(self) -> str:
         """Get string representing this object."""
         return str(self._as_dict())
