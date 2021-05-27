@@ -1,4 +1,4 @@
-Release 0.1.1 (under development)
+Release 0.1.1 (released 2021-05-27)
 ===================================
 
 * Fix empty folder remains after using ``src:`` with subfolder in git (#163)
