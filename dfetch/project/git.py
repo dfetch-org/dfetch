@@ -5,6 +5,7 @@ import pathlib
 import re
 import shutil
 from collections import namedtuple
+from pathlib import PurePath
 from typing import Dict, List, Optional, Tuple
 
 from dfetch.log import get_logger
@@ -205,7 +206,7 @@ class GitRepo(VCS):
 
             for file_to_copy in os.listdir(src):
                 shutil.move(src + "/" + file_to_copy, ".")
-            safe_rmtree(src)
+            safe_rmtree(PurePath(src).parts[0])
 
     @staticmethod
     def _ls_remote(remote: str) -> Dict[str, str]:

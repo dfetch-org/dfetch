@@ -11,12 +11,12 @@ Feature: Fetch single file from git repo
                 projects:
                     - name: SomeProjectWithAnInterestingFile
                       url: some-remote-server/SomeProjectWithAnInterestingFile.git
-                      src: SomeFolder/
+                      src: SomeFolder/SomeSubFolder
                       tag: v1
             """
         And a git-repository "SomeProjectWithAnInterestingFile.git" with the files
             | path                                  |
-            | SomeFolder/SomeFile.txt               |
+            | SomeFolder/SomeSubFolder/SomeFile.txt |
             | SomeOtherFolder/SomeOtherFile.txt     |
         When I run "dfetch update"
         Then the output shows
