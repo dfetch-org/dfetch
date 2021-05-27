@@ -73,7 +73,8 @@ def step_impl(context, name):
                 generate_file(file["path"], "some content")
         add_and_commit("Added files")
 
-@given(u'a non-standard svn-server "{name}" with the files')
+
+@given('a non-standard svn-server "{name}" with the files')
 def step_impl(context, name):
     repo_path = create_svn_server_and_repo(context, name)
 
@@ -82,7 +83,8 @@ def step_impl(context, name):
             generate_file(file["path"], "some content")
         add_and_commit("Added files")
 
-@given(u'a non-standard svn-server "{name}"')
+
+@given('a non-standard svn-server "{name}"')
 def step_impl(context, name):
     repo_path = create_svn_server_and_repo(context, name)
 

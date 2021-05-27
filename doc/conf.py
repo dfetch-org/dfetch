@@ -38,7 +38,7 @@ extensions = [
     "sphinxarg.ext",
     "sphinx.ext.autosectionlabel",
     "plantweb.directive",
-    "sphinxcontrib.asciinema"
+    "sphinxcontrib.asciinema",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -93,7 +93,7 @@ todo_include_todos = False
 html_theme = "alabaster"
 
 html_css_files = [
-    'css/custom.css',
+    "css/custom.css",
 ]
 
 html_logo = "images/dfetch_logo.png"
@@ -188,10 +188,10 @@ texinfo_documents = [
 
 # Options for asciicasts
 sphinxcontrib_asciinema_defaults = {
-    'theme': 'monokai',
-    'preload': 1,
-    'font-size': '15px',
-    'speed': 1.5,
-    'loop': False,
-    'autoplay': True
+    "theme": "monokai",
+    "preload": 1,
+    "font-size": "15px",
+    "speed": 1.5,
+    "loop": False,
+    "autoplay": True,
 }
