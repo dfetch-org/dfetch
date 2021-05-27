@@ -35,7 +35,7 @@ class VCS(ABC):
         Returns:
             Tuple[Optional[Version], Optional[Version]]: Wanted, Have
         """
-        on_disk = self._on_disk_version()
+        on_disk = self.on_disk_version()
 
         if not on_disk:
             return (self.wanted_version, None)
@@ -111,7 +111,7 @@ class VCS(ABC):
 
     def check_for_update(self) -> None:
         """Check if there is an update available."""
-        on_disk_version = self._on_disk_version()
+        on_disk_version = self.on_disk_version()
         latest_version = self._check_for_newer_version()
 
         if not on_disk_version:
@@ -179,7 +179,7 @@ class VCS(ABC):
     def list_tool_info() -> None:
         """Print out version information."""
 
-    def _on_disk_version(self) -> Optional[Version]:
+    def on_disk_version(self) -> Optional[Version]:
         """Get the version of the project on disk.
 
         Returns:
