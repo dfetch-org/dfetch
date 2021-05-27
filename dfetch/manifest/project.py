@@ -151,6 +151,7 @@ from typing import Dict, Optional, Union
 from typing_extensions import TypedDict
 
 from dfetch.manifest.remote import Remote
+from dfetch.manifest.version import Version
 
 ProjectEntryDict = TypedDict(
     "ProjectEntryDict",
@@ -236,6 +237,15 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
     def set_parent(self, parent: str) -> None:
         """Set the parent."""
         self._parent = parent
+
+    def set_version(self, version: Version) -> None:
+        """Set the version of the project."""
+
+        if version.tag:
+            self._tag = version.tag
+        else:
+            self._branch = version.branch
+            self._revision = version.revision
 
     @property
     def remote_url(self) -> str:
