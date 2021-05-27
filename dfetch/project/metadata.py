@@ -8,7 +8,7 @@ import yaml
 from typing_extensions import TypedDict
 
 import dfetch.manifest.manifest
-from dfetch.project.version import Version
+from dfetch.manifest.version import Version
 
 
 class Options(TypedDict):

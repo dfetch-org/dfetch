@@ -6,8 +6,8 @@ from typing import List, Optional, Tuple
 
 import dfetch.manifest.manifest
 from dfetch.log import get_logger
+from dfetch.manifest.version import Version
 from dfetch.project.metadata import Metadata
-from dfetch.project.version import Version
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
 

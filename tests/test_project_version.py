@@ -4,7 +4,7 @@
 
 import pytest
 
-from dfetch.project.version import Version
+from dfetch.manifest.version import Version
 
 
 @pytest.mark.parametrize(

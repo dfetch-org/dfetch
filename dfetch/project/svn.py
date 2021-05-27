@@ -7,8 +7,8 @@ from collections import namedtuple
 from typing import Dict, List, Tuple
 
 from dfetch.log import get_logger
+from dfetch.manifest.version import Version
 from dfetch.project.vcs import VCS
-from dfetch.project.version import Version
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import in_directory
 
