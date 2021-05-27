@@ -7,8 +7,8 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from dfetch.manifest.project import ProjectEntry
+from dfetch.manifest.version import Version
 from dfetch.project.vcs import VCS
-from dfetch.project.version import Version
 
 
 class ConcreteVCS(VCS):
