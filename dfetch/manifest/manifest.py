@@ -195,10 +195,18 @@ class Manifest:
                 project_yaml.pop("remote", None)
             projects.append(project_yaml)
 
+        if remotes:
+            return {
+                "manifest": {
+                    "version": self.version,
+                    "remotes": remotes,
+                    "projects": projects,
+                }
+            }
+
         return {
             "manifest": {
                 "version": self.version,
-                "remotes": remotes,
                 "projects": projects,
             }
         }
