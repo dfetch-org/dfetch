@@ -1,6 +1,7 @@
-Release 0.X.0 (under development)
+Release 0.1.1 (under development)
 ===================================
 
+* Fix empty folder remains after using ``src:`` with subfolder in git (#163)
 * New logo
 
 Release 0.1.0 (released 2021-05-13)
