@@ -26,8 +26,9 @@ Feature: Freeze dependencies
               version: '0.0'
 
               projects:
-                - name: ext/test-repo-tag
-                  url: https://github.com/dfetch-org/test-repo
-                  tag: v2.0
+              - name: ext/test-repo-tag
+                revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+                url: https://github.com/dfetch-org/test-repo
+                branch: main
 
             """

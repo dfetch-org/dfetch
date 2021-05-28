@@ -13,22 +13,19 @@ Feature: Importing submodules from an existing git repository
         Then it should generate the manifest 'dfetch.yaml'
             """
             manifest:
-            version: '0.0'
-            remotes:
+              version: '0.0'
 
-            - name: github-com-dfetch-org
+              remotes:
+              - name: github-com-dfetch-org
                 url-base: https://github.com/dfetch-org
-            projects:
 
-            - name: ext/test-repo1
+              projects:
+              - name: ext/test-repo1
                 revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
-                dst: ext/test-repo1
                 branch: main
                 repo-path: test-repo
-
-            - name: ext/test-repo2
+              - name: ext/test-repo2
                 revision: 8df389d0524863b85f484f15a91c5f2c40aefda1
-                dst: ext/test-repo2
                 tag: v1
                 repo-path: test-repo
 

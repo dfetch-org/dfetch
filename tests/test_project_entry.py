@@ -31,10 +31,7 @@ def test_projectentry_vcs():
 
 
 def test_projectentry_as_yaml():
-    assert ProjectEntry({"name": "SomeProject"}).as_yaml() == {
-        "name": "SomeProject",
-        "dst": "SomeProject",
-    }
+    assert ProjectEntry({"name": "SomeProject"}).as_yaml() == {"name": "SomeProject"}
 
 
 def test_projectentry_as_str():
