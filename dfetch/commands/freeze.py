@@ -1,10 +1,12 @@
 """*Dfetch* can freeze the current versions of the projects.
 
-It will overwrite your current manifest.
+It will replace your manifest, your old manifest will be moved to a
+backup file.
 """
 
 import argparse
 import os
+import shutil
 from typing import List
 
 import dfetch.commands.command
@@ -22,7 +24,7 @@ logger = get_logger(__name__)
 class Freeze(dfetch.commands.command.Command):
     """Freeze the versions of the projects.
 
-    Overwrite the manifest with one that has all version as they are on disk.
+    Generate a manifest that has all version as they are on disk.
     """
 
     @staticmethod
@@ -57,6 +59,8 @@ class Freeze(dfetch.commands.command.Command):
             manifest = Manifest(
                 {"version": "0.0", "remotes": manifest.remotes, "projects": projects}
             )
+
+            shutil.move(DEFAULT_MANIFEST_NAME, DEFAULT_MANIFEST_NAME + ".backup")
 
             manifest.dump(DEFAULT_MANIFEST_NAME)
             logger.info(f"Updated manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}")

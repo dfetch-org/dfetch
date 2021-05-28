@@ -30,7 +30,7 @@ def step_impl(context, name, path=None):
     generate_manifest(context, name, path)
 
 
-@then("the manifest '{name}' is changed to")
+@then("the manifest '{name}' is replaced with")
 @then("it should generate the manifest '{name}'")
 def step_impl(context, name):
     """Check a manifest."""

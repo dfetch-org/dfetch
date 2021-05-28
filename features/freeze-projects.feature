@@ -20,7 +20,7 @@ Feature: Freeze dependencies
             """
         And all projects are updated
         When I run "dfetch freeze"
-        Then the manifest 'dfetch.yaml' is changed to
+        Then the manifest 'dfetch.yaml' is replaced with
             """
             manifest:
               version: '0.0'
