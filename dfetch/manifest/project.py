@@ -240,7 +240,6 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
 
     def set_version(self, version: Version) -> None:
         """Set the version of the project."""
-
         if version.tag:
             self._tag = version.tag
         else:

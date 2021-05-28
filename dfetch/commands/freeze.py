@@ -9,6 +9,7 @@ from typing import List
 
 import dfetch.commands.command
 import dfetch.manifest.project
+import dfetch.project
 from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest, get_manifest
