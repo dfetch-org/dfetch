@@ -35,7 +35,9 @@ from dfetch.util.util import find_file, prefix_runtime_exceptions
 logger = get_logger(__name__)
 
 
-class ManifestDict(TypedDict):
+class ManifestDict(
+    TypedDict, total=False
+):  # When https://www.python.org/dev/peps/pep-0655/ is accepted, only make remotes optional
     """Serialized dict types."""
 
     version: str
