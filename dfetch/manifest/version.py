@@ -4,7 +4,11 @@ from typing import Any, NamedTuple
 
 
 class Version(NamedTuple):
-    """Version of a VCS."""
+    """Version of a project.
+
+    In DFetch a version consists of a tag, branch or revision.
+    A tag has precedence over branches/revisions.
+    """
 
     tag: str = ""
     branch: str = ""
