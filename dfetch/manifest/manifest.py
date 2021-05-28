@@ -282,5 +282,5 @@ class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
         """Write a line break."""
         super().write_line_break(data)  # type: ignore
 
-        if len(self.indents) == 3:
+        if len(self.indents) == 2 and getattr(self.event, "value", "") != "version":
             super().write_line_break()  # type: ignore

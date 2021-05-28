@@ -312,7 +312,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             "revision": self._revision,
             "remote": self._remote,
             "src": self._src,
-            "dst": self._dst,
+            "dst": self._dst if self._dst != self._name else None,
             "url": self._url,
             "patch": self._patch,
             "branch": self._branch,

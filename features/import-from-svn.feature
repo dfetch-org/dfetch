@@ -13,21 +13,20 @@ Feature: Importing externals from an existing svn repository
         Then it should generate the manifest 'dfetch.yaml'
             """
             manifest:
-            version: '0.0'
-            remotes:
+                version: '0.0'
 
-            - name: github-com-dfetch-org
-                url-base: https://github.com/dfetch-org
-            projects:
+                remotes:
+                - name: github-com-dfetch-org
+                  url-base: https://github.com/dfetch-org
 
-            - name: ext/test-repo1
-                revision: '1'
-                dst: ./ext/test-repo1
-                repo-path: test-repo
-
-            - name: ext/test-repo2
-                revision: '2'
-                dst: ./ext/test-repo2
-                repo-path: test-repo
+                projects:
+                - name: ext/test-repo1
+                  revision: '1'
+                  dst: ./ext/test-repo1
+                  repo-path: test-repo
+                - name: ext/test-repo2
+                  revision: '2'
+                  dst: ./ext/test-repo2
+                  repo-path: test-repo
 
             """
