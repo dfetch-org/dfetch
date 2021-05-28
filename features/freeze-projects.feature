@@ -32,3 +32,31 @@ Feature: Freeze dependencies
                 branch: main
 
             """
+
+    Scenario: SVN projects are specified in the manifest
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: ext/test-repo-tag
+                  url: https://github.com/dfetch-org/test-repo
+                  vcs: svn
+
+            """
+        And all projects are updated
+        When I run "dfetch freeze"
+        Then the manifest 'dfetch.yaml' is replaced with
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+              - name: ext/test-repo-tag
+                revision: '4'
+                url: https://github.com/dfetch-org/test-repo
+                branch: trunk
+                vcs: svn
+
+            """
