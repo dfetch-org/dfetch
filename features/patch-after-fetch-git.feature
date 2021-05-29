@@ -27,7 +27,7 @@ Feature: Patch after fetching from git repo
             --- a/README.md
             +++ b/README.md
             @@ -1,2 +1,2 @@
-            # Test-repo
+             # Test-repo
             -A test repo for testing dfetch.
             +A test repo for testing patch.
             """
