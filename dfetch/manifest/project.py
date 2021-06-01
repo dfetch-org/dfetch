@@ -148,6 +148,27 @@ from trunk for svn and master from git.
           vcs: svn
           repo-path: cpputest/cpputest
 
+Patch
+#####
+*DFetch* promotes upstreaming changes, but also allows local changes. These changes can be managed with a local patch
+file. *DFetch* will apply the patch file everytime a new upstream version is fetched. The patch file can be specified
+with the ``patch:`` attribute.
+
+.. code-block:: yaml
+
+    manifest:
+        version: 0.0
+
+        remotes:
+        - name: github
+          url-base: https://github.com/
+
+        projects:
+        - name: cpputest
+          vcs: git
+          repo-path: cpputest/cpputest
+          patch: local_changes.patch
+
 """
 import copy
 from typing import Dict, Optional, Union
