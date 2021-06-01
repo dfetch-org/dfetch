@@ -181,3 +181,12 @@ Typing-extensions
 See license `here <https://github.com/python/typing/blob/master/typing_extensions/LICENSE>`_.
 
 .. _`typing-extensions`:  https://github.com/python/typing/tree/master/typing_extensions
+
+
+Patch-ng
+~~~~~~~~
+`patch-ng`_ is used to apply patch files.
+
+See license `here <https://github.com/conan-io/python-patch-ng/blob/master/LICENSE>`_.
+
+.. _`patch-ng`:  https://github.com/conan-io/python-patch-ng
