@@ -5,7 +5,7 @@ import pathlib
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 
-from features.steps.generic_steps import generate_file, check_file
+from features.steps.generic_steps import check_file, generate_file
 
 
 def generate_manifest(context, name="dfetch.yaml", path=None):

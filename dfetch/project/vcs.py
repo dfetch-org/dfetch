@@ -4,13 +4,14 @@ import os
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
 
+from patch_ng import fromfile
+
 import dfetch.manifest.manifest
 from dfetch.log import get_logger
 from dfetch.manifest.version import Version
 from dfetch.project.metadata import Metadata
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
-from patch_ng import fromfile
 
 logger = get_logger(__name__)
 
@@ -114,19 +115,18 @@ class VCS(ABC):
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
         self.__metadata.dump()
 
-
     def apply_patch(self) -> None:
-        """ Apply the specified patch to the destination """
+        """Apply the specified patch to the destination"""
 
         patch_set = fromfile(self.__project.patch)
 
         if patch_set:
             if patch_set.apply(0, root=self.__project.destination, fuzz=True):
-                self._log_project(f"Applied path \"{self.__project.patch}\"")
+                self._log_project(f'Applied path "{self.__project.patch}"')
             else:
-                self._log_project(f"Applying path \"{self.__project.patch}\" failed")
+                self._log_project(f'Applying path "{self.__project.patch}" failed')
         else:
-            self._log_project(f"Invalid patch file: \"{self.__project.patch}\"")
+            self._log_project(f'Invalid patch file: "{self.__project.patch}"')
 
     def check_for_update(self) -> None:
         """Check if there is an update available."""
