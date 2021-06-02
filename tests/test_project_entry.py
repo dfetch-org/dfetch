@@ -29,8 +29,13 @@ def test_projectentry_source():
 def test_projectentry_vcs():
     assert ProjectEntry({"name": "SomeProject", "vcs": "git"}).vcs == "git"
 
+
 def test_projectentry_patch():
-    assert ProjectEntry({"name": "SomeProject", "patch": "diff.patch"}).patch == "diff.patch"
+    assert (
+        ProjectEntry({"name": "SomeProject", "patch": "diff.patch"}).patch
+        == "diff.patch"
+    )
+
 
 def test_projectentry_as_yaml():
     assert ProjectEntry({"name": "SomeProject"}).as_yaml() == {"name": "SomeProject"}
