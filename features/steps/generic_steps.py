@@ -112,7 +112,7 @@ def step_impl(context, directory, path):
         extend_file(path, "Some text")
 
 
-@then("the resulting file after patching should be '{name}'")
+@then("the patched '{name}' is")
 def step_impl(context, name):
     """Check a manifest."""
     check_file(name, context.text)
