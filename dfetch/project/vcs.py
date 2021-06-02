@@ -116,8 +116,7 @@ class VCS(ABC):
         self.__metadata.dump()
 
     def apply_patch(self) -> None:
-        """Apply the specified patch to the destination"""
-
+        """Apply the specified patch to the destination."""
         patch_set = fromfile(self.__project.patch)
 
         if patch_set:
