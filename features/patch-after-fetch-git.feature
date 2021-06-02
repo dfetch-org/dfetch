@@ -31,7 +31,7 @@ Feature: Patch after fetching from git repo
             +A test repo for testing patch.
             """
         When I run "dfetch update"
-        Then the resulting file after patching should be 'ext/test-repo-tag/README.md'
+        Then the patched 'ext/test-repo-tag/README.md' is
             """
             # Test-repo
             A test repo for testing patch.
