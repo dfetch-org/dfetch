@@ -3,7 +3,6 @@ Feature: Patch after fetching from git repo
     Sometimes a patch needs to be applied after fetching. *DFetch* makes it
     possible to specify a patch file.
 
-    @wip
     Scenario: A patch file is applied after fetching
         Given the manifest 'dfetch.yaml'
             """
@@ -39,7 +38,6 @@ Feature: Patch after fetching from git repo
             A test repo for testing patch.
             """
 
-    @wip
     Scenario: Applying patch file fails
         Given the manifest 'dfetch.yaml'
             """
