@@ -1,7 +1,39 @@
 """*Dfetch* can freeze the current versions of the projects.
 
-It will replace your manifest, your old manifest will be moved to a
-backup file.
+Say you have the following manifest:
+
+.. code-block:: yaml
+
+    manifest:
+        version: 0.0
+
+        projects:
+         - name: mymodule
+           url: http://git.mycompany.local/mycompany/mymodule
+
+
+As explained in :ref:`Revision/Branch/Tag` when no version is provided the latest
+version of the default branch (e.g. `trunk`, `master`) of ``mymodule`` will
+be fetched on a *DFetch* update_.
+When your project becomes stable and you want to rely on a specific version
+of ``mymodule`` you can run ``dfetch freeze``.
+
+First *DFetch* will rename your old manifest (appended with ``.backup``).
+After that a new manifest is generated with all the projects as in your original
+manifest, but each with the specific version as it currently is on disk.
+
+In our above example this would for instance result in:
+
+.. code-block:: yaml
+
+    manifest:
+        version: 0.0
+
+        projects:
+         - name: mymodule
+           url: http://git.mycompany.local/mycompany/mymodule
+           tag: v1.0.0
+
 """
 
 import argparse
@@ -22,9 +54,9 @@ logger = get_logger(__name__)
 
 
 class Freeze(dfetch.commands.command.Command):
-    """Freeze the versions of the projects.
+    """Freeze your projects versions in the manifest as they are on disk.
 
-    Generate a manifest that has all version as they are on disk.
+    Generate a new manifest that has all version as they are on disk.
     """
 
     @staticmethod

@@ -20,8 +20,10 @@ A project name **must** be unique and each manifest must have at least one proje
 
 Revision/Branch/Tag
 ###################
-Since we want more control on what project is retrieved the ``revision:``, ``branch:`` and ``tag:``
-attributes can help. Below manifest will download tag ``v1.13`` of ``mymodule``.
+When no version is provided the latest version of the default branch (e.g. `trunk`, `master`) of
+a project will be chosen. Since we want more control on what project is retrieved the
+``revision:``, ``branch:`` and ``tag:`` attributes can help.
+Below manifest will download tag ``v1.13`` of ``mymodule``.
 
 The ``tag:`` attribute takes priority over ``revision:`` and ``branch:``.
 With ``revision:`` a specific commit (git) or revision (svn) is retrieved. For git,
@@ -43,7 +45,7 @@ revisions must be complete 40 character long SHA-hashes.
          - name: myothermodule
            revision: dcc92d0ab6c4ce022162a23566d44f673251eee4
 
-.. note:: For svn a `standard layout`_ is adviced. Meaning the top of the repository has a ``trunk``,
+.. note:: For svn a `standard layout`_ is advised. Meaning the top of the repository has a ``trunk``,
           ``branches`` and ``tags`` folder. If this is not the case, you can indicate this by using
           ``branch: ' '``.
 
@@ -67,6 +69,8 @@ will place ``mymodule`` at the relative path listed by ``dst:`` (relative to the
         projects:
          - name: mymodule
            dst: external/mymodule
+
+If no ``dst:`` is provided, dfetch will use the project name as relative path.
 
 Repo-path
 #########

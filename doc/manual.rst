@@ -51,6 +51,15 @@ Validate
 
 .. automodule:: dfetch.commands.validate
 
+Freeze
+------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: freeze
+
+.. automodule:: dfetch.commands.freeze
 
 Environment
 -----------
