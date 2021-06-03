@@ -243,8 +243,8 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         """Get the version of the project."""
         if self._tag:
             return Version(tag=self._tag)
-        else:
-            return Version(branch=self._branch, revision=self._revision)
+
+        return Version(branch=self._branch, revision=self._revision)
 
     @version.setter
     def version(self, version: Version) -> None:
