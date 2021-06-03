@@ -6,3 +6,4 @@ doc/_build
 dist
 .coverage
 coverage.xml
+example/Tests/
