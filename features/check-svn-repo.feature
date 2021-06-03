@@ -79,7 +79,12 @@ Feature: Checking dependencies from a svn repository
                   branch: trunk
                   dst: ext/test-rev-and-branch
 
+                - name: ext/test-non-standard-svn
+                  url: some-remote-server/SomeProject
+                  branch: ' '
+
             """
+        And a non-standard svn-server "SomeProject"
         And all projects are updated
         When I run "dfetch check"
         Then the output shows
@@ -87,6 +92,7 @@ Feature: Checking dependencies from a svn repository
             Dfetch (0.0.7)
               ext/test-repo-rev-only: wanted (2), current (trunk - 2), available (trunk - 4)
               ext/test-rev-and-branch: wanted & current (trunk - 1), available (trunk - 4)
+              ext/test-non-standard-svn: ext/test-non-standard-svn: wanted (latest), current (1), available (1)
             """
 
     Scenario: A non-standard SVN repository can be checked
