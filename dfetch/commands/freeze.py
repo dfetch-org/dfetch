@@ -47,12 +47,20 @@ class Freeze(dfetch.commands.command.Command):
                     on_disk_version = dfetch.project.make(project).on_disk_version()
 
                     if project.version == on_disk_version:
-                        logger.print_info_line(project.name, f"Already pinned in manifest on version {project.version}")
+                        logger.print_info_line(
+                            project.name,
+                            f"Already pinned in manifest on version {project.version}",
+                        )
                     elif on_disk_version:
-                        logger.print_info_line(project.name, f"Freezing on version {on_disk_version}")
+                        logger.print_info_line(
+                            project.name, f"Freezing on version {on_disk_version}"
+                        )
                         project.version = on_disk_version
                     else:
-                        logger.print_warning_line(project.name, "No version on disk, first update with 'dfetch update'")
+                        logger.print_warning_line(
+                            project.name,
+                            "No version on disk, first update with 'dfetch update'",
+                        )
 
                     projects.append(project)
 
