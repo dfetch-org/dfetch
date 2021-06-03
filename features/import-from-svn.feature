@@ -24,6 +24,7 @@ Feature: Importing externals from an existing svn repository
                   revision: '1'
                   dst: ./ext/test-repo1
                   repo-path: test-repo
+
                 - name: ext/test-repo2
                   revision: '2'
                   dst: ./ext/test-repo2
