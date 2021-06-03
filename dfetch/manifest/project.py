@@ -238,7 +238,16 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         """Set the parent."""
         self._parent = parent
 
-    def set_version(self, version: Version) -> None:
+    @property
+    def version(self) -> Version:
+        """Get the version of the project."""
+        if self._tag:
+            return Version(tag=self._tag)
+        else:
+            return Version(branch=self._branch, revision=self._revision)
+
+    @version.setter
+    def version(self, version: Version) -> None:
         """Set the version of the project."""
         if version.tag:
             self._tag = version.tag
