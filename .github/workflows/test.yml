@@ -29,12 +29,10 @@ jobs:
       - run: xenon -b B -m A -a A dfetch                              # Check code quality
       - run: pytest --cov=dfetch  tests                               # Run tests
       - run: coverage run --source=dfetch --append -m behave features # Run features tests
-      - run: coverage xml -o coverage.xml                             # Create XML report                                           
+      - run: coverage xml -o coverage.xml                             # Create XML report
 
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@master
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: coverage.xml
-
-
