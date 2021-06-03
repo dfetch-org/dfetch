@@ -160,7 +160,7 @@ class SvnRepo(VCS):
             branch = ""
         elif version.branch == " ":
             branch_path = ""
-            branch = ""
+            branch = " "
         else:
             branch = version.branch or self.DEFAULT_BRANCH
             branch_path = (
@@ -182,7 +182,7 @@ class SvnRepo(VCS):
         rev_arg = f"--revision {revision}" if revision else ""
 
         complete_path = "/".join(
-            filter(None, [self.remote, branch_path, self.source])
+            filter(None, [self.remote, branch_path.strip(), self.source])
         ).strip("/")
 
         # When exporting a file, the destination directory must already exist
@@ -235,7 +235,7 @@ class SvnRepo(VCS):
 
     @staticmethod
     def _get_info_from_target(target: str = "") -> Dict[str, str]:
-        result = run_on_cmdline(logger, f"svn info {target}").stdout.decode()
+        result = run_on_cmdline(logger, f"svn info {target.strip()}").stdout.decode()
 
         return {
             key.strip(): value.strip()
