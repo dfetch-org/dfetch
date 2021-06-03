@@ -16,6 +16,10 @@ class DLogger(logging.Logger):
         """Print a line of info."""
         self.info(f"  {Fore.GREEN}{name:20s}:{Fore.BLUE} {info}")
 
+    def print_warning_line(self, name: str, info: str) -> None:
+        """Print a line of info."""
+        self.info(f"  {Fore.GREEN}{name:20s}:{Fore.YELLOW} {info}")
+
     def print_title(self) -> None:
         """Print the DFetch tool title and version."""
         self.info(f"{Fore.BLUE}Dfetch ({__version__})")
