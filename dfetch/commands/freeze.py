@@ -52,9 +52,7 @@ class Freeze(dfetch.commands.command.Command):
                         logger.print_info_line(project.name, f"Freezing on version {on_disk_version}")
                         project.version = on_disk_version
                     else:
-                        logger.warning(
-                            f"{project.name} has no version on disk, first update it with dfetch update"
-                        )
+                        logger.print_warning_line(project.name, "No version on disk, first update with 'dfetch update'")
 
                     projects.append(project)
 
