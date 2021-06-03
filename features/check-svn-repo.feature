@@ -57,7 +57,7 @@ Feature: Checking dependencies from a svn repository
               ext/test-repo-tag-v1: wanted (v1), available (v2.0)
             """
 
-   Scenario: Check is done after an update
+    Scenario: Check is done after an update
         Given the manifest 'dfetch.yaml'
             """
             manifest:
@@ -92,7 +92,7 @@ Feature: Checking dependencies from a svn repository
             Dfetch (0.0.7)
               ext/test-repo-rev-only: wanted (2), current (trunk - 2), available (trunk - 4)
               ext/test-rev-and-branch: wanted & current (trunk - 1), available (trunk - 4)
-              ext/test-non-standard-svn: ext/test-non-standard-svn: wanted (latest), current (1), available (1)
+              ext/test-non-standard-svn: wanted (latest), current (1), available (1)
             """
 
     Scenario: A non-standard SVN repository can be checked
@@ -111,5 +111,5 @@ Feature: Checking dependencies from a svn repository
         Then the output shows
             """
             Dfetch (0.0.7)
-              SomeProject         : up-to-date (1)
+              SomeProject         : wanted (latest), current (1), available (1)
             """
