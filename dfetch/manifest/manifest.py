@@ -278,9 +278,16 @@ class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
     inspired by https://stackoverflow.com/a/44284819/3786245
     """
 
+    _last_additional_break = 0
+
     def write_line_break(self, data: Any = None) -> None:
         """Write a line break."""
         super().write_line_break(data)  # type: ignore
 
         if len(self.indents) == 2 and getattr(self.event, "value", "") != "version":
             super().write_line_break()  # type: ignore
+
+        if len(self.indents) == 3 and self._last_additional_break != 2:
+            super().write_line_break()  # type: ignore
+
+        self._last_additional_break = len(self.indents)

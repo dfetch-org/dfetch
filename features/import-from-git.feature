@@ -24,6 +24,7 @@ Feature: Importing submodules from an existing git repository
                 revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
                 branch: main
                 repo-path: test-repo
+
               - name: ext/test-repo2
                 revision: 8df389d0524863b85f484f15a91c5f2c40aefda1
                 tag: v1
