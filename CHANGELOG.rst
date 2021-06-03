@@ -2,6 +2,7 @@ Release 0.X.0 (under development)
 ===================================
 
 * Add freeze command (#95)
+* Fix second update fails with non-standard SVN repo's (#167)
 
 Release 0.1.1 (released 2021-05-27)
 ===================================
