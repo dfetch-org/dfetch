@@ -22,7 +22,7 @@ class SubprocessCommandError(Exception):
     ):
         """Error."""
         cmd_str: str = " ".join(cmd or [])
-        self._message = f"{cmd_str} returned {returncode}:{os.linesep}{stderr}"
+        self._message = f">>>{cmd_str}<<< returned {returncode}:{os.linesep}{stderr}"
         self.cmd = cmd_str
         self.stderr = stdout
         self.stdout = stderr
