@@ -29,4 +29,4 @@ class Version(NamedTuple):
         if self.tag:
             return self.tag
 
-        return " - ".join(filter(None, [self.branch, self.revision]))
+        return " - ".join(filter(None, [self.branch.strip(), self.revision]))

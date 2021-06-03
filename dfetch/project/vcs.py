@@ -127,7 +127,8 @@ class VCS(ABC):
             )
         else:
             self._log_project(
-                f"wanted ({self.wanted_version}), current ({on_disk_version}), available ({latest_version})"
+                f"wanted ({str(self.wanted_version) or 'latest'}), "
+                f"current ({on_disk_version}), available ({latest_version})"
             )
 
     def _log_project(self, msg: str) -> None:
