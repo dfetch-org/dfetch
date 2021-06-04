@@ -44,6 +44,10 @@ partition "Perform Update" {
 
     :Fetch target:
     revision/tag/branch;
+
+    if (Patch given?) then (yes)
+        :Apply patch;
+    endif
 }
 
     if (Succesfull?) then (no)
