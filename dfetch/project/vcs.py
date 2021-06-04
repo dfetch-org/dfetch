@@ -123,9 +123,9 @@ class VCS(ABC):
             if patch_set.apply(0, root=self.__project.destination, fuzz=True):
                 self._log_project(f'Applied path "{self.__project.patch}"')
             else:
-                self._log_project(f'Applying path "{self.__project.patch}" failed')
+                raise RuntimeError(f'Applying path "{self.__project.patch}" failed')
         else:
-            self._log_project(f'Invalid patch file: "{self.__project.patch}"')
+            raise RuntimeError(f'Invalid patch file: "{self.__project.patch}"')
 
     def check_for_update(self) -> None:
         """Check if there is an update available."""
