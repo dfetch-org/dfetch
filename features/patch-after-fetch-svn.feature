@@ -74,5 +74,5 @@ Feature: Patch after fetching from git repo
             source/target file does not exist:
               --- b'README1.md'
               +++ b'README1.md'
-              ext/test-repo-tag   : Applying path "diff.patch" failed
+            Applying path "diff.patch" failed
             """
