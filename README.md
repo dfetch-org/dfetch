@@ -26,6 +26,11 @@ The problem is described thoroughly [here](https://embeddedartistry.com/blog/202
 Other tools that do similar things are ``Zephyr's West``, ``CMake ExternalProject`` and other meta tools.
 See [alternatives](https://dfetch.readthedocs.io/en/latest/alternatives.html) for a complete list.
 
+[**Getting started**](https://dfetch.readthedocs.io/en/latest/getting_started.html) | 
+[**Manual**](https://dfetch.readthedocs.io/en/latest/manual.html) | 
+[**Troubleshooting**](https://dfetch.readthedocs.io/en/latest/troubleshooting.html)  |
+[**Contributing**](https://dfetch.readthedocs.io/en/latest/contributing.html)
+
 ## Install
 
 ### Stable
