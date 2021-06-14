@@ -22,7 +22,6 @@ jobs:
       - run: black --check dfetch                                     # Checks code style
       - run: flake8 dfetch                                             # Checks pep8 conformance
       - run: pylint dfetch                                            # Checks pep8 conformance
-      - run: mypy --install-types                                     # Install required types
       - run: mypy --strict dfetch                                     # Check types
       - run: doc8 doc                                                 # Checks documentation
       - run: pydocstyle dfetch                                        # Checks doc strings
