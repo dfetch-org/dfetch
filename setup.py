@@ -26,7 +26,7 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=[
         "PyYAML==5.4.1",
-        "coloredlogs==15.0",
+        "coloredlogs==15.0.1",
         "pykwalify==1.8.0",
         "colorama==0.4.4",
         "typing-extensions==3.10.0.0",
