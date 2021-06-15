@@ -42,26 +42,32 @@ class SvnRepo(VCS):
         repo_root = SvnRepo._get_info_from_target()["Repository Root"]
 
         externals = []
+        path_pattern = r"([^\s^-]+)\s+-"
         for entry in result.stdout.decode().split(os.linesep * 2):
 
             match = None
-            for match in re.finditer(r"([^\s^-]+)\s+-", entry):
+            for match in re.finditer(path_pattern, entry):
                 pass
             if match:
                 local_path = match.group(1)
+                entry = re.sub(path_pattern, "", entry)
 
-            for match in re.finditer(r"([^\s]+)(?:@)(\d+)\s+([^\s]+)", entry):
+            for match in re.finditer(
+                r"([^\s]+)(?:@)(\d+)\s+([^\s]+)|([^\s]+)\s+([^\s]+)", entry
+            ):
 
-                url, branch, tag, src = SvnRepo._split_url(match.group(1), repo_root)
+                url = match.group(1) or match.group(4)
+                name = match.group(3) or match.group(5)
+                rev = "" if not match.group(2) else match.group(2).strip()
+
+                url, branch, tag, src = SvnRepo._split_url(url, repo_root)
 
                 externals += [
                     External(
-                        name=match.group(3),
+                        name=name,
                         toplevel=os.getcwd(),
-                        path="/".join(
-                            os.path.join(local_path, match.group(3)).split(os.sep)
-                        ),
-                        revision=match.group(2).strip(),
+                        path="/".join(os.path.join(local_path, name).split(os.sep)),
+                        revision=rev,
                         url=url,
                         branch=branch,
                         tag=tag,
@@ -79,7 +85,7 @@ class SvnRepo(VCS):
         # //    Relative to the scheme of the URL of the directory on which the svn:externals property is set
         # /     Relative to the root URL of the server on which the svn:externals property is versioned
         url = re.sub(r"^\^", repo_root, url)
-        branch = ""
+        branch = " "
         tag = ""
         src = ""
 
