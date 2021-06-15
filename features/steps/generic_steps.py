@@ -4,7 +4,7 @@ import difflib
 import os
 import pathlib
 import re
-import subprocess
+from itertools import zip_longest
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 
@@ -19,13 +19,13 @@ def check_file(path, content):
     """Check a file."""
     with open(path, "r") as file_to_check:
 
-        for actual, expected in zip(
-            content.splitlines(True), file_to_check.readlines()
+        for actual, expected in zip_longest(
+            file_to_check.readlines(), content.splitlines(True), fillvalue=""
         ):
 
             assert (
                 actual.strip() == expected.strip()
-            ), f"Actual {actual.strip()} != Expected {expected.strip()}"
+            ), f"Actual >>{actual.strip()}<< != Expected >>{expected.strip()}<<"
 
 
 def generate_file(path, content):
