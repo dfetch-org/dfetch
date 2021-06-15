@@ -28,6 +28,22 @@ PINNED_SUBFOLDER_EXPECTATION = [
     )
 ]
 
+UNPINNED_NONSTD = (
+    ". - http://svn.mycompany.eu/MYCOMPANY/SomeModule/Core/Modules/Database Database"
+)
+UNPINNED_NONSTD_EXPECTATION = [
+    External(
+        name="Database",
+        toplevel=CWD,
+        path="./Database",
+        revision="",
+        url="http://svn.mycompany.eu/MYCOMPANY/SomeModule/Core/Modules/Database",
+        branch=" ",
+        tag="",
+        src="",
+    )
+]
+
 RELATIVE_TO_ROOT = """Data - -r 8349 ^/PROJECT-123/SOME-TOOL/trunk/python/Settings@8349 Settings
 ^/PROJECT-123/SOME-TOOL/trunk/path/Images@8571 Images"""
 RELATIVE_TO_ROOT_EXPECTATIONS = [
@@ -88,6 +104,7 @@ PINNED_MODULE_NO_SUBFOLDER_EXPECTATION = [
     [
         ("no_externals", [], []),
         ("pinned_subfolder", [PINNED_SUBFOLDER], PINNED_SUBFOLDER_EXPECTATION),
+        ("unpinned_nonstd", [UNPINNED_NONSTD], UNPINNED_NONSTD_EXPECTATION),
         ("relative_to_root", [RELATIVE_TO_ROOT], RELATIVE_TO_ROOT_EXPECTATIONS),
         ("pinned_single_file", [PINNED_SINGLE_FILE], PINNED_SINGLE_FILE_EXPECTATION),
         (
