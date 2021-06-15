@@ -44,9 +44,8 @@ def add_externals(externals):
     """Add the given list of dicts as externals."""
     with open("externals", "w") as external_list:
         for external in externals:
-            external_list.write(
-                f"{external['url']}@{external['revision']} {external['path']}\n"
-            )
+            revision = f"@{external['revision']}" if external["revision"] else ""
+            external_list.write(f"{external['url']}{revision} {external['path']}\n")
 
     subprocess.call(["svn", "propset", "svn:externals", "-F", external_list.name, "."])
     commit_all("Added externals")
