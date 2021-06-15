@@ -5,7 +5,6 @@ Feature: Keep license in project
     When fetching only a part of a repository with the 'src:' tag, the risk
     is you forget the license file.
 
-    @wip
     Scenario: License is preserved in git repo sparse checkout
         Given the manifest 'dfetch.yaml' in MyProject
             """
