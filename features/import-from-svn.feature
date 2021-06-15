@@ -6,9 +6,10 @@ Feature: Importing externals from an existing svn repository
 
     Scenario: Multiple externals are imported
         Given a svn repo with the following externals
-            | path           | url                                     | revision       |
-            | ext/test-repo1 | https://github.com/dfetch-org/test-repo | 1              |
-            | ext/test-repo2 | https://github.com/dfetch-org/test-repo | 2              |
+            | path           | url                                               | revision       |
+            | ext/test-repo1 | https://github.com/dfetch-org/test-repo/trunk     | 1              |
+            | ext/test-repo2 | https://github.com/dfetch-org/test-repo/tags/v2.0 |                |
+            | ext/test-repo3 | https://github.com/dfetch-org/test-repo           |                |
         When I run "dfetch import"
         Then it should generate the manifest 'dfetch.yaml'
             """
@@ -26,8 +27,13 @@ Feature: Importing externals from an existing svn repository
                   repo-path: test-repo
 
                 - name: ext/test-repo2
-                  revision: '2'
                   dst: ./ext/test-repo2
+                  tag: v2.0
+                  repo-path: test-repo
+
+                - name: ext/test-repo3
+                  dst: ./ext/test-repo3
+                  branch: ' '
                   repo-path: test-repo
 
             """
