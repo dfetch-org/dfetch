@@ -24,6 +24,7 @@ Dfetch_                     ✅   ✅     ✅       ✅          ✅            
 `Kitenet mr`_               ✅   ✅     ?        ✅          ✅                   ✅
 `mdlr`_                     ✅   ❌     Beta     ✅          ✅                   ✅
 `Quack`_                    ✅   ❌     ❌       ✅          ✅                   ✅
+`Quark`_                    ✅   ❌     ✅       ✅          ✅                   ✅
 `SVN Externals`_            ❌   ✅     ✅       ✅          ✅                   ✅
 `tsrc`_                     ✅   ❌     ✅       ✅          ✅                   ✅
 `Vcpkg`_                    ✅   ❌     ✅       ✅      ❌ (C/C++)               ❌
@@ -42,6 +43,7 @@ Dfetch_                     ✅   ✅     ✅       ✅          ✅            
 .. _`Kitenet mr`: https://github.com/toddr/kitenet-mr
 .. _`mdlr`: https://github.com/exlinc/mdlr
 .. _`Quack`: https://github.com/autodesk/quack
+.. _`Quark`: https://github.com/comelz/quark
 .. _`SVN externals`: https://tortoisesvn.net/docs/release/TortoiseSVN_en/tsvn-dug-externals.html
 .. _`tsrc`: https://github.com/dmerejkowsky/tsrc
 .. _`Vcpkg`: https://github.com/Microsoft/vcpkg
