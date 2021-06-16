@@ -17,6 +17,7 @@ Dfetch_                     ✅   ✅     ✅       ✅          ✅            
 `CPM.cmake`_                ✅   ❌     ✅       ✅      ❌ (C/C++)             ❌ (CMake)
 `Git submodules`_           ✅   ❌     ✅       ✅          ✅                   ✅
 `Git subtree`_              ✅   ❌     ✅       ✅          ✅                   ✅
+`Git-externals`_            ✅   ❌     ✅       ✅          ✅                   ✅
 `Gitslave`_                 ✅   ❌     ❌       ✅          ✅                   ✅
 `Google Repo`_              ✅   ❌     ✅       ✅          ✅                   ✅
 `Grit`_                     ✅   ❌     ✅       ✅          ✅                   ✅
@@ -34,6 +35,7 @@ Dfetch_                     ✅   ✅     ✅       ✅          ✅            
 .. _`Dfetch`: https://github.com/dfetch-org/dfetch
 .. _`Git submodules`: https://git-scm.com/book/en/v2/Git-Tools-Submodules
 .. _`Git subtree`: https://www.atlassian.com/git/tutorials/git-subtree
+.. _`Git-externals`: https://github.com/develer-staff/git-externals
 .. _`Gitslave`: http://gitslave.sourceforge.net/
 .. _`Google Repo`: https://android.googlesource.com/tools/repo
 .. _`Grit`: https://github.com/rabarberpie/grit
