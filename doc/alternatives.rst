@@ -24,7 +24,7 @@ Dfetch_                     ✅   ✅     ✅       ✅          ✅            
 `Kitenet mr`_               ✅   ✅     ?        ✅          ✅                   ✅
 `mdlr`_                     ✅   ❌     Beta     ✅          ✅                   ✅
 `Quack`_                    ✅   ❌     ❌       ✅          ✅                   ✅
-`Quark`_                    ✅   ❌     ✅       ✅          ✅                   ✅
+`Quark`_                    ✅   ✅     ✅       ✅          ✅                   ✅
 `SVN Externals`_            ❌   ✅     ✅       ✅          ✅                   ✅
 `tsrc`_                     ✅   ❌     ✅       ✅          ✅                   ✅
 `Vcpkg`_                    ✅   ❌     ✅       ✅      ❌ (C/C++)               ❌
