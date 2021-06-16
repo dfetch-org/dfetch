@@ -26,8 +26,8 @@ Dfetch_                     ✅   ✅     ✅       ✅          ✅            
 `Quack`_                    ✅   ❌     ❌       ✅          ✅                   ✅
 `SVN Externals`_            ❌   ✅     ✅       ✅          ✅                   ✅
 `tsrc`_                     ✅   ❌     ✅       ✅          ✅                   ✅
-`Vcpkg`_                    ✅   ❌     ✅       ✅      ❌ (C/C++)             ❌ (CMake)
-`West`_                     ✅   ❌     ✅       ✅      ❌ (C/C++)             ❌ (CMake)
+`Vcpkg`_                    ✅   ❌     ✅       ✅      ❌ (C/C++)               ❌
+`West`_                     ✅   ❌     ✅       ✅      ❌ (C/C++)               ❌
 ========================= ===== ===== ========= ======= =================== =======================
 
 .. _`CMAke ExternalProject`: https://cmake.org/cmake/help/latest/module/ExternalProject.html`
