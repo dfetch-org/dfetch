@@ -118,7 +118,7 @@ Typically your project will have multiple dependencies. For instance take the be
         url: https://github.com/cpputest/cpputest
 
 Both projects have a very similar url. To simplify your manifest,
-it is possible to create a single remote with the common part of the URL.
+it is possible to create a single remote with the common part of the URL (``url-base``).
 Below manifest is completely equivalent to the manifest above. For more
 details on working with remotes see :ref:`Remotes`.
 
@@ -133,7 +133,7 @@ details on working with remotes see :ref:`Remotes`.
 
     projects:
       - name: ext/test-repo-tag
-        url: dfetch-org/test-repo
+        repo-path: dfetch-org/test-repo
 
       - name: cpputest
-        url: cpputest/cpputest
+        repo-path: cpputest/cpputest
