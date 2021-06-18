@@ -169,6 +169,21 @@ with the ``patch:`` attribute.
           repo-path: cpputest/cpputest
           patch: local_changes.patch
 
+The patch should be *relative* and can be generated as such:
+
+.. code-block:: sh
+
+    # For git repo's
+    git diff --relative=path/to/project HEAD > my_patch.patch
+
+    # For svn repo's
+    svn diff -r HEAD path/to/my_project > my_patch.patch
+
+For more details see the `git-diff`_ or `svn-diff`_ documentation.
+
+.. _`git-diff`: https://git-scm.com/docs/git-diff
+.. _`svn-diff`: http://svnbook.red-bean.com/en/1.7/svn.ref.svn.c.diff.html
+
 """
 import copy
 from typing import Dict, Optional, Union
