@@ -16,6 +16,7 @@ Dfetch_                     ✅   ✅     ✅       ✅          ✅            
 `CGet`_                     ✅   ❌     ✅       ✅      ❌ (C/C++)             ❌ (CMake)
 `CMake ExternalProject`_    ✅   ❌     ✅       ✅      ❌ (C/C++)             ❌ (CMake)
 `CPM.cmake`_                ✅   ❌     ✅       ✅      ❌ (C/C++)             ❌ (CMake)
+`CPPAN`_                    ✅   ❌     ✅       ✅      ❌ (C/C++)               ✅
 `Git submodules`_           ✅   ❌     ✅       ✅          ✅                   ✅
 `Git subtree`_              ✅   ❌     ✅       ✅          ✅                   ✅
 `Git-externals`_            ✅   ❌     ✅       ✅          ✅                   ✅
@@ -29,13 +30,14 @@ Dfetch_                     ✅   ✅     ✅       ✅          ✅            
 `Quark`_                    ✅   ✅     ✅       ✅          ✅                   ✅
 `SVN Externals`_            ❌   ✅     ✅       ✅          ✅                   ✅
 `tsrc`_                     ✅   ❌     ✅       ✅          ✅                   ✅
+`SoftwareNetwork`_          ✅   ❌     ✅       ✅      ❌ (C/C++)               ✅
 `Vcpkg`_                    ✅   ❌     ✅       ✅      ❌ (C/C++)               ❌
 `West`_                     ✅   ❌     ✅       ✅      ❌ (C/C++)               ❌
 ========================= ===== ===== ========= ======= =================== =======================
-
 .. _`CGet`: https://github.com/pfultz2/cget
 .. _`CMAke ExternalProject`: https://cmake.org/cmake/help/latest/module/ExternalProject.html
 .. _`CPM.cmake`: https://github.com/cpm-cmake/CPM.cmake
+.. _`CPPAN`: https://github.com/cppan/cppan
 .. _`Dfetch`: https://github.com/dfetch-org/dfetch
 .. _`Git submodules`: https://git-scm.com/book/en/v2/Git-Tools-Submodules
 .. _`Git subtree`: https://www.atlassian.com/git/tutorials/git-subtree
@@ -50,6 +52,7 @@ Dfetch_                     ✅   ✅     ✅       ✅          ✅            
 .. _`Quark`: https://github.com/comelz/quark
 .. _`SVN externals`: https://tortoisesvn.net/docs/release/TortoiseSVN_en/tsvn-dug-externals.html
 .. _`tsrc`: https://github.com/dmerejkowsky/tsrc
+.. _`SoftwareNetwork`: https://github.com/SoftwareNetwork/sw
 .. _`Vcpkg`: https://github.com/Microsoft/vcpkg
 .. _`West`: https://docs.zephyrproject.org/latest/guides/west/index.html
 
