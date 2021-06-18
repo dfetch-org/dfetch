@@ -1,4 +1,4 @@
-Release 0.X.0 (under development)
+Release 0.2.0 (released 2021-06-18)
 ===================================
 
 * Add freeze command (#95)
