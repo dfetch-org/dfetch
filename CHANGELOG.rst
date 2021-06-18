@@ -1,3 +1,8 @@
+Release 0.X.0 (In development)
+===================================
+
+* Some new feature!
+
 Release 0.2.0 (released 2021-06-18)
 ===================================
 
