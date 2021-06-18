@@ -13,11 +13,13 @@ of your project.
 ------------------------- ----- ----- --------- ------- ------------------- -----------------------
 Dfetch_                     ✅   ✅     ✅       ✅          ✅                   ✅
 ========================= ===== ===== ========= ======= =================== =======================
+`CGet`_                     ✅   ❌     ✅       ✅      ❌ (C/C++)             ❌ (CMake)
 `CMake ExternalProject`_    ✅   ❌     ✅       ✅      ❌ (C/C++)             ❌ (CMake)
 `CPM.cmake`_                ✅   ❌     ✅       ✅      ❌ (C/C++)             ❌ (CMake)
 `Git submodules`_           ✅   ❌     ✅       ✅          ✅                   ✅
 `Git subtree`_              ✅   ❌     ✅       ✅          ✅                   ✅
 `Git-externals`_            ✅   ❌     ✅       ✅          ✅                   ✅
+`Gitman`_                   ✅   ❌     ✅       ✅          ✅                   ✅
 `Gitslave`_                 ✅   ❌     ❌       ✅          ✅                   ✅
 `Google Repo`_              ✅   ❌     ✅       ✅          ✅                   ✅
 `Grit`_                     ✅   ❌     ✅       ✅          ✅                   ✅
@@ -31,12 +33,14 @@ Dfetch_                     ✅   ✅     ✅       ✅          ✅            
 `West`_                     ✅   ❌     ✅       ✅      ❌ (C/C++)               ❌
 ========================= ===== ===== ========= ======= =================== =======================
 
-.. _`CMAke ExternalProject`: https://cmake.org/cmake/help/latest/module/ExternalProject.html`
+.. _`CGet`: https://github.com/pfultz2/cget
+.. _`CMAke ExternalProject`: https://cmake.org/cmake/help/latest/module/ExternalProject.html
 .. _`CPM.cmake`: https://github.com/cpm-cmake/CPM.cmake
 .. _`Dfetch`: https://github.com/dfetch-org/dfetch
 .. _`Git submodules`: https://git-scm.com/book/en/v2/Git-Tools-Submodules
 .. _`Git subtree`: https://www.atlassian.com/git/tutorials/git-subtree
 .. _`Git-externals`: https://github.com/develer-staff/git-externals
+.. _`Gitman`: https://github.com/jacebrowning/gitman
 .. _`Gitslave`: http://gitslave.sourceforge.net/
 .. _`Google Repo`: https://android.googlesource.com/tools/repo
 .. _`Grit`: https://github.com/rabarberpie/grit
