@@ -53,7 +53,8 @@ class SvnRepo(VCS):
                 entry = re.sub(path_pattern, "", entry)
 
             for match in re.finditer(
-                r"([^\s]+)(?:@)(\d+)\s+([^\s]+)|([^\s]+)\s+([^\s]+)", entry
+                r"([^-\s\d][^\s]+)(?:@)(\d+)\s+([^\s]+)|([^-\s\d][^\s]+)\s+([^\s]+)",
+                entry,
             ):
 
                 url = match.group(1) or match.group(4)
