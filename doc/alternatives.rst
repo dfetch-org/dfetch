@@ -34,6 +34,7 @@ Dfetch_                     ✅   ✅     ✅       ✅          ✅            
 `Vcpkg`_                    ✅   ❌     ✅       ✅      ❌ (C/C++)               ❌
 `West`_                     ✅   ❌     ✅       ✅      ❌ (C/C++)               ❌
 ========================= ===== ===== ========= ======= =================== =======================
+
 .. _`CGet`: https://github.com/pfultz2/cget
 .. _`CMAke ExternalProject`: https://cmake.org/cmake/help/latest/module/ExternalProject.html
 .. _`CPM.cmake`: https://github.com/cpm-cmake/CPM.cmake
