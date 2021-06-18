@@ -5,6 +5,7 @@ Release 0.X.0 (under development)
 * Add patch option (#22)
 * Fix second update fails with non-standard SVN repo's (#167)
 * Don't retain licenses in subfolders (#178)
+* Import unpinned and non-std svn externals (#133)
 
 Release 0.1.1 (released 2021-05-27)
 ===================================
