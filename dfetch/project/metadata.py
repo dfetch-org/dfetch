@@ -100,9 +100,13 @@ class Metadata:
         return self._remote_url
 
     @property
-    def last_fetch(self) -> str:
+    def last_fetch(self) -> datetime.datetime:
         """Last fetch as stored in the metadata."""
-        return str(self._last_fetch)
+        return self._last_fetch
+
+    def last_fetch_string(self) -> str:
+        """Last fetch as stored in the metadata (converted to string)."""
+        return self.last_fetch.strftime("%d/%m/%Y, %H:%M:%S")
 
     @property
     def hash(self) -> str:
@@ -141,7 +145,7 @@ class Metadata:
                 "remote_url": self.remote_url,
                 "branch": self.branch,
                 "revision": self.revision,
-                "last_fetch": self._last_fetch.strftime("%d/%m/%Y, %H:%M:%S"),
+                "last_fetch": self.last_fetch_string(),
                 "tag": self.tag,
                 "hash": self.hash,
             }
