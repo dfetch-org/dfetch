@@ -13,7 +13,7 @@ from dfetch.util.util import in_directory
 
 ansi_escape = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
-
+timestamp = re.compile(r"\d+\/\d+\/\d+, \d+:\d+:\d+")
 
 def check_file(path, content):
     """Check a file."""
@@ -120,8 +120,8 @@ def step_impl(context, name):
 
 @then("the output shows")
 def step_impl(context):
-    expected_text = dfetch_title.sub("", context.text).splitlines()
-    actual_text = ansi_escape.sub("", context.cmd_output)
+    expected_text = dfetch_title.sub("", timestamp.sub("[timestamp]", context.text)).splitlines()
+    actual_text = ansi_escape.sub("", timestamp.sub("[timestamp]", context.cmd_output))
 
     diff = difflib.ndiff(actual_text.splitlines(), expected_text)
 
