@@ -36,14 +36,14 @@ def create_parser() -> argparse.ArgumentParser:
     parser.set_defaults(func=_help)
     subparsers = parser.add_subparsers(help="commands")
 
-    dfetch.commands.init.Init.create_menu(subparsers)
-    dfetch.commands.import_.Import.create_menu(subparsers)
     dfetch.commands.check.Check.create_menu(subparsers)
     dfetch.commands.environment.Environment.create_menu(subparsers)
     dfetch.commands.freeze.Freeze.create_menu(subparsers)
+    dfetch.commands.import_.Import.create_menu(subparsers)
+    dfetch.commands.init.Init.create_menu(subparsers)
+    dfetch.commands.list.List.create_menu(subparsers)
     dfetch.commands.update.Update.create_menu(subparsers)
     dfetch.commands.validate.Validate.create_menu(subparsers)
-    dfetch.commands.list.List.create_menu(subparsers)
 
     return parser
 
