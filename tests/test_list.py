@@ -36,27 +36,14 @@ def mock_manifest(projects):
 )
 def test_list(name, projects):
 
-    check = List()
+    list = List()
 
     with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
-        with patch("dfetch.project.make") as mocked_make:
+        with patch("dfetch.log.DLogger.print_info_line") as mocked_print_info_line:
 
             mocked_get_manifest.return_value = (mock_manifest(projects), "/")
 
-            check(argparse.Namespace)
+            list(argparse.Namespace)
 
             for project in projects:
-                mocked_make.return_value.remote.assert_called()
-
-def test_log_metadata():
-
-    list_cmd = List()
-    with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
-        mocked_get_manifest.return_value = (mock_manifest([{"name": "myproject"}]), "/")
-        with patch("dfetch.commands.list.Metadata") as mocked_metadata:
-            mocked_metadata.from_file.side_effect = FileNotFoundError
-            args = MagicMock()
-            args.project = None
-
-            with pytest.raises(FileNotFoundError):
-                list_cmd(args)
+                mocked_print_info_line.assert_called()
