@@ -104,8 +104,11 @@ class VCS(ABC):
         actually_fetched = self._fetch_impl(to_fetch)
         self._log_project(f"Fetched {actually_fetched}")
 
-        if self.__project.patch and os.path.exists(self.__project.patch):
-            self.apply_patch()
+        if self.__project.patch:
+            if os.path.exists(self.__project.patch):
+                self.apply_patch()
+            else:
+                logger.warning(f"Skipping non-existent patch {self.__project.patch}")
 
         self.__metadata.fetched(
             actually_fetched,
