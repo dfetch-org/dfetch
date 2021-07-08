@@ -106,7 +106,7 @@ class Metadata:
 
     def last_fetch_string(self) -> str:
         """Last fetch as stored in the metadata (converted to string)."""
-        return self.last_fetch.strftime("%d/%m/%Y, %H:%M:%S")
+        return self._last_fetch.strftime("%d/%m/%Y, %H:%M:%S")
 
     @property
     def hash(self) -> str:
