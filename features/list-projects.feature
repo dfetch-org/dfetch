@@ -1,3 +1,4 @@
+@wip
 Feature: List dependencies
 
     The list command lists the current state of the projects. It will aggregate the metadata for each project
@@ -21,7 +22,7 @@ Feature: List dependencies
             """
             Dfetch (0.2.0)
               project             : ext/test-repo-tag
-                  remote          :
+                  remote          : 
                   remote url      : https://github.com/dfetch-org/test-repo
                   branch          : main
                   last fetch      : 02/07/2021, 20:25:56
@@ -46,7 +47,7 @@ Feature: List dependencies
             """
             Dfetch (0.2.0)
               project             : ext/test-repo-tag
-                  remote          :
+                  remote          : 
                   remote url      : https://github.com/dfetch-org/test-repo
                   branch          : trunk
                   last fetch      : 02/07/2021, 20:25:56
