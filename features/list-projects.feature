@@ -1,4 +1,3 @@
-@wip
 Feature: List dependencies
 
     The list command lists the current state of the projects. It will aggregate the metadata for each project
