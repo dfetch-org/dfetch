@@ -21,9 +21,10 @@ Feature: List dependencies
             """
             Dfetch (0.2.0)
               project             : ext/test-repo-tag
-                  remote          : 
+                  remote          : <none>
                   remote url      : https://github.com/dfetch-org/test-repo
                   branch          : main
+                  tag             : <none>
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : e1fda19a57b873eb8e6ae37780594cbb77b70f1a
             """
@@ -37,6 +38,7 @@ Feature: List dependencies
               projects:
                 - name: ext/test-repo-tag
                   url: https://github.com/dfetch-org/test-repo
+                  tag: v2.0
                   vcs: svn
 
             """
@@ -46,9 +48,10 @@ Feature: List dependencies
             """
             Dfetch (0.2.0)
               project             : ext/test-repo-tag
-                  remote          : 
+                  remote          : <none>
                   remote url      : https://github.com/dfetch-org/test-repo
-                  branch          : trunk
+                  branch          : <none>
+                  tag             : v2.0
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : 4
             """
