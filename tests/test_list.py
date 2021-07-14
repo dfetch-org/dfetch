@@ -45,5 +45,8 @@ def test_list(name, projects):
 
             list(argparse.Namespace)
 
-            for project in projects:
-                mocked_print_info_line.assert_called()
+            if projects:
+                for project in projects:
+                    mocked_print_info_line.assert_any_call("project", project["name"])
+            else:
+                mocked_print_info_line.assert_not_called()
