@@ -1,6 +1,7 @@
 Release 0.X.0 (In development)
 ===================================
 
+* Add list command (#20)
 * Add warning when patch file isn't found (#191)
 
 Release 0.2.0 (released 2021-06-18)
