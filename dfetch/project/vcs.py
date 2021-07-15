@@ -173,6 +173,11 @@ class VCS(ABC):
         return self.__metadata.version
 
     @property
+    def metadata_path(self) -> str:
+        """Get the path of the metadata."""
+        return self.__metadata.path
+
+    @property
     def remote(self) -> str:
         """Get the remote URL of this VCS."""
         return self.__metadata.remote_url
