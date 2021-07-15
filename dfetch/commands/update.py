@@ -57,6 +57,13 @@ class Update(dfetch.commands.command.Command):
             action="store_true",
             help="Always perform update, ignoring version check or local changes.",
         )
+        parser.add_argument(
+            "projects",
+            metavar="<project>",
+            type=str,
+            nargs="*",
+            help="Specific project(s) to update",
+        )
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the update."""
@@ -64,7 +71,12 @@ class Update(dfetch.commands.command.Command):
 
         exceptions: List[str] = []
         with in_directory(os.path.dirname(path)):
-            for project in manifest.projects:
+            projects = manifest.selected_projects(args.projects)
+            if not projects:
+                raise RuntimeError(
+                    f"No (such) projects found! {', '.join(args.projects)}"
+                )
+            for project in projects:
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).update(force=args.force)
 
