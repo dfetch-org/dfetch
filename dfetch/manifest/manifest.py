@@ -172,6 +172,16 @@ class Manifest:
         """Get a list of Projects from the manifest."""
         return list(self._projects.values())
 
+    def selected_projects(self, names: Sequence[str]) -> Sequence[ProjectEntry]:
+        """Get a list of Projects from the manifest with the given names."""
+        return (
+            list(
+                project for project in self._projects.values() if project.name in names
+            )
+            if names
+            else list(self._projects.values())
+        )
+
     @property
     def remotes(self) -> Sequence[Remote]:
         """Get a list of Remotes from the manifest."""
