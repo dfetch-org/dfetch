@@ -48,6 +48,13 @@ class Check(dfetch.commands.command.Command):
             action="store_true",
             help="Don't recursively check for child manifests.",
         )
+        parser.add_argument(
+            "projects",
+            metavar="<project>",
+            type=str,
+            nargs="*",
+            help="Specific project(s) to check",
+        )
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
@@ -55,7 +62,12 @@ class Check(dfetch.commands.command.Command):
 
         with in_directory(os.path.dirname(path)):
             exceptions: List[str] = []
-            for project in manifest.projects:
+            projects = manifest.selected_projects(args.projects)
+            if not projects:
+                raise RuntimeError(
+                    f"No (such) projects found! {', '.join(args.projects)}"
+                )
+            for project in projects:
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).check_for_update()
 
