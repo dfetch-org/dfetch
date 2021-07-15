@@ -24,6 +24,10 @@ class DLogger(logging.Logger):
         """Print the DFetch tool title and version."""
         self.info(f"{Fore.BLUE}Dfetch ({__version__})")
 
+    def print_info_field(self, field_name: str, field: str) -> None:
+        """Print a field with corresponding value."""
+        self.print_info_line(field_name, field if field else "<none>")
+
 
 def setup_root(name: str) -> DLogger:
     """Create the root logger."""
