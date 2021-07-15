@@ -8,6 +8,7 @@ import sys
 from typing import Sequence
 
 import dfetch.commands.check
+import dfetch.commands.diff
 import dfetch.commands.environment
 import dfetch.commands.freeze
 import dfetch.commands.import_
@@ -37,6 +38,7 @@ def create_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(help="commands")
 
     dfetch.commands.check.Check.create_menu(subparsers)
+    dfetch.commands.diff.Diff.create_menu(subparsers)
     dfetch.commands.environment.Environment.create_menu(subparsers)
     dfetch.commands.freeze.Freeze.create_menu(subparsers)
     dfetch.commands.import_.Import.create_menu(subparsers)

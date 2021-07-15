@@ -104,6 +104,20 @@ class GitRepo(VCS):
         except (SubprocessCommandError, RuntimeError):
             return False
 
+    def metadata_revision(self) -> str:
+        """Get the revision of the metadata file."""
+        return get_last_file_hash(self.metadata_path)
+
+    def current_revision(self) -> str:
+        """Get the revision of the metadata file."""
+        with in_directory(self.local_path):
+            return get_current_hash()
+
+    def get_diff(self, old_hash: str, new_hash: str) -> str:
+        """Get the diff of two revisions."""
+        with in_directory(self.local_path):
+            return create_diff(old_hash, new_hash)
+
     @staticmethod
     def check_path(path: str = ".") -> bool:
         """Check if is git."""
@@ -288,3 +302,33 @@ class GitRepo(VCS):
                     branch = reference.replace("refs/heads/", "")
                 break
         return (branch, tag)
+
+
+def get_last_file_hash(path: str) -> str:
+    """Get the hash of a specific file."""
+    result = run_on_cmdline(
+        logger,
+        ["git", "log", "-n", "1", "--pretty=format:%H", "--", path],
+    )
+
+    return str(result.stdout.decode())
+
+
+def get_current_hash() -> str:
+    """Get the last revision."""
+    result = run_on_cmdline(
+        logger,
+        ["git", "log", "-n", "1", "--pretty=format:%H"],
+    )
+
+    return str(result.stdout.decode())
+
+
+def create_diff(old_hash: str, new_hash: str) -> str:
+    """Generate a relative diff patch."""
+    result = run_on_cmdline(
+        logger,
+        ["git", "diff", "--relative", "--no-color", old_hash, new_hash],
+    )
+
+    return str(result.stdout.decode())
