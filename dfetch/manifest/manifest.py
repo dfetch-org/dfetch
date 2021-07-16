@@ -174,13 +174,19 @@ class Manifest:
 
     def selected_projects(self, names: Sequence[str]) -> Sequence[ProjectEntry]:
         """Get a list of Projects from the manifest with the given names."""
-        return (
+        projects = (
             list(
                 project for project in self._projects.values() if project.name in names
             )
             if names
             else list(self._projects.values())
         )
+        if names and len(projects) != len(names):
+            raise RuntimeError(
+                f"Not all projects found! {', '.join(names)}",
+                f"This manifest contains {', '.join([project.name for project in self._projects.values()])}",
+            )
+        return projects
 
     @property
     def remotes(self) -> Sequence[Remote]:
