@@ -62,12 +62,7 @@ class Check(dfetch.commands.command.Command):
 
         with in_directory(os.path.dirname(path)):
             exceptions: List[str] = []
-            projects = manifest.selected_projects(args.projects)
-            if not projects:
-                raise RuntimeError(
-                    f"No (such) projects found! {', '.join(args.projects)}"
-                )
-            for project in projects:
+            for project in manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).check_for_update()
 
