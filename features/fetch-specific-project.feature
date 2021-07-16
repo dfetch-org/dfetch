@@ -33,4 +33,3 @@ Feature: Fetching specific dependencies
             | path                       |
             | ext/test-rev-and-branch    |
             | ext/test-repo-tag-v1       |
-
