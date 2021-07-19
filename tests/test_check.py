@@ -8,25 +8,12 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-import dfetch
 from dfetch.commands.check import Check
-from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
+from tests.manifest_mock import mock_manifest
 
 DEFAULT_ARGS = argparse.Namespace(non_recursive=False)
-
-
-def mock_manifest(name, projects):
-
-    project_mocks = []
-
-    for project in projects:
-        mock_project = Mock(spec=ProjectEntry)
-        mock_project.name = project["name"]
-        mock_project.destination = "some_dest"
-        project_mocks += [mock_project]
-
-    return MagicMock(spec=Manifest, projects=project_mocks)
+DEFAULT_ARGS.projects = []
 
 
 @pytest.mark.parametrize(
@@ -50,14 +37,14 @@ def test_check(name, projects):
                     with patch("dfetch.commands.check.in_directory"):
 
                         mocked_get_manifest.return_value = (
-                            mock_manifest(name, projects),
+                            mock_manifest(projects),
                             "/",
                         )
                         mocked_get_childmanifests.return_value = []
 
                         check(DEFAULT_ARGS)
 
-                        for project in projects:
+                        for _ in projects:
                             mocked_make.return_value.check_for_update.assert_called()
 
 
@@ -78,11 +65,9 @@ def test_check_child_manifests(name, projects):
     ) as mocked_get_childmanifests:
         with patch("dfetch.project.make") as mocked_make:
 
-            mocked_get_childmanifests.return_value = [
-                (mock_manifest(name, projects), "/")
-            ]
+            mocked_get_childmanifests.return_value = [(mock_manifest(projects), "/")]
 
             Check._check_child_manifests(parent, "somepath")
 
-            for project in projects:
+            for _ in projects:
                 mocked_make.return_value.check_for_update.assert_called()

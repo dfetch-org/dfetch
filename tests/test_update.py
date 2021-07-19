@@ -12,22 +12,11 @@ import dfetch
 from dfetch.commands.update import Update
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
+from tests.manifest_mock import mock_manifest
 
 DEFAULT_ARGS = argparse.Namespace(non_recursive=False)
 DEFAULT_ARGS.force = False
-
-
-def mock_manifest(name, projects):
-
-    project_mocks = []
-
-    for project in projects:
-        mock_project = Mock(spec=ProjectEntry)
-        mock_project.name = project["name"]
-        mock_project.destination = "some_dest"
-        project_mocks += [mock_project]
-
-    return MagicMock(spec=Manifest, projects=project_mocks)
+DEFAULT_ARGS.projects = []
 
 
 @pytest.mark.parametrize(
@@ -50,7 +39,7 @@ def test_update(name, projects):
                 with patch("os.path.exists"):
                     with patch("dfetch.commands.update.in_directory"):
                         mocked_get_manifest.return_value = (
-                            mock_manifest(name, projects),
+                            mock_manifest(projects),
                             "/",
                         )
                         mocked_get_childmanifests.return_value = []
@@ -67,7 +56,7 @@ def test_forced_update():
 
     with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
         mocked_get_manifest.return_value = (
-            mock_manifest("MyProject", [{"name": "some_project"}]),
+            mock_manifest([{"name": "some_project"}]),
             "/",
         )
         with patch(

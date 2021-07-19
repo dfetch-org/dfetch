@@ -3,27 +3,15 @@
 # flake8: noqa
 
 import argparse
-from typing import Tuple
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 
-import dfetch
 from dfetch.commands.list import List
-from dfetch.manifest.manifest import Manifest
-from dfetch.manifest.project import ProjectEntry
+from tests.manifest_mock import mock_manifest
 
-
-def mock_manifest(projects):
-
-    project_mocks = []
-
-    for project in projects:
-        mock_project = Mock(spec=ProjectEntry)
-        mock_project.name = project["name"]
-        project_mocks += [mock_project]
-
-    return MagicMock(spec=Manifest, projects=project_mocks)
+DEFAULT_ARGS = argparse.Namespace()
+DEFAULT_ARGS.projects = []
 
 
 @pytest.mark.parametrize(
@@ -43,7 +31,7 @@ def test_list(name, projects):
 
             mocked_get_manifest.return_value = (mock_manifest(projects), "/")
 
-            list(argparse.Namespace)
+            list(DEFAULT_ARGS)
 
             if projects:
                 for project in projects:
