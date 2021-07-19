@@ -1,4 +1,4 @@
-Release 0.X.0 (In development)
+Release 0.3.0 (released 2021-07-19)
 ===================================
 
 * Add list command (#20)
