@@ -21,6 +21,7 @@ class Options(TypedDict):
     remote_url: str
     destination: str
     hash: str
+    patch: str
 
 
 class Metadata:
@@ -42,6 +43,7 @@ class Metadata:
         self._remote_url: str = str(kwargs.get("remote_url", ""))
         self._destination: str = str(kwargs.get("destination", ""))
         self._hash: str = str(kwargs.get("hash", ""))
+        self._patch: str = str(kwargs.get("patch", ""))
 
     @classmethod
     def from_project_entry(
@@ -56,6 +58,7 @@ class Metadata:
             "destination": project.destination,
             "last_fetch": datetime.datetime(2000, 1, 1, 0, 0, 0),
             "hash": "",
+            "patch": project.patch,
         }
         return cls(data)
 
@@ -66,13 +69,14 @@ class Metadata:
             data: Options = yaml.safe_load(metadata_file)["dfetch"]
             return cls(data)
 
-    def fetched(self, version: Version, hash_: str = "") -> None:
+    def fetched(self, version: Version, hash_: str = "", patch_: str = "") -> None:
         """Update metadata."""
         self._last_fetch = datetime.datetime.now()
         self._branch = version.branch
         self._tag = version.tag
         self._revision = version.revision
         self._hash = hash_
+        self._patch = patch_
 
     @property
     def version(self) -> Version:
@@ -114,6 +118,11 @@ class Metadata:
         return self._hash
 
     @property
+    def patch(self) -> str:
+        """Applied patch."""
+        return self._patch
+
+    @property
     def path(self) -> str:
         """Path to metadata file."""
         if os.path.isdir(self._destination):
@@ -135,6 +144,7 @@ class Metadata:
                 other.branch == self.branch,
                 other.revision == self.revision,
                 other.hash == self.hash,
+                other.patch == self.patch,
             ]
         )
 
@@ -148,6 +158,7 @@ class Metadata:
                 "last_fetch": self.last_fetch_string(),
                 "tag": self.tag,
                 "hash": self.hash,
+                "patch": self.patch,
             }
         }
 
