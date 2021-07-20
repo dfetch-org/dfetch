@@ -50,5 +50,6 @@ class List(dfetch.commands.command.Command):
                     logger.print_info_field("    tag", metadata.tag)
                     logger.print_info_field("    last fetch", metadata.last_fetch)
                     logger.print_info_field("    revision", metadata.revision)
+                    logger.print_info_field("    patch", metadata.patch)
                 except FileNotFoundError:
                     logger.print_info_field("    last fetch", "never")
