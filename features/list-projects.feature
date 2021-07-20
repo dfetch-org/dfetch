@@ -27,6 +27,7 @@ Feature: List dependencies
                   tag             : <none>
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+                  patch           : <none>
             """
 
     Scenario: SVN projects are specified in the manifest
@@ -54,4 +55,5 @@ Feature: List dependencies
                   tag             : v2.0
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : 4
+                  patch           : <none>
             """
