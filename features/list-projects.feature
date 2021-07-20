@@ -57,3 +57,19 @@ Feature: List dependencies
                   revision        : 4
                   patch           : <none>
             """
+
+    Scenario: Git repo with applied patch
+        Given MyProject with applied patch 'diff.patch'
+        When I run "dfetch list"
+        Then the output shows
+            """
+            Dfetch (0.2.0)
+              project             : ext/test-repo-tag
+                  remote          : <none>
+                  remote url      : https://github.com/dfetch-org/test-repo
+                  branch          : master
+                  tag             : v2.0
+                  last fetch      : 02/07/2021, 20:25:56
+                  revision        : <none>
+                  patch           : diff.patch
+            """
