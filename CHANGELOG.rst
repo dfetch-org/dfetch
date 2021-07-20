@@ -1,7 +1,7 @@
 Release 0.X.0 (unreleased)
 ===================================
 
-* Some new feature!
+* Add patch info to list command (#198)
 
 Release 0.3.0 (released 2021-07-19)
 ===================================
