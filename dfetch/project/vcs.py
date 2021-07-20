@@ -104,15 +104,18 @@ class VCS(ABC):
         actually_fetched = self._fetch_impl(to_fetch)
         self._log_project(f"Fetched {actually_fetched}")
 
+        applied_patch = ""
         if self.__project.patch:
             if os.path.exists(self.__project.patch):
                 self.apply_patch()
+                applied_patch = self.__project.patch
             else:
                 logger.warning(f"Skipping non-existent patch {self.__project.patch}")
 
         self.__metadata.fetched(
             actually_fetched,
             hash_=hash_directory(self.local_path, skiplist=[self.__metadata.FILENAME]),
+            patch_=applied_patch,
         )
 
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
