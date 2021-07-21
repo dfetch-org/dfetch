@@ -100,7 +100,7 @@ class Metadata:
 
     @property
     def remote_url(self) -> str:
-        """Branch as stored in the metadata."""
+        """Remote url as stored in the metadata."""
         return self._remote_url
 
     @property
@@ -114,12 +114,12 @@ class Metadata:
 
     @property
     def hash(self) -> str:
-        """Hash of directory."""
+        """Hash of directory as stored in the metadata.."""
         return self._hash
 
     @property
     def patch(self) -> str:
-        """Applied patch."""
+        """Applied patch as stored in the metadata.."""
         return self._patch
 
     @property
