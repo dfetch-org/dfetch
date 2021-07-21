@@ -37,9 +37,11 @@ class Metadata:
             "last_fetch", datetime.datetime(2000, 1, 1, 0, 0, 0)
         )
 
-        self._branch: str = str(kwargs.get("branch", ""))
-        self._tag: str = str(kwargs.get("tag", ""))
-        self._revision: str = str(kwargs.get("revision", ""))
+        self._version: Version = Version(
+            branch=str(kwargs.get("branch", "")),
+            tag=str(kwargs.get("tag", "")),
+            revision=str(kwargs.get("revision", "")),
+        )
         self._remote_url: str = str(kwargs.get("remote_url", ""))
         self._destination: str = str(kwargs.get("destination", ""))
         self._hash: str = str(kwargs.get("hash", ""))
@@ -72,31 +74,29 @@ class Metadata:
     def fetched(self, version: Version, hash_: str = "", patch_: str = "") -> None:
         """Update metadata."""
         self._last_fetch = datetime.datetime.now()
-        self._branch = version.branch
-        self._tag = version.tag
-        self._revision = version.revision
+        self._version = version
         self._hash = hash_
         self._patch = patch_
 
     @property
     def version(self) -> Version:
         """Get the version."""
-        return Version(tag=self.tag, branch=self.branch, revision=self.revision)
+        return self._version
 
     @property
     def branch(self) -> str:
         """Branch as stored in the metadata."""
-        return self._branch
+        return self._version.branch
 
     @property
     def tag(self) -> str:
         """Tag as stored in the metadata."""
-        return self._tag
+        return self._version.tag
 
     @property
     def revision(self) -> str:
         """Revision as stored in the metadata."""
-        return self._revision
+        return self._version.revision
 
     @property
     def remote_url(self) -> str:
@@ -140,9 +140,9 @@ class Metadata:
         return all(
             [
                 other.remote_url == self.remote_url,
-                other.tag == self.tag,
-                other.branch == self.branch,
-                other.revision == self.revision,
+                other._version.tag == self._version.tag,
+                other._version.branch == self._version.branch,
+                other._version.revision == self._version.revision,
                 other.hash == self.hash,
                 other.patch == self.patch,
             ]
@@ -153,10 +153,10 @@ class Metadata:
         metadata = {
             "dfetch": {
                 "remote_url": self.remote_url,
-                "branch": self.branch,
-                "revision": self.revision,
+                "branch": self._version.branch,
+                "revision": self._version.revision,
                 "last_fetch": self.last_fetch_string(),
-                "tag": self.tag,
+                "tag": self._version.tag,
                 "hash": self.hash,
                 "patch": self.patch,
             }
