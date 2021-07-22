@@ -119,7 +119,7 @@ class Metadata:
 
     @property
     def patch(self) -> str:
-        """Applied patch as stored in the metadata.."""
+        """The applied patch as stored in the metadata."""
         return self._patch
 
     @property
