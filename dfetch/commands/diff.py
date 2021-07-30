@@ -59,6 +59,10 @@ class Diff(dfetch.commands.command.Command):
                 patch_name = f"{project.name}.patch"
                 with catch_runtime_exceptions(exceptions) as exceptions:
 
+                    if not os.path.exists(project.destination):
+                        raise RuntimeError(
+                            "You cannot generate a diff of a project that was never fetched"
+                        )
                     if GitRepo.check_path(project.destination):
                         patch = _diff_from_git(project)
                     elif SvnRepo.check_path(project.destination):
