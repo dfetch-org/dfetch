@@ -15,9 +15,9 @@ plantweb==1.2.1
 sphinxcontrib.asciinema==0.3.3
 
 # Testing
-pytest==6.2.4
+pytest==6.2.5
 pytest-cov==2.12.1
 behave==1.2.6
 
 # Automation
-pre-commit==2.14.0
+pre-commit==2.14.1
