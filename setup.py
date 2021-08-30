@@ -29,7 +29,7 @@ setup(
         "coloredlogs==15.0.1",
         "pykwalify==1.8.0",
         "colorama==0.4.4",
-        "typing-extensions==3.10.0.0",
+        "typing-extensions==3.10.0.1",
         "semver==2.13.0",
         "patch-ng==1.17.4",
     ],
