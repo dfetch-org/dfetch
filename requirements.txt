@@ -2,7 +2,7 @@
 black==21.8b0
 doc8==0.9.0
 pydocstyle==6.1.1
-radon==4.5.2
+radon==5.1.0
 xenon==0.8.0
 types-PyYAML==5.4.10
 
