@@ -139,6 +139,7 @@ class Manifest:
             return yaml.safe_load(text)
         except yaml.YAMLError as exc:
             print(exc)
+            return ""
 
     @staticmethod
     def from_file(path: str) -> "Manifest":
@@ -154,7 +155,7 @@ class Manifest:
         Raises:
             FileNotFoundError: Given path was not a file.
         """
-        with open(path, "r") as opened_file:
+        with open(path, "r", encoding="utf-8") as opened_file:
             return Manifest.from_yaml(opened_file)
 
     def set_parent(self, parent: ProjectEntry) -> None:
@@ -231,7 +232,7 @@ class Manifest:
 
     def dump(self, path: str) -> None:
         """Dump metadata file to correct path."""
-        with open(path, "w+") as manifest_file:
+        with open(path, "w+", encoding="utf-8") as manifest_file:
             yaml.dump(
                 self._as_dict(), manifest_file, Dumper=ManifestDumper, sort_keys=False
             )
