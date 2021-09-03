@@ -192,7 +192,9 @@ class GitRepo(VCS):
 
         if src:
             run_on_cmdline(logger, "git config core.sparsecheckout true")
-            with open(".git/info/sparse-checkout", "a") as sparse_checkout_file:
+            with open(
+                ".git/info/sparse-checkout", "a", encoding="utf-8"
+            ) as sparse_checkout_file:
                 sparse_checkout_file.write(
                     "\n".join(["/" + src, "/LICENSE*", "/COPYING*"])
                 )

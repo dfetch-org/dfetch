@@ -67,7 +67,7 @@ class Metadata:
     @classmethod
     def from_file(cls, path: str) -> Any:
         """Load metadata file."""
-        with open(path, "r") as metadata_file:
+        with open(path, "r", encoding="utf-8") as metadata_file:
             data: Options = yaml.safe_load(metadata_file)["dfetch"]
             return cls(data)
 
@@ -162,5 +162,5 @@ class Metadata:
             }
         }
 
-        with open(self.path, "w+") as metadata_file:
+        with open(self.path, "w+", encoding="utf-8") as metadata_file:
             yaml.dump(metadata, metadata_file)
