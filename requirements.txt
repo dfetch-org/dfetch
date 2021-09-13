@@ -9,7 +9,7 @@ types-PyYAML==5.4.10
 prospector[with_bandit,with_mypy,with_pyroma,with_flake8,with_vulture]==1.5.0.1
 
 # Documentation
-sphinx==4.1.2
+sphinx==4.2.0
 sphinx-argparse==0.2.5
 plantweb==1.2.1
 sphinxcontrib.asciinema==0.3.3
