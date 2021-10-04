@@ -28,7 +28,7 @@ Feature: Fetching dependencies from a svn repository
                   revision: '2'
                   branch: trunk
                   vcs: svn
-                  dst: ext/test-rev-and-branch
+                  dst: ext/test-rev-and branch
 
                 - name: ext/test-repo-tag-v1
                   tag: v1
@@ -40,7 +40,7 @@ Feature: Fetching dependencies from a svn repository
         Then the following projects are fetched
             | path                       |
             | ext/test-repo-rev-only     |
-            | ext/test-rev-and-branch    |
+            | ext/test-rev-and branch    |
             | ext/test-repo-tag-v1       |
 
     Scenario: Directory in a non-standard SVN repository can be fetched
