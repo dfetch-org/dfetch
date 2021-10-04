@@ -2,6 +2,7 @@ Release 0.X.0 (unreleased)
 ===================================
 
 * Add patch info to list command (#198)
+* Don't break when there is a space in SVN dest path (#223)
 
 Release 0.3.0 (released 2021-07-19)
 ===================================
