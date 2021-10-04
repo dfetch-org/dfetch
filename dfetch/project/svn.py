@@ -220,7 +220,7 @@ class SvnRepo(VCS):
     def _export(url: str, rev: str = "", dst: str = ".") -> None:
         run_on_cmdline(
             logger,
-            f"svn export --force {rev} {url} {dst}",
+            ["svn", "export", "--force"] + rev.split(" ") + [url, dst],
         )
 
     @staticmethod
