@@ -114,7 +114,9 @@ def test_single_manifest_found() -> None:
 
         find_file_mock.return_value = [DEFAULT_MANIFEST_NAME]
 
-        assert os.path.join(os.getcwd(), DEFAULT_MANIFEST_NAME) == find_manifest()
+        joined = os.path.realpath(os.path.join(os.getcwd(), DEFAULT_MANIFEST_NAME))
+        found = find_manifest()
+        assert joined == found
 
 
 @pytest.mark.parametrize(
