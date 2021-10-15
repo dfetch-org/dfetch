@@ -203,8 +203,8 @@ class GitRepo(VCS):
         run_on_cmdline(logger, "git reset --hard FETCH_HEAD")
 
         if src:
-            if os.path.isfile(src):
-                src = os.path.dirname(src)
+            if not os.path.isdir(src):
+                src = src.rsplit("/", maxsplit=1)[0]
 
             for file_to_copy in os.listdir(src):
                 shutil.move(src + "/" + file_to_copy, ".")
