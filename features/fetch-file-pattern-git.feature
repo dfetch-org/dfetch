@@ -1,9 +1,8 @@
 Feature: Fetch file pattern from git repo
 
-    Sometimes all files matching a pattern can be usefull.
+    Sometimes all files matching a pattern can be useful.
     *DFetch* makes it possible to specify a file pattern from a repository.
 
-    @wip
     Scenario: A file pattern is fetched from a repo
         Given the manifest 'dfetch.yaml' in MyProject
             """
