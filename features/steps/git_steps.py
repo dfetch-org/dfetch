@@ -18,6 +18,10 @@ def create_repo():
     subprocess.call(["git", "config", "user.email", "you@example.com"])
     subprocess.call(["git", "config", "user.name", "John Doe"])
 
+    if os.name == 'nt':
+        # Creates zombie fsmonitor-daemon process that holds files (see https://github.com/git-for-windows/git/issues/3326)
+        subprocess.call(["git", "config", "--global", "core.usebuiltinfsmonitor", "false"])
+
 
 def commit_all(msg):
     subprocess.call(["git", "add", "-A"])
