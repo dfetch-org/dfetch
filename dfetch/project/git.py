@@ -2,158 +2,63 @@
 
 import os
 import pathlib
-import re
-import shutil
-from collections import namedtuple
-from pathlib import PurePath
-from typing import Dict, List, Optional, Tuple
+from typing import List
 
 from dfetch.log import get_logger
+from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.vcs import VCS
-from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
-from dfetch.util.util import in_directory, safe_rmtree
+from dfetch.util.util import safe_rmtree
+from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
 
 logger = get_logger(__name__)
-
-Submodule = namedtuple(
-    "Submodule", ["name", "toplevel", "path", "sha", "url", "branch", "tag"]
-)
 
 
 class GitRepo(VCS):
     """A git repository."""
 
-    METADATA_DIR = ".git"
     DEFAULT_BRANCH = "master"
     NAME = "git"
 
-    @staticmethod
-    def submodules() -> List[Submodule]:
-        """Get a list of submodules in the current directory."""
-        result = run_on_cmdline(
-            logger,
-            [
-                "git",
-                "submodule",
-                "foreach",
-                "--quiet",
-                "echo $name $sm_path $sha1 $toplevel",
-            ],
-        )
-
-        submodules = []
-        for line in result.stdout.decode().split("\n"):
-            if line:
-                name, sm_path, sha, toplevel = line.split(" ")
-                url = GitRepo._get_submodule_urls(toplevel)[name]
-                branch, tag = GitRepo._determine_branch_or_tag(
-                    url, os.path.join(os.getcwd(), sm_path), sha
-                )
-                submodules += [
-                    Submodule(
-                        name=name,
-                        toplevel=toplevel,
-                        path=sm_path,
-                        sha=sha,
-                        url=url,
-                        branch=branch,
-                        tag=tag,
-                    )
-                ]
-
-        if not submodules and os.path.isfile(".gitmodules"):
-            logger.warning(
-                "This repository probably has submodules, "
-                "but they might not have been initialized yet. "
-                "Try updating the with 'git submodule update --init' and rerun the command."
-            )
-
-        return submodules
-
-    @staticmethod
-    def _get_submodule_urls(toplevel: str) -> Dict[str, str]:
-
-        result = run_on_cmdline(
-            logger,
-            [
-                "git",
-                "config",
-                "--file",
-                toplevel + "/.gitmodules",
-                "--get-regexp",
-                "url",
-            ],
-        )
-
-        return {
-            str(match.group(1)): str(match.group(2))
-            for match in re.finditer(
-                r"submodule\.(.*)\.url\s+(.*)", result.stdout.decode()
-            )
-        }
+    def __init__(self, project: ProjectEntry):
+        """Create a Git project."""
+        super().__init__(project)
+        self._remote_repo = GitRemote(self.remote)
+        self._local_repo = GitLocalRepo(self.local_path)
 
     def check(self) -> bool:
         """Check if is GIT."""
-        if self.remote.endswith(".git"):
-            return True
+        return bool(self._remote_repo.is_git())
 
-        try:
-            run_on_cmdline(logger, f"git ls-remote --heads {self.remote}")
-            return True
-        except (SubprocessCommandError, RuntimeError):
-            return False
+    def _latest_revision_on_branch(self, branch: str) -> str:
+        """Get the latest revision on a branch."""
+        return str(self._remote_repo.last_sha_on_branch(branch))
+
+    def _list_of_tags(self) -> List[str]:
+        """Get list of all available tags."""
+        return [str(tag) for tag in self._remote_repo.list_of_tags()]
 
     def metadata_revision(self) -> str:
         """Get the revision of the metadata file."""
-        return get_last_file_hash(self.metadata_path)
+        return str(self._local_repo.get_last_file_hash(self.metadata_path))
 
     def current_revision(self) -> str:
         """Get the revision of the metadata file."""
-        with in_directory(self.local_path):
-            return get_current_hash()
+        return str(self._local_repo.get_current_hash())
 
     def get_diff(self, old_hash: str, new_hash: str) -> str:
         """Get the diff of two revisions."""
-        with in_directory(self.local_path):
-            return create_diff(old_hash, new_hash)
-
-    @staticmethod
-    def check_path(path: str = ".") -> bool:
-        """Check if is git."""
-        try:
-            with in_directory(path):
-                run_on_cmdline(logger, "git status")
-            return True
-        except (SubprocessCommandError, RuntimeError):
-            return False
+        return str(self._local_repo.create_diff(old_hash, new_hash))
 
     @staticmethod
     def revision_is_enough() -> bool:
         """See if this VCS can uniquely distinguish branch with revision only."""
         return True
 
-    def _latest_revision_on_branch(self, branch: str) -> str:
-        """Get the latest revision on a branch."""
-        info = self._ls_remote(self.remote)
-        return self._find_sha_of_branch_or_tag(info, branch)
-
-    def _list_of_tags(self) -> List[str]:
-        """Get list of all available tags."""
-        info = self._ls_remote(self.remote)
-
-        return [
-            reference.replace("refs/tags/", "")
-            for reference, _ in info.items()
-            if reference.startswith("refs/tags/")
-        ]
-
     @staticmethod
     def list_tool_info() -> None:
         """Print out version information."""
-        result = run_on_cmdline(logger, "git --version")
-
-        tool, version = result.stdout.decode().strip().split("version", maxsplit=1)
+        tool, version = get_git_version()
 
         VCS._log_tool(tool, version)
 
@@ -164,10 +69,11 @@ class GitRepo(VCS):
         # When exporting a file, the destination directory must already exist
         pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
 
-        with in_directory(self.local_path):
-            self._checkout_version(self.remote, rev_or_branch_or_tag, self.source)
+        self._local_repo.checkout_version(
+            self.remote, rev_or_branch_or_tag, self.source
+        )
 
-        safe_rmtree(os.path.join(self.local_path, self.METADATA_DIR))
+        safe_rmtree(os.path.join(self.local_path, self._local_repo.METADATA_DIR))
 
         return self._determine_fetched_version(version)
 
@@ -186,149 +92,6 @@ class GitRepo(VCS):
         branch = version.branch or self.DEFAULT_BRANCH
         revision = version.revision
         if not version.tag and not version.revision:
-            info = self._ls_remote(self.remote)
-            revision = self._find_sha_of_branch_or_tag(info, branch)
+            revision = self._remote_repo.last_sha_on_branch(branch)
 
         return Version(tag=version.tag, revision=revision, branch=branch)
-
-    @staticmethod
-    def _checkout_version(remote: str, version: str, src: Optional[str]) -> None:
-        """Checkout a specific version from a given remote.
-
-        Args:
-            remote (str): Url or path to a remote git repository
-            version (str): A target to checkout, can be branch, tag or sha
-            src (Optional[str]): Optional path to subdirectory or file in repo
-        """
-        run_on_cmdline(logger, "git init")
-        run_on_cmdline(logger, f"git remote add origin {remote}")
-        run_on_cmdline(logger, "git checkout -b dfetch-local-branch")
-
-        if src:
-            run_on_cmdline(logger, "git config core.sparsecheckout true")
-            with open(
-                ".git/info/sparse-checkout", "a", encoding="utf-8"
-            ) as sparse_checkout_file:
-                sparse_checkout_file.write(
-                    "\n".join(["/" + src, "/LICENSE*", "/COPYING*"])
-                )
-
-        run_on_cmdline(logger, f"git fetch --depth 1 origin {version}")
-        run_on_cmdline(logger, "git reset --hard FETCH_HEAD")
-
-        if src:
-            full_src = src
-            if not os.path.isdir(src):
-                src = os.path.dirname(src)
-
-            try:
-                for file_to_copy in os.listdir(src):
-                    shutil.move(src + "/" + file_to_copy, ".")
-                safe_rmtree(PurePath(src).parts[0])
-            except FileNotFoundError:
-                logger.warning(
-                    f"The 'src:' filter '{full_src}' didn't match any files from '{remote}'"
-                )
-
-    @staticmethod
-    def _ls_remote(remote: str) -> Dict[str, str]:
-
-        result = run_on_cmdline(
-            logger, f"git ls-remote --heads --tags {remote}"
-        ).stdout.decode()
-
-        info = {}
-        for line in filter(lambda x: x, result.split("\n")):
-            sha, ref = [part.strip() for part in f"{line} ".split("\t", maxsplit=1)]
-
-            # Annotated tag commit (more important)
-            if ref.endswith("^{}"):
-                info[ref.strip("^{}")] = sha
-            elif ref not in info:
-                info[ref] = sha
-        return info
-
-    @staticmethod
-    def _determine_branch_or_tag(url: str, repo_path: str, sha: str) -> Tuple[str, str]:
-        branch, tag = GitRepo._find_branch_tip_or_tag_from_sha(
-            GitRepo._ls_remote(url), sha
-        )
-
-        if not (branch or tag):
-            branch = GitRepo._find_branch_in_local_repo_containing_sha(repo_path, sha)
-
-        return (branch, tag)
-
-    @staticmethod
-    def _find_branch_in_local_repo_containing_sha(repo_path: str, sha: str) -> str:
-        if not os.path.isdir(os.path.join(repo_path, GitRepo.METADATA_DIR)):
-            return ""
-
-        with in_directory(repo_path):
-            result = run_on_cmdline(
-                logger,
-                ["git", "branch", "--contains", sha],
-            )
-
-        branches: List[str] = [
-            branch.strip()
-            for branch in result.stdout.decode().split("*")
-            if branch.strip() and "HEAD detached at" not in branch.strip()
-        ]
-
-        return "" if not branches else branches[0]
-
-    @staticmethod
-    def _find_sha_of_branch_or_tag(info: Dict[str, str], branch_or_tag: str) -> str:
-        for reference, sha in info.items():
-            if reference in [
-                f"refs/heads/{branch_or_tag}",
-                f"refs/tags/{branch_or_tag}",
-            ]:
-                return sha
-        return ""
-
-    @staticmethod
-    def _find_branch_tip_or_tag_from_sha(
-        info: Dict[str, str], rev: str
-    ) -> Tuple[str, str]:
-        """Check all branch tips and tags and see if the sha is one of them."""
-        branch, tag = "", ""
-        for reference, sha in info.items():
-            if sha.startswith(rev):  # Also allow for shorter SHA's
-                if reference.startswith("refs/tags/"):
-                    tag = reference.replace("refs/tags/", "")
-                elif reference.startswith("refs/heads/"):
-                    branch = reference.replace("refs/heads/", "")
-                break
-        return (branch, tag)
-
-
-def get_last_file_hash(path: str) -> str:
-    """Get the hash of a specific file."""
-    result = run_on_cmdline(
-        logger,
-        ["git", "log", "-n", "1", "--pretty=format:%H", "--", path],
-    )
-
-    return str(result.stdout.decode())
-
-
-def get_current_hash() -> str:
-    """Get the last revision."""
-    result = run_on_cmdline(
-        logger,
-        ["git", "log", "-n", "1", "--pretty=format:%H"],
-    )
-
-    return str(result.stdout.decode())
-
-
-def create_diff(old_hash: str, new_hash: str) -> str:
-    """Generate a relative diff patch."""
-    result = run_on_cmdline(
-        logger,
-        ["git", "diff", "--relative", "--no-color", old_hash, new_hash],
-    )
-
-    return str(result.stdout.decode())
