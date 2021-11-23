@@ -14,7 +14,7 @@ def _remove_readonly(func: Any, path: str, _: Any) -> None:
         os.chmod(path, stat.S_IWUSR)
         func(path)
     else:
-        raise
+        raise  # pylint: disable=misplaced-bare-raise
 
 
 def find_non_matching_files(directory: str, pattern: str) -> Iterator[str]:

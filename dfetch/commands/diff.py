@@ -14,6 +14,7 @@ import dfetch.project
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.git import GitRepo
+from dfetch.vcs.git import GitLocalRepo
 from dfetch.project.metadata import Metadata
 from dfetch.project.svn import SvnRepo
 from dfetch.util.util import catch_runtime_exceptions, in_directory
@@ -74,7 +75,7 @@ class Diff(dfetch.commands.command.Command):
                         raise RuntimeError(
                             "You cannot generate a diff of a project that was never fetched"
                         )
-                    if GitRepo.check_path(project.destination):
+                    if GitLocalRepo(project.destination).is_git():
                         patch = _diff_from_git(project, revs)
                     elif SvnRepo.check_path(project.destination):
                         raise NotImplementedError("To be done!")
@@ -88,7 +89,7 @@ class Diff(dfetch.commands.command.Command):
                             project.name,
                             f"Generating patch {patch_name} from {revs[0]} to {revs[1]} in {os.path.dirname(path)}",
                         )
-                        with open(patch_name, "w") as patch_file:
+                        with open(patch_name, "w", encoding="UTF-8") as patch_file:
                             patch_file.write(patch)
                     else:
                         logger.print_info_line(
