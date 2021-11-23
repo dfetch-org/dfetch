@@ -10,8 +10,11 @@ from typing import Any, Generator, Iterator, List, Optional
 
 
 def _remove_readonly(func: Any, path: str, _: Any) -> None:
-    os.chmod(path, stat.S_IWRITE)
-    func(path)
+    if not os.access(path, os.W_OK):
+        os.chmod(path, stat.S_IWUSR)
+        func(path)
+    else:
+        raise
 
 
 def find_non_matching_files(directory: str, pattern: str) -> Iterator[str]:
