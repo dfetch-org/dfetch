@@ -1,6 +1,32 @@
-"""Create a patch of a project.
+"""*Dfetch* can create a patch file with your local changes to the external project.
 
-Find the changes commited since the last fetch and generate a patch file for that.
+Dfetch will use your project's version control system to find the change to the project
+or a specific project since between two commits.
+
+If no commits are provided *Dfetch* will create a patch between the commit the metadata file
+was commited and the last version.
+
+Using the generated patch
+=========================
+The patch can be used in the manifest see the patch attribute for more information.
+It can also be sent to the upstream maintainer in case of bug fixes.
+
+The maintainer can apply this patch as following:
+
+Git
+~~~
+
+.. code-block:: console
+
+   $ git apply --verbose --directory='target_dir' myfixes.patch
+   Checking patch target_dir/some_file.cpp...
+   Applied patch target_dir/some_file.cpp cleanly.
+
+Svn
+~~~
+
+.. warning:: not supported yet
+
 """
 
 import argparse
