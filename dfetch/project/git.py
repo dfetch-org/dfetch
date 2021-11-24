@@ -203,12 +203,18 @@ class GitRepo(VCS):
         run_on_cmdline(logger, "git reset --hard FETCH_HEAD")
 
         if src:
+            full_src = src
             if not os.path.isdir(src):
-                src = src.rsplit("/", maxsplit=1)[0]
+                src = os.path.dirname(src)
 
-            for file_to_copy in os.listdir(src):
-                shutil.move(src + "/" + file_to_copy, ".")
-            safe_rmtree(PurePath(src).parts[0])
+            try:
+                for file_to_copy in os.listdir(src):
+                    shutil.move(src + "/" + file_to_copy, ".")
+                safe_rmtree(PurePath(src).parts[0])
+            except FileNotFoundError:
+                logger.warning(
+                    f"The 'src:' filter '{full_src}' didn't match any files from '{remote}'"
+                )
 
     @staticmethod
     def _ls_remote(remote: str) -> Dict[str, str]:
