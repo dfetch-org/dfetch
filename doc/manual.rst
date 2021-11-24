@@ -61,6 +61,16 @@ Validate
 
 .. automodule:: dfetch.commands.validate
 
+Diff
+-----
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: diff
+
+.. automodule:: dfetch.commands.diff
+
 Freeze
 ------
 .. argparse::

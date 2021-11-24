@@ -186,7 +186,8 @@ with the ``patch:`` attribute.
           repo-path: cpputest/cpputest
           patch: local_changes.patch
 
-The patch should be *relative* and can be generated as such:
+The patch can be generated using the *Dfetch* :ref:`Diff` command.
+Alternately the patch can be generated manually as such. Note that it should be *relative*.
 
 .. code-block:: sh
 
