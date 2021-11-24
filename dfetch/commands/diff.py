@@ -97,33 +97,37 @@ class Diff(dfetch.commands.command.Command):
                 patch_name = f"{project.name}.patch"
                 with catch_runtime_exceptions(exceptions) as exceptions:
 
-                    if not os.path.exists(project.destination):
-                        raise RuntimeError(
-                            "You cannot generate a diff of a project that was never fetched"
-                        )
-                    if GitLocalRepo(project.destination).is_git():
-                        patch = _diff_from_git(project, revs)
-                    elif SvnRepo.check_path(project.destination):
-                        raise NotImplementedError("To be done!")
-                    else:
-                        raise RuntimeError(
-                            "Can only create patch in SVN or Git repo",
-                        )
-
-                    if patch:
-                        logger.print_info_line(
-                            project.name,
-                            f"Generating patch {patch_name} from {revs[0]} to {revs[1]} in {os.path.dirname(path)}",
-                        )
-                        with open(patch_name, "w", encoding="UTF-8") as patch_file:
-                            patch_file.write(patch)
-                    else:
-                        logger.print_info_line(
-                            project.name, f"No diffs found from {revs[0]} to {revs[1]}"
-                        )
+                    self.generate_patch(path, revs, project, patch_name)
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
+
+    def generate_patch(self, path, revs, project, patch_name):
+        """Generate a patch for the given project."""
+        if not os.path.exists(project.destination):
+            raise RuntimeError(
+                "You cannot generate a diff of a project that was never fetched"
+            )
+        if GitLocalRepo(project.destination).is_git():
+            patch = _diff_from_git(project, revs)
+        elif SvnRepo.check_path(project.destination):
+            raise NotImplementedError("To be done!")
+        else:
+            raise RuntimeError(
+                "Can only create patch in SVN or Git repo",
+            )
+
+        if patch:
+            logger.print_info_line(
+                project.name,
+                f"Generating patch {patch_name} from {revs[0]} to {revs[1]} in {os.path.dirname(path)}",
+            )
+            with open(patch_name, "w", encoding="UTF-8") as patch_file:
+                patch_file.write(patch)
+        else:
+            logger.print_info_line(
+                project.name, f"No diffs found from {revs[0]} to {revs[1]}"
+            )
 
 
 def _diff_from_git(project: ProjectEntry, revs: List[str]) -> str:
