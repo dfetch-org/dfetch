@@ -20,7 +20,6 @@ def find_non_matching_files(directory: str, pattern: str) -> Iterator[str]:
         for basename in files:
             if not fnmatch.fnmatch(basename, pattern):
                 yield os.path.join(root, basename)
-                # yield filename
 
 
 def safe_rm(path: str) -> None:
