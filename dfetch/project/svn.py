@@ -10,7 +10,7 @@ from dfetch.log import get_logger
 from dfetch.manifest.version import Version
 from dfetch.project.vcs import VCS
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
-from dfetch.util.util import in_directory
+from dfetch.util.util import find_non_matching_files, in_directory
 
 logger = get_logger(__name__)
 
@@ -197,7 +197,13 @@ class SvnRepo(VCS):
             parents=True, exist_ok=True
         )
 
+        complete_path, file_pattern = self._parse_file_pattern(complete_path)
+
         SvnRepo._export(complete_path, rev_arg, self.local_path)
+
+        if file_pattern:
+            for file in find_non_matching_files(self.local_path, file_pattern):
+                os.remove(file)
 
         if self.source:
             root_branch_path = "/".join([self.remote, branch_path]).strip("/")
@@ -212,6 +218,18 @@ class SvnRepo(VCS):
                 break
 
         return Version(tag=version.tag, branch=branch, revision=revision)
+
+    @staticmethod
+    def _parse_file_pattern(complete_path: str) -> Tuple[str, str]:
+        if complete_path.count("*") > 1:
+            raise RuntimeError("Only single * supported!")
+
+        glob_filter = ""
+        if complete_path.count("*") == 1:
+            before, after = complete_path.split("*", maxsplit=1)
+            complete_path, before_star = before.rsplit("/", maxsplit=1)
+            glob_filter = "*".join([before_star, after])
+        return complete_path, glob_filter
 
     def _get_info(self, branch: str) -> Dict[str, str]:
         return self._get_info_from_target(f"{self.remote}/{branch}")
