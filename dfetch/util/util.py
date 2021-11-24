@@ -1,16 +1,26 @@
 """Generic python utilities."""
 
+import fnmatch
 import hashlib
 import os
 import shutil
 import stat
 from contextlib import contextmanager
-from typing import Any, Generator, List, Optional
+from typing import Any, Generator, Iterator, List, Optional
 
 
 def _remove_readonly(func: Any, path: str, _: Any) -> None:
     os.chmod(path, stat.S_IWRITE)
     func(path)
+
+
+def find_non_matching_files(directory: str, pattern: str) -> Iterator[str]:
+    """Find files NOT matching the given pattern."""
+    for root, _, files in os.walk(directory):
+        for basename in files:
+            if not fnmatch.fnmatch(basename, pattern):
+                yield os.path.join(root, basename)
+                # yield filename
 
 
 def safe_rm(path: str) -> None:
