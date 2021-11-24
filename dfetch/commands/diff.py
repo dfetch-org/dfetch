@@ -40,10 +40,10 @@ import dfetch.project
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.git import GitRepo
-from dfetch.vcs.git import GitLocalRepo
 from dfetch.project.metadata import Metadata
 from dfetch.project.svn import SvnRepo
 from dfetch.util.util import catch_runtime_exceptions, in_directory
+from dfetch.vcs.git import GitLocalRepo
 
 logger = get_logger(__name__)
 
