@@ -1,31 +1,40 @@
 """*Dfetch* can create a patch file with your local changes to the external project.
 
-Dfetch will use your project's version control system to find the change to the project
-or a specific project since between two commits.
+If you've found any issues with the remote project, you can fix these issues inside the
+context of your project. To help the upstream project, you can generate a patch file
+that can be applied by the upstream maintainer. The patch will be generated with the
+version control system of your main project that contains the manifest.
 
-If no commits are provided *Dfetch* will create a patch between the commit the metadata file
-was commited and the last version.
+To generate a patch, *Dfetch* requires two revisions to determine the changes. You can
+provide these through the ``--revs`` argument.
 
-Using the generated patch
-=========================
-The patch can be used in the manifest see the patch attribute for more information.
-It can also be sent to the upstream maintainer in case of bug fixes.
+* If ``--revs`` is not provided the changes are calculated between the last revision
+  the metadata file was changed and the current version.
+* If ``--revs`` specifies one revision (e.g. ``--revs 23864ef2``), that revision will be used as starting point.
+* Alternately both revisions can be explicitly specified, e.g. ``--revs 23864ef2:4a9cb18``.
 
-The maintainer can apply this patch as following:
-
-Git
-~~~
+The below statement will generate a patch for ``some-project`` from your manifest.
 
 .. code-block:: console
 
-   $ git apply --verbose --directory='target_dir' myfixes.patch
-   Checking patch target_dir/some_file.cpp...
-   Applied patch target_dir/some_file.cpp cleanly.
+   $ dfetch diff some-project
 
-Svn
-~~~
 
-.. warning:: not supported yet
+Using the generated patch
+=========================
+The patch can be used in the manifest see the :ref:`patch` attribute for more information.
+It can also be sent to the upstream maintainer in case of bug fixes.
+
+The patch generated is a relative patch and should be applied specifiyng the base directory.
+See below for the version control specifics.
+
+.. code-block:: sh
+
+   # For git repo's
+   git apply --verbose --directory='some-project' some-project.patch
+
+   # For svn repo's
+   svn patch some-project.patch
 
 """
 
@@ -49,9 +58,10 @@ logger = get_logger(__name__)
 
 
 class Diff(dfetch.commands.command.Command):
-    """Diff a project.
+    """Generate a diff of a project.
 
-    Create a patch of a project
+    Create a patch of a project. The diff will be a relative patch file
+    only of the project's directory.
     """
 
     @staticmethod
@@ -59,18 +69,12 @@ class Diff(dfetch.commands.command.Command):
         """Add the parser menu for this action."""
         parser = dfetch.commands.command.Command.parser(subparsers, Diff)
         parser.add_argument(
-            "--non-recursive",
-            "-N",
-            action="store_true",
-            help="Don't recursively diff for child manifests.",
-        )
-        parser.add_argument(
             "-r",
             "--revs",
             metavar="<oldrev>[:<newrev>]",
             type=str,
             default="",
-            help="Revision range",
+            help="Revision(s) to generate diff from",
         )
 
         parser.add_argument(
@@ -78,7 +82,7 @@ class Diff(dfetch.commands.command.Command):
             metavar="<project>",
             type=str,
             nargs=1,
-            help="Project to generate diff of",
+            help="Project to generate diff from",
         )
 
     def __call__(self, args: argparse.Namespace) -> None:
@@ -102,7 +106,10 @@ class Diff(dfetch.commands.command.Command):
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
 
-    def generate_patch(self, path, revs, project, patch_name):
+    @staticmethod
+    def generate_patch(
+        path: str, revs: List[str], project: ProjectEntry, patch_name: str
+    ) -> None:
         """Generate a patch for the given project."""
         if not os.path.exists(project.destination):
             raise RuntimeError(
