@@ -204,6 +204,10 @@ class SvnRepo(VCS):
         if file_pattern:
             for file in find_non_matching_files(self.local_path, file_pattern):
                 os.remove(file)
+            if not os.listdir(self.local_path):
+                logger.warning(
+                    f"The 'src:' filter '{self.source}' didn't match any files from '{self.remote}'"
+                )
 
         if self.source:
             root_branch_path = "/".join([self.remote, branch_path]).strip("/")
@@ -222,7 +226,7 @@ class SvnRepo(VCS):
     @staticmethod
     def _parse_file_pattern(complete_path: str) -> Tuple[str, str]:
         if complete_path.count("*") > 1:
-            raise RuntimeError("Only single * supported!")
+            raise RuntimeError("Only single * supported in 'src:'!")
 
         glob_filter = ""
         if complete_path.count("*") == 1:
