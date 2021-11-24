@@ -3,16 +3,13 @@
 # flake8: noqa
 
 import argparse
-from typing import Tuple
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 
-import dfetch
 from dfetch.commands.import_ import Import
-from dfetch.manifest.manifest import Manifest
-from dfetch.project.git import Submodule
 from dfetch.project.svn import External
+from dfetch.vcs.git import Submodule
 
 DEFAULT_ARGS = argparse.Namespace(non_recursive=False)
 
@@ -51,7 +48,7 @@ def test_git_import(name, submodules):
 
     import_ = Import()
 
-    with patch("dfetch.commands.import_.GitRepo.submodules") as mocked_submodules:
+    with patch("dfetch.commands.import_.GitLocalRepo.submodules") as mocked_submodules:
         with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
 
             mocked_submodules.return_value = submodules
@@ -113,11 +110,9 @@ def test_svn_import(name, externals):
     with patch("dfetch.commands.import_.SvnRepo.check_path") as check_path:
         with patch("dfetch.commands.import_.SvnRepo.externals") as mocked_externals:
             with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
-                with patch(
-                    "dfetch.commands.import_.GitRepo.check_path"
-                ) as check_path_git:
+                with patch("dfetch.commands.import_.GitLocalRepo.is_git") as is_git:
 
-                    check_path_git.return_value = False
+                    is_git.return_value = False
                     check_path.return_value = True
                     mocked_externals.return_value = externals
 
