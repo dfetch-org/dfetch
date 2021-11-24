@@ -117,6 +117,23 @@ root of the repository.
           src: src
           repo-path: cpputest/cpputest
 
+It is also possible to use an ``*`` to match only certain files with the ``src`` tag.
+The following manifest will only checkout files in folder ``src`` with the ``*.h`` extension.
+
+.. code-block:: yaml
+
+    manifest:
+        version: 0.0
+
+        remotes:
+        - name: github
+          url-base: https://github.com/
+
+        projects:
+        - name: cpputest
+          src: src/*.h
+          repo-path: cpputest/cpputest
+
 VCS type
 ########
 *DFetch* does it best to find out what type of version control system (vcs) the remote url is,
