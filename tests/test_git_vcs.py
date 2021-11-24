@@ -2,14 +2,12 @@
 # mypy: ignore-errors
 # flake8: noqa
 
-import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
-from dfetch.manifest.project import ProjectEntry
-from dfetch.project.git import GitRepo
 from dfetch.util.cmdline import SubprocessCommandError
+from dfetch.vcs.git import GitLocalRepo, GitRemote
 
 
 @pytest.mark.parametrize(
@@ -20,34 +18,34 @@ from dfetch.util.cmdline import SubprocessCommandError
         ("no git", [RuntimeError()], False),
     ],
 )
-def test_check_path(name, cmd_result, expectation):
+def test_remote_check(name, cmd_result, expectation):
 
-    with patch("dfetch.project.git.run_on_cmdline") as run_on_cmdline_mock:
+    with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
 
         run_on_cmdline_mock.side_effect = cmd_result
 
-        assert GitRepo.check_path() == expectation
+        assert GitRemote(name).is_git() == expectation
 
 
 @pytest.mark.parametrize(
     "name, project, cmd_result, expectation",
     [
-        ("SSH url", ProjectEntry({"name": "sshProject", "url": "some.git"}), [], True),
+        ("SSH url", "sshProject", [1], True),
         (
             "http url",
-            ProjectEntry({"name": "httpProject", "url": "some/bla"}),
+            "httpProject",
             ["Yep!"],
             True,
         ),
         (
             "Failed command",
-            ProjectEntry({"name": "proj1", "url": "some/bla"}),
+            "proj1",
             [SubprocessCommandError()],
             False,
         ),
         (
             "No git",
-            ProjectEntry({"name": "proj2", "url": "some/bla"}),
+            "proj2",
             [RuntimeError()],
             False,
         ),
@@ -55,11 +53,12 @@ def test_check_path(name, cmd_result, expectation):
 )
 def test_check(name, project, cmd_result, expectation):
 
-    with patch("dfetch.project.git.run_on_cmdline") as run_on_cmdline_mock:
+    with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
+        with patch("dfetch.vcs.git.in_directory"):
 
-        run_on_cmdline_mock.side_effect = cmd_result
+            run_on_cmdline_mock.side_effect = cmd_result
 
-        assert GitRepo(project).check() == expectation
+            assert GitLocalRepo(project).is_git() == expectation
 
 
 TRIMMED_LSREMOTE_CPPUTEST = u"""
@@ -85,13 +84,13 @@ b9b841c56c524a10ccd40e88c3acaf9d5ec751c2	refs/tags/v4.0
 
 def test_ls_remote():
 
-    with patch("dfetch.project.git.run_on_cmdline") as run_on_cmdline_mock:
+    with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
 
         run_on_cmdline_mock.return_value.stdout = TRIMMED_LSREMOTE_CPPUTEST.encode(
             "UTF-8"
         )
 
-        info = GitRepo._ls_remote("some-url")
+        info = GitRemote._ls_remote("some-url")
 
         expected = {
             "refs/heads/gh-pages": "32ee13a803de50d057653588a9bdb61e2db5a6eb",
