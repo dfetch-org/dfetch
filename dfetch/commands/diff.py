@@ -149,8 +149,8 @@ def _diff_from_git(project: ProjectEntry, revs: List[str]) -> str:
         if not revs[-1]:
             raise RuntimeError(
                 "When not providing any commits, dfetch starts from"
-                f"the last commit to {Metadata.FILENAME} in {project.destination}",
-                "Please either commit this, or specify a revision to start from with --revs",
+                f" the last commit to {Metadata.FILENAME} in {project.destination}."
+                " Please either commit this, or specify a revision to start from with --revs"
             )
 
     if len(revs) == 1:
