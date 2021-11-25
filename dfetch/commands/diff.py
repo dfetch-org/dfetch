@@ -25,7 +25,7 @@ Using the generated patch
 The patch can be used in the manifest see the :ref:`patch` attribute for more information.
 It can also be sent to the upstream maintainer in case of bug fixes.
 
-The patch generated is a relative patch and should be applied specifiyng the base directory.
+The patch generated is a relative patch and should be applied specifying the base directory.
 See below for the version control specifics.
 
 .. code-block:: sh
