@@ -5,6 +5,7 @@ Release 0.X.0 (unreleased)
 * Don't break when there is a space in SVN dest path (#223)
 * Fix unittest (#229)
 * Allow using glob pattern for src key in manifest (#228)
+* Add diff command (#24)
 
 Release 0.3.0 (released 2021-07-19)
 ===================================
