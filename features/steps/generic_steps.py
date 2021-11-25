@@ -14,6 +14,7 @@ from dfetch.util.util import in_directory
 ansi_escape = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
 timestamp = re.compile(r"\d+\/\d+\/\d+, \d+:\d+:\d+")
+git_hash = re.compile(r"(\s?)[a-f0-9]{40}(\s?)")
 
 
 def check_file(path, content):
@@ -119,12 +120,24 @@ def step_impl(context, name):
     check_file(name, context.text)
 
 
+@then("the patch file '{name}' is generated")
+def step_impl(context, name):
+    """Check a manifest."""
+    check_file(name, context.text)
+
+
 @then("the output shows")
 def step_impl(context):
     expected_text = dfetch_title.sub(
-        "", timestamp.sub("[timestamp]", context.text)
+        "",
+        timestamp.sub("[timestamp]", git_hash.sub(r"\1[commit hash]\2", context.text)),
     ).splitlines()
-    actual_text = ansi_escape.sub("", timestamp.sub("[timestamp]", context.cmd_output))
+    actual_text = ansi_escape.sub(
+        "",
+        timestamp.sub(
+            "[timestamp]", git_hash.sub(r"\1[commit hash]\2", context.cmd_output)
+        ),
+    )
 
     diff = difflib.ndiff(actual_text.splitlines(), expected_text)
 
