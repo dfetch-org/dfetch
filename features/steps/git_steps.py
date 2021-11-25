@@ -121,6 +121,28 @@ def step_impl(context):
     )
 
 
+@given("a fetched and committed MyProject with the manifest")
+def step_impl(context):
+
+    pathlib.Path("MyProject").mkdir(parents=True, exist_ok=True)
+    with in_directory("MyProject"):
+        create_repo()
+        generate_manifest(context)
+        context.execute_steps(
+            """
+            When I run "dfetch update"
+            """
+        )
+        commit_all("Initial commit")
+
+
+@given('"{path}" in {directory} is changed and committed with')
+def step_impl(context, directory, path):
+    with in_directory(directory):
+        extend_file(path, context.text)
+        commit_all("A change")
+
+
 @given("MyProject with applied patch 'diff.patch'")
 def step_impl(context):
     context.execute_steps(
