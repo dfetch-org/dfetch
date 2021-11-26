@@ -1,6 +1,10 @@
 """Resources needed when dfetch is distributed."""
 
-import importlib.resources
+try:
+    import importlib.resources as importlib_resources
+except ModuleNotFoundError:
+    import importlib_resources  # type:ignore
+
 from pathlib import Path
 from typing import ContextManager
 
@@ -9,7 +13,7 @@ from dfetch import resources  # pylint: disable=import-self
 
 def schema_path() -> ContextManager[Path]:
     """Get path to schema."""
-    return importlib.resources.path(resources, "schema.yaml")
+    return importlib_resources.path(resources, "schema.yaml")
 
 
-TEMPLATE_PATH = importlib.resources.path(resources, "template.yaml")
+TEMPLATE_PATH = importlib_resources.path(resources, "template.yaml")
