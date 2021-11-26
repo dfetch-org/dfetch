@@ -1,0 +1,58 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.pythonPath": "${workspaceFolder}/venv/Scripts/python",
+		"python.linting.prospectorEnabled": true,
+		"python.linting.lintOnSave": true,
+		"python.formatting.provider": "black",
+		"restructuredtext.linter.name": "doc8",
+		"restructuredtext.builtDocumentationPath": "${workspaceRoot}/doc/_build/html",
+		"restructuredtext.confPath": "${workspaceRoot}/doc",
+		"restructuredtext.linter.run": "onType",
+		"restructuredtext.linter.extraArgs": [
+			"--config",
+			"${workspaceFolder}/setup.cfg"
+		],
+		"python.testing.pytestArgs": [
+			"tests"
+		],
+		"python.testing.unittestEnabled": false,
+		"python.testing.pytestEnabled": true
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Feature tests (wip)",
+				"type": "python",
+				"justMyCode": false,
+				"console": "integratedTerminal",
+				"request": "launch",
+				"module": "behave",
+				"args": [
+					"features",
+					"--wip"
+				]
+			},
+			{
+				"name": "DFetch update",
+				"type": "python",
+				"request": "launch",
+				"module": "dfetch.main",
+				"justMyCode": false,
+				"args": [
+					"update"
+				]
+			}
+		]
+	},
+	"extensions": {
+		"recommendations": [
+			"lextudio.restructuredtext"
+		]
+	}
+}
