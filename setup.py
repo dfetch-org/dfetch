@@ -32,7 +32,7 @@ setup(
         "typing-extensions==4.0.0",
         "semver==2.13.0",
         "patch-ng==1.17.4",
-        "importlib-resources; python_version <= '3.7.0'",
+        "importlib-resources==5.4.0; python_version <= '3.7.0'",
     ],
     entry_points={
         "console_scripts": ["dfetch = dfetch.__main__:main"],
@@ -43,6 +43,7 @@ setup(
         "Environment :: Console",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
