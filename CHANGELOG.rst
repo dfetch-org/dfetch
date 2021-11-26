@@ -1,4 +1,4 @@
-Release 0.X.0 (unreleased)
+Release 0.4.0 (released 2021-11-26)
 ===================================
 
 * Add patch info to list command (#198)
