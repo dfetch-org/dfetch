@@ -6,6 +6,7 @@ Release 0.X.0 (unreleased)
 * Fix unittest (#229)
 * Allow using glob pattern for src key in manifest (#228)
 * Add diff command (#24)
+* Make dfetch work for python 3.6 (#32)
 
 Release 0.3.0 (released 2021-07-19)
 ===================================
