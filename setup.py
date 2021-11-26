@@ -32,6 +32,7 @@ setup(
         "typing-extensions==4.0.0",
         "semver==2.13.0",
         "patch-ng==1.17.4",
+        "importlib-resources; python_version <= '3.7.0'",
     ],
     entry_points={
         "console_scripts": ["dfetch = dfetch.__main__:main"],
