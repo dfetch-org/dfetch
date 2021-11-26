@@ -42,7 +42,7 @@
 				"name": "DFetch update",
 				"type": "python",
 				"request": "launch",
-				"module": "dfetch.main",
+				"module": "dfetch.__main__",
 				"justMyCode": false,
 				"args": [
 					"update"
