@@ -275,3 +275,43 @@ class SvnRepo(VCS):
 
     def _get_revision(self, branch: str) -> str:
         return self._get_info(branch)["Revision"]
+
+    @staticmethod
+    def _get_last_changed_revision(target: str) -> str:
+
+        if os.path.isdir(target):
+            last_digits = re.compile(r"(?P<digits>\d+)(?!.*\d)")
+            version = run_on_cmdline(
+                logger, f"svnversion {target.strip()}"
+            ).stdout.decode()
+
+            parsed_version = last_digits.search(version)
+            if parsed_version:
+                return parsed_version.group("digits")
+            raise RuntimeError(f"svnversion output was unexpected: {version}")
+
+        return str(
+            run_on_cmdline(
+                logger, f"svn info --show-item last-changed-revision {target.strip()}"
+            )
+            .stdout.decode()
+            .strip()
+        )
+
+    def metadata_revision(self) -> str:
+        """Get the revision of the metadata file."""
+        return self._get_last_changed_revision(self.metadata_path)
+
+    def current_revision(self) -> str:
+        """Get the current revision of the repo."""
+        return self._get_last_changed_revision(self.local_path)
+
+    def get_diff(self, old_revision: str, new_revision: str) -> str:
+        """Get the diff between two revisions."""
+        return "\n".join(
+            run_on_cmdline(
+                logger, f"svn diff {self.local_path} -r {old_revision}:{new_revision}"
+            )
+            .stdout.decode()
+            .splitlines()
+        )
