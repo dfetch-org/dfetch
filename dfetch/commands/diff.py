@@ -51,6 +51,7 @@ from dfetch.manifest.project import ProjectEntry
 from dfetch.project.git import GitRepo
 from dfetch.project.metadata import Metadata
 from dfetch.project.svn import SvnRepo
+from dfetch.project.vcs import VCS
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 from dfetch.vcs.git import GitLocalRepo
 
@@ -100,47 +101,34 @@ class Diff(dfetch.commands.command.Command):
             for project in projects:
                 patch_name = f"{project.name}.patch"
                 with catch_runtime_exceptions(exceptions) as exceptions:
+                    repo = _get_repo(path, project)
+                    patch = _diff_from_repo(repo, project, revs)
 
-                    self.generate_patch(path, revs, project, patch_name)
+                    _dump_patch(path, revs, project, patch_name, patch)
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
 
-    @staticmethod
-    def generate_patch(
-        path: str, revs: List[str], project: ProjectEntry, patch_name: str
-    ) -> None:
-        """Generate a patch for the given project."""
-        if not os.path.exists(project.destination):
-            raise RuntimeError(
-                "You cannot generate a diff of a project that was never fetched"
-            )
-        if GitLocalRepo(project.destination).is_git():
-            patch = _diff_from_git(project, revs)
-        elif SvnRepo.check_path(project.destination):
-            raise NotImplementedError("To be done!")
-        else:
-            raise RuntimeError(
-                "Can only create patch in SVN or Git repo",
-            )
 
-        if patch:
-            logger.print_info_line(
-                project.name,
-                f"Generating patch {patch_name} from {revs[0]} to {revs[1]} in {os.path.dirname(path)}",
-            )
-            with open(patch_name, "w", encoding="UTF-8") as patch_file:
-                patch_file.write(patch)
-        else:
-            logger.print_info_line(
-                project.name, f"No diffs found from {revs[0]} to {revs[1]}"
-            )
+def _get_repo(path: str, project: ProjectEntry) -> VCS:
+    """Get the repo type from the project."""
+    if not os.path.exists(project.destination):
+        raise RuntimeError(
+            "You cannot generate a diff of a project that was never fetched"
+        )
+    main_project_dir = os.path.dirname(path)
+    if GitLocalRepo(main_project_dir).is_git():
+        return GitRepo(project)
+    elif SvnRepo.check_path(main_project_dir):
+        return SvnRepo(project)
+    else:
+        raise RuntimeError(
+            "Can only create patch in SVN or Git repo",
+        )
 
 
-def _diff_from_git(project: ProjectEntry, revs: List[str]) -> str:
-    """Generate a relative diff for a git repo."""
-    repo = GitRepo(project)
-
+def _diff_from_repo(repo: VCS, project: ProjectEntry, revs: List[str]) -> str:
+    """Generate a relative diff for a svn repo."""
     if len(revs) > 2:
         raise RuntimeError(f"Too many revisions given! {revs}")
 
@@ -157,3 +145,20 @@ def _diff_from_git(project: ProjectEntry, revs: List[str]) -> str:
         revs.append(repo.current_revision())
 
     return repo.get_diff(*revs)
+
+
+def _dump_patch(
+    path: str, revs: List[str], project: ProjectEntry, patch_name: str, patch: str
+) -> None:
+    """Dump the patch to a file."""
+    if patch:
+        logger.print_info_line(
+            project.name,
+            f"Generating patch {patch_name} from {revs[0]} to {revs[1]} in {os.path.dirname(path)}",
+        )
+        with open(patch_name, "w", encoding="UTF-8") as patch_file:
+            patch_file.write(patch)
+    else:
+        logger.print_info_line(
+            project.name, f"No diffs found from {revs[0]} to {revs[1]}"
+        )

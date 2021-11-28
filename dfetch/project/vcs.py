@@ -261,3 +261,15 @@ class VCS(ABC):
     @abstractmethod
     def _fetch_impl(self, version: Version) -> Version:
         """Fetch the given version of the VCS, should be implemented by the child class."""
+
+    @abstractmethod
+    def metadata_revision(self) -> str:
+        """Get the revision of the metadata file."""
+
+    @abstractmethod
+    def current_revision(self) -> str:
+        """Get the revision of the metadata file."""
+
+    @abstractmethod
+    def get_diff(self, old_revision: str, new_revision: str) -> str:
+        """Get the diff of two revisions."""

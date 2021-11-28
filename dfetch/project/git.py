@@ -46,9 +46,9 @@ class GitRepo(VCS):
         """Get the revision of the metadata file."""
         return str(self._local_repo.get_current_hash())
 
-    def get_diff(self, old_hash: str, new_hash: str) -> str:
+    def get_diff(self, old_revision: str, new_revision: str) -> str:
         """Get the diff of two revisions."""
-        return str(self._local_repo.create_diff(old_hash, new_hash))
+        return str(self._local_repo.create_diff(old_revision, new_revision))
 
     @staticmethod
     def revision_is_enough() -> bool:
