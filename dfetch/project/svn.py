@@ -110,9 +110,15 @@ class SvnRepo(VCS):
     def check(self) -> bool:
         """Check if is SVN."""
         try:
-            run_on_cmdline(logger, f"svn info {self.remote}")
+            run_on_cmdline(logger, f"svn info {self.remote} --non-interactive")
             return True
-        except (SubprocessCommandError, RuntimeError):
+        except SubprocessCommandError as exc:
+            if exc.stdout.startswith("svn: E170013"):
+                raise RuntimeError(
+                    f"'{self.remote}' is not a valid URL or unreachable"
+                ) from exc
+            return False
+        except RuntimeError:
             return False
 
     @staticmethod
@@ -120,7 +126,7 @@ class SvnRepo(VCS):
         """Check if is SVN."""
         try:
             with in_directory(path):
-                run_on_cmdline(logger, "svn info")
+                run_on_cmdline(logger, "svn info --non-interactive")
             return True
         except (SubprocessCommandError, RuntimeError):
             return False
