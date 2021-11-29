@@ -40,7 +40,13 @@ class GitRemote:
         try:
             run_on_cmdline(logger, f"git ls-remote --heads {self._remote}")
             return True
-        except (SubprocessCommandError, RuntimeError):
+        except SubprocessCommandError as exc:
+            if exc.returncode == 128 and "Could not resolve host" in exc.stdout:
+                raise RuntimeError(
+                    f"'{self._remote}' is not a valid URL or unreachable: {exc.stderr}"
+                ) from exc
+            return False
+        except RuntimeError:
             return False
 
     def last_sha_on_branch(self, branch: str) -> str:
@@ -120,7 +126,10 @@ class GitLocalRepo:
             with in_directory(self._path):
                 run_on_cmdline(logger, "git status")
             return True
-        except (SubprocessCommandError, RuntimeError):
+        except SubprocessCommandError as exc:
+            print(exc)
+            return False
+        except RuntimeError:
             return False
 
     def checkout_version(
