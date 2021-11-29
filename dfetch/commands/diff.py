@@ -119,12 +119,12 @@ def _get_repo(path: str, project: ProjectEntry) -> VCS:
     main_project_dir = os.path.dirname(path)
     if GitLocalRepo(main_project_dir).is_git():
         return GitRepo(project)
-    elif SvnRepo.check_path(main_project_dir):
+    if SvnRepo.check_path(main_project_dir):
         return SvnRepo(project)
-    else:
-        raise RuntimeError(
-            "Can only create patch in SVN or Git repo",
-        )
+
+    raise RuntimeError(
+        "Can only create patch in SVN or Git repo",
+    )
 
 
 def _diff_from_repo(repo: VCS, project: ProjectEntry, revs: List[str]) -> str:
