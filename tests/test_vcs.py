@@ -37,6 +37,15 @@ class ConcreteVCS(VCS):
     def _list_of_tags(self):
         return []
 
+    def current_revision(self):
+        return "1"
+
+    def metadata_revision(self):
+        return "1"
+
+    def get_diff(self, old_revision, new_revision):
+        return ""
+
 
 @pytest.mark.parametrize(
     "name, given_on_disk, given_wanted, expect_wanted, expect_have",
