@@ -25,7 +25,7 @@ Using the generated patch
 The patch can be used in the manifest see the :ref:`patch` attribute for more information.
 It can also be sent to the upstream maintainer in case of bug fixes.
 
-The patch generated is a relative patch and should be applied specifying the base directory.
+The patch generated is a relative patch and should be applied specifying the base directory of the *git repo*.
 See below for the version control specifics.
 
 .. code-block:: sh
@@ -36,6 +36,18 @@ See below for the version control specifics.
    # For svn repo's
    svn patch some-project.patch
 
+.. warning::
+
+   The path given to ``--directory`` when applying the patch in a git repo, *must* be relative to the base directory of the repo,
+   i.e. the folder where the ``.git`` folder is located.
+
+   For example if you have the patch ``Core/MyModule/MySubmodule.patch``
+   for files in the directory ``Core/MyModule/MySubmodule/`` and your current working directory is ``Core/MyModule/``.
+   The correct command would be:
+
+   .. code-block:: console
+
+        $ git apply --verbose --directory='Core/MyModule/MySubModule` MySubmodule.patch
 """
 
 import argparse
