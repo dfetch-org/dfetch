@@ -35,6 +35,8 @@ List
    :prog: dfetch
    :path: list
 
+.. asciinema:: asciicasts/list.cast
+
 .. automodule:: dfetch.commands.list
 
 Update
@@ -69,6 +71,8 @@ Diff
    :prog: dfetch
    :path: diff
 
+.. asciinema:: asciicasts/diff.cast
+
 .. automodule:: dfetch.commands.diff
 
 Freeze
@@ -78,6 +82,8 @@ Freeze
    :func: create_parser
    :prog: dfetch
    :path: freeze
+
+.. asciinema:: asciicasts/freeze.cast
 
 .. automodule:: dfetch.commands.freeze
 
