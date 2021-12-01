@@ -188,7 +188,16 @@ class GitLocalRepo:
         with in_directory(self._path):
             result = run_on_cmdline(
                 logger,
-                ["git", "diff", "--relative", "--no-color", old_hash, new_hash],
+                [
+                    "git",
+                    "diff",
+                    "--relative",
+                    "--binary",  # Add binary content
+                    "--no-ext-diff",  # Don't allow external diff tools
+                    "--no-color",
+                    old_hash,
+                    new_hash,
+                ],
             )
 
         return str(result.stdout.decode())
