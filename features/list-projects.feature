@@ -19,7 +19,7 @@ Feature: List dependencies
         When I run "dfetch list"
         Then the output shows
             """
-            Dfetch (0.2.0)
+            Dfetch (0.4.0)
               project             : ext/test-repo-tag
                   remote          : <none>
                   remote url      : https://github.com/dfetch-org/test-repo
@@ -47,7 +47,7 @@ Feature: List dependencies
         When I run "dfetch list"
         Then the output shows
             """
-            Dfetch (0.2.0)
+            Dfetch (0.4.0)
               project             : ext/test-repo-tag
                   remote          : <none>
                   remote url      : https://github.com/dfetch-org/test-repo
@@ -63,7 +63,7 @@ Feature: List dependencies
         When I run "dfetch list"
         Then the output shows
             """
-            Dfetch (0.2.0)
+            Dfetch (0.4.0)
               project             : ext/test-repo-tag
                   remote          : <none>
                   remote url      : https://github.com/dfetch-org/test-repo

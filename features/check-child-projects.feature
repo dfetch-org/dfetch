@@ -28,7 +28,7 @@ Feature: Check for updates in child projects
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.0.6)
+            Dfetch (0.4.0)
               SomeProject         : wanted (v1), available (v1)
             """
 
@@ -59,7 +59,7 @@ Feature: Check for updates in child projects
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.0.6)
+            Dfetch (0.4.0)
             Multiple manifests found, using dfetch.yaml
               SomeProject         : wanted & current (v1), available (v2)
               SomeProject/SomeOtherProject: up-to-date (v1)

@@ -20,7 +20,7 @@ Feature: Validate a manifest
         When I run "dfetch validate"
         Then the output shows
             """
-            Dfetch (0.0.6)
+            Dfetch (0.4.0)
               dfetch.yaml         : valid
             """
 
@@ -42,7 +42,7 @@ Feature: Validate a manifest
         When I run "dfetch validate"
         Then the output shows
             """
-            Dfetch (0.0.6)
+            Dfetch (0.4.0)
             Schema validation failed:
              - Cannot find required key 'manifest'. Path: ''.
              - Key 'manifest-wrong' was not defined. Path: ''.

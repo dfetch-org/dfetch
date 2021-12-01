@@ -38,7 +38,7 @@
 [8.083373, "o", "e"]
 [8.298967, "o", "\r\n"]
 [8.299389, "o", "\u001b[?2004l\r"]
-[8.453079, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.0.9)\u001b[0m\r\n"]
+[8.453079, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.4.0)\u001b[0m\r\n"]
 [10.913658, "o", "\u001b[1;38;5;4m  \u001b[32mcpputest-git-tag    :\u001b[34m Fetched v3.4\u001b[0m\r\n"]
 [11.707371, "o", "\u001b[1;38;5;4m  \u001b[32mcpputest-svn-branch-rev:\u001b[34m Fetched trunk - 3973\u001b[0m\r\n"]
 [12.664098, "o", "\u001b[1;38;5;4m  \u001b[32mcpputest-svn-tag    :\u001b[34m Fetched v3.4\u001b[0m\r\n"]

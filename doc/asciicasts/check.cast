@@ -36,7 +36,7 @@
 [10.425264, "o", "k"]
 [11.919021, "o", "\r\n"]
 [11.91917, "o", "\u001b[?2004l\r"]
-[12.081466, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.0.9)\u001b[0m\r\n"]
+[12.081466, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.4.0)\u001b[0m\r\n"]
 [14.32171, "o", "\u001b[1;38;5;4m  \u001b[32mcpputest-git-tag    :\u001b[34m wanted (v3.4), available (v4.0)\u001b[0m\r\n"]
 [17.763845, "o", "\u001b[1;38;5;4m  \u001b[32mcpputest-svn-branch-rev:\u001b[34m wanted (trunk - 3973), available (trunk - 3997)\u001b[0m\r\n"]
 [22.939725, "o", "\u001b[1;38;5;4m  \u001b[32mcpputest-svn-tag    :\u001b[34m wanted (v3.4), available (v4.0)\u001b[0m\r\n"]

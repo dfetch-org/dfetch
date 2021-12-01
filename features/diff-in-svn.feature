@@ -37,6 +37,6 @@ Feature: Diff in svn
         When I run "dfetch diff SomeProject" in MySvnProject
         Then the output shows
         """
-        Dfetch (0.3.0)
+        Dfetch (0.4.0)
           SomeProject         : No diffs found from 1 to 1
         """

@@ -10,7 +10,7 @@ Feature: Guard against overwriting
         And I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.0.6)
+            Dfetch (0.4.0)
               SomeProject         : skipped - local changes after last update (use --force to overwrite)
             """
 
@@ -20,6 +20,6 @@ Feature: Guard against overwriting
         And I run "dfetch update --force"
         Then the output shows
             """
-            Dfetch (0.0.6)
+            Dfetch (0.4.0)
               SomeProject         : Fetched v2
             """
