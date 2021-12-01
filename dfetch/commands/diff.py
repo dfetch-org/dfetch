@@ -26,7 +26,7 @@ The patch can be used in the manifest see the :ref:`patch` attribute for more in
 It can also be sent to the upstream maintainer in case of bug fixes.
 
 The patch generated is a relative patch and should be applied specifying the base directory of the *git repo*.
-See below for the version control specifics.
+See below for the version control specifics. The patch will also contain content of binary files.
 
 .. code-block:: sh
 
@@ -38,8 +38,8 @@ See below for the version control specifics.
 
 .. warning::
 
-   The path given to ``--directory`` when applying the patch in a git repo, *must* be relative to the base directory of the repo,
-   i.e. the folder where the ``.git`` folder is located.
+   The path given to ``--directory`` when applying the patch in a git repo, *must* be relative to the base
+   directory of the repo, i.e. the folder where the ``.git`` folder is located.
 
    For example if you have the patch ``Core/MyModule/MySubmodule.patch``
    for files in the directory ``Core/MyModule/MySubmodule/`` and your current working directory is ``Core/MyModule/``.
