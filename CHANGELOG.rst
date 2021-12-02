@@ -2,6 +2,7 @@ Release 0.X.0 (unreleased)
 ===================================
 
 * Add diff command for svn projects (#24)
+* Also add binary files as part of generated patch (#251)
 
 Release 0.4.0 (released 2021-11-26)
 ===================================
