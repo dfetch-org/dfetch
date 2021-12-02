@@ -2,7 +2,7 @@
 
 import os
 import pathlib
-from typing import List
+from typing import List, Optional
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
@@ -46,7 +46,7 @@ class GitRepo(VCS):
         """Get the revision of the metadata file."""
         return str(self._local_repo.get_current_hash())
 
-    def get_diff(self, old_revision: str, new_revision: str) -> str:
+    def get_diff(self, old_revision: str, new_revision: Optional[str]) -> str:
         """Get the diff of two revisions."""
         return str(self._local_repo.create_diff(old_revision, new_revision))
 

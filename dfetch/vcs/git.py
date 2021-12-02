@@ -183,22 +183,21 @@ class GitLocalRepo:
 
         return str(result.stdout.decode())
 
-    def create_diff(self, old_hash: str, new_hash: str) -> str:
+    def create_diff(self, old_hash: str, new_hash: Optional[str]) -> str:
         """Generate a relative diff patch."""
         with in_directory(self._path):
-            result = run_on_cmdline(
-                logger,
-                [
-                    "git",
-                    "diff",
-                    "--relative",
-                    "--binary",  # Add binary content
-                    "--no-ext-diff",  # Don't allow external diff tools
-                    "--no-color",
-                    old_hash,
-                    new_hash,
-                ],
-            )
+            cmd = [
+                "git",
+                "diff",
+                "--relative",
+                "--binary",  # Add binary content
+                "--no-ext-diff",  # Don't allow external diff tools
+                "--no-color",
+                old_hash,
+            ]
+            if new_hash:
+                cmd.append(new_hash)
+            result = run_on_cmdline(logger, cmd)
 
         return str(result.stdout.decode())
 

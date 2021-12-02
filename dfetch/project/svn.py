@@ -4,7 +4,7 @@ import os
 import pathlib
 import re
 from collections import namedtuple
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from dfetch.log import get_logger
 from dfetch.manifest.version import Version
@@ -306,12 +306,10 @@ class SvnRepo(VCS):
         """Get the current revision of the repo."""
         return self._get_last_changed_revision(self.local_path)
 
-    def get_diff(self, old_revision: str, new_revision: str) -> str:
+    def get_diff(self, old_revision: str, new_revision: Optional[str]) -> str:
         """Get the diff between two revisions."""
-        return "\n".join(
-            run_on_cmdline(
-                logger, f"svn diff {self.local_path} -r {old_revision}:{new_revision}"
-            )
-            .stdout.decode()
-            .splitlines()
-        )
+        cmd = f"svn diff {self.local_path} -r {old_revision}"
+        if new_revision:
+            cmd += f":{new_revision}"
+
+        return "\n".join(run_on_cmdline(logger, cmd).stdout.decode().splitlines())

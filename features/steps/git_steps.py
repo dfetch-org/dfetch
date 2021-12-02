@@ -136,6 +136,12 @@ def step_impl(context):
         commit_all("Initial commit")
 
 
+@given('"{path}" in {directory} is changed with')
+def step_impl(context, directory, path):
+    with in_directory(directory):
+        extend_file(path, context.text)
+
+
 @given('"{path}" in {directory} is changed and committed with')
 def step_impl(context, directory, path):
     with in_directory(directory):

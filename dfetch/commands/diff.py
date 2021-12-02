@@ -9,7 +9,7 @@ To generate a patch, *Dfetch* requires two revisions to determine the changes. Y
 provide these through the ``--revs`` argument.
 
 * If ``--revs`` is not provided the changes are calculated between the last revision
-  the metadata file was changed and the current version.
+  the metadata file was changed and the working copy (also uncommitted changes).
 * If ``--revs`` specifies one revision (e.g. ``--revs 23864ef2``), that revision will be used as starting point.
 * Alternately both revisions can be explicitly specified, e.g. ``--revs 23864ef2:4a9cb18``.
 
@@ -154,7 +154,7 @@ def _diff_from_repo(repo: VCS, project: ProjectEntry, revs: List[str]) -> str:
             )
 
     if len(revs) == 1:
-        revs.append(repo.current_revision())
+        revs.append("")
 
     return repo.get_diff(*revs)
 
@@ -171,6 +171,9 @@ def _dump_patch(
         with open(patch_name, "w", encoding="UTF-8") as patch_file:
             patch_file.write(patch)
     else:
-        logger.print_info_line(
-            project.name, f"No diffs found from {revs[0]} to {revs[1]}"
-        )
+        if revs[1]:
+            msg = f"No diffs found from {revs[0]} to {revs[1]}"
+        else:
+            msg = f"No diffs found since {revs[0]}"
+
+        logger.print_info_line(project.name, msg)

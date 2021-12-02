@@ -271,5 +271,5 @@ class VCS(ABC):
         """Get the revision of the metadata file."""
 
     @abstractmethod
-    def get_diff(self, old_revision: str, new_revision: str) -> str:
+    def get_diff(self, old_revision: str, new_revision: Optional[str]) -> str:
         """Get the diff of two revisions."""
