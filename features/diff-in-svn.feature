@@ -27,7 +27,7 @@ Feature: Diff in svn
             Index: SomeProject/README.md
             ===================================================================
             --- SomeProject/README.md	(revision 1)
-            +++ SomeProject/README.md	(revision 2)
+            +++ SomeProject/README.md	(working copy)
             @@ -1 +1,2 @@
              some content
             +An important sentence for the README!
@@ -38,5 +38,22 @@ Feature: Diff in svn
         Then the output shows
         """
         Dfetch (0.4.0)
-          SomeProject         : No diffs found from 1 to 1
+          SomeProject         : No diffs found since 1
         """
+
+    Scenario: A patch file is generated on uncommitted changes
+        Given "SomeProject/README.md" in MySvnProject is changed with
+            """
+            An important sentence for the README!
+            """
+        When I run "dfetch diff SomeProject" in MySvnProject
+        Then the patch file 'MySvnProject/SomeProject.patch' is generated
+            """
+            Index: SomeProject/README.md
+            ===================================================================
+            --- SomeProject/README.md	(revision 1)
+            +++ SomeProject/README.md	(working copy)
+            @@ -1 +1,2 @@
+             some content
+            +An important sentence for the README!
+            """
