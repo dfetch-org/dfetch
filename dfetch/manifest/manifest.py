@@ -144,7 +144,13 @@ class Manifest:
                 raise RuntimeError(f"{project} has unknown type")
 
             if last_project.remote:
-                last_project.set_remote(self._remotes[last_project.remote])
+                try:
+                    last_project.set_remote(self._remotes[last_project.remote])
+                except KeyError as exc:
+                    raise RuntimeError(
+                        f"Remote {last_project.remote} of {last_project.name} wasn't found "
+                        f"in {list(self._remotes.keys())}!",
+                    ) from exc
 
         return _projects
 
