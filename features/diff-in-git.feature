@@ -1,4 +1,3 @@
-@wip
 Feature: Diff in git
 
     If a project contains issues that need to be fixed, the user can work with the *Dfetch'ed* project as
