@@ -85,7 +85,7 @@ class Report(dfetch.commands.command.Command):
                 glob.glob("LICENSE*"), glob.glob("COPYING*")
             ):
                 logger.debug(f"Found license file {license_file} for {project.name}")
-                guessed_license = infer_license.guess_file(license_file)
+                guessed_license = infer_license.api.guess_file(license_file)
 
                 if guessed_license:
                     return str(guessed_license.name)
