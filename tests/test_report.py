@@ -1,4 +1,4 @@
-"""Test the list command."""
+"""Test the report command."""
 # mypy: ignore-errors
 # flake8: noqa
 
@@ -7,11 +7,13 @@ from unittest.mock import patch
 
 import pytest
 
-from dfetch.commands.list import List
+from dfetch.commands.report import Report
 from tests.manifest_mock import mock_manifest
 
 DEFAULT_ARGS = argparse.Namespace()
 DEFAULT_ARGS.projects = []
+DEFAULT_ARGS.sbom = False
+DEFAULT_ARGS.outfile = ''
 
 
 @pytest.mark.parametrize(
@@ -22,16 +24,16 @@ DEFAULT_ARGS.projects = []
         ("two_projects", [{"name": "first"}, {"name": "second"}]),
     ],
 )
-def test_list(name, projects):
+def test_report(name, projects):
 
-    list = List()
+    report = Report()
 
     with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
         with patch("dfetch.log.DLogger.print_info_line") as mocked_print_info_line:
 
             mocked_get_manifest.return_value = (mock_manifest(projects), "/")
 
-            list(DEFAULT_ARGS)
+            report(DEFAULT_ARGS)
 
             if projects:
                 for project in projects:
