@@ -4,6 +4,9 @@ Release 0.X.0 (unreleased)
 * Add diff command for svn projects (#24)
 * Also add binary files as part of generated patch (#251)
 * Create diff on working copy instead of current revision (#254)
+* Deprecate `dfetch list` command for `dfetch report` command
+* Add Software Bill-of-Materials (sBoM) export to `dfetch report` command (#154)
+* Guess license for sbom export (#50)
 
 Release 0.4.0 (released 2021-11-26)
 ===================================
