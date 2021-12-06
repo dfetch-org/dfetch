@@ -1,6 +1,6 @@
 Feature: List dependencies
 
-    The list command lists the current state of the projects. It will aggregate the metadata for each project
+    The report command lists the current state of the projects. It will aggregate the metadata for each project
     and list it. This includes metadata from the manifest file and the metadata file (.dfetch_data.yaml)
 
     Scenario: Git projects are specified in the manifest
@@ -16,7 +16,7 @@ Feature: List dependencies
 
             """
         And all projects are updated
-        When I run "dfetch list"
+        When I run "dfetch report"
         Then the output shows
             """
             Dfetch (0.4.0)
@@ -44,7 +44,7 @@ Feature: List dependencies
 
             """
         And all projects are updated
-        When I run "dfetch list"
+        When I run "dfetch report"
         Then the output shows
             """
             Dfetch (0.4.0)
@@ -60,7 +60,7 @@ Feature: List dependencies
 
     Scenario: Git repo with applied patch
         Given MyProject with applied patch 'diff.patch'
-        When I run "dfetch list"
+        When I run "dfetch report"
         Then the output shows
             """
             Dfetch (0.4.0)
