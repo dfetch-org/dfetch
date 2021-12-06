@@ -1,9 +1,8 @@
 """*Dfetch* can generate an report on stdout."""
 
 
-from dfetch.manifest.project import ProjectEntry
-
 from dfetch.log import get_logger
+from dfetch.manifest.project import ProjectEntry
 from dfetch.project.metadata import Metadata
 from dfetch.reporting import Reporter
 
