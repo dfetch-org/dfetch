@@ -13,7 +13,9 @@ import dfetch.util.util
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.metadata import Metadata
+from dfetch.reporting import Reporter
 from dfetch.reporting.sbom_reporter import SbomReporter
+from dfetch.reporting.stdout_reporter import StdoutReporter
 
 logger = get_logger(__name__)
 
@@ -39,6 +41,14 @@ class Report(dfetch.commands.command.Command):
         )
 
         parser.add_argument(
+            "projects",
+            metavar="<project>",
+            type=str,
+            nargs="*",
+            help="Specific project(s) to report",
+        )
+
+        parser.add_argument(
             "-s",
             "--sbom",
             action="store_true",
@@ -50,18 +60,16 @@ class Report(dfetch.commands.command.Command):
         """Generate the report."""
         manifest, path = dfetch.manifest.manifest.get_manifest()
 
-        if args.sbom:
-            reporter = SbomReporter()
+        reporter: Reporter = SbomReporter() if args.sbom else StdoutReporter()
 
         with dfetch.util.util.in_directory(os.path.dirname(path)):
-            for project in manifest.projects:
-
+            for project in manifest.selected_projects(args.projects):
                 determined_license = self._determine_license(project)
                 version = self._determine_version(project)
                 reporter.add_project(project, determined_license, version)
 
-            reporter.dump_to_file(args.outfile)
-            logger.info(f"Generated {reporter.name} report: {args.outfile}")
+            if reporter.dump_to_file(args.outfile):
+                logger.info(f"Generated {reporter.name} report: {args.outfile}")
 
     @staticmethod
     def _determine_license(project: ProjectEntry) -> str:
@@ -77,10 +85,10 @@ class Report(dfetch.commands.command.Command):
                 glob.glob("LICENSE*"), glob.glob("COPYING*")
             ):
                 logger.debug(f"Found license file {license_file} for {project.name}")
-                license = infer_license.guess_file(license_file)
+                guessed_license = infer_license.guess_file(license_file)
 
-                if license:
-                    return str(license.name)
+                if guessed_license:
+                    return str(guessed_license.name)
 
                 logger.print_warning_line(
                     project.name, f"Could not determine license in {license_file}"

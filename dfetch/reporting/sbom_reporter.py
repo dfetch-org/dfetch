@@ -12,9 +12,10 @@ import dfetch.commands.command
 import dfetch.manifest.manifest
 import dfetch.util.util
 from dfetch.manifest.project import ProjectEntry
+from dfetch.reporting import Reporter
 
 
-class SbomReporter:
+class SbomReporter(Reporter):
     """Reporter for generating SBoM's."""
 
     github_url = re.compile(r"github.com\/(?P<group>.+)\/(?P<repo>[^\s\.]+)[\.]?")
@@ -27,7 +28,9 @@ class SbomReporter:
         self._bom = Bom()
         self._bom.get_metadata().add_tool(self.dfetch_tool)
 
-    def add_project(self, project: ProjectEntry, license: str, version: str) -> None:
+    def add_project(
+        self, project: ProjectEntry, license_name: str, version: str
+    ) -> None:
         """Add a project to the report."""
         match = self.github_url.search(project.remote_url)
         if match:
@@ -37,7 +40,7 @@ class SbomReporter:
                 component_type=ComponentType.LIBRARY,
                 package_url_type="github",
                 namespace=match.group("group"),
-                subpath=project._src or None,
+                subpath=project.source or None,
             )
         else:
             component = Component(
@@ -46,7 +49,7 @@ class SbomReporter:
                 component_type=ComponentType.LIBRARY,
                 package_url_type="generic",
                 qualifiers=f"download_url={project.remote_url}",
-                subpath=project._src or None,
+                subpath=project.source or None,
             )
             component.add_external_reference(
                 ExternalReference(
@@ -55,13 +58,15 @@ class SbomReporter:
                 )
             )
 
-        component.set_license(license)
+        component.set_license(license_name)
         self._bom.add_component(component)
 
-    def dump_to_file(self, outfile: str) -> None:
+    def dump_to_file(self, outfile: str) -> bool:
         """Dump the SBoM to file."""
         output_format = (
             OutputFormat.XML if outfile.endswith(".xml") else OutputFormat.JSON
         )
         outputter = get_instance(bom=self._bom, output_format=output_format)
         outputter.output_to_file(outfile, allow_overwrite=True)
+
+        return True

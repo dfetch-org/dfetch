@@ -27,17 +27,17 @@ Check
 
 .. automodule:: dfetch.commands.check
 
-List
-----
+Report
+------
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
    :prog: dfetch
-   :path: list
+   :path: report
 
-.. asciinema:: asciicasts/list.cast
+.. asciinema:: asciicasts/report.cast
 
-.. automodule:: dfetch.commands.list
+.. automodule:: dfetch.commands.report
 
 Update
 ------
