@@ -1,4 +1,13 @@
-"""*Dfetch* can generate an SBoM, see https://cyclonedx.org/use-cases/ for more details."""
+"""*Dfetch* can generate a software Bill-of-Materials (SBOM).
+
+An SBOM lists the components and their supply chain relationships. Downstream
+users of the software can assess the licenses used and potential risk of dependencies.
+
+The generated SBOM can be used as input for other tools to monitor dependencies.
+The tools track vulnerabilities or can enforce a license policy within an organization.
+
+See https://cyclonedx.org/use-cases/ for more details.
+"""
 
 import re
 
@@ -12,7 +21,7 @@ import dfetch.commands.command
 import dfetch.manifest.manifest
 import dfetch.util.util
 from dfetch.manifest.project import ProjectEntry
-from dfetch.reporting import Reporter
+from dfetch.reporting.reporter import Reporter
 
 
 class SbomReporter(Reporter):

@@ -1,10 +1,14 @@
-"""*Dfetch* can generate an report on stdout."""
+"""*Dfetch* can generate an report on stdout.
+
+Dependending on the state of the projects it will show as much information
+from the manifest or the metadata (``.dfetch_data.yaml``).
+"""
 
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.metadata import Metadata
-from dfetch.reporting import Reporter
+from dfetch.reporting.reporter import Reporter
 
 logger = get_logger(__name__)
 
@@ -18,6 +22,7 @@ class StdoutReporter(Reporter):
         self, project: ProjectEntry, license_name: str, version: str
     ) -> None:
         """Add a project to the report."""
+        del version
         logger.print_info_field("project", project.name)
         logger.print_info_field("    remote", project.remote)
         try:
@@ -35,4 +40,5 @@ class StdoutReporter(Reporter):
 
     def dump_to_file(self, outfile: str) -> bool:
         """Do nothing."""
+        del outfile
         return False
