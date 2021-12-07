@@ -28,6 +28,7 @@ Feature: List dependencies
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : e1fda19a57b873eb8e6ae37780594cbb77b70f1a
                   patch           : <none>
+                  license         : MIT License
             """
 
     Scenario: SVN projects are specified in the manifest
@@ -56,6 +57,7 @@ Feature: List dependencies
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : 4
                   patch           : <none>
+                  license         : MIT License
             """
 
     Scenario: Git repo with applied patch
@@ -72,4 +74,5 @@ Feature: List dependencies
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : <none>
                   patch           : diff.patch
+                  license         : MIT License
             """
