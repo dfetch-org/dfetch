@@ -39,6 +39,14 @@ Report
 
 .. automodule:: dfetch.commands.report
 
+List (default)
+``````````````
+.. automodule:: dfetch.reporting.stdout_reporter
+
+Software Bill-of-Materials
+``````````````````````````
+.. automodule:: dfetch.reporting.sbom_reporter
+
 Update
 ------
 .. argparse::

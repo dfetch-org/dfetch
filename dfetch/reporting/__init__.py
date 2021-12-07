@@ -1,21 +1,25 @@
 """Various reporters for generating reports."""
 
-from abc import ABC, abstractmethod
+from enum import Enum
+from typing import Dict, Type
 
-from dfetch.manifest.project import ProjectEntry
+from dfetch.reporting.reporter import Reporter
+from dfetch.reporting.sbom_reporter import SbomReporter
+from dfetch.reporting.stdout_reporter import StdoutReporter
 
 
-class Reporter(ABC):
-    """Reporter for generating report."""
+class ReportTypes(Enum):
+    """Enum giving a name to a type of reporter."""
 
-    name: str = "abstract"
+    SBOM = "sbom"
+    STDOUT = "list"
 
-    @abstractmethod
-    def add_project(
-        self, project: ProjectEntry, license_name: str, version: str
-    ) -> None:
-        """Add a project to the report."""
+    def __str__(self) -> str:
+        """Get the string."""
+        return self.value
 
-    @abstractmethod
-    def dump_to_file(self, outfile: str) -> bool:
-        """Do nothing."""
+
+REPORTERS: Dict[ReportTypes, Type[Reporter]] = {
+    ReportTypes.STDOUT: StdoutReporter,
+    ReportTypes.SBOM: SbomReporter,
+}

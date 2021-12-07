@@ -13,7 +13,7 @@ from tests.manifest_mock import mock_manifest
 DEFAULT_ARGS = argparse.Namespace()
 DEFAULT_ARGS.projects = []
 DEFAULT_ARGS.sbom = False
-DEFAULT_ARGS.outfile = ''
+DEFAULT_ARGS.outfile = ""
 
 
 @pytest.mark.parametrize(
