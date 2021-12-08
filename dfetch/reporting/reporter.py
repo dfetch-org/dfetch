@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from dfetch.manifest.project import ProjectEntry
 
+
 class Reporter(ABC):
     """Reporter for generating report."""
 
