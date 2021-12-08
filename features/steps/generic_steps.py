@@ -15,6 +15,7 @@ ansi_escape = re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
 timestamp = re.compile(r"\d+\/\d+\/\d+, \d+:\d+:\d+")
 git_hash = re.compile(r"(\s?)[a-f0-9]{40}(\s?)")
+iso_timestamp = re.compile(r'"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}\+\d{2}:\d{2}')
 
 
 def check_file(path, content):
@@ -24,6 +25,8 @@ def check_file(path, content):
         for actual, expected in zip_longest(
             file_to_check.readlines(), content.splitlines(True), fillvalue=""
         ):
+            actual = iso_timestamp.sub(actual, "2021-12-08T21:34:38.500715+00:00")
+            expected = iso_timestamp.sub(expected, "2021-12-08T21:34:38.500715+00:00")
 
             assert (
                 actual.strip() == expected.strip()
@@ -123,6 +126,10 @@ def step_impl(context, name):
 @then("the patch file '{name}' is generated")
 def step_impl(context, name):
     """Check a manifest."""
+
+
+@then("the '{name}' file contains")
+def step_impl(context, name):
     check_file(name, context.text)
 
 
