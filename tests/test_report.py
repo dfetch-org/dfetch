@@ -7,12 +7,12 @@ from unittest.mock import patch
 
 import pytest
 
-from dfetch.commands.report import Report
+from dfetch.commands.report import Report, ReportTypes
 from tests.manifest_mock import mock_manifest
 
 DEFAULT_ARGS = argparse.Namespace()
 DEFAULT_ARGS.projects = []
-DEFAULT_ARGS.sbom = False
+DEFAULT_ARGS.type = ReportTypes.STDOUT
 DEFAULT_ARGS.outfile = ""
 
 
