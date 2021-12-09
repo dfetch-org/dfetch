@@ -257,9 +257,10 @@ class SvnRepo(VCS):
     @staticmethod
     def _license_files(url_path: str) -> List[str]:
         return [
-            file
-            for file in SvnRepo._files_in_path(url_path)
-            if file.startswith("LICENSE") or file.startswith("COPYING")
+            str(license)
+            for license in filter(
+                SvnRepo.is_license_file, SvnRepo._files_in_path(url_path)
+            )
         ]
 
     @staticmethod

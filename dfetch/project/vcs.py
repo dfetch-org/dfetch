@@ -1,5 +1,6 @@
 """Version Control system."""
 
+import fnmatch
 import os
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
@@ -25,6 +26,7 @@ class VCS(ABC):
 
     NAME = ""
     DEFAULT_BRANCH = ""
+    LICENSE_GLOBS = ["licen[cs]e*", "copying*", "copyright*"]
 
     def __init__(self, project: dfetch.manifest.project.ProjectEntry) -> None:
         """Create the VCS."""
@@ -273,3 +275,10 @@ class VCS(ABC):
     @abstractmethod
     def get_diff(self, old_revision: str, new_revision: Optional[str]) -> str:
         """Get the diff of two revisions."""
+
+    @staticmethod
+    def is_license_file(filename: str) -> bool:
+        """Check if the given filename is a license file."""
+        return any(
+            fnmatch.fnmatch(filename.lower(), pattern) for pattern in VCS.LICENSE_GLOBS
+        )
