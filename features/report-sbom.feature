@@ -25,5 +25,41 @@ Feature: Create an CycloneDX sbom
         When I run "dfetch report -t sbom"
         Then the 'report.json' file contains
             """
-            {"bomFormat": "CycloneDX", "specVersion": "1.3", "serialNumber": "urn:uuid:d9287af7-31b2-4a66-b528-21834077ddad", "version": 1, "components": [{"type": "library", "name": "cpputest", "version": "v3.4", "purl": "pkg:github/cpputest/cpputest@v3.4", "group": "cpputest", "licenses": [{"license": {"name": "BSD 3-Clause \"New\" or \"Revised\" License"}}]}], "metadata": {"timestamp": "2021-12-08T21:34:38.500715+00:00", "tools": [{"vendor": "CycloneDX", "name": "cyclonedx-python-lib", "version": "0.9.1"}, {"vendor": "dfetch-org", "name": "dfetch", "version": "0.4.0"}]}}
+            {
+                "bomFormat": "CycloneDX",
+                "specVersion": "1.3",
+                "serialNumber": "urn:uuid:d9287af7-31b2-4a66-b528-21834077ddad",
+                "version": 1,
+                "components": [
+                    {
+                        "type": "library",
+                        "name": "cpputest",
+                        "version": "v3.4",
+                        "purl": "pkg:github/cpputest/cpputest@v3.4",
+                        "group": "cpputest",
+                        "licenses": [
+                            {
+                                "license": {
+                                    "name": "BSD 3-Clause \"New\" or \"Revised\" License"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "metadata": {
+                    "timestamp": "2021-12-08T21:34:38.500715+00:00",
+                    "tools": [
+                        {
+                            "vendor": "CycloneDX",
+                            "name": "cyclonedx-python-lib",
+                            "version": "0.9.1"
+                        },
+                        {
+                            "vendor": "dfetch-org",
+                            "name": "dfetch",
+                            "version": "0.4.0"
+                        }
+                    ]
+                }
+            }
             """
