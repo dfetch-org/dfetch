@@ -5,7 +5,6 @@ There are several report types that *DFetch* can generate.
 
 import argparse
 import glob
-import itertools
 import os
 
 import infer_license
@@ -16,6 +15,7 @@ import dfetch.util.util
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.metadata import Metadata
+from dfetch.project.vcs import VCS
 from dfetch.reporting import REPORTERS, ReportTypes
 
 logger = get_logger(__name__)
@@ -85,9 +85,7 @@ class Report(dfetch.commands.command.Command):
             return ""
 
         with dfetch.util.util.in_directory(project.destination):
-            for license_file in itertools.chain(
-                glob.glob("LICENSE*"), glob.glob("COPYING*")
-            ):
+            for license_file in filter(VCS.is_license_file, glob.glob("*")):
                 logger.debug(f"Found license file {license_file} for {project.name}")
                 guessed_license = infer_license.api.guess_file(license_file)
 
