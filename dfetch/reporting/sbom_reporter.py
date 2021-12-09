@@ -9,6 +9,7 @@ The tools track vulnerabilities or can enforce a license policy within an organi
 See https://cyclonedx.org/use-cases/ for more details.
 """
 
+import json
 import re
 from typing import List
 
@@ -89,6 +90,12 @@ class SbomReporter(Reporter):
             OutputFormat.XML if outfile.endswith(".xml") else OutputFormat.JSON
         )
         outputter = get_instance(bom=self._bom, output_format=output_format)
+
+        # override the json outputter output_as_string to have pretty-printed json
+        outputter.output_as_string = lambda: json.dumps(
+            outputter._get_json(), indent=4  # pylint: disable=protected-access
+        )
+
         outputter.output_to_file(outfile, allow_overwrite=True)
 
         return True
