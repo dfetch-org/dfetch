@@ -145,6 +145,7 @@ Releasing
     git push --tags
 
 - If all tests ok, create release in the `GitHub webui <https://github.com/dfetch-org/dfetch/releases/new>`_.
+- Copy the CHANGELOG entry of the release to github.
 - When the release is created, a new package is automatically pushed to `PyPi <https://pypi.org/project/dfetch/>`_.
 
 - After release, add new header to ``CHANGELOG.rst``:
