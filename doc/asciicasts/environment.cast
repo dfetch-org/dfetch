@@ -1,5 +1,5 @@
 {"version": 2, "width": 188, "height": 20, "timestamp": 1620894092, "env": {"SHELL": "/bin/bash", "TERM": "xterm-256color"}}
-[0.034005, "o", "\u001b]0;me@my-computer:~/dfetch/example\u0007"]
+[0.0.5.05, "o", "\u001b]0;me@my-computer:~/dfetch/example\u0007"]
 [0.034991, "o", "\u001b[?2004h[me@my-computer example]$ "]
 [0.658475, "o", "d"]
 [0.813602, "o", "f"]
@@ -21,7 +21,7 @@
 [3.949416, "o", "t"]
 [4.141159, "o", "\r\n"]
 [4.141303, "o", "\u001b[?2004l\r"]
-[4.296344, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.4.0)\u001b[0m\r\n"]
+[4.296344, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.5.0)\u001b[0m\r\n"]
 [4.299519, "o", "\u001b[1;38;5;4m  \u001b[32mplatform            :\u001b[34m Linux 5.10.34-1-MANJARO\u001b[0m\r\n"]
 [4.304158, "o", "\u001b[1;38;5;4m  \u001b[32mgit                 :\u001b[34m 2.31.1\u001b[0m\r\n"]
 [4.341886, "o", "\u001b[1;38;5;4m  \u001b[32msvn                 :\u001b[34m 1.14.1 (r1886195)\u001b[0m\r\n"]

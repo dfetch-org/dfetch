@@ -1,4 +1,4 @@
-Release 0.X.0 (unreleased)
+Release 0.5.0 (released 2021-12-09)
 ===================================
 
 * Add diff command for svn projects (#24)

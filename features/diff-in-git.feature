@@ -36,7 +36,7 @@ Feature: Diff in git
         When I run "dfetch diff SomeProject"
         Then the output shows
         """
-        Dfetch (0.4.0)
+        Dfetch (0.5.0)
           SomeProject         : No diffs found since 59efb91396fd369eb113b43382783294dc8ed6d2
         """
 
