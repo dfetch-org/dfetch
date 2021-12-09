@@ -7,6 +7,7 @@ Release 0.X.0 (unreleased)
 * Deprecate `dfetch list` command for `dfetch report` command
 * Add Software Bill-of-Materials (sBoM) export to `dfetch report` command (#154)
 * Guess license for sbom export (#50)
+* Match more licenses (#260)
 
 Release 0.4.0 (released 2021-11-26)
 ===================================
