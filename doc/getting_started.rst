@@ -75,7 +75,7 @@ During development of your project you can periodically check for update with.
 
 .. code-block:: console
 
-  Dfetch (0.5.0)
+  Dfetch (0.5.1)
     ext/test-repo-tag   : wanted & current (v1), available (v2.0)
 
 As can be seen a newer tag is available. If you want to update,

@@ -26,7 +26,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.5.0)
+            Dfetch (0.5.1)
               ext/test-repo-rev-only: wanted (e1fda19a57b873eb8e6ae37780594cbb77b70f1a), available (master)
               ext/test-rev-and-branch: wanted (main - 8df389d0524863b85f484f15a91c5f2c40aefda1), available (main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
             """
@@ -50,7 +50,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.5.0)
+            Dfetch (0.5.1)
               ext/test-repo-tag-v1: wanted (v1), available (v2.0)
             """
 
@@ -79,7 +79,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.5.0)
+            Dfetch (0.5.1)
               ext/test-repo-rev-only: wanted (e1fda19a57b873eb8e6ae37780594cbb77b70f1a), current (master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a), available (master)
               ext/test-rev-and-branch: wanted & current (main - 8df389d0524863b85f484f15a91c5f2c40aefda1), available (main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
             """
@@ -111,6 +111,6 @@ Feature: Checking dependencies from a git repository
         And I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.5.0)
+            Dfetch (0.5.1)
               ext/test-repo-tag   : wanted (v2.0), current (v1), available (v2.0)
             """

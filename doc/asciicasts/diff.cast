@@ -166,7 +166,7 @@
 [48.504256, "o", "m"]
 [48.679106, "o", "n"]
 [48.958049, "o", "\r\n"]
-[49.113202, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.5.0)\u001b[0m\r\n"]
+[49.113202, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.5.1)\u001b[0m\r\n"]
 [49.153128, "o", "\u001b[1;38;5;4m  \u001b[32mjsmn                :\u001b[34m Generating patch jsmn.patch from cf8808ef0dc3095c6638501705f6a3fcd5ef615a to d6545fd4662cb770be21b3ef1a99ef4116fd7321 in /home/ben/projects/EDNA/test\u001b[0m\r\n"]
 [49.176209, "o", "\u001b]0;me@my-computer: ~/example\u0007\u001b[01;32mme@my-computer\u001b[00m:\u001b[01;34m~/example\u001b[00m$ "]
 [50.221605, "o", "c"]

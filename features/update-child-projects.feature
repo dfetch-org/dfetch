@@ -32,7 +32,7 @@ Feature: Update child-projects in projects
         When I run "dfetch update" in MyProject
         Then the output shows
             """
-            Dfetch (0.5.0)
+            Dfetch (0.5.1)
               SomeProjectWithChild: Fetched v1
               SomeProjectWithChild/SomeProjectWithoutChild2: Fetched v1
               SomeProjectWithoutChild: Fetched v1
@@ -72,7 +72,7 @@ Feature: Update child-projects in projects
         When I run "dfetch update" in MyProject
         Then the output shows
             """
-            Dfetch (0.5.0)
+            Dfetch (0.5.1)
               SomeProject         : Fetched v1
             SomeProject/dfetch.yaml: Schema validation failed:
              - Value 'very-invalid-manifest' is not a dict. Value path: ''.
@@ -114,7 +114,7 @@ Feature: Update child-projects in projects
         When I run "dfetch update" in MyProject
         Then the output shows
             """
-            Dfetch (0.5.0)
+            Dfetch (0.5.1)
             Multiple manifests found, using dfetch.yaml
               SomeProject         : up-to-date (v1)
               SomeProject/SomeOtherProject: up-to-date (v1)
