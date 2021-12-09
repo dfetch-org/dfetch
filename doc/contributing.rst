@@ -141,10 +141,11 @@ Releasing
 
 .. code-block:: bash
 
-    git tag -a 'v0.0.2' -m "Release version v0.0.2"
+    git tag -a '0.5.0' -m "Release version 0.5.0"
     git push --tags
 
 - If all tests ok, create release in the `GitHub webui <https://github.com/dfetch-org/dfetch/releases/new>`_.
+- Make sure all dependencies in setup.py are pinned.
 - Copy the CHANGELOG entry of the release to github.
 - When the release is created, a new package is automatically pushed to `PyPi <https://pypi.org/project/dfetch/>`_.
 
