@@ -47,6 +47,8 @@ Software Bill-of-Materials
 ``````````````````````````
 .. automodule:: dfetch.reporting.sbom_reporter
 
+.. asciinema:: asciicasts/sbom.cast
+
 Update
 ------
 .. argparse::
