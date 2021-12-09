@@ -69,8 +69,12 @@ class GitRepo(VCS):
         # When exporting a file, the destination directory must already exist
         pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
 
+        license_globs = [f"/{name.lower()}" for name in self.LICENSE_GLOBS] + [
+            f"/{name.upper()}" for name in self.LICENSE_GLOBS
+        ]
+
         self._local_repo.checkout_version(
-            self.remote, rev_or_branch_or_tag, self.source
+            self.remote, rev_or_branch_or_tag, self.source, license_globs
         )
 
         safe_rmtree(os.path.join(self.local_path, self._local_repo.METADATA_DIR))

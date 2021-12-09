@@ -124,13 +124,20 @@ class GitLocalRepo:
         except (SubprocessCommandError, RuntimeError):
             return False
 
-    def checkout_version(self, remote: str, version: str, src: Optional[str]) -> None:
+    def checkout_version(
+        self,
+        remote: str,
+        version: str,
+        src: Optional[str],
+        must_keeps: Optional[List[str]],
+    ) -> None:
         """Checkout a specific version from a given remote.
 
         Args:
             remote (str): Url or path to a remote git repository
             version (str): A target to checkout, can be branch, tag or sha
             src (Optional[str]): Optional path to subdirectory or file in repo
+            must_keeps (Optional[List[str]]): Optional list of glob patterns to keep
         """
         with in_directory(self._path):
             run_on_cmdline(logger, "git init")
@@ -143,7 +150,7 @@ class GitLocalRepo:
                     ".git/info/sparse-checkout", "a", encoding="utf-8"
                 ) as sparse_checkout_file:
                     sparse_checkout_file.write(
-                        "\n".join(["/" + src, "/LICENSE*", "/COPYING*"])
+                        "\n".join(list([f"/{src}"] + (must_keeps or [])))
                     )
 
             run_on_cmdline(logger, f"git fetch --depth 1 origin {version}")
