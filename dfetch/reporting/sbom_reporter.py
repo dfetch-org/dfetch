@@ -7,6 +7,8 @@ The generated SBOM can be used as input for other tools to monitor dependencies.
 The tools track vulnerabilities or can enforce a license policy within an organization.
 
 See https://cyclonedx.org/use-cases/ for more details.
+
+*Dfetch* will try to parse the license of project, this is retained during an :ref:`Update`.
 """
 
 import json
