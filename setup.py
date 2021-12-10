@@ -33,7 +33,7 @@ setup(
         "semver==2.13.0",
         "patch-ng==1.17.4",
         "importlib-resources==5.4.0; python_version <= '3.7.0'",
-        "cyclonedx-python-lib==0.12.2",
+        "cyclonedx-python-lib~=0.12",
         "infer-license==0.0.7",
     ],
     entry_points={
