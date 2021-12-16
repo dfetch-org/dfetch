@@ -158,11 +158,6 @@ class Manifest:
         with open(path, "r", encoding="utf-8") as opened_file:
             return Manifest.from_yaml(opened_file)
 
-    def set_parent(self, parent: ProjectEntry) -> None:
-        """Set a parent project for this manifest."""
-        for _, project in self._projects.items():
-            project.set_parent(parent.name)
-
     @property
     def version(self) -> str:
         """Version of the manifest file."""
@@ -265,9 +260,7 @@ def get_manifest() -> Tuple[Manifest, str]:
     )
 
 
-def get_childmanifests(
-    parent: ProjectEntry, skip: Optional[List[str]] = None
-) -> List[Tuple[Manifest, str]]:
+def get_childmanifests(skip: Optional[List[str]] = None) -> List[Manifest]:
     """Get manifest and its path."""
     skip = skip or []
     logger.debug("Looking for sub-manifests")
@@ -282,8 +275,7 @@ def get_childmanifests(
             ):
                 dfetch.manifest.validate.validate(path)
             childmanifest = dfetch.manifest.manifest.Manifest.from_file(path)
-            childmanifest.set_parent(parent)
-            childmanifests += [(childmanifest, path)]
+            childmanifests += [childmanifest]
 
     return childmanifests
 

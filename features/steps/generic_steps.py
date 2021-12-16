@@ -5,6 +5,7 @@ import os
 import pathlib
 import re
 from itertools import zip_longest
+from typing import List, Pattern, Tuple
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 
@@ -16,6 +17,11 @@ dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
 timestamp = re.compile(r"\d+\/\d+\/\d+, \d+:\d+:\d+")
 git_hash = re.compile(r"(\s?)[a-f0-9]{40}(\s?)")
 iso_timestamp = re.compile(r'"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}\+\d{2}:\d{2}')
+
+
+def remote_server_path(context):
+    """Get the path to the remote dir."""
+    return "/".join(context.remotes_dir_path.split(os.sep))
 
 
 def check_file(path, content):
@@ -133,20 +139,40 @@ def step_impl(context, name):
     check_file(name, context.text)
 
 
+def multisub(patterns: List[Tuple[Pattern[str], str]], text: str) -> str:
+    """Apply a list of tuples that each contain a regex + replace string."""
+    for pattern, replace in patterns:
+        text = pattern.sub(replace, text)
+
+    return text
+
+
 @then("the output shows")
 def step_impl(context):
-    expected_text = dfetch_title.sub(
-        "",
-        timestamp.sub("[timestamp]", git_hash.sub(r"\1[commit hash]\2", context.text)),
-    ).splitlines()
-    actual_text = ansi_escape.sub(
-        "",
-        timestamp.sub(
-            "[timestamp]", git_hash.sub(r"\1[commit hash]\2", context.cmd_output)
-        ),
+
+    expected_text = multisub(
+        patterns=[
+            (git_hash, r"\1[commit hash]\2"),
+            (timestamp, "[timestamp]"),
+            (dfetch_title, ""),
+        ],
+        text=context.text,
     )
 
-    diff = difflib.ndiff(actual_text.splitlines(), expected_text)
+    actual_text = multisub(
+        patterns=[
+            (git_hash, r"\1[commit hash]\2"),
+            (timestamp, "[timestamp]"),
+            (ansi_escape, ""),
+            (
+                re.compile(f"file:///{remote_server_path(context)}"),
+                "some-remote-server",
+            ),
+        ],
+        text=context.cmd_output,
+    )
+
+    diff = difflib.ndiff(actual_text.splitlines(), expected_text.splitlines())
 
     diffs = [x for x in diff if x[0] in ("+", "-")]
     if diffs:
