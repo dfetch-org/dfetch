@@ -5,15 +5,13 @@ import pathlib
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 
-from features.steps.generic_steps import check_file, generate_file
+from features.steps.generic_steps import check_file, generate_file, remote_server_path
 
 
 def generate_manifest(context, name="dfetch.yaml", path=None):
 
-    abs_server_path = "/".join(context.remotes_dir_path.split(os.sep))
-
     manifest = context.text.replace(
-        "url: some-remote-server", f"url: file:///{abs_server_path}"
+        "url: some-remote-server", f"url: file:///{remote_server_path(context)}"
     )
     generate_file(os.path.join(path or os.getcwd(), name), manifest)
 

@@ -9,9 +9,9 @@ Child-manifests
 ~~~~~~~~~~~~~~~
 
 It is possible that fetched projects have manifests of their own.
-After these projects are fetched (with ``dfetch update``), the manifests are fetched as well
-and will be checked. If you don't what this, you can prevent *Dfetch*
-checking child-manifests with ``--non-recursive``.
+After these projects are fetched (with ``dfetch update``), the manifests are read as well
+and will be checked to look for further dependencies. If you don't what recommendations, you can prevent *Dfetch*
+checking child-manifests with ``--no-recommendations``.
 
 .. note:: Any name or destination clashes are currently up to the user.
 
@@ -20,6 +20,8 @@ checking child-manifests with ``--non-recursive``.
 import argparse
 import os
 from typing import List
+
+import yaml
 
 import dfetch.commands.command
 import dfetch.manifest.manifest
@@ -43,10 +45,10 @@ class Check(dfetch.commands.command.Command):
         """Add the parser menu for this action."""
         parser = dfetch.commands.command.Command.parser(subparsers, Check)
         parser.add_argument(
-            "--non-recursive",
+            "--no-recommendations",
             "-N",
             action="store_true",
-            help="Don't recursively check for child manifests.",
+            help="Ignore recommendations from fetched projects.",
         )
         parser.add_argument(
             "projects",
@@ -66,22 +68,40 @@ class Check(dfetch.commands.command.Command):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).check_for_update()
 
-                if not args.non_recursive and os.path.isdir(project.destination):
+                if not args.no_recommendations and os.path.isdir(project.destination):
                     with in_directory(project.destination):
-                        exceptions += Check._check_child_manifests(project, path)
+                        exceptions += Check._check_child_manifests(
+                            manifest, project, path
+                        )
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
 
     @staticmethod
-    def _check_child_manifests(project: ProjectEntry, path: str) -> List[str]:
+    def _check_child_manifests(
+        manifest: dfetch.manifest.manifest.Manifest, project: ProjectEntry, path: str
+    ) -> List[str]:
         exceptions: List[str] = []
-        for (
-            childmanifest,
-            childpath,
-        ) in dfetch.manifest.manifest.get_childmanifests(project, skip=[path]):
-            with in_directory(os.path.dirname(childpath)):
-                for childproject in childmanifest.projects:
-                    with catch_runtime_exceptions(exceptions) as exceptions:
-                        dfetch.project.make(childproject).check_for_update()
+
+        recommendations: List[ProjectEntry] = []
+        for childmanifest in dfetch.manifest.manifest.get_childmanifests(skip=[path]):
+            for childproject in childmanifest.projects:
+
+                if childproject.remote_url not in [
+                    project.remote_url for project in manifest.projects
+                ]:
+                    recommendations.append(childproject.as_recommendation())
+
+        if recommendations:
+            logger.warning(
+                f"\n{project.name} depends on the following project(s) which are not part of your manifest:",
+            )
+
+            recommendation_json = yaml.dump(
+                [proj.as_yaml() for proj in recommendations], indent=4, sort_keys=False
+            )
+            logger.warning("")
+            for line in recommendation_json.splitlines():
+                logger.warning(line)
+
         return exceptions

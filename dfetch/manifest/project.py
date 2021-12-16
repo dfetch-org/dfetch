@@ -227,7 +227,6 @@ ProjectEntryDict = TypedDict(
         "repo-path": str,
         "vcs": str,
         "default_remote": Optional[Remote],
-        "parent": str,
     },
     total=False,
 )
@@ -251,7 +250,6 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._branch: str = kwargs.get("branch", "")
         self._tag: str = kwargs.get("tag", "")
         self._vcs: str = kwargs.get("vcs", "")
-        self._parent: str = kwargs.get("parent", "")
 
     @classmethod
     def from_yaml(
@@ -292,10 +290,6 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             self._repo_path = self._url.replace(remote.url, "").strip("/")
             self._url = ""
 
-    def set_parent(self, parent: str) -> None:
-        """Set the parent."""
-        self._parent = parent
-
     @property
     def version(self) -> Version:
         """Get the version of the project."""
@@ -331,7 +325,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
     @property
     def name(self) -> str:
         """Get the name of the project."""
-        return self._name if not self._parent else self._parent + "/" + self._name
+        return self._name
 
     @property
     def source(self) -> str:
@@ -377,6 +371,13 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         )
         return f"{self.name:20s} {version} {self.remote_url} {self.destination}"
 
+    def as_recommendation(self) -> "ProjectEntry":
+        """Get a copy that can be used as recommendation."""
+        recommendation = self.copy(self)
+        recommendation._dst = ""  # pylint: disable=protected-access
+        recommendation._patch = ""  # pylint: disable=protected-access
+        return recommendation
+
     def as_yaml(self) -> Dict[str, str]:
         """Get this project as yaml dictionary."""
         yamldata = {
@@ -391,7 +392,6 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             "tag": self._tag,
             "repo-path": self._repo_path,
             "vcs": self._vcs,
-            "parent": self._parent,
         }
 
         return {k: v for k, v in yamldata.items() if v}
