@@ -13,12 +13,13 @@ See https://cyclonedx.org/use-cases/ for more details.
 
 import json
 import re
-from typing import List
+from typing import List, cast
 
 from cyclonedx.model import ExternalReference, ExternalReferenceType
 from cyclonedx.model.bom import Bom, Tool
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.output import OutputFormat, get_instance
+from cyclonedx.output.json import Json
 
 import dfetch
 import dfetch.commands.command
@@ -91,11 +92,15 @@ class SbomReporter(Reporter):
         output_format = (
             OutputFormat.XML if outfile.endswith(".xml") else OutputFormat.JSON
         )
-        outputter = get_instance(bom=self._bom, output_format=output_format)
+        outputter = cast(Json, get_instance(bom=self._bom, output_format=output_format))
 
         # override the json outputter output_as_string to have pretty-printed json
-        outputter.output_as_string = lambda: json.dumps(
-            outputter._get_json(), indent=4  # pylint: disable=protected-access
+        setattr(
+            outputter,
+            "output_as_string",
+            lambda: json.dumps(
+                outputter._get_json(), indent=4  # pylint: disable=protected-access
+            ),
         )
 
         outputter.output_to_file(outfile, allow_overwrite=True)
