@@ -61,7 +61,8 @@ Feature: Check for updates in child projects
             Multiple manifests found, using dfetch.yaml
               SomeProject         : up-to-date (v1)
 
-            SomeProject depends on the following project(s) which are not part of your manifest:
+            "SomeProject" depends on the following project(s) which are not part of your manifest:
+            (found in ThirdParty/SomeProject/dfetch.yaml)
 
             -   name: SomeOtherProject
                 url: some-remote-server/SomeOtherProject.git
