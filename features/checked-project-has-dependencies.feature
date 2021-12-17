@@ -1,7 +1,8 @@
-Feature: Check for updates in child projects
+Feature: Check for dependencies in projects
 
-    When a project has dependencies of its own, *Dfetch* should recommend the user to add these
-    dependencies to the manifest.
+    When a project has dependencies of its own, it can list them using its own
+    manifest. *Dfetch* should recommend the user to add these dependencies to
+    the manifest.
 
     Scenario: Git projects are specified in the manifest
         Given the manifest 'dfetch.yaml' in MyProject
