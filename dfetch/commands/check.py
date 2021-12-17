@@ -84,7 +84,10 @@ class Check(dfetch.commands.command.Command):
         exceptions: List[str] = []
 
         recommendations: List[ProjectEntry] = []
-        for childmanifest in dfetch.manifest.manifest.get_childmanifests(skip=[path]):
+        for (
+            childmanifest,
+            childmanifest_path,
+        ) in dfetch.manifest.manifest.get_childmanifests(skip=[path]):
             for childproject in childmanifest.projects:
 
                 if childproject.remote_url not in [
@@ -92,16 +95,28 @@ class Check(dfetch.commands.command.Command):
                 ]:
                     recommendations.append(childproject.as_recommendation())
 
-        if recommendations:
-            logger.warning(
-                f"\n{project.name} depends on the following project(s) which are not part of your manifest:",
-            )
+            if recommendations:
+                rel_path = os.path.relpath(
+                    childmanifest_path, start=os.path.dirname(path)
+                ).replace("\\", "/")
+                logger.warning(
+                    "\n".join(
+                        [
+                            "",
+                            f'"{project.name}" depends on the following project(s) '
+                            "which are not part of your manifest:",
+                            f"(found in {rel_path})",
+                        ]
+                    )
+                )
 
-            recommendation_json = yaml.dump(
-                [proj.as_yaml() for proj in recommendations], indent=4, sort_keys=False
-            )
-            logger.warning("")
-            for line in recommendation_json.splitlines():
-                logger.warning(line)
+                recommendation_json = yaml.dump(
+                    [proj.as_yaml() for proj in recommendations],
+                    indent=4,
+                    sort_keys=False,
+                )
+                logger.warning("")
+                for line in recommendation_json.splitlines():
+                    logger.warning(line)
 
         return exceptions

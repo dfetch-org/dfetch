@@ -260,7 +260,7 @@ def get_manifest() -> Tuple[Manifest, str]:
     )
 
 
-def get_childmanifests(skip: Optional[List[str]] = None) -> List[Manifest]:
+def get_childmanifests(skip: Optional[List[str]] = None) -> List[Tuple[Manifest, str]]:
     """Get manifest and its path."""
     skip = skip or []
     logger.debug("Looking for sub-manifests")
@@ -275,7 +275,7 @@ def get_childmanifests(skip: Optional[List[str]] = None) -> List[Manifest]:
             ):
                 dfetch.manifest.validate.validate(path)
             childmanifest = dfetch.manifest.manifest.Manifest.from_file(path)
-            childmanifests += [childmanifest]
+            childmanifests += [(childmanifest, path)]
 
     return childmanifests
 
