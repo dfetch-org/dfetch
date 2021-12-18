@@ -2,6 +2,7 @@ Release 0.X.0 (unreleased)
 ===================================
 
 * Pin dependencies
+* Recommend child-projects instead of fetching (#242)
 
 Release 0.5.1 (released 2021-12-09)
 ===================================
