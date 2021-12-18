@@ -145,7 +145,7 @@ def test_get_childmanifests(name, manifest_paths) -> None:
             with patch("dfetch.manifest.manifest.Manifest"):
                 find_file_mock.return_value = manifest_paths
 
-                found_childmanifests = get_childmanifests(parent)
+                found_childmanifests = get_childmanifests([parent])
 
                 assert len(found_childmanifests) == len(manifest_paths)
                 for path, result in zip(manifest_paths, found_childmanifests):

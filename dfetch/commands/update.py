@@ -49,8 +49,8 @@ class Update(dfetch.commands.command.Command):
             help="Always perform update, ignoring version check or local changes.",
         )
         parser.add_argument(
-            "--no-recommendations",
             "-N",
+            "--no-recommendations",
             action="store_true",
             help="Ignore recommendations from fetched projects.",
         )

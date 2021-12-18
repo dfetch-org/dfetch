@@ -3,18 +3,14 @@
 # flake8: noqa
 
 import argparse
-from typing import Tuple
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import pytest
 
-import dfetch
 from dfetch.commands.update import Update
-from dfetch.manifest.manifest import Manifest
-from dfetch.manifest.project import ProjectEntry
 from tests.manifest_mock import mock_manifest
 
-DEFAULT_ARGS = argparse.Namespace(non_recursive=False)
+DEFAULT_ARGS = argparse.Namespace(no_recommendations=False)
 DEFAULT_ARGS.force = False
 DEFAULT_ARGS.projects = []
 
@@ -86,8 +82,8 @@ def test_create_menu():
 
     options = [
         ["-h", "--help"],
-        ["-N", "--non-recursive"],
         ["-f", "--force"],
+        ["-N", "--no-recommendations"],
     ]
 
     for action, expected_options in zip(subparsers.choices["update"]._actions, options):
