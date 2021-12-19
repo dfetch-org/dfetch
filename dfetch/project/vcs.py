@@ -5,6 +5,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
 
+from halo import Halo
 from patch_ng import fromfile
 
 import dfetch.manifest.manifest
@@ -103,7 +104,12 @@ class VCS(ABC):
             logger.debug(f"Clearing destination {self.local_path}")
             safe_rm(self.local_path)
 
-        actually_fetched = self._fetch_impl(to_fetch)
+        with Halo(
+            text=f"Fetching {self.__project.name} {to_fetch}",
+            spinner="dots",
+            text_color="green",
+        ):
+            actually_fetched = self._fetch_impl(to_fetch)
         self._log_project(f"Fetched {actually_fetched}")
 
         applied_patch = ""
