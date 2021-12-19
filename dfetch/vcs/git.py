@@ -161,6 +161,9 @@ class GitLocalRepo:
                 if not os.path.isdir(src):
                     src = os.path.dirname(src)
 
+                if not src:
+                    return
+
                 try:
                     for file_to_copy in os.listdir(src):
                         shutil.move(src + "/" + file_to_copy, ".")
