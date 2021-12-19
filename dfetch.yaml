@@ -6,10 +6,7 @@ manifest:
     url-base: https://github.com/
 
   projects:
-  - name: cpputest
-    dst: cpputest/src/                                    # Destination of this project (relative to this file)
-    repo-path: cpputest/cpputest.git                      # Use default github remote
-    tag: v3.4                                             # tag
-
-  - name: jsmn                                            # without destination, defaults to project name
-    repo-path: zserge/jsmn.git                            # only repo-path is enough
+  - name: demo-magic
+    repo-path: paxtonhare/demo-magic.git
+    dst: doc/tooling/demo-magic
+    src: '*.sh'
