@@ -8,5 +8,5 @@ manifest:
   projects:
   - name: demo-magic
     repo-path: paxtonhare/demo-magic.git
-    dst: doc/tooling/demo-magic
+    dst: doc/generate-casts/demo-magic
     src: '*.sh'
