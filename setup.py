@@ -28,6 +28,7 @@ setup(
         "PyYAML==6.0",
         "coloredlogs==15.0.1",
         "pykwalify==1.8.0",
+        "halo==0.0.31",
         "colorama==0.4.4",
         "typing-extensions==4.0.1",
         "semver==2.13.0",
