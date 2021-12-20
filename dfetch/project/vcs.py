@@ -143,7 +143,12 @@ class VCS(ABC):
     def check_for_update(self) -> None:
         """Check if there is an update available."""
         on_disk_version = self.on_disk_version()
-        latest_version = self._check_for_newer_version()
+        with Halo(
+            text=f"Checking {self.__project.name}",
+            spinner="dots",
+            text_color="green",
+        ):
+            latest_version = self._check_for_newer_version()
 
         if not on_disk_version:
             wanted = (
