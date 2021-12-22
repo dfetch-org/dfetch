@@ -13,8 +13,6 @@ After these projects are fetched (with ``dfetch update``), the manifests are rea
 and will be checked to look for further dependencies. If you don't what recommendations, you can prevent *Dfetch*
 checking child-manifests with ``--no-recommendations``.
 
-.. note:: Any name or destination clashes are currently up to the user.
-
 """
 
 import argparse

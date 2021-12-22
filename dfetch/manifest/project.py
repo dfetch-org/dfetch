@@ -70,7 +70,9 @@ will place ``mymodule`` at the relative path listed by ``dst:`` (relative to the
          - name: mymodule
            dst: external/mymodule
 
-If no ``dst:`` is provided, dfetch will use the project name as relative path.
+If no ``dst:`` is provided, *DFetch* will use the project name as relative path.
+The ``dst:`` must be in the same folder or a folder below the manifest and must be
+unique.
 
 Repo-path
 #########
