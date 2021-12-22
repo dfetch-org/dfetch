@@ -6,6 +6,7 @@ There are several report types that *DFetch* can generate.
 import argparse
 import glob
 import os
+from typing import Any  # pylint: disable=unused-import
 
 import infer_license
 
@@ -28,7 +29,7 @@ class Report(dfetch.commands.command.Command):
     """
 
     @staticmethod
-    def create_menu(subparsers: "argparse._SubParsersAction") -> None:
+    def create_menu(subparsers: "argparse._SubParsersAction[Any]") -> None:
         """Add the parser menu for this action."""
         parser = dfetch.commands.command.Command.parser(subparsers, Report)
 

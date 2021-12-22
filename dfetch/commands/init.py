@@ -6,6 +6,7 @@ It will be created in the current folder.
 import argparse
 import os
 import shutil
+from typing import Any  # pylint: disable=unused-import
 
 import dfetch.commands.command
 from dfetch import DEFAULT_MANIFEST_NAME
@@ -22,7 +23,7 @@ class Init(dfetch.commands.command.Command):
     """
 
     @staticmethod
-    def create_menu(subparsers: "argparse._SubParsersAction") -> None:
+    def create_menu(subparsers: "argparse._SubParsersAction[Any]") -> None:
         """Add the parser menu for this action."""
         dfetch.commands.command.Command.parser(subparsers, Init)
 
