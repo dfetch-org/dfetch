@@ -2,7 +2,7 @@
 
 import argparse
 from abc import ABC, abstractmethod
-from typing import Type, TypeVar
+from typing import Any, Type, TypeVar, cast  # pylint: disable=unused-import
 
 
 class Command(ABC):
@@ -20,7 +20,7 @@ class Command(ABC):
 
     @staticmethod
     @abstractmethod
-    def create_menu(subparsers: "argparse._SubParsersAction") -> None:
+    def create_menu(subparsers: "argparse._SubParsersAction[Any]") -> None:
         """Add a sub-parser to the given parser.
 
         Args:
@@ -42,7 +42,8 @@ class Command(ABC):
 
     @staticmethod
     def parser(
-        subparsers: "argparse._SubParsersAction", command: Type["Command.CHILD_TYPE"]
+        subparsers: "argparse._SubParsersAction[Any]",
+        command: Type["Command.CHILD_TYPE"],
     ) -> "argparse.ArgumentParser":
         """Generate the parser.
 
@@ -71,4 +72,4 @@ class Command(ABC):
         )
 
         parser.set_defaults(func=command())
-        return parser
+        return cast(argparse.ArgumentParser, parser)

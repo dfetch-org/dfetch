@@ -17,6 +17,7 @@ checking child-manifests with ``--no-recommendations``.
 
 import argparse
 import os
+from typing import Any  # pylint: disable=unused-import
 from typing import List
 
 import dfetch.commands.command
@@ -39,7 +40,7 @@ class Update(dfetch.commands.command.Command):
     """
 
     @staticmethod
-    def create_menu(subparsers: "argparse._SubParsersAction") -> None:
+    def create_menu(subparsers: "argparse._SubParsersAction[Any]") -> None:
         """Add the menu for the update action."""
         parser = dfetch.commands.command.Command.parser(subparsers, Update)
         parser.add_argument(

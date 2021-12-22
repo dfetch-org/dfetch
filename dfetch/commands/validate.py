@@ -5,6 +5,7 @@ This will parse your :ref:`Manifest` and check if all fields can be parsed.
 
 import argparse
 import os
+from typing import Any  # pylint: disable=unused-import
 
 import dfetch.commands.command
 from dfetch.log import get_logger
@@ -22,7 +23,7 @@ class Validate(dfetch.commands.command.Command):
     """
 
     @staticmethod
-    def create_menu(subparsers: "argparse._SubParsersAction") -> None:
+    def create_menu(subparsers: "argparse._SubParsersAction[Any]") -> None:
         """Add the parser menu for this action."""
         dfetch.commands.command.Command.parser(subparsers, Validate)
 
