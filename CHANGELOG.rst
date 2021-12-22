@@ -4,6 +4,9 @@ Release 0.X.0 (unreleased)
 * Pin dependencies
 * Recommend child-projects instead of fetching (#242)
 * Show spinner when fetching (#264)
+* Don't allow path traversal for dst path
+* Check for casing issues in ``dst:`` path during update (#256)
+* Check for overlapping destinations of projects (#173)
 
 Release 0.5.1 (released 2021-12-09)
 ===================================
@@ -16,8 +19,8 @@ Release 0.5.0 (released 2021-12-09)
 * Add diff command for svn projects (#24)
 * Also add binary files as part of generated patch (#251)
 * Create diff on working copy instead of current revision (#254)
-* Deprecate `dfetch list` command for `dfetch report` command
-* Add Software Bill-of-Materials (sBoM) export to `dfetch report` command (#154)
+* Deprecate ``dfetch list`` command for ``dfetch report`` command
+* Add Software Bill-of-Materials (sBoM) export to ``dfetch report`` command (#154)
 * Guess license for sbom export (#50)
 * Match more licenses (#260)
 
