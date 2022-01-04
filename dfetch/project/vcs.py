@@ -13,6 +13,7 @@ import dfetch.manifest.manifest
 from dfetch.log import get_logger
 from dfetch.manifest.version import Version
 from dfetch.project.metadata import Metadata
+from dfetch.reporting.jenkins_reporter import JenkinsReporter
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
 
@@ -141,7 +142,7 @@ class VCS(ABC):
         else:
             raise RuntimeError(f'Applying path "{self.__project.patch}" failed')
 
-    def check_for_update(self) -> None:
+    def check_for_update(self, reporter : Optional[JenkinsReporter] = None) -> None:
         """Check if there is an update available."""
         on_disk_version = self.on_disk_version()
         with Halo(
@@ -155,18 +156,25 @@ class VCS(ABC):
             wanted = (
                 f"wanted ({self.wanted_version}), " if any(self.wanted_version) else ""
             )
-            self._log_project(f"{wanted}available ({latest_version})")
+            msg = f"{wanted}available ({latest_version})"
+            self._log_project(msg)
+            if reporter:
+                reporter.add_project_warning(self.__project, msg)
         elif latest_version == on_disk_version:
-            self._log_project(f"up-to-date ({latest_version})")
+            msg = f"up-to-date ({latest_version})"
+            self._log_project(msg)
         elif on_disk_version == self.wanted_version:
-            self._log_project(
-                f"wanted & current ({on_disk_version}), available ({latest_version})"
-            )
+            msg = f"wanted & current ({on_disk_version}), available ({latest_version})"
+            self._log_project(msg)
+            if reporter:
+                reporter.add_project_note(self.__project, msg)
         else:
-            self._log_project(
-                f"wanted ({str(self.wanted_version) or 'latest'}), "
+            msg = f"wanted ({str(self.wanted_version) or 'latest'}), " \
                 f"current ({on_disk_version}), available ({latest_version})"
-            )
+
+            self._log_project(msg)
+            if reporter:
+                reporter.add_project_warning(self.__project, msg)
 
     def _log_project(self, msg: str) -> None:
         logger.print_info_line(self.__project.name, msg)
