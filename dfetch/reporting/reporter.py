@@ -19,3 +19,18 @@ class Reporter(ABC):
     @abstractmethod
     def dump_to_file(self, outfile: str) -> bool:
         """Do nothing."""
+
+class CheckReporter(ABC):
+    """Reporter for generating report."""
+
+    name: str = "abstract"
+
+    @abstractmethod
+    def add_project(
+        self, project: ProjectEntry, current_version: str, available_version: str
+    ) -> None:
+        """Add a project to the report."""
+
+    @abstractmethod
+    def dump_to_file(self, outfile: str) -> bool:
+        """Do nothing."""

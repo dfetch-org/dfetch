@@ -26,6 +26,7 @@ import dfetch.manifest.validate
 import dfetch.project
 from dfetch.commands.common import check_child_manifests
 from dfetch.log import get_logger
+from dfetch.reporting.jenkins_reporter import JenkinsReporter
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -54,20 +55,35 @@ class Check(dfetch.commands.command.Command):
             nargs="*",
             help="Specific project(s) to check",
         )
+        parser.add_argument(
+            "--report",
+            metavar="<format>",
+            type=str,
+            nargs="*",
+            choices=["jenkins"],
+            action="append",
+            help="Report format",
+        )
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
         manifest, path = dfetch.manifest.manifest.get_manifest()
+        reporter = None
+        # if "jenkins" in args.report:
+        reporter = JenkinsReporter(manifest, path)
 
         with in_directory(os.path.dirname(path)):
             exceptions: List[str] = []
             for project in manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    dfetch.project.make(project).check_for_update()
+                    dfetch.project.make(project).check_for_update(reporter)
 
                 if not args.no_recommendations and os.path.isdir(project.destination):
                     with in_directory(project.destination):
                         check_child_manifests(manifest, project, path)
+
+            if reporter:
+                reporter.dump_to_file()
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
