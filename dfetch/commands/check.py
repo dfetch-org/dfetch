@@ -57,21 +57,18 @@ class Check(dfetch.commands.command.Command):
             help="Specific project(s) to check",
         )
         parser.add_argument(
-            "--report",
-            metavar="<format>",
+            "--jenkins-json",
+            metavar="outfile",
             type=str,
-            nargs="*",
-            choices=["jenkins"],
-            action="append",
-            help="Report format",
+            help="Generate a JSON that can be parsed by Jenkins.",
         )
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
         manifest, path = dfetch.manifest.manifest.get_manifest()
         reporters: List[CheckReporter] = [CheckStdoutReporter()]
-        if "jenkins" in args.report:
-            reporters += [JenkinsReporter(manifest, path)]
+        if args.jenkins_json:
+            reporters += [JenkinsReporter(path, args.jenkins_json)]
 
         with in_directory(os.path.dirname(path)):
             exceptions: List[str] = []
@@ -84,7 +81,7 @@ class Check(dfetch.commands.command.Command):
                         check_child_manifests(manifest, project, path)
 
             for reporter in reporters:
-                reporter.dump_to_file("jenkins.json")
+                reporter.dump_to_file()
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))

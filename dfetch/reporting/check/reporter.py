@@ -57,5 +57,5 @@ class CheckReporter(ABC):
         """
 
     @abstractmethod
-    def dump_to_file(self, outfile: str) -> bool:
+    def dump_to_file(self) -> None:
         """Do nothing."""

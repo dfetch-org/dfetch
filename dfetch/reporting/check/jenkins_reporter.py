@@ -27,10 +27,11 @@ class JenkinsReporter(CheckReporter):
 
     name = "jenkins"
 
-    def __init__(self, manifest: Manifest, path: str) -> None:
+    def __init__(self, manifest_path: str, report_path: str) -> None:
         super().__init__()
 
-        self._manifest_path = path
+        self._manifest_path = manifest_path
+        self._report_path = report_path
 
         self._report: Dict[str, Any] = {
             "_class": "io.jenkins.plugins.analysis.core.restapi.ReportApi",
@@ -137,7 +138,7 @@ class JenkinsReporter(CheckReporter):
                     return (nr, int(match.start("name")) + 1, int(match.end("name")))
         raise RuntimeError("Water is burning")
 
-    def dump_to_file(self, outfile: str = "jenkins.json") -> bool:
+    def dump_to_file(self) -> None:
         """Dump report."""
-        with open(outfile, "w") as report:
+        with open(self._report_path, "w") as report:
             json.dump(self._report, report, indent=4)

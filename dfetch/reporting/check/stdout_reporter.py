@@ -78,6 +78,6 @@ class CheckStdoutReporter(CheckReporter):
     def _log_project(self, msg: str) -> None:
         logger.print_info_line(self.__project.name, msg)
 
-    def dump_to_file(self, outfile: str = "jenkins.json") -> bool:
+    def dump_to_file(self) -> None:
         """Dump report."""
         pass
