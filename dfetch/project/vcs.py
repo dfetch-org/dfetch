@@ -4,7 +4,7 @@ import fnmatch
 import os
 import pathlib
 from abc import ABC, abstractmethod
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 from halo import Halo
 from patch_ng import fromfile
@@ -13,7 +13,7 @@ import dfetch.manifest.manifest
 from dfetch.log import get_logger
 from dfetch.manifest.version import Version
 from dfetch.project.metadata import Metadata
-from dfetch.reporting.jenkins_reporter import JenkinsReporter
+from dfetch.reporting.check.reporter import CheckReporter
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
 
@@ -142,7 +142,7 @@ class VCS(ABC):
         else:
             raise RuntimeError(f'Applying path "{self.__project.patch}" failed')
 
-    def check_for_update(self, reporter : Optional[JenkinsReporter] = None) -> None:
+    def check_for_update(self, reporters: Sequence[CheckReporter]) -> None:
         """Check if there is an update available."""
         on_disk_version = self.on_disk_version()
         with Halo(
@@ -153,28 +153,23 @@ class VCS(ABC):
             latest_version = self._check_for_newer_version()
 
         if not on_disk_version:
-            wanted = (
-                f"wanted ({self.wanted_version}), " if any(self.wanted_version) else ""
-            )
-            msg = f"{wanted}available ({latest_version})"
-            self._log_project(msg)
-            if reporter:
-                reporter.add_project_warning(self.__project, msg)
+            for reporter in reporters:
+                reporter.unfetched_project(
+                    self.__project, self.wanted_version, latest_version
+                )
         elif latest_version == on_disk_version:
-            msg = f"up-to-date ({latest_version})"
-            self._log_project(msg)
+            for reporter in reporters:
+                reporter.up_to_date_project(self.__project, latest_version)
         elif on_disk_version == self.wanted_version:
-            msg = f"wanted & current ({on_disk_version}), available ({latest_version})"
-            self._log_project(msg)
-            if reporter:
-                reporter.add_project_note(self.__project, msg)
+            for reporter in reporters:
+                reporter.pinned_but_out_of_date_project(
+                    self.__project, self.wanted_version, latest_version
+                )
         else:
-            msg = f"wanted ({str(self.wanted_version) or 'latest'}), " \
-                f"current ({on_disk_version}), available ({latest_version})"
-
-            self._log_project(msg)
-            if reporter:
-                reporter.add_project_warning(self.__project, msg)
+            for reporter in reporters:
+                reporter.out_of_date_project(
+                    self.__project, self.wanted_version, on_disk_version, latest_version
+                )
 
     def _log_project(self, msg: str) -> None:
         logger.print_info_line(self.__project.name, msg)

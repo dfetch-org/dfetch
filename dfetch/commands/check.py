@@ -17,8 +17,7 @@ checking child-manifests with ``--no-recommendations``.
 
 import argparse
 import os
-from typing import Any  # pylint: disable=unused-import
-from typing import List
+from typing import Any, List  # pylint: disable=unused-import
 
 import dfetch.commands.command
 import dfetch.manifest.manifest
@@ -26,7 +25,9 @@ import dfetch.manifest.validate
 import dfetch.project
 from dfetch.commands.common import check_child_manifests
 from dfetch.log import get_logger
-from dfetch.reporting.jenkins_reporter import JenkinsReporter
+from dfetch.reporting.check.jenkins_reporter import JenkinsReporter
+from dfetch.reporting.check.reporter import CheckReporter
+from dfetch.reporting.check.stdout_reporter import CheckStdoutReporter
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -68,22 +69,22 @@ class Check(dfetch.commands.command.Command):
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
         manifest, path = dfetch.manifest.manifest.get_manifest()
-        reporter = None
-        # if "jenkins" in args.report:
-        reporter = JenkinsReporter(manifest, path)
+        reporters: List[CheckReporter] = [CheckStdoutReporter()]
+        if "jenkins" in args.report:
+            reporters += [JenkinsReporter(manifest, path)]
 
         with in_directory(os.path.dirname(path)):
             exceptions: List[str] = []
             for project in manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    dfetch.project.make(project).check_for_update(reporter)
+                    dfetch.project.make(project).check_for_update(reporters)
 
                 if not args.no_recommendations and os.path.isdir(project.destination):
                     with in_directory(project.destination):
                         check_child_manifests(manifest, project, path)
 
-            if reporter:
-                reporter.dump_to_file()
+            for reporter in reporters:
+                reporter.dump_to_file("jenkins.json")
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
