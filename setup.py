@@ -32,6 +32,7 @@ setup(
         "colorama==0.4.4",
         "typing-extensions==4.0.1; python_version > '3.7'",
         "typing-extensions<4.0,>=3.10; python_version <= '3.7'",
+        "sarif-om==1.0.4",
         "semver==2.13.0",
         "patch-ng==1.17.4",
         "importlib-resources==5.4.0; python_version <= '3.7.0'",
