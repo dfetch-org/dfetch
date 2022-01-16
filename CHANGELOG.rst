@@ -9,6 +9,7 @@ Release 0.X.0 (unreleased)
 * Check for overlapping destinations of projects (#173)
 * Handle invalid metadata file (#280)
 * Update to CycloneDX spec 1.3 (#282)
+* Make it possible to generate jenkins json report for check (#18)
 
 Release 0.5.1 (released 2021-12-09)
 ===================================
