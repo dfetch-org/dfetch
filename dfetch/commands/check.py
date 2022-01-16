@@ -25,9 +25,9 @@ import dfetch.manifest.validate
 import dfetch.project
 from dfetch.commands.common import check_child_manifests
 from dfetch.log import get_logger
-from dfetch.reporting.check.sarif_reporter import SarifReporter
 from dfetch.reporting.check.jenkins_reporter import JenkinsReporter
 from dfetch.reporting.check.reporter import CheckReporter
+from dfetch.reporting.check.sarif_reporter import SarifReporter
 from dfetch.reporting.check.stdout_reporter import CheckStdoutReporter
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
