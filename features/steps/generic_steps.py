@@ -31,8 +31,22 @@ def check_file(path, content):
         for actual, expected in zip_longest(
             file_to_check.readlines(), content.splitlines(True), fillvalue=""
         ):
-            actual = iso_timestamp.sub(actual, "2021-12-08T21:34:38.500715+00:00")
-            expected = iso_timestamp.sub(expected, "2021-12-08T21:34:38.500715+00:00")
+
+            expected = multisub(
+                patterns=[
+                    (git_hash, r"\1[commit hash]\2"),
+                    (iso_timestamp, "[timestamp]"),
+                ],
+                text=expected,
+            )
+
+            actual = multisub(
+                patterns=[
+                    (git_hash, r"\1[commit hash]\2"),
+                    (iso_timestamp, "[timestamp]"),
+                ],
+                text=actual,
+            )
 
             assert (
                 actual.strip() == expected.strip()
