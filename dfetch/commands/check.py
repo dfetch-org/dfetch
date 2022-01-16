@@ -25,6 +25,7 @@ import dfetch.manifest.validate
 import dfetch.project
 from dfetch.commands.common import check_child_manifests
 from dfetch.log import get_logger
+from dfetch.reporting.check.sarif_reporter import SarifReporter
 from dfetch.reporting.check.jenkins_reporter import JenkinsReporter
 from dfetch.reporting.check.reporter import CheckReporter
 from dfetch.reporting.check.stdout_reporter import CheckStdoutReporter
@@ -62,6 +63,12 @@ class Check(dfetch.commands.command.Command):
             type=str,
             help="Generate a JSON that can be parsed by Jenkins.",
         )
+        parser.add_argument(
+            "--sarif",
+            metavar="outfile",
+            type=str,
+            help="Generate a Sarif JSON that can be parsed by Github.",
+        )
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
@@ -69,6 +76,8 @@ class Check(dfetch.commands.command.Command):
         reporters: List[CheckReporter] = [CheckStdoutReporter()]
         if args.jenkins_json:
             reporters += [JenkinsReporter(path, args.jenkins_json)]
+        if args.sarif:
+            reporters += [SarifReporter(path, args.sarif)]
 
         with in_directory(os.path.dirname(path)):
             exceptions: List[str] = []
