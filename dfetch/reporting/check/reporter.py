@@ -2,7 +2,8 @@
 
 from abc import ABC, abstractmethod
 
-from dfetch.manifest.project import ProjectEntry, Version
+from dfetch.manifest.project import ProjectEntry
+from dfetch.manifest.version import Version
 
 
 class CheckReporter(ABC):
@@ -38,22 +39,26 @@ class CheckReporter(ABC):
         """Report an pinned but out-of-date project.
 
         Args:
-            project (ProjectEntry): [description]
-            wanted_version (Version): [description]
-            latest (Version): [description]
+            project (ProjectEntry): Project that is pinned but out-of-date
+            wanted_version (Version): Version that is wanted by manifest
+            latest (Version): Available version
         """
 
     @abstractmethod
     def out_of_date_project(
-        self, project: ProjectEntry, wanted_version: Version, current: Version, latest: Version
+        self,
+        project: ProjectEntry,
+        wanted_version: Version,
+        current: Version,
+        latest: Version,
     ) -> None:
         """Report an out-of-date project.
 
         Args:
-            project (ProjectEntry): [description]
-            wanted_version (Version): [description]
-            current (Version): [description]
-            latest (Version): [description]
+            project (ProjectEntry): Project that is out-of-date
+            wanted_version (Version): Version that is wanted by manifest
+            current (Version): Current version on disk
+            latest (Version): Available version
         """
 
     @abstractmethod

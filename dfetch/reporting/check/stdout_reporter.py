@@ -8,8 +8,6 @@ Add to pipeline using warnings-ng plugin:
 recordIssues tool: issues(pattern: 'jenkins.json', name: 'DFetch')
 """
 
-import json
-
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
@@ -51,23 +49,28 @@ class CheckStdoutReporter(CheckReporter):
         """Report an pinned but out-of-date project.
 
         Args:
-            project (ProjectEntry): [description]
-            wanted_version (Version): [description]
-            latest (Version): [description]
+            project (ProjectEntry): Project that is pinned but out-of-date
+            wanted_version (Version): Version that is wanted by manifest
+            latest (Version): Available version
         """
         logger.print_info_line(
             project.name, f"wanted & current ({wanted_version}), available ({latest})"
         )
 
     def out_of_date_project(
-        self, project: ProjectEntry, wanted_version: Version, current: Version,  latest: Version
+        self,
+        project: ProjectEntry,
+        wanted_version: Version,
+        current: Version,
+        latest: Version,
     ) -> None:
         """Report an out-of-date project.
 
         Args:
-            project (ProjectEntry): [description]
-            wanted_version (Version): [description]
-            latest (Version): [description]
+            project (ProjectEntry): Project that is out-of-date
+            wanted_version (Version): Version that is wanted by manifest
+            current (Version): Current version on disk
+            latest (Version): Available version
         """
         logger.print_info_line(
             project.name,
@@ -75,9 +78,5 @@ class CheckStdoutReporter(CheckReporter):
             f"current ({current}), available ({latest})",
         )
 
-    def _log_project(self, msg: str) -> None:
-        logger.print_info_line(self.__project.name, msg)
-
     def dump_to_file(self) -> None:
         """Dump report."""
-        pass
