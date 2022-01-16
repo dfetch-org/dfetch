@@ -35,7 +35,7 @@ Feature: Create an CycloneDX sbom
                         "type": "library",
                         "name": "cpputest",
                         "version": "v3.4",
-                        "purl": "pkg:github/cpputest/cpputest@v3.4",
+                        "purl": "pkg:github/cpputest/cpputest@v3.4#include/CppUTest",
                         "group": "cpputest",
                         "licenses": [
                             {
@@ -52,7 +52,7 @@ Feature: Create an CycloneDX sbom
                         {
                             "vendor": "CycloneDX",
                             "name": "cyclonedx-python-lib",
-                            "version": "0.9.1"
+                            "version": "0.12.3"
                         },
                         {
                             "vendor": "dfetch-org",

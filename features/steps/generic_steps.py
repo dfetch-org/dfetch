@@ -17,6 +17,9 @@ dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
 timestamp = re.compile(r"\d+\/\d+\/\d+, \d+:\d+:\d+")
 git_hash = re.compile(r"(\s?)[a-f0-9]{40}(\s?)")
 iso_timestamp = re.compile(r'"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}\+\d{2}:\d{2}')
+urn_uuid = re.compile(
+    r"urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+)
 
 
 def remote_server_path(context):
@@ -36,6 +39,7 @@ def check_file(path, content):
                 patterns=[
                     (git_hash, r"\1[commit hash]\2"),
                     (iso_timestamp, "[timestamp]"),
+                    (urn_uuid, "[urn-uuid]"),
                 ],
                 text=expected,
             )
@@ -44,6 +48,7 @@ def check_file(path, content):
                 patterns=[
                     (git_hash, r"\1[commit hash]\2"),
                     (iso_timestamp, "[timestamp]"),
+                    (urn_uuid, "[urn-uuid]"),
                 ],
                 text=actual,
             )
