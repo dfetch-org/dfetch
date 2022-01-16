@@ -27,6 +27,10 @@ Check
 
 .. automodule:: dfetch.commands.check
 
+Jenkins reporter
+````````````````
+.. automodule:: dfetch.reporting.check.jenkins_reporter
+
 Report
 ------
 .. argparse::

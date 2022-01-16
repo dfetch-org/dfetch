@@ -1,11 +1,51 @@
-"""*Dfetch* can generate an report on stdout.
+"""*Dfetch* can generate a report that is parseable by Jenkins from the :ref:`check` results.
 
-Dependending on the state of the projects it will show as much information
-from the manifest or the metadata (``.dfetch_data.yaml``).
+Dependending on the state of the projects it will create a report with information.
+If all project are up-to-date, nothing will be added to the report.
 
-Add to pipeline using warnings-ng plugin:
+The information has several severities:
 
-recordIssues tool: issues(pattern: 'jenkins.json', name: 'DFetch')
+* ``high`` : An unfetched project. Fetch the project to solve the issue.
+* ``normal`` : An out-of-date project. The project is not pinned and a newer version is available.
+* ``low`` : An pinned but out-of-date project. The project is pinned to a specific version,
+            but a newer version is available.
+
+The report generated is the `native json format`_ of the `warnings-ng plugin`_. The plugin will
+show an overview of the found issues:
+
+.. image:: images/out-of-date-jenkins2.png
+    :alt: Cpputest is out-of-date and requires updating.
+
+When an issues is clicked, you can see the exact location in the manifest where the project is listed.
+
+.. image:: images/out-of-date-jenkins.png
+    :alt: Cpputest is out-of-date and requires updating.
+
+Usage
+-----
+
+Add to pipeline using `warnings-ng plugin`_:
+
+.. code-block:: groovy
+
+    /* For a windows agent */
+    bat: 'dfetch check --jenkins-json jenkins.json'
+
+    /* For a linux agent */
+    sh: 'dfetch check --jenkins-json jenkins.json'
+
+    recordIssues tool: issues(pattern: 'jenkins.json', name: 'DFetch')
+
+With the `warnings-ng plugin`_ quality gates thresholds can be set to influence the build result.
+For example don't fail when pinned projects are out-of-date.For more information see the
+`quality gate configuration`_ documentation of the `warnings-ng plugin`_.
+
+.. _`warnings-ng plugin`: https://plugins.jenkins.io/warnings-ng/
+.. _`native json format`: https://github.com/jenkinsci/warnings-ng-plugin/blob/master/doc/Documentation.md\
+#export-your-issues-into-a-supported-format
+.. _`quality gate configuration`: https://github.com/jenkinsci/warnings-ng-plugin/blob/master\
+/doc/Documentation.md#quality-gate-configuration
+
 """
 
 import json
