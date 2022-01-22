@@ -2,6 +2,7 @@
 
 import fnmatch
 import os
+import pathlib
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple
 
@@ -227,11 +228,17 @@ class VCS(ABC):
         Returns:
             Version: Could be None of no on disk version
         """
-        return (
-            None
-            if not os.path.exists(self.__metadata.path)
-            else Metadata.from_file(self.__metadata.path).version
-        )
+        if not os.path.exists(self.__metadata.path):
+            return None
+
+        try:
+            return Metadata.from_file(self.__metadata.path).version
+        except TypeError:
+            logger.warning(
+                f"{pathlib.Path(self.__metadata.path).relative_to(os.getcwd()).as_posix()}"
+                " is an invalid metadata file, not checking on disk version!"
+            )
+            return None
 
     def _on_disk_hash(self) -> Optional[str]:
         """Get the hash of the project on disk.
@@ -239,11 +246,17 @@ class VCS(ABC):
         Returns:
             Str: Could be None if no on disk version
         """
-        return (
-            None
-            if not os.path.exists(self.__metadata.path)
-            else Metadata.from_file(self.__metadata.path).hash
-        )
+        if not os.path.exists(self.__metadata.path):
+            return None
+
+        try:
+            return Metadata.from_file(self.__metadata.path).hash
+        except TypeError:
+            logger.warning(
+                f"{pathlib.Path(self.__metadata.path).relative_to(os.getcwd()).as_posix()}"
+                " is an invalid metadata file, not checking local hash!"
+            )
+            return None
 
     def _check_for_newer_version(self) -> Version:
         """Check if a newer version is available on the given branch."""
