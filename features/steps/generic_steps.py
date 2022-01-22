@@ -88,6 +88,13 @@ def step_impl(context, name):
     generate_file(os.path.join(os.getcwd(), name), context.text)
 
 
+@given('the metadata file "{metadata_file}" of "{project_path}" is corrupt')
+def step_impl(context, metadata_file, project_path):
+    generate_file(
+        os.path.join(os.getcwd(), project_path, metadata_file), "Corrupt metadata!"
+    )
+
+
 @given("all projects are updated in {path}")
 @given("all projects are updated")
 def step_impl(context, path=None):
