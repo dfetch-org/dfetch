@@ -30,7 +30,7 @@ class StdoutReporter(Reporter):
             logger.print_info_field("    remote url", metadata.remote_url)
             logger.print_info_field("    branch", metadata.branch)
             logger.print_info_field("    tag", metadata.tag)
-            logger.print_info_field("    last fetch", metadata.last_fetch)
+            logger.print_info_field("    last fetch", str(metadata.last_fetch))
             logger.print_info_field("    revision", metadata.revision)
             logger.print_info_field("    patch", metadata.patch)
             logger.print_info_field("    license", license_name)

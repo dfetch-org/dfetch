@@ -2,7 +2,6 @@
 
 import datetime
 import os
-from typing import Any
 
 import yaml
 from typing_extensions import TypedDict
@@ -65,7 +64,7 @@ class Metadata:
         return cls(data)
 
     @classmethod
-    def from_file(cls, path: str) -> Any:
+    def from_file(cls, path: str) -> "Metadata":
         """Load metadata file."""
         with open(path, "r", encoding="utf-8") as metadata_file:
             data: Options = yaml.safe_load(metadata_file)["dfetch"]
