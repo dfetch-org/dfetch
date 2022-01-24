@@ -3,6 +3,26 @@
 Dependending on the state of the projects it will create a report with information.
 If all project are up-to-date, nothing will be added to the report.
 
+The information has several severities:
+
+* ``high`` : An unfetched project. Fetch the project to solve the issue.
+* ``normal`` : An out-of-date project. The project is not pinned and a newer version is available.
+* ``low`` : An pinned but out-of-date project. The project is pinned to a specific version,
+            but a newer version is available.
+
+Usage
+-----
+
+A Sarif report can be added to a github action as such:
+
+.. code-block:: yaml
+
+    - run: dfetch check --sarif sarif.json
+    - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+            sarif_file: sarif.json
+
 """
 
 import json

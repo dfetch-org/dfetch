@@ -31,6 +31,10 @@ Jenkins reporter
 ````````````````
 .. automodule:: dfetch.reporting.check.jenkins_reporter
 
+Sarif reporter
+``````````````
+.. automodule:: dfetch.reporting.check.sarif_reporter
+
 Report
 ------
 .. argparse::
