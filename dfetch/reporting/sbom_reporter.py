@@ -15,11 +15,17 @@ import json
 import re
 from typing import List, cast
 
-from cyclonedx.model import ExternalReference, ExternalReferenceType
-from cyclonedx.model.bom import Bom, Tool
+from cyclonedx.model import (
+    ExternalReference,
+    ExternalReferenceType,
+    LicenseChoice,
+    Tool,
+)
+from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.output import OutputFormat, get_instance
 from cyclonedx.output.json import Json
+from packageurl import PackageURL
 
 import dfetch
 import dfetch.commands.command
@@ -41,7 +47,7 @@ class SbomReporter(Reporter):
     def __init__(self) -> None:
         """Start the report."""
         self._bom = Bom()
-        self._bom.get_metadata().add_tool(self.dfetch_tool)
+        self._bom.metadata.add_tool(self.dfetch_tool)
 
     def add_project(
         self, project: ProjectEntry, license_name: str, version: str
@@ -50,12 +56,16 @@ class SbomReporter(Reporter):
         match = self.github_url.search(project.remote_url)
         if match:
             component = Component(
-                name=match.group("repo"),
+                name=project.name,
                 version=version,
                 component_type=ComponentType.LIBRARY,
-                package_url_type="github",
-                namespace=match.group("group"),
-                subpath=project.source or None,
+                purl=PackageURL(
+                    type="github",
+                    name=match.group("repo"),
+                    version=version,
+                    namespace=match.group("group"),
+                    subpath=project.source or None,
+                ),
             )
         else:
             parts = self._split_url(project.remote_url)
@@ -63,10 +73,13 @@ class SbomReporter(Reporter):
                 name=project.name,
                 version=version,
                 component_type=ComponentType.LIBRARY,
-                package_url_type="generic",
-                qualifiers=f"download_url={project.remote_url}",
-                namespace=parts[0],
-                subpath=project.source or None,
+                purl=PackageURL(
+                    type="generic",
+                    version=version,
+                    qualifiers=f"download_url={project.remote_url}",
+                    namespace=parts[0],
+                    subpath=project.source or None,
+                ),
             )
             component.add_external_reference(
                 ExternalReference(
@@ -75,7 +88,7 @@ class SbomReporter(Reporter):
                 )
             )
 
-        component.set_license(license_name)
+        component.licenses += [LicenseChoice(license_expression=license_name)]
         self._bom.add_component(component)
 
     @staticmethod
@@ -94,13 +107,9 @@ class SbomReporter(Reporter):
         )
         outputter = cast(Json, get_instance(bom=self._bom, output_format=output_format))
 
-        # override the json outputter output_as_string to have pretty-printed json
-        setattr(
-            outputter,
-            "output_as_string",
-            lambda: json.dumps(
-                outputter._get_json(), indent=4  # pylint: disable=protected-access
-            ),
+        parsed = json.loads(outputter.output_as_string())
+        outputter._json_output = json.dumps(  # pylint: disable=protected-access
+            parsed, indent=4
         )
 
         outputter.output_to_file(outfile, allow_overwrite=True)
