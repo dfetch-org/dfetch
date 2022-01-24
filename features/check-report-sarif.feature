@@ -24,20 +24,78 @@ Feature: Let check report to sarif
         Then the 'sarif.json' file contains
             """
             {
-                "_class": "io.sarif.plugins.analysis.core.restapi.ReportApi",
-                "issues": [
+                "runs": [
                     {
-                        "fileName": "dfetch.yaml",
-                        "severity": "High",
-                        "message": "ext/test-repo-tag-v1 : ext/test-repo-tag-v1 was never fetched!",
-                        "description": "The manifest requires version 'v1' of ext/test-repo-tag-v1. it was never fetched, fetch it with 'dfetch update ext/test-repo-tag-v1. The latest version available is 'v2.0'",
-                        "lineStart": 9,
-                        "lineEnd": 9,
-                        "columnStart": 13,
-                        "columnEnd": 32
+                        "tool": {
+                            "driver": {
+                                "name": "DFetch",
+                                "informationUri": "https://dfetch.rtfd.io",
+                                "rules": [
+                                    {
+                                        "id": "unfetched-project",
+                                        "shortDescription": {
+                                            "text": "Project was never fetched"
+                                        }
+                                    },
+                                    {
+                                        "id": "up-to-date-project",
+                                        "shortDescription": {
+                                            "text": "Project is up-to-date"
+                                        }
+                                    },
+                                    {
+                                        "id": "pinned-but-out-of-date-project",
+                                        "shortDescription": {
+                                            "text": "Project is pinned, but out-of-date"
+                                        }
+                                    },
+                                    {
+                                        "id": "out-of-date-project",
+                                        "shortDescription": {
+                                            "text": "Project is out-of-date"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "artifacts": [
+                            {
+                                "location": {
+                                    "uri": "dfetch.yaml"
+                                },
+                                "sourceLanguage": "yaml"
+                            }
+                        ],
+                        "results": [
+                            {
+                                "message": {
+                                    "text": "ext/test-repo-tag-v1 : ext/test-repo-tag-v1 was never fetched!"
+                                },
+                                "level": null,
+                                "locations": [
+                                    {
+                                        "physicalLocation": {
+                                            "artifactLocation": {
+                                                "index": 0,
+                                                "uri": "dfetch.yaml"
+                                            },
+                                            "region": {
+                                                "endColumn": 32,
+                                                "endLine": 9,
+                                                "startColumn": 13,
+                                                "startLine": 9
+                                            }
+                                        }
+                                    }
+                                ],
+                                "ruleId": "unfetched-project"
+                            }
+                        ]
                     }
-                ]
+                ],
+                "version": "2.1.0"
             }
+
             """
 
     Scenario: Check is done after an update
@@ -66,32 +124,103 @@ Feature: Let check report to sarif
         Then the 'sarif.json' file contains
             """
             {
-                "_class": "io.sarif.plugins.analysis.core.restapi.ReportApi",
-                "issues": [
+                "runs": [
                     {
-                        "fileName": "dfetch.yaml",
-                        "severity": "Normal",
-                        "message": "ext/test-repo-rev-only : ext/test-repo-rev-only wanted version is 'e1fda19a57b873eb8e6ae37780594cbb77b70f1a', but 'master' is available.",
-                        "description": "The manifest requires version 'e1fda19a57b873eb8e6ae37780594cbb77b70f1a' of ext/test-repo-rev-only. Currently version 'master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a' is present. There is a newer version available 'master'. Please update using 'dfetch update ext/test-repo-rev-only.",
-                        "lineStart": 9,
-                        "lineEnd": 9,
-                        "columnStart": 13,
-                        "columnEnd": 34
-                    },
-                    {
-                        "fileName": "dfetch.yaml",
-                        "severity": "Low",
-                        "message": "ext/test-rev-and-branch : ext/test-rev-and-branch wanted & current version is 'main - 8df389d0524863b85f484f15a91c5f2c40aefda1', but 'main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a' is available.",
-                        "description": "The manifest requires version 'main - 8df389d0524863b85f484f15a91c5f2c40aefda1' of ext/test-rev-and-branch. This is also the current version. There is a newer version available 'main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a'You can update the version in the manifest and run 'dfetch update ext/test-rev-and-branch'",
-                        "lineStart": 13,
-                        "lineEnd": 13,
-                        "columnStart": 13,
-                        "columnEnd": 35
+                        "tool": {
+                            "driver": {
+                                "name": "DFetch",
+                                "informationUri": "https://dfetch.rtfd.io",
+                                "rules": [
+                                    {
+                                        "id": "unfetched-project",
+                                        "shortDescription": {
+                                            "text": "Project was never fetched"
+                                        }
+                                    },
+                                    {
+                                        "id": "up-to-date-project",
+                                        "shortDescription": {
+                                            "text": "Project is up-to-date"
+                                        }
+                                    },
+                                    {
+                                        "id": "pinned-but-out-of-date-project",
+                                        "shortDescription": {
+                                            "text": "Project is pinned, but out-of-date"
+                                        }
+                                    },
+                                    {
+                                        "id": "out-of-date-project",
+                                        "shortDescription": {
+                                            "text": "Project is out-of-date"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "artifacts": [
+                            {
+                                "location": {
+                                    "uri": "dfetch.yaml"
+                                },
+                                "sourceLanguage": "yaml"
+                            }
+                        ],
+                        "results": [
+                            {
+                                "message": {
+                                    "text": "ext/test-repo-rev-only : ext/test-repo-rev-only wanted version is '[commit hash]', but 'master' is available."
+                                },
+                                "level": null,
+                                "locations": [
+                                    {
+                                        "physicalLocation": {
+                                            "artifactLocation": {
+                                                "index": 0,
+                                                "uri": "dfetch.yaml"
+                                            },
+                                            "region": {
+                                                "endColumn": 34,
+                                                "endLine": 9,
+                                                "startColumn": 13,
+                                                "startLine": 9
+                                            }
+                                        }
+                                    }
+                                ],
+                                "ruleId": "out-of-date-project"
+                            },
+                            {
+                                "message": {
+                                    "text": "ext/test-rev-and-branch : ext/test-rev-and-branch wanted & current version is 'main - [commit hash]', but 'main - [commit hash]' is available."
+                                },
+                                "level": null,
+                                "locations": [
+                                    {
+                                        "physicalLocation": {
+                                            "artifactLocation": {
+                                                "index": 0,
+                                                "uri": "dfetch.yaml"
+                                            },
+                                            "region": {
+                                                "endColumn": 35,
+                                                "endLine": 13,
+                                                "startColumn": 13,
+                                                "startLine": 13
+                                            }
+                                        }
+                                    }
+                                ],
+                                "ruleId": "pinned-but-out-of-date-project"
+                            }
+                        ]
                     }
-                ]
+                ],
+                "version": "2.1.0"
             }
             """
 
+    @wip
     Scenario: Tag is updated in manifest
         Given the manifest 'dfetch.yaml'
             """
@@ -118,20 +247,77 @@ Feature: Let check report to sarif
             """
         And I run "dfetch check --sarif sarif.json"
         Then the 'sarif.json' file contains
-            """
+        """
             {
-                "_class": "io.sarif.plugins.analysis.core.restapi.ReportApi",
-                "issues": [
+                "runs": [
                     {
-                        "fileName": "dfetch.yaml",
-                        "severity": "Normal",
-                        "message": "ext/test-repo-tag : ext/test-repo-tag wanted version is 'v2.0', but 'v2.0' is available.",
-                        "description": "The manifest requires version 'v2.0' of ext/test-repo-tag. Currently version 'v1' is present. There is a newer version available 'v2.0'. Please update using 'dfetch update ext/test-repo-tag.",
-                        "lineStart": 5,
-                        "lineEnd": 5,
-                        "columnStart": 13,
-                        "columnEnd": 29
+                        "tool": {
+                            "driver": {
+                                "name": "DFetch",
+                                "informationUri": "https://dfetch.rtfd.io",
+                                "rules": [
+                                    {
+                                        "id": "unfetched-project",
+                                        "shortDescription": {
+                                            "text": "Project was never fetched"
+                                        }
+                                    },
+                                    {
+                                        "id": "up-to-date-project",
+                                        "shortDescription": {
+                                            "text": "Project is up-to-date"
+                                        }
+                                    },
+                                    {
+                                        "id": "pinned-but-out-of-date-project",
+                                        "shortDescription": {
+                                            "text": "Project is pinned, but out-of-date"
+                                        }
+                                    },
+                                    {
+                                        "id": "out-of-date-project",
+                                        "shortDescription": {
+                                            "text": "Project is out-of-date"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "artifacts": [
+                            {
+                                "location": {
+                                    "uri": "dfetch.yaml"
+                                },
+                                "sourceLanguage": "yaml"
+                            }
+                        ],
+                        "results": [
+                            {
+                                "message": {
+                                    "text": "ext/test-repo-tag : ext/test-repo-tag wanted version is 'v2.0', but 'v2.0' is available."
+                                },
+                                "level": null,
+                                "locations": [
+                                    {
+                                        "physicalLocation": {
+                                            "artifactLocation": {
+                                                "index": 0,
+                                                "uri": "dfetch.yaml"
+                                            },
+                                            "region": {
+                                                "endColumn": 29,
+                                                "endLine": 5,
+                                                "startColumn": 13,
+                                                "startLine": 5
+                                            }
+                                        }
+                                    }
+                                ],
+                                "ruleId": "out-of-date-project"
+                            }
+                        ]
                     }
-                ]
+                ],
+                "version": "2.1.0"
             }
             """
