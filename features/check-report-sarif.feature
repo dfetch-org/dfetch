@@ -71,7 +71,7 @@ Feature: Let check report to sarif
                                 "message": {
                                     "text": "ext/test-repo-tag-v1 : ext/test-repo-tag-v1 was never fetched!"
                                 },
-                                "level": null,
+                                "level": "High",
                                 "locations": [
                                     {
                                         "physicalLocation": {
@@ -171,7 +171,7 @@ Feature: Let check report to sarif
                                 "message": {
                                     "text": "ext/test-repo-rev-only : ext/test-repo-rev-only wanted version is '[commit hash]', but 'master' is available."
                                 },
-                                "level": null,
+                                "level": "Normal",
                                 "locations": [
                                     {
                                         "physicalLocation": {
@@ -194,7 +194,7 @@ Feature: Let check report to sarif
                                 "message": {
                                     "text": "ext/test-rev-and-branch : ext/test-rev-and-branch wanted & current version is 'main - [commit hash]', but 'main - [commit hash]' is available."
                                 },
-                                "level": null,
+                                "level": "Low",
                                 "locations": [
                                     {
                                         "physicalLocation": {
@@ -296,7 +296,7 @@ Feature: Let check report to sarif
                                 "message": {
                                     "text": "ext/test-repo-tag : ext/test-repo-tag wanted version is 'v2.0', but 'v2.0' is available."
                                 },
-                                "level": null,
+                                "level": "Normal",
                                 "locations": [
                                     {
                                         "physicalLocation": {
