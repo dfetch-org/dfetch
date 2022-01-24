@@ -109,7 +109,7 @@ class SarifReporter(CheckReporter):
             project (ProjectEntry): Project with the issue
             issue (Issue): The issue to add
         """
-        line, col_start, col_end = self._find_name_in_manifest(project.name)
+        line, col_start, col_end = self.find_name_in_manifest(project.name)
 
         result = Result(
             message=Message(text=f"{project.name} : {issue.message}"),
@@ -133,23 +133,6 @@ class SarifReporter(CheckReporter):
         )
 
         self._run.results += [result]
-
-    def _find_name_in_manifest(self, name: str) -> Tuple[int, int, int]:
-        """Find the location of a project name in the manifest."""
-        with open(self._manifest_path, "r", encoding="utf-8") as manifest:
-            for line_nr, line in enumerate(manifest, start=1):
-                match = re.search(rf"^\s+-\s*name:\s*(?P<name>{name})\s", line)
-
-                if match:
-                    return (
-                        line_nr,
-                        int(match.start("name")) + 1,
-                        int(match.end("name")),
-                    )
-        raise RuntimeError(
-            "An entry from the manifest was provided,"
-            " that doesn't exist in the manifest!"
-        )
 
     def dump_to_file(self) -> None:
         """Dump report."""
