@@ -136,7 +136,8 @@ class CheckReporter(ABC):
         issue = Issue(
             severity=IssueSeverity.NORMAL,
             rule_id="out-of-date-project",
-            message=f"{project.name} current version is '{current}', the wanted version is '{str(wanted_version) or 'latest'}',"
+            message=f"{project.name} current version is '{current}',"
+            f" the wanted version is '{str(wanted_version) or 'latest'}',"
             f" but '{latest}' is available.",
             description=(
                 f"The manifest requires version '{str(wanted_version) or 'latest'}' of {project.name}. "
