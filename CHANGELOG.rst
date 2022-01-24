@@ -7,6 +7,7 @@ Release 0.X.0 (unreleased)
 * Don't allow path traversal for dst path
 * Check for casing issues in ``dst:`` path during update (#256)
 * Check for overlapping destinations of projects (#173)
+* Handle invalid metadata file (#280)
 
 Release 0.5.1 (released 2021-12-09)
 ===================================
