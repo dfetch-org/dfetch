@@ -73,7 +73,7 @@ class Check(dfetch.commands.command.Command):
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
         manifest, path = dfetch.manifest.manifest.get_manifest()
-        reporters: List[CheckReporter] = [CheckStdoutReporter()]
+        reporters: List[CheckReporter] = [CheckStdoutReporter(path)]
         if args.jenkins_json:
             reporters += [JenkinsReporter(path, args.jenkins_json)]
         if args.sarif:

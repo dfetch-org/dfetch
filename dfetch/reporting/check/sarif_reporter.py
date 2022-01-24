@@ -6,8 +6,9 @@ If all project are up-to-date, nothing will be added to the report.
 """
 
 import json
+import os
 import re
-from typing import Any, Tuple, Dict
+from typing import Any, Dict, Tuple
 
 import attr
 from sarif_om import (
@@ -15,21 +16,20 @@ from sarif_om import (
     ArtifactLocation,
     Location,
     Message,
+    MultiformatMessageString,
     PhysicalLocation,
     Region,
+    ReportingDescriptor,
     Result,
     Run,
-    ReportingDescriptor,
     SarifLog,
     Tool,
     ToolComponent,
-    MultiformatMessageString,
 )
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
-from dfetch.manifest.version import Version
-from dfetch.reporting.check.reporter import CheckReporter
+from dfetch.reporting.check.reporter import CheckReporter, Issue
 
 logger = get_logger(__name__)
 
@@ -52,9 +52,8 @@ class SarifReporter(CheckReporter):
             manifest_path (str): Path to the manifest.
             report_path (str): Output path of the report.
         """
-        super().__init__()
+        super().__init__(manifest_path)
 
-        self._manifest_path = manifest_path
         self._report_path = report_path
 
         self._run = Run(
@@ -64,144 +63,43 @@ class SarifReporter(CheckReporter):
                     information_uri="https://dfetch.rtfd.io",
                     rules=[
                         ReportingDescriptor(
-                            id="unfetched-project",
+                            id=rule.name,
                             short_description=MultiformatMessageString(
-                                text="Project was never fetched"
+                                text=rule.description
                             ),
-                        ),
-                        ReportingDescriptor(
-                            id="up-to-date-project",
-                            short_description=MultiformatMessageString(
-                                text="Project is up-to-date"
-                            ),
-                        ),
-                        ReportingDescriptor(
-                            id="pinned-but-out-of-date-project",
-                            short_description=MultiformatMessageString(
-                                text="Project is out-of-date"
-                            ),
-                        ),
-                        ReportingDescriptor(
-                            id="out-of-date-project",
-                            short_description=MultiformatMessageString(
-                                text="Project is out-of-date"
-                            ),
-                        ),
+                        )
+                        for rule in self.rules
                     ],
                 )
             )
         )
         self._run.artifacts = [
             Artifact(
-                location=ArtifactLocation(uri=self._manifest_path),
+                location=ArtifactLocation(uri=os.path.relpath(self._manifest_path)),
                 source_language="yaml",
             )
         ]
         self._run.results = []
         self._run.newline_sequences = None
 
-    def unfetched_project(
-        self, project: ProjectEntry, wanted_version: Version, latest: Version
-    ) -> None:
-        """Report an unfetched project.
-
-        Args:
-            project (ProjectEntry): The unfetched project.
-            wanted_version (Version): The wanted version.
-            latest (Version): The latest available version.
-        """
-        msg = f"{project.name} was never fetched!"
-        description = (
-            f"The manifest requires version '{str(wanted_version) or 'latest'}' of {project.name}. "
-            f"it was never fetched, fetch it with 'dfetch update {project.name}. "
-            f"The latest version available is '{latest}'"
-        )
-        self._add_issue(project, "High", "unfetched-project", msg, description)
-
-    def up_to_date_project(self, project: ProjectEntry, latest: Version) -> None:
-        """Report an up-to-date project.
-
-        Args:
-            project (ProjectEntry): The up-to-date project
-            latest (Version): The last version.
-        """
-        del project
-        del latest
-
-    def pinned_but_out_of_date_project(
-        self, project: ProjectEntry, wanted_version: Version, latest: Version
-    ) -> None:
-        """Report an pinned but out-of-date project.
-
-        Args:
-            project (ProjectEntry): Project that is pinned but out-of-date
-            wanted_version (Version): Version that is wanted by manifest
-            latest (Version): Available version
-        """
-        msg = (
-            f"{project.name} wanted & current version is '{str(wanted_version) or 'latest'}',"
-            f" but '{latest}' is available."
-        )
-        description = (
-            f"The manifest requires version '{str(wanted_version) or 'latest'}' of {project.name}. "
-            f"This is also the current version. There is a newer version available '{latest}'"
-            f"You can update the version in the manifest and run 'dfetch update {project.name}'"
-        )
-        self._add_issue(
-            project, "Low", "pinned-but-out-of-date-project", msg, description
-        )
-
-    def out_of_date_project(
-        self,
-        project: ProjectEntry,
-        wanted_version: Version,
-        current: Version,
-        latest: Version,
-    ) -> None:
-        """Report an out-of-date project.
-
-        Args:
-            project (ProjectEntry): Project that is out-of-date
-            wanted_version (Version): Version that is wanted by manifest
-            current (Version): Current version on disk
-            latest (Version): Available version
-        """
-        msg = f"{project.name} wanted version is '{str(wanted_version) or 'latest'}', but '{latest}' is available."
-        description = (
-            f"The manifest requires version '{str(wanted_version) or 'latest'}' of {project.name}. "
-            f"Currently version '{current}' is present. "
-            f"There is a newer version available '{latest}'. "
-            f"Please update using 'dfetch update {project.name}."
-        )
-        self._add_issue(project, "Normal", "out-of-date-project", msg, description)
-
-    def _add_issue(
-        self,
-        project: ProjectEntry,
-        severity: str,
-        rule_id: str,
-        message: str,
-        description: str,
-    ) -> None:
+    def add_issue(self, project: ProjectEntry, issue: Issue) -> None:
         """Add an issue to the report.
 
         Args:
             project (ProjectEntry): Project with the issue
-            severity (str): Level of the issue
-            message (str): Message
-            description (str): Extended description
+            issue (Issue): The issue to add
         """
         line, col_start, col_end = self._find_name_in_manifest(project.name)
 
         result = Result(
-            message=Message(text=f"{project.name} : {message}"),
-            level=severity,
-            rule_id=rule_id,
+            message=Message(text=f"{project.name} : {issue.message}"),
+            level=issue.severity,
+            rule_id=issue.rule_id,
             locations=[
                 Location(
                     physical_location=PhysicalLocation(
                         artifact_location=ArtifactLocation(
-                            uri=self._manifest_path, index=0
+                            uri=os.path.relpath(self._manifest_path), index=0
                         ),
                         region=Region(
                             start_line=line,
@@ -243,7 +141,7 @@ class SarifSerializer:
     """Class for converting a SarifLog to a json."""
 
     def __init__(self, sarif: SarifLog) -> None:
-        """Create a serialized Sarif log
+        """Create a serialized Sarif log.
 
         Args:
             sarif (SarifLog): Log to serialize
@@ -290,7 +188,9 @@ class SarifSerializer:
             self._sarif_dict[field.name] = field.metadata["schema_property_name"]
         return value
 
-    def _filter_unused(self, field: attr.Attribute, value: Any) -> bool:
+    def _filter_unused(  # pylint: disable=no-self-use
+        self, field: attr.Attribute, value: Any
+    ) -> bool:
         """Filter out the unused."""
         return not (
             value is None
