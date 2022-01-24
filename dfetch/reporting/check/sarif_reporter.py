@@ -93,7 +93,7 @@ class SarifReporter(CheckReporter):
 
         result = Result(
             message=Message(text=f"{project.name} : {issue.message}"),
-            level=issue.severity,
+            level=issue.severity.value,
             rule_id=issue.rule_id,
             locations=[
                 Location(
