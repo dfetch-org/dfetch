@@ -11,7 +11,7 @@ recordIssues tool: issues(pattern: 'jenkins.json', name: 'DFetch')
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
-from dfetch.reporting.check.reporter import CheckReporter
+from dfetch.reporting.check.reporter import CheckReporter, Issue
 
 logger = get_logger(__name__)
 
@@ -77,6 +77,16 @@ class CheckStdoutReporter(CheckReporter):
             f"wanted ({str(wanted_version) or 'latest'}), "
             f"current ({current}), available ({latest})",
         )
+
+    def add_issue(self, project: ProjectEntry, issue: Issue) -> None:
+        """Add an issue to the report.
+
+        Args:
+            project (ProjectEntry): Project with the issue
+            issue (Issue): The issue to add
+        """
+        del project
+        del issue
 
     def dump_to_file(self) -> None:
         """Dump report."""
