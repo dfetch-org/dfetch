@@ -220,7 +220,6 @@ Feature: Let check report to sarif
             }
             """
 
-    @wip
     Scenario: Tag is updated in manifest
         Given the manifest 'dfetch.yaml'
             """
@@ -294,7 +293,7 @@ Feature: Let check report to sarif
                         "results": [
                             {
                                 "message": {
-                                    "text": "ext/test-repo-tag : ext/test-repo-tag wanted version is 'v2.0', but 'v2.0' is available."
+                                    "text": "ext/test-repo-tag : ext/test-repo-tag current version is 'v1', the wanted version is 'v2.0', but 'v2.0' is available."
                                 },
                                 "level": "Normal",
                                 "locations": [

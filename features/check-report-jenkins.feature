@@ -125,7 +125,7 @@ Feature: Let check report to jenkins
                     {
                         "fileName": "dfetch.yaml",
                         "severity": "Normal",
-                        "message": "ext/test-repo-tag : ext/test-repo-tag wanted version is 'v2.0', but 'v2.0' is available.",
+                        "message": "ext/test-repo-tag : ext/test-repo-tag current version is 'v1', the wanted version is 'v2.0', but 'v2.0' is available.",
                         "description": "The manifest requires version 'v2.0' of ext/test-repo-tag. Currently version 'v1' is present. There is a newer version available 'v2.0'. Please update using 'dfetch update ext/test-repo-tag.",
                         "lineStart": 5,
                         "lineEnd": 5,
