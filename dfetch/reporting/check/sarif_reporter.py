@@ -27,8 +27,7 @@ A Sarif report can be added to a github action as such:
 
 import json
 import os
-import re
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 
 import attr
 from sarif_om import (
