@@ -1,5 +1,6 @@
 """Abstract reporting interface."""
 
+import io
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -58,6 +59,8 @@ class CheckReporter(ABC):
             manifest_path (str): The path to the manifest.
         """
         self._manifest_path = manifest_path
+        with open(self._manifest_path, "r", encoding="utf-8") as manifest:
+            self._manifest_buffer = io.StringIO(manifest.read())
 
     def unfetched_project(
         self, project: ProjectEntry, wanted_version: Version, latest: Version
@@ -159,16 +162,16 @@ class CheckReporter(ABC):
 
     def find_name_in_manifest(self, name: str) -> Tuple[int, int, int]:
         """Find the location of a project name in the manifest."""
-        with open(self._manifest_path, "r", encoding="utf-8") as manifest:
-            for line_nr, line in enumerate(manifest, start=1):
-                match = re.search(rf"^\s+-\s*name:\s*(?P<name>{name})\s", line)
+        self._manifest_buffer.seek(0)
+        for line_nr, line in enumerate(self._manifest_buffer, start=1):
+            match = re.search(rf"^\s+-\s*name:\s*(?P<name>{name})\s", line)
 
-                if match:
-                    return (
-                        line_nr,
-                        int(match.start("name")) + 1,
-                        int(match.end("name")),
-                    )
+            if match:
+                return (
+                    line_nr,
+                    int(match.start("name")) + 1,
+                    int(match.end("name")),
+                )
         raise RuntimeError(
             "An entry from the manifest was provided,"
             " that doesn't exist in the manifest!"
