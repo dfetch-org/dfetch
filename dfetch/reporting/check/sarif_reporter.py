@@ -184,21 +184,21 @@ class SarifSerializer:
             return [self._walk_sarif(item) for item in sarif_node]
         return None
 
-    def _serialize_value(self, _: Any, field: attr.Attribute, value: Any) -> Any:
+    def _serialize_value(self, _: Any, field: Any, value: Any) -> Any:
         """Convert the field name into the schema name."""
         if field is not None:
             self._sarif_dict[field.name] = field.metadata["schema_property_name"]
         return value
 
     def _filter_unused(  # pylint: disable=no-self-use
-        self, field: attr.Attribute, value: Any
+        self, field: Any, value: Any
     ) -> bool:
         """Filter out the unused."""
         return not (
             value is None
             or (field.default == value and field.name != "level")
             or (
-                isinstance(field.default, attr.Factory)
+                isinstance(field.default, attr.Factory)  # type:ignore
                 and field.default.factory() == value
             )
         )
