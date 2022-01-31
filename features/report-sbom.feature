@@ -8,6 +8,7 @@ Feature: Create an CycloneDX sbom
     The generated SBOM can be used as input for other tools to monitor dependencies.
     The tools track vulnerabilities or can enforce a license policy within an organization.
 
+    @wip
     Scenario: An fetched project generates an sbom
         Given the manifest 'dfetch.yaml'
             """
@@ -26,33 +27,18 @@ Feature: Create an CycloneDX sbom
         Then the 'report.json' file contains
             """
             {
+                "$schema": "http://cyclonedx.org/schema/bom-1.3.schema.json",
                 "bomFormat": "CycloneDX",
                 "specVersion": "1.3",
                 "serialNumber": "urn:uuid:d9287af7-31b2-4a66-b528-21834077ddad",
                 "version": 1,
-                "components": [
-                    {
-                        "type": "library",
-                        "name": "cpputest",
-                        "version": "v3.4",
-                        "purl": "pkg:github/cpputest/cpputest@v3.4#include/CppUTest",
-                        "group": "cpputest",
-                        "licenses": [
-                            {
-                                "license": {
-                                    "name": "BSD 3-Clause \"New\" or \"Revised\" License"
-                                }
-                            }
-                        ]
-                    }
-                ],
                 "metadata": {
                     "timestamp": "2021-12-08T21:34:38.500715+00:00",
                     "tools": [
                         {
                             "vendor": "CycloneDX",
                             "name": "cyclonedx-python-lib",
-                            "version": "0.12.3"
+                            "version": "1.3.0"
                         },
                         {
                             "vendor": "dfetch-org",
@@ -60,6 +46,20 @@ Feature: Create an CycloneDX sbom
                             "version": "0.5.1"
                         }
                     ]
-                }
+                },
+                "components": [
+                    {
+                        "type": "library",
+                        "bom-ref": "ae1ed6d3-0c3a-4b7a-aecc-9fc6666a11a8",
+                        "name": "cpputest",
+                        "version": "v3.4",
+                        "licenses": [
+                                {
+                                    "expression": "BSD 3-Clause \"New\" or \"Revised\" License"
+                                }
+                        ],
+                        "purl": "pkg:github/cpputest/cpputest@v3.4#include/CppUTest"
+                    }
+                ]
             }
             """
