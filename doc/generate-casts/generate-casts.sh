@@ -5,6 +5,7 @@ asciinema rec --overwrite -c "./init-demo.sh" ../asciicasts/init.cast
 asciinema rec --overwrite -c "./environment-demo.sh" ../asciicasts/environment.cast
 asciinema rec --overwrite -c "./validate-demo.sh" ../asciicasts/validate.cast
 asciinema rec --overwrite -c "./check-demo.sh" ../asciicasts/check.cast
+asciinema rec --overwrite -c "./check-ci-demo.sh" ../asciicasts/check-ci.cast
 asciinema rec --overwrite -c "./update-demo.sh" ../asciicasts/update.cast
 
 # Depends on artifacts from update

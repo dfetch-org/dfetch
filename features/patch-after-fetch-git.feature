@@ -67,7 +67,7 @@ Feature: Patch after fetching from git repo
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.5.1)
+            Dfetch (0.6.0)
               ext/test-repo-tag   : Fetched v2.0
             source/target file does not exist:
               --- b'README1.md'

@@ -28,7 +28,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.5.1)
+            Dfetch (0.6.0)
               ext/test-repo-rev-only: wanted (2), available (trunk - 4)
               ext/test-rev-and-branch: wanted (trunk - 1), available (trunk - 4)
             """
@@ -53,7 +53,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.5.1)
+            Dfetch (0.6.0)
               ext/test-repo-tag-v1: wanted (v1), available (v2.0)
             """
 
@@ -89,7 +89,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.5.1)
+            Dfetch (0.6.0)
               ext/test-repo-rev-only: wanted (2), current (trunk - 2), available (trunk - 4)
               ext/test-rev-and-branch: wanted & current (trunk - 1), available (trunk - 4)
               ext/test-non-standard-svn: wanted (latest), current (1), available (1)
@@ -110,6 +110,6 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.5.1)
+            Dfetch (0.6.0)
               SomeProject         : wanted (latest), current (1), available (1)
             """

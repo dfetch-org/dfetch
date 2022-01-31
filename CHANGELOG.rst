@@ -1,4 +1,4 @@
-Release 0.X.0 (unreleased)
+Release 0.6.0 (released 2022-01-31)
 ===================================
 
 * Pin dependencies
