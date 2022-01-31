@@ -12,7 +12,7 @@ from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.manifest.manifest import Manifest, find_manifest, get_childmanifests
 from dfetch.manifest.project import ProjectEntry
 
-BASIC_MANIFEST = u"""
+BASIC_MANIFEST = """
 manifest:
    version: 0
 
@@ -24,7 +24,7 @@ manifest:
    - name: my-project
 """
 
-MANIFEST_NO_PROJECTS = u"""
+MANIFEST_NO_PROJECTS = """
 manifest:
    version: 0
 
@@ -34,7 +34,7 @@ manifest:
 """
 
 
-MANIFEST_NO_REMOTES = u"""
+MANIFEST_NO_REMOTES = """
 manifest:
    version: 0
 

@@ -190,7 +190,7 @@ def test_check(name, project, cmd_result, expectation):
         assert SvnRepo(project).check() == expectation
 
 
-SVN_INFO = u"""
+SVN_INFO = """
 Path: cpputest
 URL: https://github.com/cpputest/cpputest
 Relative URL: ^/
