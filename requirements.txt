@@ -1,5 +1,5 @@
 # Quality dependencies
-black==21.12b0
+black==22.1.0
 doc8==0.10.1
 pydocstyle==6.1.1
 radon==5.1.0
