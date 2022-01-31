@@ -10,7 +10,9 @@ import pytest
 from dfetch.commands.check import Check
 from tests.manifest_mock import mock_manifest
 
-DEFAULT_ARGS = argparse.Namespace(no_recommendations=False, jenkins_json=None)
+DEFAULT_ARGS = argparse.Namespace(
+    no_recommendations=False, jenkins_json=None, sarif=None
+)
 DEFAULT_ARGS.projects = []
 
 
@@ -33,14 +35,15 @@ def test_check(name, projects):
             with patch("dfetch.project.make") as mocked_make:
                 with patch("os.path.exists"):
                     with patch("dfetch.commands.check.in_directory"):
+                        with patch("dfetch.commands.check.CheckStdoutReporter"):
 
-                        mocked_get_manifest.return_value = (
-                            mock_manifest(projects),
-                            "/",
-                        )
-                        mocked_get_childmanifests.return_value = []
+                            mocked_get_manifest.return_value = (
+                                mock_manifest(projects),
+                                "/",
+                            )
+                            mocked_get_childmanifests.return_value = []
 
-                        check(DEFAULT_ARGS)
+                            check(DEFAULT_ARGS)
 
-                        for _ in projects:
-                            mocked_make.return_value.check_for_update.assert_called()
+                            for _ in projects:
+                                mocked_make.return_value.check_for_update.assert_called()
