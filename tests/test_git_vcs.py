@@ -61,7 +61,7 @@ def test_check(name, project, cmd_result, expectation):
             assert GitLocalRepo(project).is_git() == expectation
 
 
-TRIMMED_LSREMOTE_CPPUTEST = u"""
+TRIMMED_LSREMOTE_CPPUTEST = """
 32ee13a803de50d057653588a9bdb61e2db5a6eb	refs/heads/gh-pages
 33d11e10699bae03ba2a58a280e92494f4fa0d82	refs/heads/master
 f4c3a8517eae810a1057f954029d2aff9a901cae	refs/heads/separate_gtest
