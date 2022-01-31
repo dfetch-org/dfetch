@@ -23,6 +23,10 @@ A Sarif report can be added to a github action as such:
         with:
             sarif_file: sarif.json
 
+For more information see the `Github Sarif documentation`_.
+
+.. _`Github Sarif documentation` : https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning
+
 """
 
 import json
