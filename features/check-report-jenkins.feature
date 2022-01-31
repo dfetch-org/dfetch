@@ -71,7 +71,7 @@ Feature: Let check report to jenkins
                     {
                         "fileName": "dfetch.yaml",
                         "severity": "Normal",
-                        "message": "ext/test-repo-rev-only : ext/test-repo-rev-only wanted version is 'e1fda19a57b873eb8e6ae37780594cbb77b70f1a', but 'master' is available.",
+                        "message": "ext/test-repo-rev-only : ext/test-repo-rev-only current version is 'master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a', the wanted version is 'e1fda19a57b873eb8e6ae37780594cbb77b70f1a', but 'master' is available.",
                         "description": "The manifest requires version 'e1fda19a57b873eb8e6ae37780594cbb77b70f1a' of ext/test-repo-rev-only. Currently version 'master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a' is present. There is a newer version available 'master'. Please update using 'dfetch update ext/test-repo-rev-only.",
                         "lineStart": 9,
                         "lineEnd": 9,

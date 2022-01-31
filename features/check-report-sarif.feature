@@ -98,6 +98,7 @@ Feature: Let check report to sarif
 
             """
 
+    @wip
     Scenario: Check is done after an update
         Given the manifest 'dfetch.yaml'
             """
@@ -169,7 +170,7 @@ Feature: Let check report to sarif
                         "results": [
                             {
                                 "message": {
-                                    "text": "ext/test-repo-rev-only : ext/test-repo-rev-only wanted version is '[commit hash]', but 'master' is available."
+                                    "text": "ext/test-repo-rev-only : ext/test-repo-rev-only current version is 'master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a', the wanted version is 'e1fda19a57b873eb8e6ae37780594cbb77b70f1a', but 'master' is available."
                                 },
                                 "level": "Normal",
                                 "locations": [
