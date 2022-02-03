@@ -16,7 +16,7 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/asciinema-player/2.6.1/asciinema-player.css" />
 
 
-  <title>Hello, world!</title>
+  <title>DFetch - Dependency fetcher</title>
 </head>
 
 <body>
@@ -49,14 +49,14 @@
             dependencies.
           </h1>
           <p class="col-md-8 fs-4 text-muted"><em>DFetch</em> makes it easy to reuse source code, without requiring
-            any build system, package manager or version control system. Copy-paste on steroids.</p>
+            any build system, package manager or version control system. Copy-paste on steroids!</p>
           <a class="btn btn-primary btn-lg" href="https://github.com/dfetch-org/dfetch/releases/latest" role="button">
             <i class="fa fa-github fa-1x icon-feature"></i>
             Install
           </a>
         </div>
         <div class="col-md mb-5">
-          <img class="img-fluid" src="images/example-manifest.png"></img>
+          <img class="img-fluid shadow-xl" style="margin:20px" src="images/example-manifest.svg"></img>
         </div>
 
       </div>
@@ -80,9 +80,8 @@
             <i class="fa  fa-check-square-o fa-1x icon-feature text-gradient d-block mb-3"></i>
             Check for new versions.
           </h1>
-          <p class="col-md-8 fs-4"><em>DFetch</em> makes it easy to reuse source code, without requiring
-            any build system, package manager or version control system. Copy-paste on steroids.</p>
-
+          <p class="col-md-8 fs-4">Check for the latest version of your dependencies and <em>DFetch</em> will even
+            interpret the available tags.
         </div>
 
       </div>
@@ -130,8 +129,33 @@
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/asciinema-player/2.6.1/asciinema-player.min.js"></script>
 
+  <div class="p-5 mb-4 rounded-3 bg-secondary text-light">
+    <div class="container-fluid py-5">
+
+      <div class="row gx-1">
+
+        <div class="col-md mb-5">
+
+          <h1 class="display-5 fw-bold">
+            <i class="fa  fa-wrench fa-1x icon-feature text-gradient d-block mb-3"></i>
+            Change locally & upstream changes.
+          </h1>
+          <p class="col-md-8 fs-4">Customize the fetched dependency by applying patches, or generate a patch for upstreaming your fix and help others!
+        </div>
+
+        <div class="col-md mb-5">
+
+          <asciinema-player src="asciicasts/diff.cast" speed="2" theme="solarized-dark" loop="loop" autoplay="true">
+          </asciinema-player>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/asciinema-player/2.6.1/asciinema-player.min.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
