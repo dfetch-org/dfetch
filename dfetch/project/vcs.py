@@ -157,7 +157,14 @@ class VCS(ABC):
                 reporter.unfetched_project(
                     self.__project, self.wanted_version, latest_version
                 )
-        elif latest_version == on_disk_version:
+            return
+
+        if self._are_there_local_changes():
+            print(f">>{on_disk_version}<<")
+            for reporter in reporters:
+                reporter.local_changes(self.__project)
+
+        if latest_version == on_disk_version:
             for reporter in reporters:
                 reporter.up_to_date_project(self.__project, latest_version)
         elif on_disk_version == self.wanted_version:

@@ -50,6 +50,9 @@ class CheckReporter(ABC):
             description="Project is pinned, but out-of-date",
         ),
         Rule(name="out-of-date-project", description="Project is out-of-date"),
+        Rule(
+            name="local-changes-in-project", description="Project was locally changed"
+        ),
     ]
 
     def __init__(self, manifest_path: str) -> None:
@@ -147,6 +150,26 @@ class CheckReporter(ABC):
                 f"Currently version '{current}' is present. "
                 f"There is a newer version available '{latest}'. "
                 f"Please update using 'dfetch update {project.name}."
+            ),
+        )
+        self.add_issue(project, issue)
+
+    def local_changes(  # pylint: disable=no-self-use
+        self, project: ProjectEntry
+    ) -> None:
+        """Report an project with local changes.
+
+        Args:
+            project (ProjectEntry): The project with local changes.
+        """
+        issue = Issue(
+            severity=IssueSeverity.NORMAL,
+            rule_id="local-changes-in-project",
+            message=f"{project.name} has local changes, please create a patch file or upstream the changes.",
+            description=(
+                f"{project.name} has local changes, please create a patch file"
+                f" using 'dfetch diff {project.name}. This patch file can either be"
+                " used to directly from the manifest using the patch attribute, or upstreamed."
             ),
         )
         self.add_issue(project, issue)
