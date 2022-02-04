@@ -78,6 +78,22 @@ class CheckStdoutReporter(CheckReporter):
             f"current ({current}), available ({latest})",
         )
 
+    def local_changes(  # pylint: disable=no-self-use
+        self, project: ProjectEntry
+    ) -> None:
+        """Report an project with local changes.
+
+        Args:
+            project (ProjectEntry): The project with local changes.
+        """
+        logger.print_warning_line(
+            project.name,
+            "Local changes were detected, "
+            f"please generate a patch using 'dfetch diff {project.name}' and add it "
+            "to your manifest using 'patch:'. Alternatively overwrite the local changes "
+            f"with 'dfetch update --force {project.name}'",
+        )
+
     def add_issue(self, project: ProjectEntry, issue: Issue) -> None:
         """Add an issue to the report.
 
