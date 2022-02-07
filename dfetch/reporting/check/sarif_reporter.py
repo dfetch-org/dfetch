@@ -31,6 +31,7 @@ For more information see the `Github Sarif documentation`_.
 
 import json
 import os
+from enum import Enum
 from typing import Any, Dict
 
 import attr
@@ -52,9 +53,17 @@ from sarif_om import (
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
-from dfetch.reporting.check.reporter import CheckReporter, Issue
+from dfetch.reporting.check.reporter import CheckReporter, Issue, IssueSeverity
 
 logger = get_logger(__name__)
+
+
+class SarifResultLevel(Enum):
+    """Sarif result level."""
+
+    ERROR = "error"
+    WARNING = "warning"
+    NOTE = "note"
 
 
 class SarifReporter(CheckReporter):
@@ -105,6 +114,15 @@ class SarifReporter(CheckReporter):
         self._run.results = []
         self._run.newline_sequences = None
 
+    @staticmethod
+    def _severity_to_level(severity: IssueSeverity) -> SarifResultLevel:
+        """Convert a generic issue severity to specific Sarif level."""
+        return {
+            "HIGH": SarifResultLevel.ERROR,
+            "NORMAL": SarifResultLevel.WARNING,
+            "LOW": SarifResultLevel.NOTE,
+        }[severity.name]
+
     def add_issue(self, project: ProjectEntry, issue: Issue) -> None:
         """Add an issue to the report.
 
@@ -116,7 +134,7 @@ class SarifReporter(CheckReporter):
 
         result = Result(
             message=Message(text=f"{project.name} : {issue.message}"),
-            level=issue.severity.value,
+            level=self._severity_to_level(issue.severity).value,
             rule_id=issue.rule_id,
             locations=[
                 Location(
