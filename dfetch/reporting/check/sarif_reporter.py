@@ -3,12 +3,28 @@
 Dependending on the state of the projects it will create a report with information.
 If all project are up-to-date, nothing will be added to the report.
 
+DFetch can be listed as part of your github actions during pull requests.
+
+.. image:: images/github-actions-result.png
+    :alt: Github action has run during a pull request.
+
+The found results can be inspected in the run. Below an example of a locally
+changed project.
+
+.. image:: images/local-change-github.png
+    :alt: A project was locally changed.
+
+When clicking on 'details' it is possible to see the project in the manifest.
+
+.. image:: images/local-change-github-details.png
+    :alt: A project was locally changed.
+
 The information has several severities:
 
-* ``high`` : An unfetched project. Fetch the project to solve the issue.
-* ``normal`` : An out-of-date project. The project is not pinned and a newer version is available.
-* ``low`` : An pinned but out-of-date project. The project is pinned to a specific version,
-            but a newer version is available.
+* ``Error`` : An unfetched project. Fetch the project to solve the issue.
+* ``Warning`` : An out-of-date project. The project is not pinned and a newer version is available.
+* ``Note`` : An pinned but out-of-date project. The project is pinned to a specific version,
+             but a newer version is available.
 
 Usage
 -----

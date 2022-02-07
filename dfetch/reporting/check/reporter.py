@@ -17,6 +17,10 @@ All reports can contain the following results:
     Project was locally changed. Create a patch file using :ref:`dfetch diff <diff>` and add it to your manifest
     using the :ref:`patch <patch>` attribute.
 
+
+.. note:: When a ``dfetch check`` is performed on a different platform than the original
+          ``dfetch update`` the line-endings might result in a false positive of ``local-changes-in-project``.
+
 """
 
 import io
