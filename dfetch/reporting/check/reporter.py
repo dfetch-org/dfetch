@@ -1,4 +1,23 @@
-"""Abstract reporting interface."""
+"""Report issues found during check.
+
+*DFetch* can report its results of checking in a form that is usable for several other tools.
+See the respective sections for details about using and configuring those reporters.
+
+All reports can contain the following results:
+
+* ``unfetched-project``
+    Project was never fetched. Fetch it using :ref:`dfetch update <update>`.
+* ``up-to-date-project``
+    Project is up-to-date.
+* ``pinned-but-out-of-date-project``
+    Project is pinned, but out-of-date. Either ignore this message, or update the version in the manifest.
+* ``out-of-date-project``
+    Project is out-of-date. Update the project using :ref:`dfetch update <update>`.
+* ``local-changes-in-project``
+    Project was locally changed. Create a patch file using :ref:`dfetch diff <diff>` and add it to your manifest
+    using the :ref:`patch <patch>` attribute.
+
+"""
 
 import io
 import re

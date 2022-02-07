@@ -27,14 +27,18 @@ Check
 
 .. automodule:: dfetch.commands.check
 
+Reporting
+`````````
+.. automodule:: dfetch.reporting.check.reporter
+
 Jenkins reporter
-````````````````
+''''''''''''''''
 .. automodule:: dfetch.reporting.check.jenkins_reporter
 
 .. asciinema:: asciicasts/check-ci.cast
 
 Sarif reporter
-``````````````
+''''''''''''''
 .. automodule:: dfetch.reporting.check.sarif_reporter
 
 Report
