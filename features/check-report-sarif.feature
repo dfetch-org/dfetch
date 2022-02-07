@@ -54,6 +54,12 @@ Feature: Let check report to sarif
                                         "shortDescription": {
                                             "text": "Project is out-of-date"
                                         }
+                                    },
+                                    {
+                                        "id": "local-changes-in-project",
+                                        "shortDescription": {
+                                            "text": "Project was locally changed"
+                                        }
                                     }
                                 ]
                             }
@@ -153,6 +159,12 @@ Feature: Let check report to sarif
                                         "id": "out-of-date-project",
                                         "shortDescription": {
                                             "text": "Project is out-of-date"
+                                        }
+                                    },
+                                    {
+                                        "id": "local-changes-in-project",
+                                        "shortDescription": {
+                                            "text": "Project was locally changed"
                                         }
                                     }
                                 ]
@@ -278,6 +290,12 @@ Feature: Let check report to sarif
                                         "shortDescription": {
                                             "text": "Project is out-of-date"
                                         }
+                                    },
+                                    {
+                                        "id": "local-changes-in-project",
+                                        "shortDescription": {
+                                            "text": "Project was locally changed"
+                                        }
                                     }
                                 ]
                             }
@@ -313,6 +331,103 @@ Feature: Let check report to sarif
                                     }
                                 ],
                                 "ruleId": "out-of-date-project"
+                            }
+                        ]
+                    }
+                ],
+                "version": "2.1.0"
+            }
+            """
+
+    Scenario: A local change is reported
+        Given a git repository "SomeProject.git"
+        And a fetched and committed MyProject with the manifest
+            """
+            manifest:
+                version: 0.0
+                projects:
+                  - name: SomeProject
+                    url: some-remote-server/SomeProject.git
+            """
+        And "SomeProject/README.md" in MyProject is changed and committed with
+            """
+            An important sentence for the README!
+            """
+        When I run "dfetch check --sarif sarif.json SomeProject" in MyProject
+        Then the 'MyProject/sarif.json' file contains
+        """
+            {
+                "runs": [
+                    {
+                        "tool": {
+                            "driver": {
+                                "name": "DFetch",
+                                "informationUri": "https://dfetch.rtfd.io",
+                                "rules": [
+                                    {
+                                        "id": "unfetched-project",
+                                        "shortDescription": {
+                                            "text": "Project was never fetched"
+                                        }
+                                    },
+                                    {
+                                        "id": "up-to-date-project",
+                                        "shortDescription": {
+                                            "text": "Project is up-to-date"
+                                        }
+                                    },
+                                    {
+                                        "id": "pinned-but-out-of-date-project",
+                                        "shortDescription": {
+                                            "text": "Project is pinned, but out-of-date"
+                                        }
+                                    },
+                                    {
+                                        "id": "out-of-date-project",
+                                        "shortDescription": {
+                                            "text": "Project is out-of-date"
+                                        }
+                                    },
+                                    {
+                                        "id": "local-changes-in-project",
+                                        "shortDescription": {
+                                            "text": "Project was locally changed"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "artifacts": [
+                            {
+                                "location": {
+                                    "uri": "dfetch.yaml"
+                                },
+                                "sourceLanguage": "yaml"
+                            }
+                        ],
+                        "results": [
+                            {
+                                "message": {
+                                    "text": "SomeProject : SomeProject has local changes, please create a patch file or upstream the changes."
+                                },
+                                "level": "Normal",
+                                "locations": [
+                                    {
+                                        "physicalLocation": {
+                                            "artifactLocation": {
+                                                "index": 0,
+                                                "uri": "dfetch.yaml"
+                                            },
+                                            "region": {
+                                                "endColumn": 25,
+                                                "endLine": 4,
+                                                "startColumn": 15,
+                                                "startLine": 4
+                                            }
+                                        }
+                                    }
+                                ],
+                                "ruleId": "local-changes-in-project"
                             }
                         ]
                     }

@@ -135,3 +135,37 @@ Feature: Let check report to jenkins
                 ]
             }
             """
+
+    Scenario: A local change is reported
+        Given a git repository "SomeProject.git"
+        And a fetched and committed MyProject with the manifest
+            """
+            manifest:
+                version: 0.0
+                projects:
+                  - name: SomeProject
+                    url: some-remote-server/SomeProject.git
+            """
+        And "SomeProject/README.md" in MyProject is changed and committed with
+            """
+            An important sentence for the README!
+            """
+        When I run "dfetch check --jenkins-json jenkins.json SomeProject" in MyProject
+        Then the 'MyProject/jenkins.json' file contains
+            """
+            {
+                "_class": "io.jenkins.plugins.analysis.core.restapi.ReportApi",
+                "issues": [
+                    {
+                        "fileName": "dfetch.yaml",
+                        "severity": "Normal",
+                        "message": "SomeProject : SomeProject has local changes, please create a patch file or upstream the changes.",
+                        "description": "SomeProject has local changes, please create a patch file using 'dfetch diff SomeProject. This patch file can either be used to directly from the manifest using the patch attribute, or upstreamed.",
+                        "lineStart": 4,
+                        "lineEnd": 4,
+                        "columnStart": 15,
+                        "columnEnd": 25
+                    }
+                ]
+            }
+            """

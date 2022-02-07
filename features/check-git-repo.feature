@@ -114,3 +114,25 @@ Feature: Checking dependencies from a git repository
             Dfetch (0.6.0)
               ext/test-repo-tag   : wanted (v2.0), current (v1), available (v2.0)
             """
+
+    Scenario: A local change is reported
+        Given a git repository "SomeProject.git"
+        And a fetched and committed MyProject with the manifest
+            """
+            manifest:
+                version: 0.0
+                projects:
+                  - name: SomeProject
+                    url: some-remote-server/SomeProject.git
+            """
+        And "SomeProject/README.md" in MyProject is changed and committed with
+            """
+            An important sentence for the README!
+            """
+        When I run "dfetch check SomeProject"
+        Then the output shows
+            """
+            Dfetch (0.6.0)
+              SomeProject         : Local changes were detected, please generate a patch using 'dfetch diff SomeProject' and add it to your manifest using 'patch:'. Alternatively overwrite the local changes with 'dfetch update --force SomeProject'
+              SomeProject         : up-to-date (master - 90be799b58b10971691715bdc751fbe5237848a0)
+            """
