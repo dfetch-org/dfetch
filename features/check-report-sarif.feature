@@ -77,7 +77,7 @@ Feature: Let check report to sarif
                                 "message": {
                                     "text": "ext/test-repo-tag-v1 : ext/test-repo-tag-v1 was never fetched!"
                                 },
-                                "level": "High",
+                                "level": "error",
                                 "locations": [
                                     {
                                         "physicalLocation": {
@@ -183,7 +183,7 @@ Feature: Let check report to sarif
                                 "message": {
                                     "text": "ext/test-repo-rev-only : ext/test-repo-rev-only current version is 'master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a', the wanted version is 'e1fda19a57b873eb8e6ae37780594cbb77b70f1a', but 'master' is available."
                                 },
-                                "level": "Normal",
+                                "level": "warning",
                                 "locations": [
                                     {
                                         "physicalLocation": {
@@ -206,7 +206,7 @@ Feature: Let check report to sarif
                                 "message": {
                                     "text": "ext/test-rev-and-branch : ext/test-rev-and-branch wanted & current version is 'main - [commit hash]', but 'main - [commit hash]' is available."
                                 },
-                                "level": "Low",
+                                "level": "note",
                                 "locations": [
                                     {
                                         "physicalLocation": {
@@ -313,7 +313,7 @@ Feature: Let check report to sarif
                                 "message": {
                                     "text": "ext/test-repo-tag : ext/test-repo-tag current version is 'v1', the wanted version is 'v2.0', but 'v2.0' is available."
                                 },
-                                "level": "Normal",
+                                "level": "warning",
                                 "locations": [
                                     {
                                         "physicalLocation": {
@@ -410,7 +410,7 @@ Feature: Let check report to sarif
                                 "message": {
                                     "text": "SomeProject : SomeProject has local changes, please create a patch file or upstream the changes."
                                 },
-                                "level": "Normal",
+                                "level": "warning",
                                 "locations": [
                                     {
                                         "physicalLocation": {
