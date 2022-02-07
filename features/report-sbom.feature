@@ -8,7 +8,6 @@ Feature: Create an CycloneDX sbom
     The generated SBOM can be used as input for other tools to monitor dependencies.
     The tools track vulnerabilities or can enforce a license policy within an organization.
 
-    @wip
     Scenario: An fetched project generates an sbom
         Given the manifest 'dfetch.yaml'
             """

@@ -98,7 +98,6 @@ Feature: Let check report to sarif
 
             """
 
-    @wip
     Scenario: Check is done after an update
         Given the manifest 'dfetch.yaml'
             """
