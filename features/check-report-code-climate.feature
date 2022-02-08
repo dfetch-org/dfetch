@@ -1,4 +1,3 @@
-@wip
 Feature: Let check report to code climate
 
     *DFetch* can check if there are new versions available. Since this is an action a developer
