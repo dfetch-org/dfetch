@@ -141,7 +141,7 @@ class CheckReporter(ABC):
             ),
             description=(
                 f"The manifest requires version '{str(wanted_version) or 'latest'}' of {project.name}. "
-                f"This is also the current version. There is a newer version available '{latest}'"
+                f"This is also the current version. There is a newer version available '{latest}' "
                 f"You can update the version in the manifest and run 'dfetch update {project.name}'"
             ),
         )
