@@ -11,7 +11,7 @@ from dfetch.commands.check import Check
 from tests.manifest_mock import mock_manifest
 
 DEFAULT_ARGS = argparse.Namespace(
-    no_recommendations=False, jenkins_json=None, sarif=None
+    no_recommendations=False, jenkins_json=None, sarif=None, code_climate=None
 )
 DEFAULT_ARGS.projects = []
 

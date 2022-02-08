@@ -25,6 +25,7 @@ import dfetch.manifest.validate
 import dfetch.project
 from dfetch.commands.common import check_child_manifests
 from dfetch.log import get_logger
+from dfetch.reporting.check.code_climate_reporter import CodeClimateReporter
 from dfetch.reporting.check.jenkins_reporter import JenkinsReporter
 from dfetch.reporting.check.reporter import CheckReporter
 from dfetch.reporting.check.sarif_reporter import SarifReporter
@@ -69,15 +70,17 @@ class Check(dfetch.commands.command.Command):
             type=str,
             help="Generate a Sarif JSON that can be parsed by Github.",
         )
+        parser.add_argument(
+            "--code-climate",
+            metavar="outfile",
+            type=str,
+            help="Generate a code-climate JSON that can be parsed by Gitlab.",
+        )
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
         manifest, path = dfetch.manifest.manifest.get_manifest()
-        reporters: List[CheckReporter] = [CheckStdoutReporter(path)]
-        if args.jenkins_json:
-            reporters += [JenkinsReporter(path, args.jenkins_json)]
-        if args.sarif:
-            reporters += [SarifReporter(path, args.sarif)]
+        reporters = self._get_reporters(args, path)
 
         with in_directory(os.path.dirname(path)):
             exceptions: List[str] = []
@@ -94,3 +97,23 @@ class Check(dfetch.commands.command.Command):
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
+
+    @staticmethod
+    def _get_reporters(args: argparse.Namespace, path: str) -> List[CheckReporter]:
+        """Get all reporters.
+
+        Args:
+            args (argparse.Namespace): Arguments given to the command line
+            path (str): Path to the manifest
+
+        Returns:
+            List[CheckReporter]: List of reporters that each provide a unique report
+        """
+        reporters: List[CheckReporter] = [CheckStdoutReporter(path)]
+        if args.jenkins_json:
+            reporters += [JenkinsReporter(path, args.jenkins_json)]
+        if args.sarif:
+            reporters += [SarifReporter(path, args.sarif)]
+        if args.code_climate:
+            reporters += [CodeClimateReporter(path, args.code_climate)]
+        return reporters
