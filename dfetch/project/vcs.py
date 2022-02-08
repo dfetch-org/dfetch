@@ -160,7 +160,6 @@ class VCS(ABC):
             return
 
         if self._are_there_local_changes():
-            print(f">>{on_disk_version}<<")
             for reporter in reporters:
                 reporter.local_changes(self.__project)
 
