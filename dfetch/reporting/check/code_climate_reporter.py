@@ -14,6 +14,20 @@ The report generated is the `code-climate json format`_, the fields described in
 `gitlab custom code quality tool`_ documentation are in the report but also all fields
 listed as required by the `code-climate json format`_.
 
+Gitlab will show the results with the pipeline
+
+.. image:: images/gitlab-check-pipeline-result.png
+    :alt: Gitlab detected issues.
+
+And clicking will bring you to the project in the manifest.
+
+.. image:: images/gitlab-highlighted-manifest.png
+    :alt: Gitlab highlights the project in the manifest with the issue.
+
+In the merge request, gitlab will compare the issues in the current branch with that of
+the base branch (e.g. `master`/`main`). This lets you see if any new issue were introduced
+or solved.
+
 Usage
 -----
 Let *DFetch* perform a check and generate the code-climate json and add the result as artifact in you gitlab-ci runner.
@@ -22,14 +36,13 @@ See `gitlab code quality reports`_ for more information.
 .. code-block:: yaml
 
     dfetch:
-    image: "python:3.7"
-    script:
-    - pip install dfetch
-    - dfetch check --code-climate dfetch.json
-    artifacts:
+      image: "python:3.7"
+      script:
+      - pip install dfetch
+      - dfetch check --code-climate dfetch.json
+      artifacts:
         reports:
-        codequality: dfetch.json
-
+          codequality: dfetch.json
 
 
 .. _`code-climate json format`: https://github.com/codeclimate/platform/blob/master/spec/analyzers/SPEC.md#data-types
@@ -39,11 +52,11 @@ See `gitlab code quality reports`_ for more information.
 
 """
 
+import hashlib
 import json
 import os
-from typing import Any, Dict, List
 from enum import Enum
-import hashlib
+from typing import Any, Dict, List
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
