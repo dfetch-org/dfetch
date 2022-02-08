@@ -103,7 +103,7 @@ class CodeClimateReporter(CheckReporter):
                 "description": issue.description,
                 "check_name": issue.rule_id,
                 "categories": ["Security", "Bug risk"],
-                "fingerprint": hashlib.md5(
+                "fingerprint": hashlib.sha256(
                     f"{project.name}{issue.rule_id}".encode(encoding="utf-8")
                 ).hexdigest(),
                 "severity": self._determine_severity(issue.severity).value,
