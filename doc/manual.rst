@@ -41,6 +41,10 @@ Sarif reporter
 ''''''''''''''
 .. automodule:: dfetch.reporting.check.sarif_reporter
 
+Code-climate reporter
+'''''''''''''''''''''
+.. automodule:: dfetch.reporting.check.code_climate_reporter
+
 Report
 ------
 .. argparse::
