@@ -82,7 +82,7 @@ Feature: Let check report to jenkins
                         "fileName": "dfetch.yaml",
                         "severity": "Low",
                         "message": "ext/test-rev-and-branch : ext/test-rev-and-branch wanted & current version is 'main - 8df389d0524863b85f484f15a91c5f2c40aefda1', but 'main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a' is available.",
-                        "description": "The manifest requires version 'main - 8df389d0524863b85f484f15a91c5f2c40aefda1' of ext/test-rev-and-branch. This is also the current version. There is a newer version available 'main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a'You can update the version in the manifest and run 'dfetch update ext/test-rev-and-branch'",
+                        "description": "The manifest requires version 'main - 8df389d0524863b85f484f15a91c5f2c40aefda1' of ext/test-rev-and-branch. This is also the current version. There is a newer version available 'main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a' You can update the version in the manifest and run 'dfetch update ext/test-rev-and-branch'",
                         "lineStart": 13,
                         "lineEnd": 13,
                         "columnStart": 13,
