@@ -115,11 +115,7 @@ class SarifReporter(CheckReporter):
                             short_description=MultiformatMessageString(
                                 text=rule.description
                             ),
-                            message_strings={
-                                "default": MultiformatMessageString(
-                                    text=rule.long_description
-                                )
-                            },
+                            help=MultiformatMessageString(text=rule.long_description),
                         )
                         for rule in self.rules
                     ],
