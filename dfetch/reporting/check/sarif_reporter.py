@@ -33,11 +33,34 @@ A Sarif report can be added to a github action as such:
 
 .. code-block:: yaml
 
-    - run: dfetch check --sarif sarif.json
-    - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v1
-        with:
+    name: DFetch
+
+    on: push
+
+    jobs:
+    dfetch:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+
+        - name: Set up python 3.10
+          uses: actions/setup-python@v2
+          with:
+            python-version: "3.10"
+
+        - name: Set up dfetch
+          run: |
+            python -m pip install --upgrade pip
+            pip install dfetch
+        - name: Check dependencies
+          run: dfetch check --sarif sarif.json
+
+        - name: Upload SARIF file
+          uses: github/codeql-action/upload-sarif@v1
+          with:
             sarif_file: sarif.json
+
 
 For more information see the `Github Sarif documentation`_.
 
