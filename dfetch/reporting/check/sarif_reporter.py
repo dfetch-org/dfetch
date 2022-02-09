@@ -162,7 +162,7 @@ class SarifReporter(CheckReporter):
                             start_line=line,
                             start_column=col_start,
                             end_line=line,
-                            end_column=col_end,
+                            end_column=col_end + 1,
                         ),
                     )
                 )

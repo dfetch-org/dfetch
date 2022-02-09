@@ -86,7 +86,7 @@ Feature: Let check report to sarif
                                                 "uri": "dfetch.yaml"
                                             },
                                             "region": {
-                                                "endColumn": 32,
+                                                "endColumn": 33,
                                                 "endLine": 9,
                                                 "startColumn": 13,
                                                 "startLine": 9
@@ -192,7 +192,7 @@ Feature: Let check report to sarif
                                                 "uri": "dfetch.yaml"
                                             },
                                             "region": {
-                                                "endColumn": 34,
+                                                "endColumn": 35,
                                                 "endLine": 9,
                                                 "startColumn": 13,
                                                 "startLine": 9
@@ -215,7 +215,7 @@ Feature: Let check report to sarif
                                                 "uri": "dfetch.yaml"
                                             },
                                             "region": {
-                                                "endColumn": 35,
+                                                "endColumn": 36,
                                                 "endLine": 13,
                                                 "startColumn": 13,
                                                 "startLine": 13
@@ -322,7 +322,7 @@ Feature: Let check report to sarif
                                                 "uri": "dfetch.yaml"
                                             },
                                             "region": {
-                                                "endColumn": 29,
+                                                "endColumn": 30,
                                                 "endLine": 5,
                                                 "startColumn": 13,
                                                 "startLine": 5
@@ -419,7 +419,7 @@ Feature: Let check report to sarif
                                                 "uri": "dfetch.yaml"
                                             },
                                             "region": {
-                                                "endColumn": 25,
+                                                "endColumn": 26,
                                                 "endLine": 4,
                                                 "startColumn": 15,
                                                 "startLine": 4
