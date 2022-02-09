@@ -1,3 +1,4 @@
+@wip
 Feature: Let check report to sarif
 
     *DFetch* can check if there are new versions available. Since this is an action a developer
@@ -33,10 +34,8 @@ Feature: Let check report to sarif
                                 "rules": [
                                     {
                                         "id": "unfetched-project",
-                                        "messageStrings": {
-                                            "default": {
-                                                "text": "The project mentioned in the manifest was never fetched, fetch it with 'dfetch update <project>'. After fetching, commit the updated project to your repository."
-                                            }
+                                        "help": {
+                                            "text": "The project mentioned in the manifest was never fetched, fetch it with 'dfetch update <project>'. After fetching, commit the updated project to your repository."
                                         },
                                         "shortDescription": {
                                             "text": "Project was never fetched"
@@ -44,10 +43,8 @@ Feature: Let check report to sarif
                                     },
                                     {
                                         "id": "up-to-date-project",
-                                        "messageStrings": {
-                                            "default": {
-                                                "text": "The project mentioned in the manifest is up-to-date, everything is ok, nothing to do."
-                                            }
+                                        "help": {
+                                            "text": "The project mentioned in the manifest is up-to-date, everything is ok, nothing to do."
                                         },
                                         "shortDescription": {
                                             "text": "Project is up-to-date"
@@ -55,10 +52,8 @@ Feature: Let check report to sarif
                                     },
                                     {
                                         "id": "pinned-but-out-of-date-project",
-                                        "messageStrings": {
-                                            "default": {
-                                                "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. This is currently the state of the project. However a newer version is available at the upstream of the project. Either ignore this warning or update the version to the latest and update using 'dfetch update <project>' and commit the result to your repository."
-                                            }
+                                        "help": {
+                                            "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. This is currently the state of the project. However a newer version is available at the upstream of the project. Either ignore this warning or update the version to the latest and update using 'dfetch update <project>' and commit the result to your repository."
                                         },
                                         "shortDescription": {
                                             "text": "Project is pinned, but out-of-date"
@@ -66,10 +61,8 @@ Feature: Let check report to sarif
                                     },
                                     {
                                         "id": "out-of-date-project",
-                                        "messageStrings": {
-                                            "default": {
-                                                "text": "The project is configured to always follow the latest version, There is a newer version available at the upstream of the project. Please update the project using 'dfetch update <project>' and commit the result to your repository."
-                                            }
+                                        "help": {
+                                            "text": "The project is configured to always follow the latest version, There is a newer version available at the upstream of the project. Please update the project using 'dfetch update <project>' and commit the result to your repository."
                                         },
                                         "shortDescription": {
                                             "text": "Project is out-of-date"
@@ -77,10 +70,8 @@ Feature: Let check report to sarif
                                     },
                                     {
                                         "id": "local-changes-in-project",
-                                        "messageStrings": {
-                                            "default": {
-                                                "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes And update your project. When running check on a platform with different line endings, then this warning is likely a false positive."
-                                            }
+                                        "help": {
+                                            "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes And update your project. When running check on a platform with different line endings, then this warning is likely a false positive."
                                         },
                                         "shortDescription": {
                                             "text": "Project was locally changed"
@@ -160,13 +151,11 @@ Feature: Let check report to sarif
                             "driver": {
                                 "name": "DFetch",
                                 "informationUri": "https://dfetch.rtfd.io",
-                                "rules": [
+                                                                "rules": [
                                     {
                                         "id": "unfetched-project",
-                                        "messageStrings": {
-                                            "default": {
-                                                "text": "The project mentioned in the manifest was never fetched, fetch it with 'dfetch update <project>'. After fetching, commit the updated project to your repository."
-                                            }
+                                        "help": {
+                                            "text": "The project mentioned in the manifest was never fetched, fetch it with 'dfetch update <project>'. After fetching, commit the updated project to your repository."
                                         },
                                         "shortDescription": {
                                             "text": "Project was never fetched"
@@ -174,10 +163,8 @@ Feature: Let check report to sarif
                                     },
                                     {
                                         "id": "up-to-date-project",
-                                        "messageStrings": {
-                                            "default": {
-                                                "text": "The project mentioned in the manifest is up-to-date, everything is ok, nothing to do."
-                                            }
+                                        "help": {
+                                            "text": "The project mentioned in the manifest is up-to-date, everything is ok, nothing to do."
                                         },
                                         "shortDescription": {
                                             "text": "Project is up-to-date"
@@ -185,10 +172,8 @@ Feature: Let check report to sarif
                                     },
                                     {
                                         "id": "pinned-but-out-of-date-project",
-                                        "messageStrings": {
-                                            "default": {
-                                                "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. This is currently the state of the project. However a newer version is available at the upstream of the project. Either ignore this warning or update the version to the latest and update using 'dfetch update <project>' and commit the result to your repository."
-                                            }
+                                        "help": {
+                                            "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. This is currently the state of the project. However a newer version is available at the upstream of the project. Either ignore this warning or update the version to the latest and update using 'dfetch update <project>' and commit the result to your repository."
                                         },
                                         "shortDescription": {
                                             "text": "Project is pinned, but out-of-date"
@@ -196,10 +181,8 @@ Feature: Let check report to sarif
                                     },
                                     {
                                         "id": "out-of-date-project",
-                                        "messageStrings": {
-                                            "default": {
-                                                "text": "The project is configured to always follow the latest version, There is a newer version available at the upstream of the project. Please update the project using 'dfetch update <project>' and commit the result to your repository."
-                                            }
+                                        "help": {
+                                            "text": "The project is configured to always follow the latest version, There is a newer version available at the upstream of the project. Please update the project using 'dfetch update <project>' and commit the result to your repository."
                                         },
                                         "shortDescription": {
                                             "text": "Project is out-of-date"
@@ -207,10 +190,8 @@ Feature: Let check report to sarif
                                     },
                                     {
                                         "id": "local-changes-in-project",
-                                        "messageStrings": {
-                                            "default": {
-                                                "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes And update your project. When running check on a platform with different line endings, then this warning is likely a false positive."
-                                            }
+                                        "help": {
+                                            "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes And update your project. When running check on a platform with different line endings, then this warning is likely a false positive."
                                         },
                                         "shortDescription": {
                                             "text": "Project was locally changed"
@@ -315,63 +296,53 @@ Feature: Let check report to sarif
                         "driver": {
                             "name": "DFetch",
                             "informationUri": "https://dfetch.rtfd.io",
-                            "rules": [
-                                {
-                                    "id": "unfetched-project",
-                                    "messageStrings": {
-                                        "default": {
+                                                            "rules": [
+                                    {
+                                        "id": "unfetched-project",
+                                        "help": {
                                             "text": "The project mentioned in the manifest was never fetched, fetch it with 'dfetch update <project>'. After fetching, commit the updated project to your repository."
+                                        },
+                                        "shortDescription": {
+                                            "text": "Project was never fetched"
                                         }
                                     },
-                                    "shortDescription": {
-                                        "text": "Project was never fetched"
-                                    }
-                                },
-                                {
-                                    "id": "up-to-date-project",
-                                    "messageStrings": {
-                                        "default": {
+                                    {
+                                        "id": "up-to-date-project",
+                                        "help": {
                                             "text": "The project mentioned in the manifest is up-to-date, everything is ok, nothing to do."
+                                        },
+                                        "shortDescription": {
+                                            "text": "Project is up-to-date"
                                         }
                                     },
-                                    "shortDescription": {
-                                        "text": "Project is up-to-date"
-                                    }
-                                },
-                                {
-                                    "id": "pinned-but-out-of-date-project",
-                                    "messageStrings": {
-                                        "default": {
+                                    {
+                                        "id": "pinned-but-out-of-date-project",
+                                        "help": {
                                             "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. This is currently the state of the project. However a newer version is available at the upstream of the project. Either ignore this warning or update the version to the latest and update using 'dfetch update <project>' and commit the result to your repository."
+                                        },
+                                        "shortDescription": {
+                                            "text": "Project is pinned, but out-of-date"
                                         }
                                     },
-                                    "shortDescription": {
-                                        "text": "Project is pinned, but out-of-date"
-                                    }
-                                },
-                                {
-                                    "id": "out-of-date-project",
-                                    "messageStrings": {
-                                        "default": {
+                                    {
+                                        "id": "out-of-date-project",
+                                        "help": {
                                             "text": "The project is configured to always follow the latest version, There is a newer version available at the upstream of the project. Please update the project using 'dfetch update <project>' and commit the result to your repository."
+                                        },
+                                        "shortDescription": {
+                                            "text": "Project is out-of-date"
                                         }
                                     },
-                                    "shortDescription": {
-                                        "text": "Project is out-of-date"
-                                    }
-                                },
-                                {
-                                    "id": "local-changes-in-project",
-                                    "messageStrings": {
-                                        "default": {
+                                    {
+                                        "id": "local-changes-in-project",
+                                        "help": {
                                             "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes And update your project. When running check on a platform with different line endings, then this warning is likely a false positive."
+                                        },
+                                        "shortDescription": {
+                                            "text": "Project was locally changed"
                                         }
-                                    },
-                                    "shortDescription": {
-                                        "text": "Project was locally changed"
                                     }
-                                }
-                            ]
+                                ]
                         }
                     },
                     "artifacts": [
@@ -440,10 +411,8 @@ Feature: Let check report to sarif
                             "rules": [
                                 {
                                     "id": "unfetched-project",
-                                    "messageStrings": {
-                                        "default": {
-                                            "text": "The project mentioned in the manifest was never fetched, fetch it with 'dfetch update <project>'. After fetching, commit the updated project to your repository."
-                                        }
+                                    "help": {
+                                        "text": "The project mentioned in the manifest was never fetched, fetch it with 'dfetch update <project>'. After fetching, commit the updated project to your repository."
                                     },
                                     "shortDescription": {
                                         "text": "Project was never fetched"
@@ -451,10 +420,8 @@ Feature: Let check report to sarif
                                 },
                                 {
                                     "id": "up-to-date-project",
-                                    "messageStrings": {
-                                        "default": {
-                                            "text": "The project mentioned in the manifest is up-to-date, everything is ok, nothing to do."
-                                        }
+                                    "help": {
+                                        "text": "The project mentioned in the manifest is up-to-date, everything is ok, nothing to do."
                                     },
                                     "shortDescription": {
                                         "text": "Project is up-to-date"
@@ -462,10 +429,8 @@ Feature: Let check report to sarif
                                 },
                                 {
                                     "id": "pinned-but-out-of-date-project",
-                                    "messageStrings": {
-                                        "default": {
-                                            "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. This is currently the state of the project. However a newer version is available at the upstream of the project. Either ignore this warning or update the version to the latest and update using 'dfetch update <project>' and commit the result to your repository."
-                                        }
+                                    "help": {
+                                        "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. This is currently the state of the project. However a newer version is available at the upstream of the project. Either ignore this warning or update the version to the latest and update using 'dfetch update <project>' and commit the result to your repository."
                                     },
                                     "shortDescription": {
                                         "text": "Project is pinned, but out-of-date"
@@ -473,10 +438,8 @@ Feature: Let check report to sarif
                                 },
                                 {
                                     "id": "out-of-date-project",
-                                    "messageStrings": {
-                                        "default": {
-                                            "text": "The project is configured to always follow the latest version, There is a newer version available at the upstream of the project. Please update the project using 'dfetch update <project>' and commit the result to your repository."
-                                        }
+                                    "help": {
+                                        "text": "The project is configured to always follow the latest version, There is a newer version available at the upstream of the project. Please update the project using 'dfetch update <project>' and commit the result to your repository."
                                     },
                                     "shortDescription": {
                                         "text": "Project is out-of-date"
@@ -484,10 +447,8 @@ Feature: Let check report to sarif
                                 },
                                 {
                                     "id": "local-changes-in-project",
-                                    "messageStrings": {
-                                        "default": {
-                                            "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes And update your project. When running check on a platform with different line endings, then this warning is likely a false positive."
-                                        }
+                                    "help": {
+                                        "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes And update your project. When running check on a platform with different line endings, then this warning is likely a false positive."
                                     },
                                     "shortDescription": {
                                         "text": "Project was locally changed"
