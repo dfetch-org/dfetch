@@ -115,6 +115,11 @@ class SarifReporter(CheckReporter):
                             short_description=MultiformatMessageString(
                                 text=rule.description
                             ),
+                            message_strings={
+                                "default": MultiformatMessageString(
+                                    text=rule.long_description
+                                )
+                            },
                         )
                         for rule in self.rules
                     ],
@@ -186,7 +191,7 @@ class SarifSerializer:
         Args:
             sarif (SarifLog): Log to serialize
         """
-        self._sarif_dict: Dict[str, Any] = {}
+        self._sarif_dict: Dict[str, Any] = {"default": "default"}
         self._json = self._walk_sarif(
             attr.asdict(
                 sarif,
