@@ -1,4 +1,3 @@
-@wip
 Feature: Let check report to sarif
 
     *DFetch* can check if there are new versions available. Since this is an action a developer
@@ -71,7 +70,7 @@ Feature: Let check report to sarif
                                     {
                                         "id": "local-changes-in-project",
                                         "help": {
-                                            "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes And update your project. When running check on a platform with different line endings, then this warning is likely a false positive."
+                                            "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes and update your project. When running 'dfetch check' on a platform with different line endings, then this warning is likely a false positive."
                                         },
                                         "shortDescription": {
                                             "text": "Project was locally changed"
@@ -191,7 +190,7 @@ Feature: Let check report to sarif
                                     {
                                         "id": "local-changes-in-project",
                                         "help": {
-                                            "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes And update your project. When running check on a platform with different line endings, then this warning is likely a false positive."
+                                            "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes and update your project. When running 'dfetch check' on a platform with different line endings, then this warning is likely a false positive."
                                         },
                                         "shortDescription": {
                                             "text": "Project was locally changed"
@@ -336,7 +335,7 @@ Feature: Let check report to sarif
                                     {
                                         "id": "local-changes-in-project",
                                         "help": {
-                                            "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes And update your project. When running check on a platform with different line endings, then this warning is likely a false positive."
+                                            "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes and update your project. When running 'dfetch check' on a platform with different line endings, then this warning is likely a false positive."
                                         },
                                         "shortDescription": {
                                             "text": "Project was locally changed"
@@ -448,7 +447,7 @@ Feature: Let check report to sarif
                                 {
                                     "id": "local-changes-in-project",
                                     "help": {
-                                        "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes And update your project. When running check on a platform with different line endings, then this warning is likely a false positive."
+                                        "text": "The files of this project are different then when they were added, Please create a patch using 'dfetch diff <project>' and add it to the manifest using the 'patch:' attribute. Or better yet, upstream the changes and update your project. When running 'dfetch check' on a platform with different line endings, then this warning is likely a false positive."
                                     },
                                     "shortDescription": {
                                         "text": "Project was locally changed"

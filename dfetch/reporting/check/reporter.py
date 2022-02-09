@@ -110,8 +110,8 @@ class CheckReporter(ABC):
                 "The files of this project are different then when they were added, "
                 "Please create a patch using 'dfetch diff <project>' and add it to the "
                 "manifest using the 'patch:' attribute. Or better yet, upstream the changes "
-                "And update your project. "
-                "When running check on a platform with different line endings, then this "
+                "and update your project. "
+                "When running 'dfetch check' on a platform with different line endings, then this "
                 "warning is likely a false positive."
             ),
         ),
