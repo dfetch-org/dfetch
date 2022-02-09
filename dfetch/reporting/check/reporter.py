@@ -58,6 +58,7 @@ class Rule:
 
     name: str
     description: str
+    long_description: str
 
 
 class CheckReporter(ABC):
@@ -66,15 +67,53 @@ class CheckReporter(ABC):
     name: str = "abstract"
 
     rules: Sequence[Rule] = [
-        Rule(name="unfetched-project", description="Project was never fetched"),
-        Rule(name="up-to-date-project", description="Project is up-to-date"),
+        Rule(
+            name="unfetched-project",
+            description="Project was never fetched",
+            long_description=(
+                "The project mentioned in the manifest was never fetched, fetch it with 'dfetch update <project>'. "
+                "After fetching, commit the updated project to your repository."
+            ),
+        ),
+        Rule(
+            name="up-to-date-project",
+            description="Project is up-to-date",
+            long_description=(
+                "The project mentioned in the manifest is up-to-date, everything is ok, nothing to do."
+            ),
+        ),
         Rule(
             name="pinned-but-out-of-date-project",
             description="Project is pinned, but out-of-date",
+            long_description=(
+                "The project mentioned in the manifest is pinned to a specific version, "
+                "For instance a branch, tag, or revision. This is currently the state of the project. "
+                "However a newer version is available at the upstream of the project. "
+                "Either ignore this warning or update the version to the latest and update using "
+                "'dfetch update <project>' and commit the result to your repository."
+            ),
         ),
-        Rule(name="out-of-date-project", description="Project is out-of-date"),
         Rule(
-            name="local-changes-in-project", description="Project was locally changed"
+            name="out-of-date-project",
+            description="Project is out-of-date",
+            long_description=(
+                "The project is configured to always follow the latest version, "
+                "There is a newer version available at the upstream of the project. "
+                "Please update the project using 'dfetch update <project>' "
+                "and commit the result to your repository."
+            ),
+        ),
+        Rule(
+            name="local-changes-in-project",
+            description="Project was locally changed",
+            long_description=(
+                "The files of this project are different then when they were added, "
+                "Please create a patch using 'dfetch diff <project>' and add it to the "
+                "manifest using the 'patch:' attribute. Or better yet, upstream the changes "
+                "And update your project. "
+                "When running check on a platform with different line endings, then this "
+                "warning is likely a false positive."
+            ),
         ),
     ]
 
