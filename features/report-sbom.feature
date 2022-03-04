@@ -26,23 +26,57 @@ Feature: Create an CycloneDX sbom
         Then the 'report.json' file contains
             """
             {
-                "$schema": "http://cyclonedx.org/schema/bom-1.3.schema.json",
+                "$schema": "http://cyclonedx.org/schema/bom-1.4.schema.json",
                 "bomFormat": "CycloneDX",
-                "specVersion": "1.3",
+                "specVersion": "1.4",
                 "serialNumber": "urn:uuid:d9287af7-31b2-4a66-b528-21834077ddad",
                 "version": 1,
                 "metadata": {
                     "timestamp": "2021-12-08T21:34:38.500715+00:00",
                     "tools": [
                         {
-                            "vendor": "CycloneDX",
-                            "name": "cyclonedx-python-lib",
-                            "version": "1.3.0"
-                        },
-                        {
                             "vendor": "dfetch-org",
                             "name": "dfetch",
                             "version": "0.6.0"
+                        },
+                        {
+                            "vendor": "CycloneDX",
+                            "name": "cyclonedx-python-lib",
+                            "version": "2.0.0",
+                            "externalReferences": [
+                                {
+                                    "url": "https://pypi.org/project/cyclonedx-python-lib/",
+                                    "type": "distribution"
+                                },
+                                {
+                                    "url": "https://cyclonedx.org",
+                                    "type": "website"
+                                },
+                                {
+                                    "url": "https://github.com/CycloneDX/cyclonedx-python-lib/actions",
+                                    "type": "build-system"
+                                },
+                                {
+                                    "url": "https://github.com/CycloneDX/cyclonedx-python-lib/blob/main/LICENSE",
+                                    "type": "license"
+                                },
+                                {
+                                    "url": "https://github.com/CycloneDX/cyclonedx-python-lib/blob/main/CHANGELOG.md",
+                                    "type": "release-notes"
+                                },
+                                {
+                                    "url": "https://cyclonedx.github.io/cyclonedx-python-lib/",
+                                    "type": "documentation"
+                                },
+                                {
+                                    "url": "https://github.com/CycloneDX/cyclonedx-python-lib/issues",
+                                    "type": "issue-tracker"
+                                },
+                                {
+                                    "url": "https://github.com/CycloneDX/cyclonedx-python-lib",
+                                    "type": "vcs"
+                                }
+                            ]
                         }
                     ]
                 },
