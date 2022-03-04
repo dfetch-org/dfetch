@@ -11,6 +11,8 @@ jobs:
         exclude:
           - platform: macos-latest
             python-version: 3.6
+          - platform: windows-latest
+            python-version: 3.6
     runs-on: ${{ matrix.platform }}
 
     steps:
