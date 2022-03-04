@@ -20,6 +20,7 @@ from cyclonedx.model import (
     ExternalReferenceType,
     LicenseChoice,
     Tool,
+    XsUri,
 )
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
@@ -47,7 +48,7 @@ class SbomReporter(Reporter):
     def __init__(self) -> None:
         """Start the report."""
         self._bom = Bom()
-        self._bom.metadata.add_tool(self.dfetch_tool)
+        self._bom.metadata.tools.add(self.dfetch_tool)
 
     def add_project(
         self, project: ProjectEntry, license_name: str, version: str
@@ -81,15 +82,15 @@ class SbomReporter(Reporter):
                     subpath=project.source or None,
                 ),
             )
-            component.add_external_reference(
+            component.external_references.add(
                 ExternalReference(
                     reference_type=ExternalReferenceType.VCS,
-                    url=project.remote_url,
+                    url=XsUri(project.remote_url),
                 )
             )
 
-        component.licenses += [LicenseChoice(license_expression=license_name)]
-        self._bom.add_component(component)
+        component.licenses.add(LicenseChoice(license_expression=license_name))
+        self._bom.components.add(component)
 
     @staticmethod
     def _split_url(url: str) -> List[str]:

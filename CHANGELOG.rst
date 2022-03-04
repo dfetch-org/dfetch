@@ -4,6 +4,7 @@ Release 0.X.0 (unreleased)
 * Warn about local changes during check (#286)
 * Add support for Gitlab-CI/Code Climate check reports (#18)
 * Improve Sarif/github messages (#292)
+* Update to CycloneDX spec 1.4 (#296)
 
 Release 0.6.0 (released 2022-01-31)
 ===================================
