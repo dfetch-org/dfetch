@@ -1,6 +1,6 @@
 Feature: Fetching specific dependencies
 
-    *DFetch* can update specific projects, this is usefull when you have a lot
+    *DFetch* can update specific projects, this is useful when you have a lot
     of projects in your manifest.
 
     Scenario: Two Specific projects are fetched
