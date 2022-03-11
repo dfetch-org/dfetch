@@ -72,5 +72,5 @@ Feature: Patch after fetching from git repo
             source/target file does not exist:
               --- b'README1.md'
               +++ b'README1.md'
-            Applying path "diff.patch" failed
+            Applying patch "diff.patch" failed
             """
