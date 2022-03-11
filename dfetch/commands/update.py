@@ -95,6 +95,7 @@ class Update(dfetch.commands.command.Command):
         cwd = os.getcwd()
 
         Update._check_path_traversal(project, real_path, cwd)
+        Update._check_dst_not_in_blacklist(project, real_path, cwd)
         Update._check_overlapping_destination(project, destinations, real_path)
         Update._check_casing_mismatch(project, real_path)
 
@@ -112,6 +113,21 @@ class Update(dfetch.commands.command.Command):
             raise RuntimeError(
                 "Destination must be in the manifests folder or a subfolder. "
                 f'"{project.destination}" is outside this tree!'
+            )
+
+    @staticmethod
+    def _check_dst_not_in_blacklist(
+        project: dfetch.manifest.project.ProjectEntry, real_path: str, safe_dir: str
+    ) -> None:
+        """Check if destination is in blacklist."""
+        if real_path in [safe_dir]:
+            logger.print_warning_line(
+                project.name,
+                f'Skipping, path "{project.destination}" is not allowed as destination.',
+            )
+            raise RuntimeError(
+                "Destination must be in a valid subfolder. "
+                f'"{project.destination}" is not valid!'
             )
 
     @staticmethod
