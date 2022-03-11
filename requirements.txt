@@ -6,7 +6,7 @@ radon==5.1.0
 xenon==0.9.0
 types-PyYAML==6.0.4
 
-prospector[with_bandit,with_mypy,with_pyroma,with_flake8,with_vulture]==1.7.6
+prospector[with_bandit,with_mypy,with_pyroma,with_flake8,with_vulture]==1.7.7
 
 # Documentation
 sphinx==4.4.0
