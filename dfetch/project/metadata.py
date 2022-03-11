@@ -9,6 +9,11 @@ from typing_extensions import TypedDict
 import dfetch.manifest.manifest
 from dfetch.manifest.version import Version
 
+DONT_EDIT_WARNING = """\
+# This is a generated file by dfetch. Don't edit this, but edit the manifest.
+# For more info see https://dfetch.rtfd.io/en/latest/getting_started.html
+"""
+
 
 class Options(TypedDict):
     """Argument types for Metadata class construction."""
@@ -162,4 +167,5 @@ class Metadata:
         }
 
         with open(self.path, "w+", encoding="utf-8") as metadata_file:
+            metadata_file.write(DONT_EDIT_WARNING)
             yaml.dump(metadata, metadata_file)
