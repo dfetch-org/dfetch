@@ -20,8 +20,8 @@ Switching branches
 ~~~~~~~~~~~~~~~~~~
 After importing submodules into a manifest in a branch, you might have some difficulties switching branches.
 If one branch has submodules in the place were your *DFetched* project dependencies should be, or other way around.
-Below both situations, assume a branch ``feature/use-dfetch`` with a manifest and ``master`` with the orignal submodules
-in their place.
+Below both situations, assume a branch ``feature/use-dfetch`` with a manifest and ``master`` with the original
+submodules in their place.
 
 Switching from branch with submodules to branch with manifest
 -------------------------------------------------------------

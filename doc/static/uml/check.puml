@@ -18,7 +18,7 @@ else (no)
     :Use default branch;
   endif
 
-  :Get latest revsion of branch;
+  :Get latest revision of branch;
   :Show versions:
    - wanted revision / branch
    - on disk revision / branch

@@ -50,7 +50,7 @@ partition "Perform Update" {
     endif
 }
 
-    if (Succesfull?) then (no)
+    if (Successful?) then (no)
         stop
     else (yes)
     endif

@@ -1,6 +1,6 @@
 Feature: Checking specific projects
 
-    *DFetch* can check specific projects, this is usefull when you have a lot
+    *DFetch* can check specific projects, this is useful when you have a lot
     of projects in your manifest.
 
     Scenario: Single project is checked
