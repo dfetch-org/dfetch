@@ -22,6 +22,7 @@
 		],
 		"python.testing.unittestEnabled": false,
 		"python.testing.pytestEnabled": true,
+		"cucumberautocomplete.steps": ["features/steps/*.py"],
 		"esbonio.server.enabled": true,
 		"esbonio.sphinx.buildDir": "c:\\Projects\\EDNA\\dfetch/doc/_build",
 		"esbonio.sphinx.confDir": "c:\\Projects\\EDNA\\dfetch\\doc"
@@ -55,7 +56,8 @@
 	},
 	"extensions": {
 		"recommendations": [
-			"lextudio.restructuredtext"
+			"lextudio.restructuredtext",
+			"alexkrechik.cucumberautocomplete"
 		]
 	}
 }
