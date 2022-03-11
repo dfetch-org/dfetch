@@ -6,6 +6,7 @@ Release 0.X.0 (unreleased)
 * Improve Sarif/github messages (#292)
 * Update to CycloneDX spec 1.4 (#296)
 * Never overwrite main project folder and manifest (#302)
+* Add codespell and fix typo's (#303)
 
 Release 0.6.0 (released 2022-01-31)
 ===================================
