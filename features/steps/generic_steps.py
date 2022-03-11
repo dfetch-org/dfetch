@@ -1,11 +1,12 @@
 """Steps for features tests."""
 
 import difflib
+import json
 import os
 import pathlib
 import re
 from itertools import zip_longest
-from typing import List, Pattern, Tuple
+from typing import Iterable, List, Pattern, Tuple
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 
@@ -28,32 +29,70 @@ def remote_server_path(context):
 def check_file(path, content):
     """Check a file."""
     with open(path, "r") as file_to_check:
+        check_content(content.splitlines(True), file_to_check.readlines())
 
-        for actual, expected in zip_longest(
-            file_to_check.readlines(), content.splitlines(True), fillvalue=""
-        ):
 
-            expected = multisub(
-                patterns=[
-                    (git_hash, r"\1[commit hash]\2"),
-                    (iso_timestamp, "[timestamp]"),
-                    (urn_uuid, "[urn-uuid]"),
-                ],
-                text=expected,
+def check_json(path, content):
+    """Check a file."""
+
+    with open(path, "r") as file_to_check:
+        actual_json = json.load(file_to_check)
+    expected_json = json.loads(content)
+
+    if "bomFormat" in expected_json:
+        sort_sbom(expected_json)
+    if "bomFormat" in actual_json:
+        sort_sbom(actual_json)
+
+    check_content(
+        json.dumps(expected_json, indent=4, sort_keys=True).splitlines(),
+        json.dumps(actual_json, indent=4, sort_keys=True).splitlines(),
+    )
+
+
+def sort_sbom(sbom):
+    """Sort some fields in an sbom."""
+
+    for tool in sbom["metadata"]["tools"]:
+        if "externalReferences" in tool:
+            tool["externalReferences"] = sorted(
+                tool["externalReferences"], key=lambda x: x["type"]
             )
 
-            actual = multisub(
-                patterns=[
-                    (git_hash, r"\1[commit hash]\2"),
-                    (iso_timestamp, "[timestamp]"),
-                    (urn_uuid, "[urn-uuid]"),
-                ],
-                text=actual,
-            )
+    sbom["metadata"]["tools"] = sorted(
+        sbom["metadata"]["tools"], key=lambda x: x["name"]
+    )
 
-            assert (
-                actual.strip() == expected.strip()
-            ), f"Actual >>{actual.strip()}<< != Expected >>{expected.strip()}<<"
+
+def check_content(
+    expected_content: Iterable[str], actual_content: Iterable[str]
+) -> None:
+    """Compare two texts as list of strings."""
+
+    for line_nr, (actual, expected) in enumerate(
+        zip_longest(actual_content, expected_content, fillvalue=""), start=1
+    ):
+        expected = multisub(
+            patterns=[
+                (git_hash, r"\1[commit hash]\2"),
+                (iso_timestamp, "[timestamp]"),
+                (urn_uuid, "[urn-uuid]"),
+            ],
+            text=expected,
+        )
+
+        actual = multisub(
+            patterns=[
+                (git_hash, r"\1[commit hash]\2"),
+                (iso_timestamp, "[timestamp]"),
+                (urn_uuid, "[urn-uuid]"),
+            ],
+            text=actual,
+        )
+
+        assert (
+            actual.strip() == expected.strip()
+        ), f"Line {line_nr}: Actual >>{actual.strip()}<< != Expected >>{expected.strip()}<<"
 
 
 def generate_file(path, content):
@@ -160,7 +199,11 @@ def step_impl(context, name):
 
 @then("the '{name}' file contains")
 def step_impl(context, name):
-    check_file(name, context.text)
+
+    if name.endswith(".json"):
+        check_json(name, context.text)
+    else:
+        check_file(name, context.text)
 
 
 def multisub(patterns: List[Tuple[Pattern[str], str]], text: str) -> str:
