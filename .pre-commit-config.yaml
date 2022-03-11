@@ -78,3 +78,9 @@ repos:
         files: ^dfetch/
         args: [-b, B, -m, A, -a, A]
         types: [file, python]
+    -   id: codespell
+        name: codespell
+        description: Checks for common misspellings in text files.
+        entry: codespell
+        language: python
+        types: [text]
