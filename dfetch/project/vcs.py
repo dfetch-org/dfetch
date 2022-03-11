@@ -12,8 +12,8 @@ from patch_ng import fromfile
 import dfetch.manifest.manifest
 from dfetch.log import get_logger
 from dfetch.manifest.version import Version
+from dfetch.project.abstract_check_reporter import AbstractCheckReporter
 from dfetch.project.metadata import Metadata
-from dfetch.reporting.check.reporter import CheckReporter
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
 
@@ -142,7 +142,7 @@ class VCS(ABC):
         else:
             raise RuntimeError(f'Applying patch "{self.__project.patch}" failed')
 
-    def check_for_update(self, reporters: Sequence[CheckReporter]) -> None:
+    def check_for_update(self, reporters: Sequence[AbstractCheckReporter]) -> None:
         """Check if there is an update available."""
         on_disk_version = self.on_disk_version()
         with Halo(

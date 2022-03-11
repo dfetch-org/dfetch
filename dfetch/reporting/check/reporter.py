@@ -25,13 +25,14 @@ All reports can contain the following results:
 
 import io
 import re
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from typing import Sequence, Tuple
 
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
+from dfetch.project.abstract_check_reporter import AbstractCheckReporter
 
 
 class IssueSeverity(Enum):
@@ -61,7 +62,7 @@ class Rule:
     long_description: str
 
 
-class CheckReporter(ABC):
+class CheckReporter(AbstractCheckReporter):
     """Reporter for generating report."""
 
     name: str = "abstract"
@@ -123,6 +124,7 @@ class CheckReporter(ABC):
         Args:
             manifest_path (str): The path to the manifest.
         """
+        super().__init__(manifest_path=manifest_path)
         self._manifest_path = manifest_path
         with open(self._manifest_path, "r", encoding="utf-8") as manifest:
             self._manifest_buffer = io.StringIO(manifest.read())
