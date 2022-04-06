@@ -99,41 +99,37 @@ Rel(user, contCommands, "Uses")
                     if isinstance(module, dict):
                         continue
                     for relation in module.relations:
-                        if relation.path[0] == path[0]:
-                            if relation.path[0] not in blacklist:
-                                outside_in.add(
-                                    f'{indent}Rel(cont{container}, comp{relation.path[-1]}, "Uses")'
-                                )
-                                related_containers.add(container)
+                        if (
+                            relation.path[0] == path[0]
+                            and relation.path[0] not in blacklist
+                        ):
+                            outside_in.add(
+                                f'{indent}Rel(cont{container}, comp{relation.path[-1]}, "Uses")'
+                            )
+                            related_containers.add(container)
             else:
                 for name, module in modules.items():
                     if isinstance(module, dict):
                         continue
                     for relation in module.relations:
-                        if relation.path[0] != path[0]:
-                            if relation.path[0] not in blacklist:
-                                inside_out.add(
-                                    f'{indent}Rel(comp{module.name}, cont{relation.path[0]}, "Uses")'
-                                )
-                                related_containers.add(relation.path[0])
+                        if (
+                            relation.path[0] != path[0]
+                            and relation.path[0] not in blacklist
+                        ):
+                            inside_out.add(
+                                f'{indent}Rel(comp{module.name}, cont{relation.path[0]}, "Uses")'
+                            )
+                            related_containers.add(relation.path[0])
 
     print(C3_START_TEMPLATE)
 
     for container, modules in relations.items():
 
-        if container != path[0]:
-            if container in related_containers:
-                print(
-                    f'{indent}Container(cont{container}, "{container}", "python", "Something.")'
-                )
-        else:
+        if container == path[0]:
             print(f'{indent}Boundary(cont{container}, "Manifest") {{')
 
             for name, module in modules.items():
-                if isinstance(module, dict):
-                    description = "something"
-                else:
-                    description = module.description
+                description = "something" if isinstance(module, dict) else module.description
                 print(
                     f'{indent}{indent}Component(comp{name}, "{name}", "python", "{description}")'
                 )
@@ -150,6 +146,10 @@ Rel(user, contCommands, "Uses")
 
             print(f"{indent}}}")
 
+        elif container in related_containers:
+            print(
+                f'{indent}Container(cont{container}, "{container}", "python", "Something.")'
+            )
     print("")
     for relation in outside_in:
         print(relation)
