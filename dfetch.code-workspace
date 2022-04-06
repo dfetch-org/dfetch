@@ -24,8 +24,8 @@
 		"python.testing.pytestEnabled": true,
 		"cucumberautocomplete.steps": ["features/steps/*.py"],
 		"esbonio.server.enabled": true,
-		"esbonio.sphinx.buildDir": "c:\\Projects\\EDNA\\dfetch/doc/_build",
-		"esbonio.sphinx.confDir": "c:\\Projects\\EDNA\\dfetch\\doc"
+		"esbonio.sphinx.buildDir": "${workspaceRoot}/doc/_build",
+		"esbonio.sphinx.confDir": "${workspaceRoot}/doc"
 	},
 	"launch": {
 		"version": "0.2.0",
