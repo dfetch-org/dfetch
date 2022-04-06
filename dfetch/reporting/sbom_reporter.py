@@ -28,9 +28,6 @@ from cyclonedx.output import OutputFormat, get_instance
 from cyclonedx.output.json import Json
 from packageurl import PackageURL
 
-import dfetch
-import dfetch.commands.command
-import dfetch.manifest.manifest
 import dfetch.util.util
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
