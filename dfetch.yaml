@@ -10,3 +10,7 @@ manifest:
     repo-path: paxtonhare/demo-magic.git
     dst: doc/generate-casts/demo-magic
     src: '*.sh'
+
+  - name: plantuml-c4
+    repo-path: plantuml-stdlib/C4-PlantUML.git
+    dst: doc/static/uml/styles/plantuml-c4
