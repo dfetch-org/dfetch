@@ -24,3 +24,7 @@ C3 - Components
 Commands
 ~~~~~~~~
 .. uml:: /static/uml/c3_dfetch_components_commands.puml
+
+Manifest
+~~~~~~~~
+.. uml:: /static/uml/c3_dfetch_components_manifest.puml
