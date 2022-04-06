@@ -16,6 +16,7 @@
    changelog
    alternatives
    legal
+   internal
 
 Dfetch
 ======

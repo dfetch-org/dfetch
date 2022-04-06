@@ -1,0 +1,46 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Developer")
+
+System_Boundary(DFetch, "Dfetch") {
+
+    Container(contCommands, "Commands", "python", "Single user command to start interacting with dfetch.")
+    Container(contManifest, "Manifest", "python", "Parsing, editing and finding of manifests.")
+    Container(contProject, "Project", "python", "Main project that has a manifest.")
+    Container(contVcs, "Vcs", "python", "Abstraction of various Version Control Systems.")
+    Container(contReporting, "Reporting", "python", "Output formatters for various reporting formats.")
+
+    Rel(contCommands, contManifest, "Uses")
+    Rel(contCommands, contReporting, "Uses")
+    Rel(contCommands, contProject, "Uses")
+    Rel(contCommands, contVcs, "Uses")
+    Rel(contProject, contReporting, "Uses")
+    Rel_R(contProject, contManifest, "Has")
+    Rel_U(contReporting, contManifest, "Uses")
+    Rel(contProject, contVcs, "Uses")
+}
+
+System_Boundary(Local, "Local") {
+    System_Ext(git, "Git")
+    System_Ext(svn, "Svn")
+}
+
+System_Boundary(Remote, "Remote") {
+    System_Ext(github, "GitHub")
+    System_Ext(gitlab, "GitLab")
+    System_Ext(jenkins, "Jenkins")
+}
+
+Rel(contVcs, git, "Uses")
+Rel(contVcs, svn, "Uses")
+
+Rel(contReporting, github, "Reports to")
+Rel(contReporting, gitlab, "Reports to")
+Rel(contReporting, jenkins, "Reports to")
+
+
+Rel(user, contCommands, "Uses")
+
+@enduml
