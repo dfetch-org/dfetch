@@ -1,0 +1,33 @@
+@startuml
+!include styles/plantuml-c4/C4_Container.puml
+
+Person(user, "Developer", "Uses DFetch")
+
+System_Boundary(DFetch, "Dfetch") {
+
+    Container(contCommands, "Commands", "python", "Single user command to start interacting with dfetch.")
+    Container(contManifest, "Manifest", "python", "Parsing, editing and finding of manifests.")
+    Container(contProject, "Project", "python", "Main project that has a manifest.")
+    Container(contVcs, "Vcs", "python", "Abstraction of various Version Control Systems.")
+    Container(contReporting, "Reporting", "python", "Output formatters.")
+    Container(contUtil, "Util", "python", "Various non-project specific python utilities.")
+
+    Rel(contCommands, contManifest, "Uses")
+    Rel(contCommands, contReporting, "Uses")
+    Rel(contCommands, contProject, "Uses")
+    Rel(contProject, contReporting, "Uses")
+    Rel(contProject, contManifest, "Has")
+    Rel(contReporting, contManifest, "Uses")
+    Rel(contProject, contVcs, "Uses")
+    Rel(contVcs, contUtil, "Uses")
+}
+
+System_Ext(git, "Git")
+System_Ext(svn, "Svn")
+
+Rel(contVcs, git, "Uses")
+Rel(contVcs, svn, "Uses")
+
+Rel(user, contCommands, "Uses")
+
+@enduml
