@@ -1,0 +1,38 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "Developer")
+
+System_Boundary(DFetch, "Dfetch") {
+
+    Container(contCommands, "Commands", "python", "Parsing, editing and finding of manifests.")
+
+    Boundary(DFetchManifest, "Manifest") {
+        Component(compManifest, "Manifest", "python", "Does stuff")
+        Component(compProject, "Project", "python", "Does stuff")
+        Component(compRemote, "Remote", "python", "Does stuff")
+        Component(compValidate, "Validate", "python", "Does stuff")
+        Component(compVersion, "Version", "python", "Does stuff")
+
+        Rel(compManifest, compProject, "Uses")
+        Rel(compProject, compVersion, "Uses")
+        Rel_L(compProject, compRemote, "Uses")
+        Rel(compManifest, compValidate, "Uses")
+        Rel(compManifest, compRemote, "Uses")
+    }
+
+    Container(contProject, "Project", "python", "Main project that has a manifest.")
+    Container(contVcs, "Vcs", "python", "Abstraction of various Version Control Systems.")
+    Container(contReporting, "Reporting", "python", "Output formatters for various reporting formats.")
+
+    Rel(contCommands, compManifest, "Uses")
+    Rel(contProject, contReporting, "Uses")
+    Rel_R(contProject, compManifest, "Has")
+    Rel_U(contReporting, compManifest, "Uses")
+    Rel(contProject, contVcs, "Uses")
+}
+
+Rel(user, contCommands, "Uses")
+
+@enduml
