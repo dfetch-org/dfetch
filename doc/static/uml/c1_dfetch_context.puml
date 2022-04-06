@@ -1,33 +1,29 @@
 @startuml
-!include styles/plantuml-c4/C4_Container.puml
 
-Person(user, "Developer", "Uses DFetch")
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
-System_Boundary(DFetch, "Dfetch") {
+Person(user, "Developer")
 
-    Container(contCommands, "Commands", "python", "Single user command to start interacting with dfetch.")
-    Container(contManifest, "Manifest", "python", "Parsing, editing and finding of manifests.")
-    Container(contProject, "Project", "python", "Main project that has a manifest.")
-    Container(contVcs, "Vcs", "python", "Abstraction of various Version Control Systems.")
-    Container(contReporting, "Reporting", "python", "Output formatters.")
-    Container(contUtil, "Util", "python", "Various non-project specific python utilities.")
+System(DFetch, "Dfetch")
 
-    Rel(contCommands, contManifest, "Uses")
-    Rel(contCommands, contReporting, "Uses")
-    Rel(contCommands, contProject, "Uses")
-    Rel(contProject, contReporting, "Uses")
-    Rel(contProject, contManifest, "Has")
-    Rel(contReporting, contManifest, "Uses")
-    Rel(contProject, contVcs, "Uses")
-    Rel(contVcs, contUtil, "Uses")
+Rel(user, DFetch, "Uses")
+
+System_Boundary(Local, "Local") {
+    System_Ext(git, "Git")
+    System_Ext(svn, "Svn")
 }
 
-System_Ext(git, "Git")
-System_Ext(svn, "Svn")
+System_Boundary(Remote, "Remote") {
+    System_Ext(github, "GitHub")
+    System_Ext(gitlab, "GitLab")
+    System_Ext(jenkins, "Jenkins")
+}
 
-Rel(contVcs, git, "Uses")
-Rel(contVcs, svn, "Uses")
+Rel(DFetch, git, "Uses")
+Rel(DFetch, svn, "Uses")
+Rel(DFetch, github, "Reports to")
+Rel(DFetch, gitlab, "Reports to")
+Rel(DFetch, jenkins, "Reports to")
 
-Rel(user, contCommands, "Uses")
 
 @enduml
