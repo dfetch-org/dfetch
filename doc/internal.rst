@@ -17,3 +17,10 @@ C1 - Context
 C2 - Containers
 '''''''''''''''
 .. uml:: /static/uml/c2_dfetch_containers.puml
+
+C3 - Components
+'''''''''''''''
+
+Commands
+~~~~~~~~
+.. uml:: /static/uml/c3_dfetch_components_commands.puml

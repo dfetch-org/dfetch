@@ -1,0 +1,75 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "Developer")
+
+System_Boundary(DFetch, "Dfetch") {
+
+    Boundary(DFetchCommands, "Commands") {
+        Component(compCommon, "Common", "python", "Does stuff")
+        Component(compCommand, "Command", "python", "Does stuff")
+
+        Component(compCheck, "Check", "python", "Does stuff")
+        Component(compDiff, "Diff", "python", "Does stuff")
+        Component(compEnv, "Environment", "python", "Does stuff")
+        Component(compFreeze, "Freeze", "python", "Does stuff")
+        Component(compImport, "Import", "python", "Does stuff")
+        Component(compInit, "Init", "python", "Does stuff")
+        Component(compReport, "Report", "python", "Does stuff")
+        Component(compUpdate, "Update", "python", "Does stuff")
+        Component(compValidate, "Validate", "python", "Does stuff")
+
+        Rel_U(compValidate, compCommand, "Extends")
+        Rel_U(compCheck, compCommand, "Extends")
+        Rel_U(compDiff, compCommand, "Extends")
+        Rel_U(compEnv, compCommand, "Extends")
+        Rel_U(compFreeze, compCommand, "Extends")
+        Rel_U(compImport, compCommand, "Extends")
+        Rel_U(compInit, compCommand, "Extends")
+        Rel_U(compReport, compCommand, "Extends")
+        Rel_U(compUpdate, compCommand, "Extends")
+
+        Rel_U(compUpdate, compCommon, "Uses")
+        Rel_U(compCheck, compCommon, "Uses")
+    }
+
+    Container(contManifest, "Manifest", "python", "Parsing, editing and finding of manifests.")
+    Container(contProject, "Project", "python", "Main project that has a manifest.")
+    Container(contVcs, "Vcs", "python", "Abstraction of various Version Control Systems.")
+    Container(contReporting, "Reporting", "python", "Output formatters for various reporting formats.")
+
+    Rel(compCheck, contManifest, "Uses")
+    Rel(compCheck, contProject, "Uses")
+    Rel(compCheck, contReporting, "Uses")
+
+    Rel(compDiff, contManifest, "Uses")
+    Rel(compDiff, contProject, "Uses")
+
+    Rel(compEnv, contProject, "Uses")
+
+    Rel(compFreeze, contManifest, "Uses")
+    Rel(compFreeze, contProject, "Uses")
+
+    Rel(compImport, contManifest, "Uses")
+    Rel(compImport, contProject, "Uses")
+    Rel(compImport, contVcs, "Uses")
+
+    Rel(compReport, contManifest, "Uses")
+    Rel(compReport, contProject, "Uses")
+    Rel(compReport, contReporting, "Uses")
+
+    Rel(compUpdate, contManifest, "Uses")
+    Rel(compUpdate, contProject, "Uses")
+
+    Rel(compValidate, contManifest, "Uses")
+
+    Rel(contProject, contReporting, "Uses")
+    Rel_R(contProject, contManifest, "Has")
+    Rel_U(contReporting, contManifest, "Uses")
+    Rel(contProject, contVcs, "Uses")
+}
+
+Rel(user, compCommand, "Uses")
+
+@enduml
