@@ -1,0 +1,8 @@
+dfetch:
+  branch: master
+  hash: bf29769c17eff429c2dd0212d90b4adf
+  last_fetch: 08/02/2022, 15:06:25
+  patch: ''
+  remote_url: https://github.com/plantuml-stdlib/C4-PlantUML.git
+  revision: 311ff3842e47ae9fb77cba4ac86da2481b240909
+  tag: ''
