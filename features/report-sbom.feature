@@ -1,3 +1,4 @@
+@wip
 Feature: Create an CycloneDX sbom
 
     *Dfetch* can generate a software Bill-of-Materials (SBOM).
@@ -42,7 +43,7 @@ Feature: Create an CycloneDX sbom
                         {
                             "vendor": "CycloneDX",
                             "name": "cyclonedx-python-lib",
-                            "version": "2.1.1",
+                            "version": "2.2.0",
                             "externalReferences": [
                                 {
                                     "url": "https://pypi.org/project/cyclonedx-python-lib/",
