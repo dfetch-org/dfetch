@@ -9,6 +9,7 @@ Release 0.X.0 (unreleased)
 * Add codespell and fix typo's (#303)
 * Add warning to metadata file, not to change it (#170)
 * Fix SBoM report (#337)
+* Suggest a correct project name if not found (#320)
 
 Release 0.6.0 (released 2022-01-31)
 ===================================
