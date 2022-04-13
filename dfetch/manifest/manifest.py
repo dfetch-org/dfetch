@@ -17,6 +17,8 @@ download and a section ``projects:`` that contains a list of projects to fetch.
          - name: mymodule
            dst: external/mymodule/
 """
+
+import difflib
 import io
 import os
 import pathlib
@@ -33,6 +35,46 @@ from dfetch.manifest.remote import Remote, RemoteDict
 from dfetch.util.util import find_file, prefix_runtime_exceptions
 
 logger = get_logger(__name__)
+
+
+class RequestedProjectNotFoundError(RuntimeError):
+    """Exception if items are not found in list of possibilities."""
+
+    def __init__(self, unfound: Sequence[str], possibles: Sequence[str]) -> None:
+        """Create an exception."""
+        self._possibles = possibles
+        quoted_unfound = ", ".join(f'"{name}"' for name in unfound)
+        quoted_project_names = ", ".join([f'"{name}"' for name in possibles])
+        super().__init__(
+            f"Not all projects found! {quoted_unfound}",
+            f"This manifest contains: {quoted_project_names}",
+            self._make_suggestion(unfound),
+        )
+
+    def _make_suggestion(self, unfound: Sequence[str]) -> str:
+        """Suggest similar projects."""
+        best_guesses = self._guess_project(unfound)
+
+        if best_guesses:
+            best_guesses_quoted = (f'"{name}"' for name in best_guesses)
+            return f"Did you mean: {' and '.join(best_guesses_quoted)}?"
+        return ""
+
+    def _guess_project(self, names: Sequence[str]) -> Sequence[str]:
+        """Try guessing a better alternative."""
+        if " ".join(names) in self._possibles:
+            return [" ".join(names)]
+
+        return sorted(
+            {
+                difflib.get_close_matches(
+                    name,
+                    possibilities=self._possibles,
+                    n=1,
+                )[0]
+                for name in names
+            }
+        )
 
 
 class ManifestDict(
@@ -178,10 +220,10 @@ class Manifest:
             else list(self._projects.values())
         )
         if names and len(projects) != len(names):
-            raise RuntimeError(
-                f"Not all projects found! {', '.join(names)}",
-                f"This manifest contains {', '.join([project.name for project in self._projects.values()])}",
-            )
+            found = [project.name for project in projects]
+            unfound = [name for name in names if name not in found]
+            possibles = [project.name for project in self._projects.values()]
+            raise RequestedProjectNotFoundError(unfound, possibles)
         return projects
 
     @property

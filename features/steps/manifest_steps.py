@@ -33,3 +33,19 @@ def step_impl(context, name, path=None):
 def step_impl(context, name):
     """Check a manifest."""
     check_file(name, context.text)
+
+
+@given("the manifest '{name}' with the projects")
+def step_impl(context, name):
+
+    projects = "\n".join(f"      - name: {row['name']}" for row in context.table)
+    manifest = f"""manifest:
+    version: '0.0'
+    remotes:
+      - name: github-com-dfetch-org
+        url-base: https://github.com/dfetch-org/test-repo
+
+    projects:
+{projects}
+    """
+    generate_file(os.path.join(os.getcwd(), name), manifest)
