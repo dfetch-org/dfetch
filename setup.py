@@ -30,7 +30,7 @@ setup(
         "pykwalify==1.8.0",
         "halo==0.0.31",
         "colorama==0.4.4",
-        "typing-extensions==4.1.1; python_version > '3.7'",
+        "typing-extensions==4.2.0; python_version > '3.7'",
         "typing-extensions<4.0,>=3.10; python_version <= '3.7'",
         "sarif-om==1.0.4",
         "semver==2.13.0",
