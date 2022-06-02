@@ -4,7 +4,7 @@ doc8==0.11.2
 pydocstyle==6.1.1
 radon==5.1.0
 xenon==0.9.0
-types-PyYAML==6.0.7
+types-PyYAML==6.0.8
 codespell==2.1.0
 
 prospector[with_bandit,with_mypy,with_pyroma,with_flake8,with_vulture]==1.7.7
