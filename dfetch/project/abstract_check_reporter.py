@@ -29,9 +29,7 @@ class AbstractCheckReporter(ABC):
         """
 
     @abstractmethod
-    def up_to_date_project(  # pylint: disable=no-self-use
-        self, project: ProjectEntry, latest: Version
-    ) -> None:
+    def up_to_date_project(self, project: ProjectEntry, latest: Version) -> None:
         """Report an up-to-date project.
 
         Args:
@@ -69,9 +67,7 @@ class AbstractCheckReporter(ABC):
         """
 
     @abstractmethod
-    def local_changes(  # pylint: disable=no-self-use
-        self, project: ProjectEntry
-    ) -> None:
+    def local_changes(self, project: ProjectEntry) -> None:
         """Report an project with local changes.
 
         Args:

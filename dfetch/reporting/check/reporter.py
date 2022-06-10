@@ -151,9 +151,7 @@ class CheckReporter(AbstractCheckReporter):
         )
         self.add_issue(project, issue)
 
-    def up_to_date_project(  # pylint: disable=no-self-use
-        self, project: ProjectEntry, latest: Version
-    ) -> None:
+    def up_to_date_project(self, project: ProjectEntry, latest: Version) -> None:
         """Report an up-to-date project.
 
         Args:
@@ -218,9 +216,7 @@ class CheckReporter(AbstractCheckReporter):
         )
         self.add_issue(project, issue)
 
-    def local_changes(  # pylint: disable=no-self-use
-        self, project: ProjectEntry
-    ) -> None:
+    def local_changes(self, project: ProjectEntry) -> None:
         """Report an project with local changes.
 
         Args:

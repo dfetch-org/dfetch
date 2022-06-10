@@ -80,9 +80,9 @@ class SbomReporter(Reporter):
                     qualifiers=f"download_url={project.remote_url}",
                     namespace="/".join(parts),
                     subpath=project.source or None,
-                    name=project.name
+                    name=project.name,
                 ),
-                group="/".join(parts)
+                group="/".join(parts),
             )
             component.external_references.add(
                 ExternalReference(

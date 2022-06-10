@@ -78,9 +78,7 @@ class CheckStdoutReporter(CheckReporter):
             f"current ({current}), available ({latest})",
         )
 
-    def local_changes(  # pylint: disable=no-self-use
-        self, project: ProjectEntry
-    ) -> None:
+    def local_changes(self, project: ProjectEntry) -> None:
         """Report an project with local changes.
 
         Args:
