@@ -31,6 +31,12 @@ Feature: Create an CycloneDX sbom
                 "specVersion": "1.4",
                 "serialNumber": "urn:uuid:d9287af7-31b2-4a66-b528-21834077ddad",
                 "version": 1,
+                "dependencies": [
+                    {
+                        "dependsOn": [],
+                        "ref": "2ede03d4-f69f-4777-a6a4-8f1eaa3a2eec"
+                    }
+                ],
                 "metadata": {
                     "timestamp": "2021-12-08T21:34:38.500715+00:00",
                     "tools": [
@@ -83,7 +89,7 @@ Feature: Create an CycloneDX sbom
                 "components": [
                     {
                         "type": "library",
-                        "bom-ref": "ae1ed6d3-0c3a-4b7a-aecc-9fc6666a11a8",
+                        "bom-ref": "2ede03d4-f69f-4777-a6a4-8f1eaa3a2eec",
                         "name": "cpputest",
                         "version": "v3.4",
                         "licenses": [
