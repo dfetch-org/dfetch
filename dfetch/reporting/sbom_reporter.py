@@ -89,7 +89,8 @@ class SbomReporter(Reporter):
                 )
             )
 
-        component.licenses.add(LicenseChoice(license_expression=license_name))
+        if license_name:
+            component.licenses.add(LicenseChoice(license_expression=license_name))
         self._bom.components.add(component)
 
     @staticmethod
