@@ -78,10 +78,11 @@ class SbomReporter(Reporter):
                     type="generic",
                     version=version,
                     qualifiers=f"download_url={project.remote_url}",
-                    namespace=parts[0],
+                    namespace="/".join(parts),
                     subpath=project.source or None,
                     name=project.name
                 ),
+                group="/".join(parts)
             )
             component.external_references.add(
                 ExternalReference(
