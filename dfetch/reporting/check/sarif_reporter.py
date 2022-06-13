@@ -252,7 +252,8 @@ class SarifSerializer:
             self._sarif_dict[field.name] = field.metadata["schema_property_name"]
         return value
 
-    def _filter_unused(self, field: Any, value: Any) -> bool:
+    @staticmethod
+    def _filter_unused(field: Any, value: Any) -> bool:
         """Filter out the unused."""
         return not (
             value is None
