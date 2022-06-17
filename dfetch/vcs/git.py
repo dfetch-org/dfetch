@@ -196,12 +196,16 @@ class GitLocalRepo:
     @staticmethod
     def get_remote_url() -> str:
         """Get the url of the remote origin."""
-        result = run_on_cmdline(
-            logger,
-            ["git", "remote", "get-url", "origin"],
-        )
+        try:
+            result = run_on_cmdline(
+                logger,
+                ["git", "remote", "get-url", "origin"],
+            )
+            decoded_result = str(result.stdout.decode())
+        except SubprocessCommandError:
+            decoded_result = ""
 
-        return str(result.stdout.decode())
+        return decoded_result
 
     def create_diff(self, old_hash: str, new_hash: Optional[str]) -> str:
         """Generate a relative diff patch."""
