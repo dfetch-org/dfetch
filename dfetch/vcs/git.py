@@ -193,6 +193,16 @@ class GitLocalRepo:
 
         return str(result.stdout.decode())
 
+    @staticmethod
+    def get_remote_url() -> str:
+        """Get the url of the remote origin."""
+        result = run_on_cmdline(
+            logger,
+            ["git", "remote", "get-url", "origin"],
+        )
+
+        return str(result.stdout.decode())
+
     def create_diff(self, old_hash: str, new_hash: Optional[str]) -> str:
         """Generate a relative diff patch."""
         with in_directory(self._path):
@@ -226,10 +236,12 @@ class GitLocalRepo:
         )
 
         submodules = []
+        urls: Dict[str, str] = {}
         for line in result.stdout.decode().split("\n"):
             if line:
                 name, sm_path, sha, toplevel = line.split(" ")
-                url = GitLocalRepo._get_submodule_urls(toplevel)[name]
+                urls = urls or GitLocalRepo._get_submodule_urls(toplevel)
+                url = urls[name]
                 branch, tag = GitRemote(url).find_branch_tip_or_tag_from_sha(sha)
 
                 if not (branch or tag):
@@ -273,12 +285,32 @@ class GitLocalRepo:
             ],
         )
 
+        origin_url = GitLocalRepo.get_remote_url()
         return {
-            str(match.group(1)): str(match.group(2))
+            str(match.group(1)): GitLocalRepo._ensure_abs_url(
+                origin_url, str(match.group(2))
+            )
             for match in re.finditer(
                 r"submodule\.(.*)\.url\s+(.*)", result.stdout.decode()
             )
         }
+
+    @staticmethod
+    def _ensure_abs_url(root_url: str, rel_url: str) -> str:
+        """Make sure the given url is an absolute url."""
+        if not rel_url.startswith("../"):
+            return rel_url
+
+        new_root_url = root_url.split("/")
+        new_rel_url = rel_url.split("/")
+        for elt in new_rel_url.copy():
+            if elt != "..":
+                break
+
+            new_root_url.pop()
+            new_rel_url.pop(0)
+
+        return "/".join(new_root_url + new_rel_url)
 
     def find_branch_containing_sha(self, sha: str) -> str:
         """Try to find the branch that contains the given sha."""
