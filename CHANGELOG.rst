@@ -10,6 +10,7 @@ Release 0.X.0 (unreleased)
 * Add warning to metadata file, not to change it (#170)
 * Fix SBoM report (#337)
 * Suggest a correct project name if not found (#320)
+* Handle relative urls during dfetch import (#339)
 
 Release 0.6.0 (released 2022-01-31)
 ===================================
