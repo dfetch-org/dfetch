@@ -15,9 +15,9 @@ provide these through the ``--revs`` argument.
 
 The below statement will generate a patch for ``some-project`` from your manifest.
 
-.. code-block:: console
+.. code-block:: sh
 
-   $ dfetch diff some-project
+   dfetch diff some-project
 
 
 Using the generated patch
@@ -45,9 +45,8 @@ See below for the version control specifics. The patch will also contain content
    for files in the directory ``Core/MyModule/MySubmodule/`` and your current working directory is ``Core/MyModule/``.
    The correct command would be:
 
-   .. code-block:: console
+   ``git apply --verbose --directory='Core/MyModule/MySubModule` MySubmodule.patch``
 
-        $ git apply --verbose --directory='Core/MyModule/MySubModule` MySubmodule.patch
 """
 
 import argparse

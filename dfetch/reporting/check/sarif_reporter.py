@@ -1,6 +1,6 @@
 """*Dfetch* can generate a report in the Sarif format that is by Github from the :ref:`check` results.
 
-Dependending on the state of the projects it will create a report with information.
+Depending on the state of the projects it will create a report with information.
 If all project are up-to-date, nothing will be added to the report.
 
 DFetch can be listed as part of your github actions during pull requests.
