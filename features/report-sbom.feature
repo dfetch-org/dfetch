@@ -48,7 +48,7 @@ Feature: Create an CycloneDX sbom
                         {
                             "vendor": "CycloneDX",
                             "name": "cyclonedx-python-lib",
-                            "version": "2.5.2",
+                            "version": "2.6.0",
                             "externalReferences": [
                                 {
                                     "url": "https://pypi.org/project/cyclonedx-python-lib/",
