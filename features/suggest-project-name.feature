@@ -15,7 +15,7 @@ Feature: Suggest a project name
         When I run "dfetch check project with space"
         Then the output shows
             """
-            Dfetch (0.6.0)
+            Dfetch (0.7.0)
             Not all projects found! "project", "with", "space"
             This manifest contains: "project with space", "project-with-l", "Project-With-Capital"
             Did you mean: "project with space"?
@@ -25,7 +25,7 @@ Feature: Suggest a project name
         When I run "dfetch check project-with-1"
         Then the output shows
             """
-            Dfetch (0.6.0)
+            Dfetch (0.7.0)
             Not all projects found! "project-with-1"
             This manifest contains: "project with space", "project-with-l", "Project-With-Capital"
             Did you mean: "project-with-l"?
@@ -35,7 +35,7 @@ Feature: Suggest a project name
         When I run "dfetch check project-with-1 project-with-space Project-With-Capital"
         Then the output shows
             """
-            Dfetch (0.6.0)
+            Dfetch (0.7.0)
             Not all projects found! "project-with-1", "project-with-space"
             This manifest contains: "project with space", "project-with-l", "Project-With-Capital"
             Did you mean: "project with space" and "project-with-l"?

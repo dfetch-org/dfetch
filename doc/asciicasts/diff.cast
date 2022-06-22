@@ -114,7 +114,7 @@
 [14.896103, "o", "[0"]
 [14.986484, "o", "m"]
 [15.987513, "o", "\r\n"]
-[16.342319, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.6.0)\u001b[0m\r\n\u001b[0m"]
+[16.342319, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.7.0)\u001b[0m\r\n\u001b[0m"]
 [16.401055, "o", "\u001b[1;38;5;4m  \u001b[32mcpputest            :\u001b[34m Generating patch cpputest.patch from 6f0aec21dbb6e024d943f77fa79a98b31d056d0b to  in /diff\u001b[0m\r\n\u001b[0m"]
 [16.401626, "o", "\u001b[0m"]
 [16.488155, "o", "$ "]

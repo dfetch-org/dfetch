@@ -42,7 +42,7 @@
 [8.10883, "o", "t\u001b["]
 [8.289568, "o", "0m"]
 [9.290433, "o", "\r\n"]
-[9.539774, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.6.0)\u001b[0m\r\n\u001b[0m"]
+[9.539774, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.7.0)\u001b[0m\r\n\u001b[0m"]
 [11.369368, "o", "\u001b[1;38;5;4mFound libraries/muparser\u001b[0m\r\n\u001b[0m\u001b[1;38;5;4mFound tests/googletest\u001b[0m\r\n\u001b[0m"]
 [11.371067, "o", "\u001b[1;38;5;4mCreated manifest (dfetch.yaml) in ModbusScope\u001b[0m\r\n\u001b[0m"]
 [11.371211, "o", "\u001b[0m"]

@@ -25,7 +25,7 @@
 [4.708317, "o", "t\u001b["]
 [4.889239, "o", "0m"]
 [5.890068, "o", "\r\n"]
-[6.261577, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.6.0)\u001b[0m\r\n\u001b[0m"]
+[6.261577, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.7.0)\u001b[0m\r\n\u001b[0m"]
 [6.302544, "o", "\u001b[1;38;5;4m  \u001b[32mproject             :\u001b[34m cpputest\u001b[0m\r\n\u001b[0m\u001b[1;38;5;4m  \u001b[32m    remote          :\u001b[34m <none>\u001b[0m\r\n\u001b[0m"]
 [6.303826, "o", "\u001b[1;38;5;4m  \u001b[32m    remote url      :\u001b[34m https://github.com/cpputest/cpputest.git\u001b[0m\r\n\u001b[0m\u001b[1;38;5;4m  \u001b[32m    branch          :\u001b[34m master\u001b[0m\r\n\u001b[0m\u001b[1;38;5;4m  \u001b[32m    tag             :\u001b[34m v3.4\u001b[0m\r\n\u001b[0m"]
 [6.303911, "o", "\u001b[1;38;5;4m  \u001b[32m    last fetch      :\u001b[34m 22/06/2022, 16:10:32\u001b[0m\r\n\u001b[0m\u001b[1;38;5;4m  \u001b[32m    revision        :\u001b[34m <none>\u001b[0m\r\n\u001b[0m"]

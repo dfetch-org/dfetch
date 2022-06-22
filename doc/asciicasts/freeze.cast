@@ -30,7 +30,7 @@
 [5.315653, "o", "\u001b[0"]
 [5.406573, "o", "m"]
 [6.407331, "o", "\r\n"]
-[6.765914, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.6.0)\u001b[0m\r\n\u001b[0m"]
+[6.765914, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.7.0)\u001b[0m\r\n\u001b[0m"]
 [6.787842, "o", "\u001b[1;38;5;4m  \u001b[32mcpputest            :\u001b[34m Already pinned in manifest on version v3.4\u001b[0m\r\n\u001b[0m"]
 [6.789589, "o", "\u001b[1;38;5;4m  \u001b[32mjsmn                :\u001b[34m Freezing on version master - 25647e692c7906b96ffd2b05ca54c097948e879c\u001b[0m\r\n\u001b[0m"]
 [6.791988, "o", "\u001b[1;38;5;4mUpdated manifest (dfetch.yaml) in /freeze\u001b[0m\r\n\u001b[0m"]

@@ -1,4 +1,4 @@
-Release 0.X.0 (unreleased)
+Release 0.7.0 (released 2022-06-22)
 ===================================
 
 * Warn about local changes during check (#286)
