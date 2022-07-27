@@ -10,10 +10,10 @@ codespell==2.1.0
 prospector[with_bandit,with_mypy,with_pyroma,with_flake8,with_vulture]==1.7.7
 
 # Documentation
-sphinx==5.0.2
+sphinx==5.1.1
 sphinx-argparse==0.2.5
 plantweb==1.2.1
-sphinxcontrib.asciinema==0.3.3
+sphinxcontrib.asciinema==0.3.4
 
 # Testing
 pytest==7.1.2
