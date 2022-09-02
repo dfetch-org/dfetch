@@ -1,0 +1,11 @@
+tasks:
+  - init: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      pip install -e .
+
+vscode:
+  extensions:
+    - lextudio.restructuredtext
+    - alexkrechik.cucumberautocomplete
+    - ms-python.python
