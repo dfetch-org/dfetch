@@ -57,7 +57,8 @@
 	"extensions": {
 		"recommendations": [
 			"lextudio.restructuredtext",
-			"alexkrechik.cucumberautocomplete"
+			"alexkrechik.cucumberautocomplete",
+			"ms-python.python"
 		]
 	}
 }
