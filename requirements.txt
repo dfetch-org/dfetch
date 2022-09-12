@@ -13,7 +13,7 @@ prospector[with_bandit,with_mypy,with_pyroma,with_flake8,with_vulture]==1.7.7
 sphinx==5.2.2
 sphinx-argparse==0.2.5
 plantweb==1.2.1
-sphinxcontrib.asciinema==0.3.4
+sphinxcontrib.asciinema==0.3.5
 
 # Testing
 pytest==7.1.3
