@@ -8,9 +8,13 @@ from unittest.mock import mock_open, patch
 import pytest
 
 import dfetch.manifest.manifest
-from dfetch.manifest.manifest import RequestedProjectNotFoundError
 from dfetch import DEFAULT_MANIFEST_NAME
-from dfetch.manifest.manifest import Manifest, find_manifest, get_childmanifests
+from dfetch.manifest.manifest import (
+    Manifest,
+    RequestedProjectNotFoundError,
+    find_manifest,
+    get_childmanifests,
+)
 from dfetch.manifest.project import ProjectEntry
 
 BASIC_MANIFEST = """
@@ -166,11 +170,13 @@ def test_suggestion_not_found() -> None:
 
     assert [] == exception._guess_project(["1234"])
 
+
 def test_multiple_suggestions_found() -> None:
 
-    exception = RequestedProjectNotFoundError(["irst", "othe"], ["first", "other"])
+    exception = RequestedProjectNotFoundError(["irst", "otheR"], ["first", "other"])
 
-    assert ["first", "other"] == exception._guess_project(["irst", "othe"])
+    assert ["first", "other"] == exception._guess_project(["irst", "otheR"])
+
 
 def test_single_suggestion_not_found() -> None:
 
