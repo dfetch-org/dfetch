@@ -65,16 +65,19 @@ class RequestedProjectNotFoundError(RuntimeError):
         if " ".join(names) in self._possibles:
             return [" ".join(names)]
 
-        return sorted(
+        return [guess for guess in sorted(
             {
-                difflib.get_close_matches(
-                    name,
-                    possibilities=self._possibles,
-                    n=1,
+                (
+                    difflib.get_close_matches(
+                        name,
+                        possibilities=self._possibles,
+                        n=1,
+                    )
+                    or [""]
                 )[0]
                 for name in names
             }
-        )
+        ) if guess]
 
 
 class ManifestDict(

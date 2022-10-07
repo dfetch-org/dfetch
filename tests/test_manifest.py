@@ -8,6 +8,7 @@ from unittest.mock import mock_open, patch
 import pytest
 
 import dfetch.manifest.manifest
+from dfetch.manifest.manifest import RequestedProjectNotFoundError
 from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.manifest.manifest import Manifest, find_manifest, get_childmanifests
 from dfetch.manifest.project import ProjectEntry
@@ -150,3 +151,29 @@ def test_get_childmanifests(name, manifest_paths) -> None:
                 assert len(found_childmanifests) == len(manifest_paths)
                 for path, result in zip(manifest_paths, found_childmanifests):
                     assert os.path.realpath(path) == result[1]
+
+
+def test_suggestion_found() -> None:
+
+    exception = RequestedProjectNotFoundError(["fIrst"], ["first", "other"])
+
+    assert ["first"] == exception._guess_project(["fIrst"])
+
+
+def test_suggestion_not_found() -> None:
+
+    exception = RequestedProjectNotFoundError(["1234"], ["first", "other"])
+
+    assert [] == exception._guess_project(["1234"])
+
+def test_multiple_suggestions_found() -> None:
+
+    exception = RequestedProjectNotFoundError(["irst", "othe"], ["first", "other"])
+
+    assert ["first", "other"] == exception._guess_project(["irst", "othe"])
+
+def test_single_suggestion_not_found() -> None:
+
+    exception = RequestedProjectNotFoundError(["irst", "1234"], ["first", "other"])
+
+    assert ["first"] == exception._guess_project(["irst", "1234"])
