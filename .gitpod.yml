@@ -1,8 +1,8 @@
+image:
+  file: .gitpod/Dockerfile
+
 tasks:
-  - init: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-      pip install -e .
+  - init: pip install -e .
 
 vscode:
   extensions:
