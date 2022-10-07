@@ -265,7 +265,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             ProjectEntry:  An immutable ProjectEntry
         """
         kwargs: ProjectEntryDict = {}
-        for key in ProjectEntryDict.__annotations__.keys():
+        for key in ProjectEntryDict.__annotations__.keys():  # pylint: disable=no-member
             try:
                 kwargs[str(key)] = yamldata[key]  # type: ignore
             except KeyError:
