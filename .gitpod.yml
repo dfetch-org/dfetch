@@ -1,8 +1,18 @@
+# See https://www.gitpod.io/docs/references/gitpod-yml
 image:
   file: .gitpod/Dockerfile
 
 tasks:
   - init: pip install -e .
+
+github:
+  prebuilds.addBadge: true
+  prebuilds.addCheck: true
+  prebuilds.addComment: false
+  prebuilds.branches: true
+  prebuilds.master : true
+  prebuilds.pullRequests : true
+  prebuilds.pullRequestsFromForks : false
 
 vscode:
   extensions:
