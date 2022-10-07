@@ -21,55 +21,16 @@ install all runtime dependencies from ``setup.py``.
 
 .. important :: *dfetch* is primarily developed with python 3.7
 
+Running in Gitpod
+-----------------
+Gitpod makes it possible to edit dfetch directly in the browser in a VSCode instance.
+All dependencies are pre-installed and makes it easy to get started.
+
 Running in VSCode
 -----------------
 To debug or run directly from VSCode create the :ref:`virtual environment`.
 Select the python from the virtual environment.
-Add the following configuration to the ``.vscode/launch.json``.
-
-.. code-block:: javascript
-
-    "configurations": [
-        {
-            "name": "Python: Module",
-            "type": "python",
-            "request": "launch",
-            "module": "dfetch.main",
-            "justMyCode": false,
-            "args": ["update"]
-        }
-    ]
-
-For on-the-fly linting add the following to your ``.vscode/settings.json``:
-
-.. code-block:: javascript
-
-    {
-        "python.pythonPath": "${workspaceFolder}/venv/Scripts/python",
-        "python.linting.prospectorEnabled": true,
-        "python.linting.lintOnSave": true,
-
-        "restructuredtext.linter.name": "doc8",
-        "restructuredtext.builtDocumentationPath" : "${workspaceRoot}/doc/_build/html",
-        "restructuredtext.confPath"               : "${workspaceRoot}/doc",
-        "restructuredtext.linter.run": "onType",
-        "restructuredtext.linter.extraArgs": [
-            "--config", "${workspaceFolder}/setup.cfg"
-        ]
-    }
-
-For configuring the testing, add below section to your workspace settings in ``.vscode/settings.json``:
-
-.. code-block:: javascript
-
-    {
-        "python.testing.pytestArgs": [
-            "tests"
-        ],
-        "python.testing.unittestEnabled": false,
-        "python.testing.nosetestsEnabled": false,
-        "python.testing.pytestEnabled": true
-    }
+And open the ``dfetch.code-workspace``.
 
 Quality
 -------
@@ -93,6 +54,7 @@ To see coverage, in the virtual environment run ``pytest`` with coverage
 
     pytest --cov=dfetch tests
 
+
 Feature tests
 ~~~~~~~~~~~~~
 Feature tests are used for higher-level integration testing of functionality.
@@ -107,24 +69,8 @@ Test can be run directly from the command-line
     behave features
 
 To debug these tests, mark the ``Feature:`` or ``Scenario:`` to debug with the ``@wip`` tag
-and add the following configuration to your ``launch.json``.
+and add run the ``Feature tests (wip)`` debug configuration in VSCode.
 
-.. code-block:: javascript
-
-    "configurations": [
-
-        {
-            "name": "Feature tests (wip)",
-            "type": "python",
-            "justMyCode": false,
-            "console": "integratedTerminal",
-            "request": "launch",
-            "module": "behave",
-            "args": [
-                "features", "--wip"
-            ]
-        },
-    ]
 
 Creating documentation
 ----------------------
