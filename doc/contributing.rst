@@ -26,6 +26,12 @@ Running in Gitpod
 Gitpod makes it possible to edit dfetch directly in the browser in a VSCode instance.
 All dependencies are pre-installed and makes it easy to get started.
 
+|GitpodLink|_
+
+.. |GitpodLink| image:: https://gitpod.io/button/open-in-gitpod.svg
+.. _GitpodLink: https://gitpod.io/#https://github.com/dfetch-org/dfetch/
+
+
 Running in VSCode
 -----------------
 To debug or run directly from VSCode create the :ref:`virtual environment`.
