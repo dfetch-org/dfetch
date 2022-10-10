@@ -1,0 +1,137 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dfetch"
+description = "Dependency fetcher"
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["dfetch", "vendoring", "dependencies"]
+license = {text = "MIT"}
+classifiers = [
+    # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python",
+]
+dependencies = [
+    "PyYAML==6.0",
+    "coloredlogs==15.0.1",
+    "pykwalify==1.8.0",
+    "halo==0.0.31",
+    "colorama==0.4.6",
+    "typing-extensions==4.4.0; python_version > '3.7'",
+    "typing-extensions<4.0,>=3.10; python_version <= '3.7'",
+    "sarif-om==1.0.4",
+    "semver==2.13.0",
+    "patch-ng==1.17.4",
+    "importlib-resources==5.4.0; python_version <= '3.7.0'",
+    "cyclonedx-python-lib==3.1.1",
+    "infer-license==0.0.7",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+development = [
+    # Quality dependencies
+    black==22.12.0
+    doc8==1.1.1
+    pydocstyle==6.2.1
+    radon==5.1.0
+    xenon==0.9.0
+    types-PyYAML==6.0.12.2
+    codespell==2.2.2
+    mypy==0.991
+    # flake8==5.0.4 # version 6.x.x requires python >= 3.8.1 (but 3.7 support window is until 2023-06-27)
+    bandit==1.7.4
+    vulture==2.6
+    pyroma==4.1
+    isort==5.11.4
+    pylint==2.15.9
+
+    # Documentation
+    sphinx==6.0.0
+    sphinx-argparse==0.4.0
+    plantweb==1.2.1
+    sphinxcontrib.asciinema==0.3.5
+
+    # Testing
+    pytest==7.2.0
+    pytest-cov==4.0.0
+    behave==1.2.6
+
+    # Automation
+    pre-commit==2.21.0
+]
+
+
+[author]
+name= "Ben Spoor"
+email="dfetch@spoor.cc"
+
+[project.scripts]
+dfetch = "dfetch.__main__:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "dfetch.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["dfetch", "dfetch.*"]
+
+[tool.setuptools.package-data]
+dfetch = ["resources/*.yaml"]
+
+[tool.isort]
+profile="black"
+
+# See https://github.com/PyCQA/flake8/issues/234 😢
+[tool.flake8]
+max-line-length = 120
+max-complexity = 10
+select = "B,C,E,F,W,T4"
+ignore = "W503"
+
+[tool.mypy]
+files="dfetch"
+ignore_missing_imports = "True"
+strict = "True"
+
+[tool.doc8]
+ignore-path="doc/_build"
+max-line-length=120
+verbose=0
+ignore="D002,D004"
+
+[tool.pylint.format]
+max-line-length=120
+disable="logging-fstring-interpolation"
+min-similarity-lines=10
+
+[tool.pydocstyle]
+convention="google"
+
+[tool.pytest]
+filterwarnings = """
+    ignore:.*Using or importing the ABCs.*is deprecated:DeprecationWarning
+    ignore:.*the imp module.*is deprecated:DeprecationWarning
+"""
+
+[tool.coverage.run]
+branch= "True"
+source = "dfetch"
+
+[tool.coverage.report]
+show_missing="True"
+
+[tool.codespell]
+skip = "*.cast,./venv,./example,.mypy_cache,./doc/_build/**,./build,*.patch"
+
