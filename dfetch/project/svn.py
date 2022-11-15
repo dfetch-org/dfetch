@@ -132,6 +132,8 @@ class SvnRepo(VCS):
 
     def _latest_revision_on_branch(self, branch: str) -> str:
         """Get the latest revision on a branch."""
+        if branch not in (self.DEFAULT_BRANCH, "", " "):
+            branch = f"branches/{branch}"
         return self._get_revision(branch)
 
     def _list_of_tags(self) -> List[str]:
