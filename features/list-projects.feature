@@ -55,7 +55,7 @@ Feature: List dependencies
                   branch          : <none>
                   tag             : v2.0
                   last fetch      : 02/07/2021, 20:25:56
-                  revision        : 4
+                  revision        : 5
                   patch           : <none>
                   license         : MIT License
             """
