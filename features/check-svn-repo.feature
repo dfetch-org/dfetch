@@ -21,7 +21,7 @@ Feature: Checking dependencies from a svn repository
                 - name: ext/test-rev-and-branch
                   revision: '1'
                   vcs: svn
-                  branch: trunk
+                  branch: some-branch
                   dst: ext/test-rev-and-branch
 
             """
@@ -29,8 +29,8 @@ Feature: Checking dependencies from a svn repository
         Then the output shows
             """
             Dfetch (0.7.0)
-              ext/test-repo-rev-only: wanted (2), available (trunk - 4)
-              ext/test-rev-and-branch: wanted (trunk - 1), available (trunk - 4)
+              ext/test-repo-rev-only: wanted (2), available (trunk - 5)
+              ext/test-rev-and-branch: wanted (some-branch - 1), available (some-branch - 5)
             """
 
     Scenario: A newer tag is available than in manifest
@@ -90,8 +90,8 @@ Feature: Checking dependencies from a svn repository
         Then the output shows
             """
             Dfetch (0.7.0)
-              ext/test-repo-rev-only: wanted (2), current (trunk - 2), available (trunk - 4)
-              ext/test-rev-and-branch: wanted & current (trunk - 1), available (trunk - 4)
+              ext/test-repo-rev-only: wanted (2), current (trunk - 2), available (trunk - 5)
+              ext/test-rev-and-branch: wanted & current (trunk - 1), available (trunk - 5)
               ext/test-non-standard-svn: wanted (latest), current (1), available (1)
             """
 

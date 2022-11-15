@@ -54,7 +54,7 @@ Feature: Freeze dependencies
 
               projects:
               - name: ext/test-repo-tag
-                revision: '4'
+                revision: '5'
                 url: https://github.com/dfetch-org/test-repo
                 branch: trunk
                 vcs: svn
