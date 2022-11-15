@@ -10,3 +10,7 @@ updates:
     # Labels on pull requests for version updates only
     labels:
       - "dependencies"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
