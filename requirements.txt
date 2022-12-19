@@ -8,7 +8,7 @@ types-PyYAML==6.0.12.2
 codespell==2.2.2
 mypy==0.991
 
-prospector[with_bandit,with_mypy,with_pyroma,with_flake8,with_vulture]==1.8.1
+prospector[with_bandit,with_mypy,with_pyroma,with_flake8,with_vulture]==1.8.3
 
 # Documentation
 sphinx==5.3.0
