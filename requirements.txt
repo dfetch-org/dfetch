@@ -11,6 +11,7 @@ flake8==5.0.4
 bandit==1.7.4
 vulture==2.6
 pyroma==4.0
+isort==5.10.1
 
 # Documentation
 sphinx==5.3.0
