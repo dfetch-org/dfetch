@@ -20,3 +20,4 @@ vscode:
     - lextudio.restructuredtext
     - alexkrechik.cucumberautocomplete
     - ms-python.python
+    - mhutchie.git-graph
