@@ -13,6 +13,7 @@
 		"python.linting.mypyEnabled": true,
 		"python.linting.flake8Enabled": true,
 		"python.linting.lintOnSave": true,
+		"isort.check": true,
 		"python.formatting.provider": "black",
 		"restructuredtext.linter.name": "doc8",
 		"restructuredtext.builtDocumentationPath": "${workspaceRoot}/doc/_build/html",
