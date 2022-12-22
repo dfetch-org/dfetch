@@ -37,7 +37,6 @@ repos:
         entry: mypy
         language: system
         files: ^dfetch/
-        args: [--strict]
         types: [file, python]
     -   id: doc8
         name: doc8
@@ -51,12 +50,27 @@ repos:
         language: system
         files: ^dfetch/
         types: [file, python]
-    -   id: bandit
+    -   id: bandit (security)
         name: bandit
         entry: bandit
         language: system
         files: ^dfetch/
         types: [file, python]
+    -   id: vulture (dead code)
+        name: vulture
+        language: python
+        entry: vulture
+        args: ["--min-confidence=80"]
+        types: [python]
+        files: ^dfetch/
+        require_serial: true
+    -   id: pyroma (package friendliness)
+        name: Pyroma
+        entry: pyroma
+        language: python
+        args: ["-d", "--min=10", "."]
+        pass_filenames: false
+        always_run: true
     -   id: radon (maintenance index)
         name: radon (maintenance index)
         entry: radon
