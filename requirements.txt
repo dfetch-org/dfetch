@@ -12,7 +12,7 @@ bandit==1.7.4
 vulture==2.6
 pyroma==4.1
 isort==5.10.1
-pylint==2.15.3
+pylint==2.15.9
 
 # Documentation
 sphinx==5.3.0
