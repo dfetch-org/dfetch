@@ -29,8 +29,8 @@ class MyEnvBuilder(venv.EnvBuilder):
         print("Upgrading pip")
         self.pip_install(context, "--upgrade", "pip")
         for reqs in self.requirements:
-            print("Installing requirements from {}".format(reqs))
-            self.pip_install(context, "-r", reqs)
+            print(f"Installing requirements from {reqs}")
+            self.pip_install(context, "--use-pep517", "-r", reqs)
         print("Installing package")
         self.pip_install(context, "-e", ".")
 
