@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dfetch"
+authors = [{name = "Ben Spoor", email = "dfetch@spoor.cc"}]
 description = "Dependency fetcher"
 readme = "README.md"
 requires-python = ">=3.7"
@@ -74,9 +75,6 @@ development = [
 ]
 
 
-[author]
-name= "Ben Spoor"
-email="dfetch@spoor.cc"
 
 [project.scripts]
 dfetch = "dfetch.__main__:main"
@@ -134,4 +132,3 @@ show_missing="True"
 
 [tool.codespell]
 skip = "*.cast,./venv,./example,.mypy_cache,./doc/_build/**,./build,*.patch"
-
