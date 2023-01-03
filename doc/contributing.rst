@@ -11,15 +11,15 @@ After implementing (with tests and documentation) create a PR on Github and let 
 Virtual Environment
 -------------------
 Create a virtual environment by double-clicking ``create_venv.py`` or by running the following command.
-This will install all develop dependencies from ``requirements.txt``, install `DFetch` as
+This will install all ``develop`` dependencies from ``pyproject.toml``, install *DFetch* as
 `editable package <https://pip.pypa.io/en/stable/cli/pip_wheel/?highlight=editable#cmdoption-e>`_ and
-install all runtime dependencies from ``setup.py``.
+install all runtime dependencies from ``pyproject.toml``.
 
 .. code-block:: bash
 
     python create_venv.py
 
-.. important :: *dfetch* is primarily developed with python 3.7
+.. important :: *dfetch* is primarily developed with python 3.8
 
 Running in Gitpod
 -----------------
@@ -97,7 +97,7 @@ Releasing
     git push --tags
 
 - If all tests ok, create release in the `GitHub webui <https://github.com/dfetch-org/dfetch/releases/new>`_.
-- Make sure all dependencies in setup.py are pinned.
+- Make sure all dependencies in ``pyproject.toml`` are pinned.
 - Copy the CHANGELOG entry of the release to github.
 - When the release is created, a new package is automatically pushed to `PyPi <https://pypi.org/project/dfetch/>`_.
 
