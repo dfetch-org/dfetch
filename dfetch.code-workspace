@@ -64,7 +64,8 @@
 		"recommendations": [
 			"lextudio.restructuredtext",
 			"alexkrechik.cucumberautocomplete",
-			"ms-python.python"
+			"ms-python.python",
+			"bungcip.better-toml"
 		]
 	}
 }
