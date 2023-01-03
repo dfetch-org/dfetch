@@ -20,8 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          pip install .
+          pip install .[development]
 
       - run: codespell                                                # Check for typo's
       - run: isort --diff dfetch                                      # Checks import order
