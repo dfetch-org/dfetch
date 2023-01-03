@@ -2,8 +2,9 @@ Release 0.8.0 (unreleased)
 ===================================
 
 * Don't break if no suggestion found (#358)
-* Drop python 3.6 support
+* Drop python 3.6 support (#386)
 * Fix checking project from svn branch (#383)
+* Move all configuration into single ``pyproject.toml`` (#401)
 
 Release 0.7.0 (released 2022-06-22)
 ===================================
