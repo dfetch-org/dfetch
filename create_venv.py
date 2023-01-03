@@ -4,7 +4,7 @@
 import argparse
 import subprocess  # nosec
 import venv
-from typing import Any
+from typing import Any, Optional
 
 
 class MyEnvBuilder(venv.EnvBuilder):
@@ -16,11 +16,16 @@ class MyEnvBuilder(venv.EnvBuilder):
     """
 
     def __init__(
-        self, *args: Any, requirements: str = "", **kwargs: Any
+        self,
+        *args: Any,
+        extra_requirements: str = "",
+        **kwargs: Any,
     ) -> None:  # pylint: disable=line-too-long
-        """:param requirements: Can be any path. If non, this step is skipped."""
+        """:param extra_requirements: Install any additional parts as mentioned in pyproject.toml."""
         super().__init__(*args, **kwargs)
-        self.requirements = requirements or ["requirements.txt"]
+        self.extra_requirements = (
+            f"[{extra_requirements}]" if extra_requirements else ""
+        )
 
     def post_setup(self, context: Any) -> None:
         """Set up proper environment for testing."""
@@ -28,11 +33,8 @@ class MyEnvBuilder(venv.EnvBuilder):
 
         print("Upgrading pip")
         self.pip_install(context, "--upgrade", "pip")
-        for reqs in self.requirements:
-            print(f"Installing requirements from {reqs}")
-            self.pip_install(context, "--use-pep517", "-r", reqs)
-        print("Installing package")
-        self.pip_install(context, "-e", ".")
+        print("Installing package and any extra requirements")
+        self.pip_install(context, "--use-pep517", "-e", f".{self.extra_requirements}")
 
     @staticmethod
     def pip_install(context: Any, *args: Any) -> None:
@@ -53,9 +55,11 @@ class MyEnvBuilder(venv.EnvBuilder):
 
 if __name__ == "__main__":
     PARSER = argparse.ArgumentParser()
-    PARSER.add_argument("-r", "--requirements", type=str, nargs="*")
+    PARSER.add_argument("-e", "--extra_requirements", type=str)
     ARGS = PARSER.parse_args()
 
-    MyEnvBuilder(clear=True, with_pip=True, requirements=ARGS.requirements).create(
-        "venv"
-    )
+    MyEnvBuilder(
+        clear=False,
+        with_pip=True,
+        extra_requirements=ARGS.extra_requirements,
+    ).create("venv")
