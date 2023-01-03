@@ -62,6 +62,7 @@ development = [
     'pyroma==4.1',
     'isort==5.11.4',
     'pylint==2.15.9',
+    "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml
 
     # Documentation
     'sphinx==6.0.0',
@@ -135,4 +136,4 @@ source = ["dfetch"]
 show_missing= true
 
 [tool.codespell]
-skip = "*.cast,./venv,./example,.mypy_cache,./doc/_build/**,./build,*.patch"
+skip = "*.cast,./venv,./example,.mypy_cache,./doc/_build/**,./build,*.patch,.git"
