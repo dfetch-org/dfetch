@@ -87,7 +87,7 @@ dfetch = "dfetch.__main__:main"
 version = {attr = "dfetch.__version__"}
 
 [tool.setuptools.packages.find]
-where = ["dfetch", "dfetch.*"]
+include = ["dfetch", "dfetch.*"]
 
 [tool.setuptools.package-data]
 dfetch = ["resources/*.yaml"]
