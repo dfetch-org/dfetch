@@ -66,7 +66,7 @@ development = [
     'pre-commit==2.21.0',
 ]
 docs =[
-    'sphinx==6.0.0',
+    'sphinx==6.1.1',
     'sphinx-argparse==0.4.0',
     'plantweb==1.2.1',
     'sphinxcontrib.asciinema==0.3.5',
