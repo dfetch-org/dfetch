@@ -2,6 +2,11 @@ FROM gitpod/workspace-full:latest
 
 USER gitpod
 
+RUN sudo apt-get update \
+ && sudo apt-get install -y \
+    pv \
+ && sudo rm -rf /var/lib/apt/lists/*
+
 COPY --chown=gitpod . .
 RUN pip install --upgrade pip  \
     pip install -e .[development,docs,test]  \
