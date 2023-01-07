@@ -10,4 +10,3 @@ manifest:
     repo-path: paxtonhare/demo-magic.git
     dst: doc/generate-casts/demo-magic
     src: '*.sh'
-    patch: doc/generate-casts/demo-magic.patch
