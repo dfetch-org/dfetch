@@ -105,6 +105,10 @@ class SvnRepo(VCS):
             tag = path[1]
             branch = ""
 
+        if branch == " " and url.startswith(repo_root):
+            src = url[len(f"{repo_root}/") :]
+            url = repo_root
+
         return (url, branch, tag, src)
 
     def check(self) -> bool:
