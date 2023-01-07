@@ -5,7 +5,9 @@ repos:
     rev: v3.2.0
     hooks:
     -   id: trailing-whitespace
+        exclude: ^doc/static/uml/styles/plantuml-c4/
     -   id: end-of-file-fixer
+        exclude: ^doc/static/uml/styles/plantuml-c4/
     -   id: check-yaml
     -   id: check-added-large-files
 -   repo: local
