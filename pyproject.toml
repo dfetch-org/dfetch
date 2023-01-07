@@ -76,6 +76,9 @@ test = [
     'pytest-cov==4.0.0',
     'behave==1.2.6',
 ]
+casts = [
+    'asciinema',
+]
 
 
 
