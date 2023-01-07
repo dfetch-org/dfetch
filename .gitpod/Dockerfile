@@ -9,5 +9,5 @@ RUN sudo apt-get update \
 
 COPY --chown=gitpod . .
 RUN pip install --upgrade pip  \
-    pip install -e .[development,docs,test]  \
+    pip install -e .[development,docs,test,casts]  \
     pre-commit install
