@@ -137,4 +137,4 @@ source = ["dfetch"]
 show_missing= true
 
 [tool.codespell]
-skip = "*.cast,./venv,./example,.mypy_cache,./doc/_build/**,./build,*.patch,.git,doc/generate-casts/demo-magic/**"
+skip = "*.cast,./venv,./example,.mypy_cache,./doc/_build/**,./build,*.patch,.git,./doc/generate-casts/demo-magic/**"
