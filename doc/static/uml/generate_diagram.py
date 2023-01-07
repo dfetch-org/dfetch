@@ -1,9 +1,9 @@
-import re
-import glob
 import dataclasses
-from pathlib import Path
-from typing import Tuple, Sequence
+import glob
 import pprint
+import re
+from pathlib import Path
+from typing import Sequence, Tuple
 
 import black
 
@@ -129,7 +129,9 @@ Rel(user, contCommands, "Uses")
             print(f'{indent}Boundary(cont{container}, "Manifest") {{')
 
             for name, module in modules.items():
-                description = "something" if isinstance(module, dict) else module.description
+                description = (
+                    "something" if isinstance(module, dict) else module.description
+                )
                 print(
                     f'{indent}{indent}Component(comp{name}, "{name}", "python", "{description}")'
                 )
