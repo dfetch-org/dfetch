@@ -228,3 +228,50 @@ def test_get_info():
         }
 
         assert result == expectation
+
+
+@pytest.fixture
+def svn_repo():
+    return SvnRepo(ProjectEntry({"name": "proj3", "url": "some_url"}))
+
+
+def test_svn_repo_name(svn_repo):
+    assert svn_repo.NAME == "svn"
+
+
+def test_svn_repo_default_branch(svn_repo):
+    assert svn_repo.DEFAULT_BRANCH == "trunk"
+
+
+def test_svn_repo_split_url(svn_repo):
+    url, branch, tag, src = svn_repo._split_url(
+        "http://example.com/repo/trunk/src", "http://example.com/repo"
+    )
+    assert url == "http://example.com/repo"
+    assert branch == ""  # empty for default branch
+    assert tag == ""
+    assert src == "src"
+
+    url, branch, tag, src = svn_repo._split_url(
+        "http://example.com/repo/branches/mybranch/src", "http://example.com/repo"
+    )
+    assert url == "http://example.com/repo"
+    assert branch == "mybranch"
+    assert tag == ""
+    assert src == "src"
+
+    url, branch, tag, src = svn_repo._split_url(
+        "http://example.com/repo/nonstandard/folder/src", "http://example.com/repo"
+    )
+    assert url == "http://example.com/repo"
+    assert branch == " "
+    assert tag == ""
+    assert src == "nonstandard/folder/src"
+
+    url, branch, tag, src = svn_repo._split_url(
+        "http://example.com/repo/tags/v1.0/src", "http://example.com/repo"
+    )
+    assert url == "http://example.com/repo"
+    assert branch == ""
+    assert tag == "v1.0"
+    assert src == "src"
