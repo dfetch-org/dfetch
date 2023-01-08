@@ -9,11 +9,11 @@ System_Boundary(DFetch, "Dfetch") {
     Container(contCommands, "Commands", "python", "Parsing, editing and finding of manifests.")
 
     Boundary(DFetchManifest, "Manifest") {
-        Component(compManifest, "Manifest", "python", "Does stuff")
-        Component(compProject, "Project", "python", "Does stuff")
-        Component(compRemote, "Remote", "python", "Does stuff")
-        Component(compValidate, "Validate", "python", "Does stuff")
-        Component(compVersion, "Version", "python", "Does stuff")
+        Component(compManifest, "Manifest", "python", "Main configuration file describing all projects.")
+        Component(compProject, "Project", "python", "A single project requirement with optionally specific version")
+        Component(compRemote, "Remote", "python", "A remote source that contains one or more projects.")
+        Component(compValidate, "Validate", "python", "Validate a manifest.")
+        Component(compVersion, "Version", "python", "Check and compare versions.")
 
         Rel(compManifest, compProject, "Uses")
         Rel(compProject, compVersion, "Uses")
