@@ -1,8 +1,4 @@
 {"version": 2, "width": 181, "height": 19, "timestamp": 1673127291, "env": {"SHELL": null, "TERM": "xterm-256color"}}
-[0.018398, "o", "/workspace/dfetch/doc/generate-casts/basic /workspace/dfetch/doc/generate-casts\r\n"]
-[0.514284, "o", "\u001b[1;38;5;4m\u001b[34mDfetch (0.7.0)\u001b[0m\r\n\u001b[0m"]
-[0.519174, "o", "\u001b[1;38;5;4mCreated dfetch.yaml\u001b[0m\r\n\u001b[0m"]
-[0.5194, "o", "\u001b[0m"]
 [0.565851, "o", "\u001b[H\u001b[2J\u001b[3J"]
 [0.568682, "o", "$ "]
 [1.570266, "o", "\u001b["]

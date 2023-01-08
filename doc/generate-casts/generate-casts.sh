@@ -25,3 +25,11 @@ git submodule update --quiet --init > /dev/null
 asciinema rec --overwrite -c "../import-demo.sh" ../../asciicasts/import.cast
 popd
 rm -rf ModbusScope
+
+# Find all files with the .cast extension in the specified directory
+files=$(find "../asciicasts" -type f -name '*.cast')
+
+# Process each file
+for file in $files; do
+    ./strip-setup-from-cast.sh "${file}"
+done

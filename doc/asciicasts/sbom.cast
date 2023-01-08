@@ -1,5 +1,4 @@
 {"version": 2, "width": 181, "height": 19, "timestamp": 1673127421, "env": {"SHELL": null, "TERM": "xterm-256color"}}
-[0.014338, "o", "/workspace/dfetch/doc/generate-casts/report_sbom /workspace/dfetch/doc/generate-casts\r\n"]
 [0.036802, "o", "\u001b[H\u001b[2J\u001b[3J"]
 [0.03952, "o", "$ "]
 [1.041337, "o", "\u001b"]
