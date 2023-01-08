@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Uses relative paths 
+cd "$(dirname "$0")"
+
 asciinema rec --overwrite -c "./basic-demo.sh" ../asciicasts/basic.cast
 asciinema rec --overwrite -c "./init-demo.sh" ../asciicasts/init.cast
 asciinema rec --overwrite -c "./environment-demo.sh" ../asciicasts/environment.cast
