@@ -1,11 +1,11 @@
 import dataclasses
 import glob
+import os
+import pathlib
 import pprint
 import re
 from pathlib import Path
 from typing import Sequence, Tuple
-
-import black
 
 import_regex = re.compile(r"(import|from) dfetch\.(?P<relation>[\.\w]+)")
 description_regex = re.compile(r"^\"{3}(?P<description>.*)")
@@ -166,6 +166,8 @@ Rel(user, contCommands, "Uses")
 if __name__ == "__main__":
 
     blacklist = ("__init__", "__main__", "log", "util", "resources")
-    relations = find_relations("C:\\Projects\\EDNA\\dfetch\\dfetch", blacklist)
+    script_path = pathlib.Path(os.path.realpath(__file__))
+    module_path = script_path.parent.parent.parent.parent / "dfetch"
+    relations = find_relations(module_path, blacklist)
 
     generate_c3(relations, ("vcs", "manifest"), blacklist)
