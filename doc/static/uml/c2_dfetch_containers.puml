@@ -16,7 +16,7 @@ System_Boundary(DFetch, "Dfetch") {
     Rel(contCommands, contReporting, "Uses")
     Rel(contCommands, contProject, "Uses")
     Rel(contCommands, contVcs, "Uses")
-    Rel(contProject, contReporting, "Uses")
+    Rel_U(contReporting, contProject, "Implements")
     Rel_R(contProject, contManifest, "Has")
     Rel_U(contReporting, contManifest, "Uses")
     Rel(contProject, contVcs, "Uses")
