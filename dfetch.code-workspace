@@ -63,7 +63,8 @@
 			"alexkrechik.cucumberautocomplete",
 			"ms-python.python",
 			"bungcip.better-toml",
-			"trond-snekvik.simple-rst"
+			"trond-snekvik.simple-rst",
+			"jebbs.plantuml"
 		]
 	}
 }

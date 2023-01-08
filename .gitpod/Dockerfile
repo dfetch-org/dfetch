@@ -5,6 +5,7 @@ USER gitpod
 RUN sudo apt-get update \
  && sudo apt-get install -y \
     pv \
+    plantuml \
  && sudo rm -rf /var/lib/apt/lists/*
 
 COPY --chown=gitpod . .
