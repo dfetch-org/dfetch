@@ -16,13 +16,9 @@ line=$(echo "$asciicast" | grep -n '\\u001b\[H\\u001b\[2J\\u001b\[3J' | cut -d: 
 if [ -z "$line" ]; then
     echo "Warning: No line containing the escape sequence for clearing the screen was found"
 else
-    echo "Will remove lines 1 --> $line"
+    echo "Will remove lines 2 --> $line"
     # Remove all the lines before the line containing the escape sequence
     asciicast=$(echo "$asciicast" | sed -n "2,$((line-1))!p")
-
-
-    # Set the first timestamp to 0.00
-    #asciicast=$(echo "$asciicast" | sed 's/\([0-9]*\.[0-9]*\),/0.00,/')
 
     # Write the updated asciicast to the file
     echo "$asciicast" > "$1"
