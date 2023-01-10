@@ -1,0 +1,110 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto:100,300,300i,400,500,700,900");
+
+.sphinxsidebar .caption-text {
+  font-size: 130%;
+}
+
+.logo {
+  width: 100%;
+}
+
+.sphinxsidebarwrapper .internal,
+.sphinxsidebarwrapper .external {
+  font-weight: 300;
+}
+
+body {
+  font-family: Roboto;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: Roboto !important;
+  font-weight: 300 !important;
+}
+
+.toctree-l1 {
+  padding-bottom: 0.5em;
+}
+
+.body p,
+.body dd,
+.body li {
+  font-family: Roboto;
+  font-size: 1em;
+  font-weight: 300;
+  line-height: 2;
+  text-align: justify;
+}
+
+.search {
+  margin-bottom: 1em;
+}
+
+.sphinxsidebarwrapper ul {
+  margin-bottom: 1em;
+}
+
+.sphinxsidebar input[type="submit"] {
+  font-family: "Roboto", serif;
+}
+
+.caption {
+  margin-top: 1em;
+}
+
+.caption-text {
+  font-weight: 500;
+}
+
+.sphinxsidebarwrapper .logo-name {
+  display: none;
+}
+
+.sphinxsidebarwrapper .logo {
+  margin-bottom: 2em;
+}
+
+img {
+  height: auto;
+  max-width: 100%;
+}
+
+div.admonition {
+  border: none;
+  border-radius: 0;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12),
+    0 3px 1px -2px rgba(0, 0, 0, 0.2);
+  font-family: Roboto;
+  padding: 2em;
+  position: relative;
+  transition: box-shadow 0.25s;
+}
+
+div.admonition p.admonition-title {
+  font-family: "Roboto", serif;
+  font-weight: 300;
+  margin: 0 0 5px 0;
+}
+
+div.admonition p {
+  font-weight: 300;
+  margin-top: 1em;
+}
+
+.admonition a {
+  font-weight: 300;
+}
+
+strong {
+  font-weight: 400;
+}
+
+.pre {
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+}

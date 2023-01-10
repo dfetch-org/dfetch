@@ -8,3 +8,4 @@ dist
 coverage.xml
 example/Tests/
 build
+doc/landing-page/_build
