@@ -39,6 +39,7 @@ extensions = [
     "sphinx.ext.autosectionlabel",
     "plantweb.directive",
     "sphinxcontrib.asciinema",
+    "sphinx_design"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -191,7 +192,7 @@ texinfo_documents = [
 sphinxcontrib_asciinema_defaults = {
     "theme": "monokai",
     "preload": 1,
-    "font-size": "15px",
+    "font-size": "10px",
     "speed": 1.5,
     "loop": False,
     "autoplay": True,

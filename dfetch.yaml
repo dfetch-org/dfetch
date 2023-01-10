@@ -1,7 +1,7 @@
 manifest:
-  version: 0.0                                            # DFetch Module syntax version
+  version: 0.0
 
-  remotes:                                                # declare common sources in one place
+  remotes:
   - name: github
     url-base: https://github.com/
 
