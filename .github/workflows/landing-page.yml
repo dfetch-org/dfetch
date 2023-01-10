@@ -32,4 +32,3 @@ jobs:
           github_token: '${{ secrets.GH_TOKEN  }}'
   #         github_pat: '${{ secrets.GH_PAT }}'
           source_folder: doc/landing-page/_build/html
-        if: success() && github.event == 'push'
