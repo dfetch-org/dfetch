@@ -27,9 +27,9 @@ jobs:
           make html
       - uses: seanmiddleditch/gha-publish-to-git@master
         with:
-          repository: https://github.com/dfetch-org/dfetch-org.github.io.git
+          repository: dfetch-org/dfetch-org.github.io
           branch: main
-          github_token: '${{ secrets.GITHUB_TOKEN  }}'
+          github_token: '${{ secrets.GH_TOKEN  }}'
   #         github_pat: '${{ secrets.GH_PAT }}'
           source_folder: doc/landing-page/_build/html
         if: success() && github.event == 'push'
