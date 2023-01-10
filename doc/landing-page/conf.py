@@ -39,7 +39,7 @@ extensions = [
     "sphinx.ext.autosectionlabel",
     "plantweb.directive",
     "sphinxcontrib.asciinema",
-    "sphinx_design"
+    "sphinx_design",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -110,7 +110,7 @@ html_theme_options = {
     "github_banner": True,
     "show_related": True,
     "note_bg": "#FFF59C",
-    'nosidebar': True,
+    "nosidebar": True,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
