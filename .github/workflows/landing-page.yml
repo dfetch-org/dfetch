@@ -23,7 +23,7 @@ jobs:
 
       - name: Build landing-page
         run: |
-          cd docs/landing-page
+          cd doc/landing-page
           make html
       - uses: seanmiddleditch/gha-publish-to-git@master
         with:
@@ -31,5 +31,5 @@ jobs:
           branch: main
           github_token: '${{ secrets.GITHUB_TOKEN  }}'
   #         github_pat: '${{ secrets.GH_PAT }}'
-          source_folder: static/html
+          source_folder: doc/landing-page/_build/html
         if: success() && github.event == 'push'
