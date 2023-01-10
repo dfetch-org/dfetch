@@ -29,6 +29,6 @@ jobs:
         with:
           repository: dfetch-org/dfetch-org.github.io
           branch: main
-          github_token: '${{ secrets.GH_TOKEN  }}'
+          github_token: '${{ secrets.GITHUB_TOKEN  }}'
   #         github_pat: '${{ secrets.GH_PAT }}'
           source_folder: doc/landing-page/_build/html
