@@ -31,4 +31,4 @@ jobs:
           branch: main
           github_token: '${{ secrets.GITHUB_TOKEN  }}'
   #         github_pat: '${{ secrets.GH_PAT }}'
-          source_folder: doc/landing-page/_build/html
+          source_folder: _build/html
