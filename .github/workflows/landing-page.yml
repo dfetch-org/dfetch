@@ -1,0 +1,35 @@
+name: Landing-page
+
+on:
+  push:
+    branches:
+      - main
+      - feature/simplify-landing-page
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install .[docs]
+
+      - name: Build landing-page
+        run: |
+          cd docs/landing-page
+          make html
+      - uses: seanmiddleditch/gha-publish-to-git@master
+        with:
+          repository: https://github.com/dfetch-org/dfetch-org.github.io.git
+          branch: main
+          github_token: '${{ secrets.GITHUB_TOKEN  }}'
+  #         github_pat: '${{ secrets.GH_PAT }}'
+          source_folder: static/html
+        if: success() && github.event == 'push'
