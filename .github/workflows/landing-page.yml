@@ -25,10 +25,10 @@ jobs:
         run: |
           cd doc/landing-page
           make html
-      - uses: seanmiddleditch/gha-publish-to-git@master
+      - name: Publish
+        uses: tsunematsu21/actions-publish-gh-pages@v1.0.2
         with:
-          repository: dfetch-org/dfetch-org.github.io
+          dir: doc/landing-page/_build/html
+          repo: dfetch-org/dfetch-org.github.io
           branch: main
-          github_token: '${{ secrets.GITHUB_TOKEN  }}'
-  #         github_pat: '${{ secrets.GH_PAT }}'
-          source_folder: doc/landing-page/_build/html
+          token: ${{ secrets.GITHUB_TOKEN }}
