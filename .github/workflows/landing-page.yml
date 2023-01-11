@@ -31,4 +31,4 @@ jobs:
           dir: doc/landing-page/_build/html
           repo: dfetch-org/dfetch-org.github.io
           branch: main
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_DFETCH_ORG_DEPLOY }}
