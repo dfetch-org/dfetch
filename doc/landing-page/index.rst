@@ -10,7 +10,7 @@
 Dfetch
 ######
 
-.. grid:: 4
+.. grid:: 3
 
     .. grid-item::
 
@@ -48,23 +48,13 @@ customizations all while maintaining self-contained code repositories.
 
 Say goodbye to the hassle of traditional dependency management solutions and hello to a more efficient and streamlined process with *Dfetch*.
 
-.. card::
+.. card::  :material-regular:`done_all;4em;sd-text-primary` **Check for updates**
    :class-card: sd-bg-dark sd-text-light
 
+   *Dfetch* simplifies dependency management by allowing users to easily check for
+   updates and integrate them seamlessly into their codebase.
 
-   .. grid:: 1 1 2 2
-
-      .. grid-item::
-         :columns: 4
-
-         :material-regular:`done_all;4em;sd-text-primary` **Check for updates**
-
-         *Dfetch* simplifies dependency management by allowing users to easily check for updates and integrate them seamlessly into their codebase.
-
-      .. grid-item::
-         :columns: 8
-
-         .. asciinema:: ../asciicasts/check.cast
+   .. asciinema:: ../asciicasts/check.cast
 
 
 .. grid:: 1 1 2 2
@@ -97,22 +87,14 @@ Say goodbye to the hassle of traditional dependency management solutions and hel
       *Dfetch* provides freedom of choice, users are not locked into using *Dfetch*, they can easily switch to other dependency management solutions.
 
 
-.. card::
+.. card:: :material-regular:`smart_toy;4em;sd-text-primary` **Integrate**
    :class-card: sd-bg-dark sd-text-light
 
-   .. grid:: 1 1 2 2
-
-      .. grid-item::
-         :columns: 8
+         *Dfetch* streamlines the integration process by being easily adaptable to various CI/CD automated tools, making it a breeze to implement in any development workflow.
+         It can generate reports for Github, Gitlab, Jenkins, DependencyTrack and more!
 
          .. asciinema:: ../asciicasts/check-ci.cast
 
-      .. grid-item::
-         :columns: 4
-
-         :material-regular:`smart_toy;4em;sd-text-primary` **Integrate**
-
-         *Dfetch* streamlines the integration process by being easily adaptable to various CI/CD automated tools, making it a breeze to implement in any development workflow.
 
 .. card:: Example config
 
