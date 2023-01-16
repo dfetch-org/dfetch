@@ -27,6 +27,7 @@
 		],
 		"python.testing.unittestEnabled": false,
 		"python.testing.pytestEnabled": true,
+		"python.testing.autoTestDiscoverOnSaveEnabled": true,
 		"cucumberautocomplete.steps": ["features/steps/*.py"],
 		"esbonio.server.enabled": true,
 	},
