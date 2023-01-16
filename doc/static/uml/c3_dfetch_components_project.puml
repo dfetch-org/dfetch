@@ -1,0 +1,44 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "Developer")
+
+System_Boundary(DFetch, "Dfetch") {
+
+    Container(contCommands, "Commands", "python", "Parsing, editing and finding of manifests.")
+
+    Container(contManifest, "Manifest", "python", "Parsing, editing and finding of manifests.")
+    Boundary(DfetchProject, "Project", "python", "Main project that has a manifest.") {
+
+        Component(compAbstractCheckReporter, "AbstractCheckReporter", "python", "Abstract interface for generating a check report.")
+        Component(compGit, "Git", "python", "A remote source project based on git.")
+        Component(compMetadata, "Metadata", "python", "A file containing metadata about a project.")
+        Component(compSvn, "Svn", "python", "A remote source project based on svn.")
+        Component(compVcs, "Vcs", "python", "An abstract remote version control system.")
+
+        Rel_U(compGit, compVcs, "Implements")
+        Rel_U(compSvn, compVcs, "Implements")
+        Rel(compVcs, compAbstractCheckReporter, "Uses")
+        Rel_L(compVcs, compMetadata, "Uses")
+    }
+
+
+    Container(contVcs, "Vcs", "python", "Abstraction of various Version Control Systems.")
+    Container(contReporting, "Reporting", "python", "Output formatters for various reporting formats.")
+
+    Rel(contCommands, compVcs, "Uses")
+    Rel(contCommands, compGit, "Uses")
+    Rel(contCommands, compSvn, "Uses")
+    Rel(contReporting, compAbstractCheckReporter, "Implements")
+    Rel_R(contReporting, compMetadata, "Uses")
+    Rel_R(compMetadata, contManifest, "Has")
+    Rel(compVcs, contManifest, "Has")
+    Rel(contReporting, contManifest, "Uses")
+    Rel(compGit, contVcs, "Uses")
+    Rel(compSvn, contVcs, "Uses")
+}
+
+Rel(user, contCommands, "Uses")
+
+@enduml
