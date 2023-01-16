@@ -28,3 +28,7 @@ Commands
 Manifest
 ~~~~~~~~
 .. uml:: /static/uml/c3_dfetch_components_manifest.puml
+
+Project
+~~~~~~~
+.. uml:: /static/uml/c3_dfetch_components_project.puml

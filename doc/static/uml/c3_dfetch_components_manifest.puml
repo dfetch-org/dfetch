@@ -27,9 +27,9 @@ System_Boundary(DFetch, "Dfetch") {
     Container(contReporting, "Reporting", "python", "Output formatters for various reporting formats.")
 
     Rel(contCommands, compManifest, "Uses")
-    Rel(contProject, contReporting, "Uses")
+    Rel(contReporting, contProject, "Extends")
     Rel_R(contProject, compManifest, "Has")
-    Rel_U(contReporting, compManifest, "Uses")
+    Rel(contReporting, compManifest, "Uses")
     Rel(contProject, contVcs, "Uses")
 }
 
