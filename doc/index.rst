@@ -1,8 +1,7 @@
 .. Dfetch documentation master file
 
 .. image:: images/dfetch_header.png
-   :height: 203
-   :width: 571
+   :width: 100%
    :align: center
 
 .. toctree::
