@@ -11,28 +11,28 @@ of your project.
 ========================= ===== ===== ========= ======= =================== =======================
  Name                      Git   SVN   Windows   Linux   Language Agnostic   Build System Agnostic
 ------------------------- ----- ----- --------- ------- ------------------- -----------------------
-Dfetch_                     ✔   ✔     ✔       ✔          ✔                   ✔
+Dfetch_                     ✔    ✔       ✔        ✔             ✔                   ✔
 ========================= ===== ===== ========= ======= =================== =======================
-`CGet`_                     ✔   ✘     ✔       ✔      ✘ (C/C++)             ✘ (CMake)
-`CMake ExternalProject`_    ✔   ✘     ✔       ✔      ✘ (C/C++)             ✘ (CMake)
-`CPM.cmake`_                ✔   ✘     ✔       ✔      ✘ (C/C++)             ✘ (CMake)
-`CPPAN`_                    ✔   ✘     ✔       ✔      ✘ (C/C++)               ✔
-`Git submodules`_           ✔   ✘     ✔       ✔          ✔                   ✔
-`Git subtree`_              ✔   ✘     ✔       ✔          ✔                   ✔
-`Git-externals`_            ✔   ✘     ✔       ✔          ✔                   ✔
-`Gitman`_                   ✔   ✘     ✔       ✔          ✔                   ✔
-`Gitslave`_                 ✔   ✘     ✘       ✔          ✔                   ✔
-`Google Repo`_              ✔   ✘     ✔       ✔          ✔                   ✔
-`Grit`_                     ✔   ✘     ✔       ✔          ✔                   ✔
-`Kitenet mr`_               ✔   ✔     ?        ✔          ✔                   ✔
-`mdlr`_                     ✔   ✘     Beta     ✔          ✔                   ✔
-`Quack`_                    ✔   ✘     ✘       ✔          ✔                   ✔
-`Quark`_                    ✔   ✔     ✔       ✔          ✔                   ✔
-`SVN Externals`_            ✘   ✔     ✔       ✔          ✔                   ✔
-`tsrc`_                     ✔   ✘     ✔       ✔          ✔                   ✔
-`SoftwareNetwork`_          ✔   ✘     ✔       ✔      ✘ (C/C++)               ✔
-`Vcpkg`_                    ✔   ✘     ✔       ✔      ✘ (C/C++)               ✘
-`West`_                     ✔   ✘     ✔       ✔      ✘ (C/C++)               ✘
+`CGet`_                     ✔    ✘       ✔        ✔         ✘ (C/C++)             ✘ (CMake)
+`CMake ExternalProject`_    ✔    ✘       ✔        ✔         ✘ (C/C++)             ✘ (CMake)
+`CPM.cmake`_                ✔    ✘       ✔        ✔         ✘ (C/C++)             ✘ (CMake)
+`CPPAN`_                    ✔    ✘       ✔        ✔         ✘ (C/C++)               ✔
+`Git submodules`_           ✔    ✘       ✔        ✔             ✔                   ✔
+`Git subtree`_              ✔    ✘       ✔        ✔             ✔                   ✔
+`Git-externals`_            ✔    ✘       ✔        ✔             ✔                   ✔
+`Gitman`_                   ✔    ✘       ✔        ✔             ✔                   ✔
+`Gitslave`_                 ✔    ✘       ✘        ✔             ✔                   ✔
+`Google Repo`_              ✔    ✘       ✔        ✔             ✔                   ✔
+`Grit`_                     ✔    ✘       ✔        ✔             ✔                   ✔
+`Kitenet mr`_               ✔    ✔       ?         ✔             ✔                   ✔
+`mdlr`_                     ✔    ✘       Beta      ✔             ✔                   ✔
+`Quack`_                    ✔    ✘       ✘        ✔             ✔                   ✔
+`Quark`_                    ✔    ✔       ✔        ✔             ✔                   ✔
+`SVN Externals`_            ✘    ✔       ✔        ✔             ✔                   ✔
+`tsrc`_                     ✔    ✘       ✔        ✔             ✔                   ✔
+`SoftwareNetwork`_          ✔    ✘       ✔        ✔         ✘ (C/C++)               ✔
+`Vcpkg`_                    ✔    ✘       ✔        ✔         ✘ (C/C++)               ✘
+`West`_                     ✔    ✘       ✔        ✔         ✘ (C/C++)               ✘
 ========================= ===== ===== ========= ======= =================== =======================
 
 .. _`CGet`: https://github.com/pfultz2/cget
