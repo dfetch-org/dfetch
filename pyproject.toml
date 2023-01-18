@@ -53,7 +53,7 @@ development = [
     'pydocstyle==6.3.0',
     'radon==5.1.0',
     'xenon==0.9.0',
-    'types-PyYAML==6.0.12.2',
+    'types-PyYAML==6.0.12.3',
     'codespell==2.2.2',
     'mypy==0.991',
     #'flake8==5.0.4', # version 6.x.x requires python >= 3.8.1 (but 3.7 support window is until 2023-06-27)
