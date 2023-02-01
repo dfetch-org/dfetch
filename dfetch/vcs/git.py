@@ -63,7 +63,6 @@ class GitRemote:
 
     @staticmethod
     def _ls_remote(remote: str) -> Dict[str, str]:
-
         result = run_on_cmdline(
             logger, f"git ls-remote --heads --tags {remote}"
         ).stdout.decode()
@@ -276,7 +275,6 @@ class GitLocalRepo:
 
     @staticmethod
     def _get_submodule_urls(toplevel: str) -> Dict[str, str]:
-
         result = run_on_cmdline(
             logger,
             [
