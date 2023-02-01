@@ -44,7 +44,6 @@ class SvnRepo(VCS):
         externals = []
         path_pattern = r"([^\s^-]+)\s+-"
         for entry in result.stdout.decode().split(os.linesep * 2):
-
             match = None
             for match in re.finditer(path_pattern, entry):
                 pass
@@ -56,7 +55,6 @@ class SvnRepo(VCS):
                 r"([^-\s\d][^\s]+)(?:@)(\d+)\s+([^\s]+)|([^-\s\d][^\s]+)\s+([^\s]+)",
                 entry,
             ):
-
                 url = match.group(1) or match.group(4)
                 name = match.group(3) or match.group(5)
                 rev = "" if not match.group(2) else match.group(2).strip()
@@ -80,7 +78,6 @@ class SvnRepo(VCS):
 
     @staticmethod
     def _split_url(url: str, repo_root: str) -> Tuple[str, str, str, str]:
-
         # ../   Relative to the URL of the directory on which the svn:externals property is set
         # ^/    Relative to the root of the repository in which the svn:externals property is versioned
         # //    Relative to the scheme of the URL of the directory on which the svn:externals property is set
@@ -93,7 +90,6 @@ class SvnRepo(VCS):
         for match in re.finditer(
             r"(.*)\/(branches\/[^\/]+|tags\/[^\/]+|trunk)[\/]*(.*)", url
         ):
-
             url = match.group(1)
             branch = match.group(2) if match.group(2) != SvnRepo.DEFAULT_BRANCH else ""
             src = match.group(3)
@@ -285,7 +281,6 @@ class SvnRepo(VCS):
 
     @staticmethod
     def _get_last_changed_revision(target: str) -> str:
-
         if os.path.isdir(target):
             last_digits = re.compile(r"(?P<digits>\d+)(?!.*\d)")
             version = run_on_cmdline(

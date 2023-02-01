@@ -23,10 +23,8 @@ def check_child_manifests(manifest: Manifest, project: ProjectEntry, path: str) 
         childmanifest,
         childmanifest_path,
     ) in get_childmanifests(skip=[path]):
-
         recommendations: List[ProjectEntry] = []
         for childproject in childmanifest.projects:
-
             if childproject.remote_url not in [
                 project.remote_url for project in manifest.projects
             ]:
