@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Uses relative paths 
+# Uses relative paths
 cd "$(dirname "$0")"
 
 asciinema rec --overwrite -c "./basic-demo.sh" ../asciicasts/basic.cast
