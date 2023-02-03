@@ -69,7 +69,7 @@ docs =[
     'sphinx==6.1.3',
     'sphinx-argparse==0.4.0',
     'plantweb==1.2.1',
-    'sphinxcontrib.asciinema==0.3.5',
+    'sphinxcontrib.asciinema==0.3.6',
 ]
 test = [
     'pytest==7.2.1',
