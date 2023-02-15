@@ -41,3 +41,4 @@ jobs:
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: coverage.xml
+        if: "${{ (!!secrets.CODACY_PROJECT_TOKEN) }}"
