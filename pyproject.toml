@@ -59,7 +59,7 @@ development = [
     #'flake8==5.0.4', # version 6.x.x requires python >= 3.8.1 (but 3.7 support window is until 2023-06-27)
     'bandit==1.7.4',
     'vulture==2.7',
-    'pyroma==4.1',
+    'pyroma==4.2',
     'isort==5.12.0',
     'pylint==2.16.2',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml
