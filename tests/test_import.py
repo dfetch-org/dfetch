@@ -45,12 +45,10 @@ SECOND_SUBMODULE = Submodule(
     ],
 )
 def test_git_import(name, submodules):
-
     import_ = Import()
 
     with patch("dfetch.commands.import_.GitLocalRepo.submodules") as mocked_submodules:
         with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
-
             mocked_submodules.return_value = submodules
 
             if len(submodules) == 0:
@@ -104,14 +102,12 @@ SECOND_EXTERNAL = External(
     ],
 )
 def test_svn_import(name, externals):
-
     import_ = Import()
 
     with patch("dfetch.commands.import_.SvnRepo.check_path") as check_path:
         with patch("dfetch.commands.import_.SvnRepo.externals") as mocked_externals:
             with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
                 with patch("dfetch.commands.import_.GitLocalRepo.is_git") as is_git:
-
                     is_git.return_value = False
                     check_path.return_value = True
                     mocked_externals.return_value = externals

@@ -25,14 +25,11 @@ class Module:
 
 
 def find_relations(directory, blacklist=None):
-
     blacklist = blacklist or []
     relations = {}
 
     for python_file in glob.glob(f"{directory}/**/*.py", recursive=True):
-
         with open(python_file, "r", encoding="UTF-8") as source:
-
             path = Path(python_file).relative_to(directory)
             module_path = path.parent.parts
 
@@ -66,7 +63,6 @@ def find_relations(directory, blacklist=None):
 
 
 def generate_c3(relations, path: Sequence[str], blacklist=None):
-
     blacklist = blacklist or []
 
     C3_START_TEMPLATE = """
@@ -92,7 +88,6 @@ Rel(user, contCommands, "Uses")
     related_containers = set()
 
     for container, modules in relations.items():
-
         if isinstance(modules, dict):
             if container != path[0]:
                 for name, module in modules.items():
@@ -124,7 +119,6 @@ Rel(user, contCommands, "Uses")
     print(C3_START_TEMPLATE)
 
     for container, modules in relations.items():
-
         if container == path[0]:
             print(f'{indent}Boundary(cont{container}, "Manifest") {{')
 
@@ -164,7 +158,6 @@ Rel(user, contCommands, "Uses")
 
 
 if __name__ == "__main__":
-
     blacklist = ("__init__", "__main__", "log", "util", "resources")
     script_path = pathlib.Path(os.path.realpath(__file__))
     module_path = script_path.parent.parent.parent.parent / "dfetch"

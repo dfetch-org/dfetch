@@ -12,7 +12,6 @@ from dfetch.project.vcs import VCS
 
 
 class ConcreteVCS(VCS):
-
     _wanted_version: Version
 
     def _fetch_impl(self):
@@ -91,10 +90,8 @@ class ConcreteVCS(VCS):
 def test_check_wanted_with_local(
     name, given_on_disk, given_wanted, expect_wanted, expect_have
 ):
-
     with patch("dfetch.project.vcs.os.path.exists") as mocked_path_exists:
         with patch("dfetch.project.vcs.Metadata.from_file") as mocked_metadata:
-
             vcs = ConcreteVCS(ProjectEntry({"name": "proj1"}))
 
             mocked_path_exists.return_value = bool(given_on_disk)
@@ -117,10 +114,8 @@ def test_check_wanted_with_local(
     ],
 )
 def test_are_there_local_changes(name, hash_in_metadata, current_hash, expectation):
-
     with patch("dfetch.project.vcs.hash_directory") as mocked_hash_directory:
         with patch("dfetch.project.vcs.VCS._on_disk_hash") as mocked_on_disk_hash:
-
             vcs = ConcreteVCS(ProjectEntry({"name": "proj1"}))
 
             mocked_on_disk_hash.return_value = hash_in_metadata

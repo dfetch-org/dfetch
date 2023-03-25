@@ -9,7 +9,6 @@ from features.steps.generic_steps import check_file, generate_file, remote_serve
 
 
 def generate_manifest(context, name="dfetch.yaml", path=None):
-
     manifest = context.text.replace(
         "url: some-remote-server", f"url: file:///{remote_server_path(context)}"
     )
@@ -21,7 +20,6 @@ def generate_manifest(context, name="dfetch.yaml", path=None):
 @when("the manifest '{name}' is changed to")
 @when("the manifest '{name}' in {path} is changed to")
 def step_impl(context, name, path=None):
-
     if path:
         pathlib.Path(path).mkdir(parents=True, exist_ok=True)
 
@@ -37,7 +35,6 @@ def step_impl(context, name):
 
 @given("the manifest '{name}' with the projects")
 def step_impl(context, name):
-
     projects = "\n".join(f"      - name: {row['name']}" for row in context.table)
     manifest = f"""manifest:
     version: '0.0'

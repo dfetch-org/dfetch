@@ -25,7 +25,6 @@ DEFAULT_ARGS.projects = []
     ],
 )
 def test_update(name, projects):
-
     update = Update()
 
     with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
@@ -49,7 +48,6 @@ def test_update(name, projects):
 
 
 def test_forced_update():
-
     update = Update()
 
     with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
@@ -76,7 +74,6 @@ def test_forced_update():
 
 
 def test_create_menu():
-
     subparsers = argparse.ArgumentParser().add_subparsers()
 
     Update.create_menu(subparsers)
@@ -101,7 +98,6 @@ def test_create_menu():
     ],
 )
 def test_check_path_traversal(name, real_path):
-
     with pytest.raises(RuntimeError):
         Update._check_path_traversal(
             ProjectEntry.from_yaml({"name": "a"}), real_path, "/somewhere/somewhere"
@@ -117,7 +113,6 @@ def test_check_path_traversal(name, real_path):
     ],
 )
 def test_check_overlapping_destinations(name, real_path, destinations):
-
     with pytest.raises(RuntimeError):
         Update._check_overlapping_destination(
             ProjectEntry.from_yaml({"name": "a"}), destinations, real_path

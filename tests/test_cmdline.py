@@ -34,9 +34,7 @@ MISSING_CMD_RESULT = FileNotFoundError()
     ],
 )
 def test_run_on_cmdline(name, cmd, cmd_result, expectation):
-
     with patch("dfetch.util.cmdline.subprocess.run") as subprocess_mock:
-
         subprocess_mock.side_effect = cmd_result
         logger_mock = MagicMock()
 

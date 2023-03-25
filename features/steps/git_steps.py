@@ -36,7 +36,6 @@ def tag(name: str):
 
 @given("a git repo with the following submodules")
 def step_impl(context):
-
     create_repo()
 
     for submodule in context.table:
@@ -61,7 +60,6 @@ def step_impl(context, tagname, name):
 @given('a git-repository "{name}" with the manifest')
 @given('a git repository "{name}"')
 def step_impl(context, name):
-
     remote_path = os.path.join(context.remotes_dir, name)
 
     pathlib.Path(remote_path).mkdir(parents=True, exist_ok=True)
@@ -123,7 +121,6 @@ def step_impl(context):
 
 @given("a fetched and committed MyProject with the manifest")
 def step_impl(context):
-
     pathlib.Path("MyProject").mkdir(parents=True, exist_ok=True)
     with in_directory("MyProject"):
         create_repo()
