@@ -19,9 +19,7 @@ from dfetch.vcs.git import GitLocalRepo, GitRemote
     ],
 )
 def test_remote_check(name, cmd_result, expectation):
-
     with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
-
         run_on_cmdline_mock.side_effect = cmd_result
 
         assert GitRemote(name).is_git() == expectation
@@ -52,10 +50,8 @@ def test_remote_check(name, cmd_result, expectation):
     ],
 )
 def test_check(name, project, cmd_result, expectation):
-
     with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
         with patch("dfetch.vcs.git.in_directory"):
-
             run_on_cmdline_mock.side_effect = cmd_result
 
             assert GitLocalRepo(project).is_git() == expectation
@@ -83,9 +79,7 @@ b9b841c56c524a10ccd40e88c3acaf9d5ec751c2	refs/tags/v4.0
 
 
 def test_ls_remote():
-
     with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
-
         run_on_cmdline_mock.return_value.stdout = TRIMMED_LSREMOTE_CPPUTEST.encode(
             "UTF-8"
         )

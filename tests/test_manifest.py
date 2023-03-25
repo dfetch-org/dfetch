@@ -97,26 +97,20 @@ def test_construct_from_dict() -> None:
 
 
 def test_no_manifests_found() -> None:
-
     with patch("dfetch.manifest.manifest.find_file"):
-
         with pytest.raises(RuntimeError):
             find_manifest()
 
 
 def test_multiple_manifests_found() -> None:
-
     with patch("dfetch.manifest.manifest.find_file") as find_file_mock:
-
         find_file_mock.return_value = [DEFAULT_MANIFEST_NAME, "manifest2.yaml"]
 
         assert os.path.realpath(DEFAULT_MANIFEST_NAME) == find_manifest()
 
 
 def test_single_manifest_found() -> None:
-
     with patch("dfetch.manifest.manifest.find_file") as find_file_mock:
-
         find_file_mock.return_value = [DEFAULT_MANIFEST_NAME]
 
         joined = os.path.realpath(os.path.join(os.getcwd(), DEFAULT_MANIFEST_NAME))
@@ -142,7 +136,6 @@ def test_single_manifest_found() -> None:
     ],
 )
 def test_get_childmanifests(name, manifest_paths) -> None:
-
     parent = ProjectEntry({"name": "parent"})
 
     with patch("dfetch.manifest.manifest.find_file") as find_file_mock:
@@ -158,28 +151,24 @@ def test_get_childmanifests(name, manifest_paths) -> None:
 
 
 def test_suggestion_found() -> None:
-
     exception = RequestedProjectNotFoundError(["fIrst"], ["first", "other"])
 
     assert ["first"] == exception._guess_project(["fIrst"])
 
 
 def test_suggestion_not_found() -> None:
-
     exception = RequestedProjectNotFoundError(["1234"], ["first", "other"])
 
     assert [] == exception._guess_project(["1234"])
 
 
 def test_multiple_suggestions_found() -> None:
-
     exception = RequestedProjectNotFoundError(["irst", "otheR"], ["first", "other"])
 
     assert ["first", "other"] == exception._guess_project(["irst", "otheR"])
 
 
 def test_single_suggestion_not_found() -> None:
-
     exception = RequestedProjectNotFoundError(["irst", "1234"], ["first", "other"])
 
     assert ["first"] == exception._guess_project(["irst", "1234"])

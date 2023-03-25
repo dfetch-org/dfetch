@@ -71,7 +71,6 @@ import dfetch.util.versions
 def test_version_parsing(
     name, tag_string, expected_version, expected_prefix, expected_rest
 ):
-
     prefix, version, rest = dfetch.util.versions.coerce(tag_string)
 
     assert expected_prefix == prefix

@@ -25,12 +25,10 @@ DEFAULT_ARGS.outfile = ""
     ],
 )
 def test_report(name, projects):
-
     report = Report()
 
     with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
         with patch("dfetch.log.DLogger.print_info_line") as mocked_print_info_line:
-
             mocked_get_manifest.return_value = (mock_manifest(projects), "/")
 
             report(DEFAULT_ARGS)

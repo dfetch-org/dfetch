@@ -128,13 +128,11 @@ PINNED_MODULE_NO_SUBFOLDER_EXPECTATION = [
     ],
 )
 def test_externals(name, externals, expectations):
-
     with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
         with patch(
             "dfetch.project.svn.SvnRepo._get_info_from_target"
         ) as target_info_mock:
             with patch("dfetch.project.svn.os.getcwd") as cwd_mock:
-
                 cmd_output = str(os.linesep * 2).join(externals)
                 run_on_cmdline_mock().stdout = cmd_output.encode("utf-8")
                 target_info_mock.return_value = {"Repository Root": REPO_ROOT}
@@ -155,9 +153,7 @@ def test_externals(name, externals, expectations):
     ],
 )
 def test_check_path(name, cmd_result, expectation):
-
     with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
-
         run_on_cmdline_mock.side_effect = cmd_result
 
         assert SvnRepo.check_path() == expectation
@@ -182,9 +178,7 @@ def test_check_path(name, cmd_result, expectation):
     ],
 )
 def test_check(name, project, cmd_result, expectation):
-
     with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
-
         run_on_cmdline_mock.side_effect = cmd_result
 
         assert SvnRepo(project).check() == expectation
@@ -206,9 +200,7 @@ Last Changed Date: 2021-02-06 13:57:00 +0100 (za, 06 feb 2021)
 
 
 def test_get_info():
-
     with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
-
         run_on_cmdline_mock.return_value.stdout = os.linesep.join(
             SVN_INFO.split("\n")
         ).encode()

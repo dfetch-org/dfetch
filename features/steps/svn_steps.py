@@ -55,7 +55,6 @@ def add_externals(externals):
 
 @given("a svn repo with the following externals")
 def step_impl(context):
-
     repo_path = create_svn_server_and_repo(context)
     os.chdir(repo_path)
     add_externals(context.table)
@@ -69,7 +68,6 @@ def step_impl(context, name):
     files = context.table or [{"path": "README.md"}]
 
     with in_directory(repo_path):
-
         create_stdlayout()
         with in_directory("trunk"):
             for file in files:
@@ -98,7 +96,6 @@ def step_impl(context, name):
 
 @given("a fetched and committed MySvnProject with the manifest")
 def step_impl(context):
-
     repo_path = create_svn_server_and_repo(context, "MySvnProject")
 
     with in_directory(repo_path):

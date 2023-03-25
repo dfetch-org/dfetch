@@ -96,7 +96,6 @@ def check_content(
 
 
 def generate_file(path, content):
-
     opt_dir = path.rsplit("/", maxsplit=1)
 
     if len(opt_dir) > 1:
@@ -108,14 +107,12 @@ def generate_file(path, content):
 
 
 def extend_file(path, content):
-
     with open(path, "a") as existing_file:
         for line in content.splitlines():
             print(line, file=existing_file)
 
 
 def list_dir(path):
-
     # Get list of all nodes
     nodes = [os.path.normpath(path).split(os.sep)]
     for root, dirs, files in os.walk(path, followlinks=False):
@@ -140,7 +137,6 @@ def list_dir(path):
 
 @given("the patch file '{name}'")
 def step_impl(context, name):
-
     generate_file(os.path.join(os.getcwd(), name), context.text)
 
 
@@ -154,7 +150,6 @@ def step_impl(context, metadata_file, project_path):
 @given("all projects are updated in {path}")
 @given("all projects are updated")
 def step_impl(context, path=None):
-
     if path:
         context.execute_steps(f'When I run "dfetch update" in {path}')
     else:
@@ -181,7 +176,6 @@ def step_impl(context, args, path=None):
 
 @when('"{path}" in {directory} is changed locally')
 def step_impl(context, directory, path):
-
     with in_directory(directory):
         extend_file(path, "Some text")
 
@@ -199,7 +193,6 @@ def step_impl(context, name):
 
 @then("the '{name}' file contains")
 def step_impl(context, name):
-
     if name.endswith(".json"):
         check_json(name, context.text)
     else:
@@ -216,7 +209,6 @@ def multisub(patterns: List[Tuple[Pattern[str], str]], text: str) -> str:
 
 @then("the output shows")
 def step_impl(context):
-
     expected_text = multisub(
         patterns=[
             (git_hash, r"\1[commit hash]\2"),
@@ -251,7 +243,6 @@ def step_impl(context):
 
 @then("the following projects are fetched")
 def step_impl(context):
-
     for project in context.table:
         assert os.path.exists(project["path"]), f"No project found at {project}"
         assert os.listdir(project["path"]), f"{project} is just an empty directory!"
