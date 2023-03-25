@@ -11,9 +11,9 @@ github:
     addCheck: true
     addComment: false
     branches: true
-    master : true
-    pullRequests : true
-    pullRequestsFromForks : false
+    master: true
+    pullRequests: true
+    pullRequestsFromForks: false
 
 workspaceLocation: dfetch/dfetch.code-workspace
 vscode:
@@ -21,6 +21,7 @@ vscode:
     - lextudio.restructuredtext
     - alexkrechik.cucumberautocomplete
     - ms-python.python
+    - ms-python.isort
     - mhutchie.git-graph
     - bungcip.better-toml
     - trond-snekvik.simple-rst

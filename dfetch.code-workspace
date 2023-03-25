@@ -14,6 +14,9 @@
 		"python.linting.flake8Enabled": false,
 		"python.linting.lintOnSave": true,
 		"editor.formatOnSave": true,
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": true
+		},
 		"isort.check": true,
 		"python.formatting.provider": "black",
 		"restructuredtext.linter.run": "onType",
@@ -21,15 +24,17 @@
 			"--config",
 			"${workspaceFolder}/pyproject.toml"
 		],
-		"esbonio.sphinx.buildDir" : "${workspaceFolder}/doc/_build/html",
-    	"esbonio.sphinx.confDir"  : "${workspaceFolder}/doc",
+		"esbonio.sphinx.buildDir": "${workspaceFolder}/doc/_build/html",
+		"esbonio.sphinx.confDir": "${workspaceFolder}/doc",
 		"python.testing.pytestArgs": [
 			"tests"
 		],
 		"python.testing.unittestEnabled": false,
 		"python.testing.pytestEnabled": true,
 		"python.testing.autoTestDiscoverOnSaveEnabled": true,
-		"cucumberautocomplete.steps": ["features/steps/*.py"],
+		"cucumberautocomplete.steps": [
+			"features/steps/*.py"
+		],
 		"esbonio.server.enabled": true,
 	},
 	"launch": {
@@ -64,6 +69,7 @@
 			"lextudio.restructuredtext",
 			"alexkrechik.cucumberautocomplete",
 			"ms-python.python",
+			"ms-python.isort",
 			"bungcip.better-toml",
 			"trond-snekvik.simple-rst",
 			"jebbs.plantuml"
