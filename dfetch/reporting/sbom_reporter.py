@@ -24,8 +24,9 @@ from cyclonedx.model import (
 )
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
-from cyclonedx.output import OutputFormat, get_instance
+from cyclonedx.output import get_instance
 from cyclonedx.output.json import Json
+from cyclonedx.schema import OutputFormat
 from packageurl import PackageURL
 
 import dfetch.util.util
