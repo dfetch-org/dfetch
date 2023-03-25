@@ -56,7 +56,7 @@ class SbomReporter(Reporter):
             component = Component(
                 name=project.name,
                 version=version,
-                component_type=ComponentType.LIBRARY,
+                type=ComponentType.LIBRARY,
                 purl=PackageURL(
                     type="github",
                     name=match.group("repo"),
@@ -70,7 +70,7 @@ class SbomReporter(Reporter):
             component = Component(
                 name=project.name,
                 version=version,
-                component_type=ComponentType.LIBRARY,
+                type=ComponentType.LIBRARY,
                 purl=PackageURL(
                     type="generic",
                     version=version,
@@ -83,13 +83,13 @@ class SbomReporter(Reporter):
             )
             component.external_references.add(
                 ExternalReference(
-                    reference_type=ExternalReferenceType.VCS,
+                    type=ExternalReferenceType.VCS,
                     url=XsUri(project.remote_url),
                 )
             )
 
         if license_name:
-            component.licenses.add(LicenseChoice(license_expression=license_name))
+            component.licenses.add(LicenseChoice(expression=license_name))
         self._bom.components.add(component)
 
     @staticmethod

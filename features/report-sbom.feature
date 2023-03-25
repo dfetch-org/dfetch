@@ -29,16 +29,15 @@ Feature: Create an CycloneDX sbom
                 "$schema": "http://cyclonedx.org/schema/bom-1.4.schema.json",
                 "bomFormat": "CycloneDX",
                 "specVersion": "1.4",
-                "serialNumber": "urn:uuid:d9287af7-31b2-4a66-b528-21834077ddad",
+                "serialNumber": "urn:uuid:e989dc42-a199-4fe4-87f1-2b7f7a5f48cf",
                 "version": 1,
                 "dependencies": [
                     {
-                        "dependsOn": [],
-                        "ref": "2ede03d4-f69f-4777-a6a4-8f1eaa3a2eec"
+                        "ref": "a3aff0d8-2f40-4482-bded-577466c0bde9"
                     }
                 ],
                 "metadata": {
-                    "timestamp": "2021-12-08T21:34:38.500715+00:00",
+                    "timestamp": "2023-03-25T19:15:03.697694+00:00",
                     "tools": [
                         {
                             "vendor": "dfetch-org",
@@ -48,7 +47,7 @@ Feature: Create an CycloneDX sbom
                         {
                             "vendor": "CycloneDX",
                             "name": "cyclonedx-python-lib",
-                            "version": "3.1.5",
+                            "version": "4.0.0",
                             "externalReferences": [
                                 {
                                     "url": "https://pypi.org/project/cyclonedx-python-lib/",
@@ -89,13 +88,13 @@ Feature: Create an CycloneDX sbom
                 "components": [
                     {
                         "type": "library",
-                        "bom-ref": "2ede03d4-f69f-4777-a6a4-8f1eaa3a2eec",
+                        "bom-ref": "a3aff0d8-2f40-4482-bded-577466c0bde9",
                         "name": "cpputest",
                         "version": "v3.4",
                         "licenses": [
-                                {
-                                    "expression": "BSD 3-Clause \"New\" or \"Revised\" License"
-                                }
+                            {
+                                "expression": "BSD 3-Clause \"New\" or \"Revised\" License"
+                            }
                         ],
                         "purl": "pkg:github/cpputest/cpputest@v3.4#include/CppUTest"
                     }
