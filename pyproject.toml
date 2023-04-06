@@ -55,7 +55,7 @@ development = [
     'xenon==0.9.0',
     'types-PyYAML==6.0.12.9',
     'codespell==2.2.4',
-    'mypy==1.1.1',
+    'mypy==1.2.0',
     #'flake8==5.0.4', # version 6.x.x requires python >= 3.8.1 (but 3.7 support window is until 2023-06-27)
     'bandit==1.7.5',
     'vulture==2.7',
