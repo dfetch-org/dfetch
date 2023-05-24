@@ -31,7 +31,7 @@ dependencies = [
     "pykwalify==1.8.0",
     "halo==0.0.31",
     "colorama==0.4.6",
-    "typing-extensions==4.6.0",
+    "typing-extensions==4.6.1",
     "sarif-om==1.0.4",
     "semver==2.13.0",
     "patch-ng==1.17.4",
