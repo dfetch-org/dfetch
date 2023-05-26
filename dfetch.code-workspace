@@ -18,7 +18,6 @@
 			"source.organizeImports": true
 		},
 		"isort.check": true,
-		"python.formatting.provider": "black",
 		"restructuredtext.linter.run": "onType",
 		"restructuredtext.linter.doc8.extraArgs": [
 			"--config",
@@ -36,6 +35,9 @@
 			"features/steps/*.py"
 		],
 		"esbonio.server.enabled": true,
+		"[python]": {
+			"editor.defaultFormatter": "ms-python.black-formatter"
+		},
 	},
 	"launch": {
 		"version": "0.2.0",
@@ -70,6 +72,7 @@
 			"alexkrechik.cucumberautocomplete",
 			"ms-python.python",
 			"ms-python.isort",
+			"ms-python.black-formatter",
 			"bungcip.better-toml",
 			"trond-snekvik.simple-rst",
 			"jebbs.plantuml"
