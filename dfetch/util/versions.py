@@ -51,11 +51,7 @@ def coerce(version: str) -> Tuple[str, Optional[Version], str]:
 
 def latest_tag_from_list(current_tag: str, available_tags: List[str]) -> str:
     """Based on the given tag string and list of tags, get the latest available."""
-    parsed_tags: Dict[str, List[Tuple[Version, str]]] = defaultdict(list)
-    for available_tag in available_tags:
-        prefix, version, _ = coerce(available_tag)
-        if version:
-            parsed_tags[prefix] += [(version, available_tag)]
+    parsed_tags = _create_available_version_dict(available_tags)
 
     prefix, current_version, _ = coerce(current_tag)
 
@@ -68,3 +64,37 @@ def latest_tag_from_list(current_tag: str, available_tags: List[str]) -> str:
                 latest_tag, latest_string = tag
 
     return latest_string
+
+
+def _create_available_version_dict(
+    available_tags: List[str],
+) -> Dict[str, List[Tuple[Version, str]]]:
+    """Create a dictionary where each key is a prefix with a list of versions.
+
+    Args:
+        available_tags (List[str]): A list of available tags.
+
+    Returns:
+        Dict[str, List[Tuple[Version, str]]]: A dictionary mapping prefixes to lists of versions.
+
+    Example:
+        >>> available_tags = [
+        ...    'release/v1.2.3',
+        ...    'release/v2.0.0'
+        ... ]
+        >>> dict(_create_available_version_dict(available_tags))
+        {'release/': [(Version(major=1, minor=2, patch=3, prerelease=None, build=None), 'release/v1.2.3'),
+                      (Version(major=2, minor=0, patch=0, prerelease=None, build=None), 'release/v2.0.0')]}
+    """
+    parsed_tags: Dict[str, List[Tuple[Version, str]]] = defaultdict(list)
+    for available_tag in available_tags:
+        prefix, version, _ = coerce(available_tag)
+        if version:
+            parsed_tags[prefix] += [(version, available_tag)]
+    return parsed_tags
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE)
