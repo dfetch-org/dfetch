@@ -15,5 +15,5 @@ jobs:
         
     - uses: ammaraskar/sphinx-action@master
       with:
-        pre-build-command: "pip install .[docs]"
+        pre-build-command: "pip install .[docs] && pip install sphinx_design"
         docs-folder: "doc/landing-page"
