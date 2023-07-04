@@ -7,9 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    
     - uses: ammaraskar/sphinx-action@master
       with:
+        pre-build-command: "pip install .[docs]"
         docs-folder: "doc/"
+        
     - uses: ammaraskar/sphinx-action@master
       with:
+        pre-build-command: "pip install .[docs]"
         docs-folder: "doc/landing-page"
