@@ -78,7 +78,7 @@ test = [
     'behave==1.2.6',
 ]
 casts = [
-    'asciinema==2.2.0',
+    'asciinema==2.3.0',
 ]
 
 
