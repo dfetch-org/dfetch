@@ -7,13 +7,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    
-    - uses: ammaraskar/sphinx-action@master
+
+    - name: Install Python
+      uses: actions/setup-python@v4
       with:
-        pre-build-command: "pip install .[docs]"
         docs-folder: "doc/"
+        python-version: '3.x'
+
+    - name: Install documentation requirements
+      run: "pip install .[docs] && pip install sphinx_design"
         
-    - uses: ammaraskar/sphinx-action@master
-      with:
-        pre-build-command: "pip install .[docs] && pip install sphinx_design"
-        docs-folder: "doc/landing-page"
+    - name: Build docs
+      run: "make -C doc html"
+        
+    - name: Build landing-page
+      run: "make -C doc/landing-page html"
+      
