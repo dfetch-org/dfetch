@@ -36,7 +36,7 @@ dependencies = [
     "semver==3.0.1",
     "patch-ng==1.17.4",
     "importlib-resources==5.4.0; python_version <= '3.7.0'",
-    "cyclonedx-python-lib==4.1.0",
+    "cyclonedx-python-lib==4.2.1",
     "infer-license==0.0.7",
 ]
 dynamic = ["version"]
