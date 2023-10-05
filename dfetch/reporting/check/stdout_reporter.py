@@ -1,6 +1,6 @@
 """*Dfetch* can generate an report on stdout.
 
-Dependending on the state of the projects it will show as much information
+Depending on the state of the projects it will show as much information
 from the manifest or the metadata (``.dfetch_data.yaml``).
 
 Add to pipeline using warnings-ng plugin:
