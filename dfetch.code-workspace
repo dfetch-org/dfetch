@@ -13,7 +13,6 @@
 		"python.linting.mypyEnabled": true,
 		"python.linting.flake8Enabled": false,
 		"python.linting.lintOnSave": true,
-		"editor.formatOnSave": true,
 		"editor.codeActionsOnSave": {
 			"source.organizeImports": true
 		},
@@ -36,7 +35,8 @@
 		],
 		"esbonio.server.enabled": true,
 		"[python]": {
-			"editor.defaultFormatter": "ms-python.black-formatter"
+			"editor.defaultFormatter": "ms-python.black-formatter",
+			"editor.formatOnSave": true,
 		},
 	},
 	"launch": {
