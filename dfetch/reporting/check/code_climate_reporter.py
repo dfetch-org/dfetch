@@ -1,6 +1,6 @@
 """*Dfetch* can generate a report that is parseable by Gitlab/Code-climate from the :ref:`check` results.
 
-Dependending on the state of the projects it will create a report with information.
+Depending on the state of the projects it will create a report with information.
 If all project are up-to-date, nothing will be added to the report.
 
 The information has several severities:
