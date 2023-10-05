@@ -84,7 +84,7 @@ class RequestedProjectNotFoundError(RuntimeError):
         ]
 
 
-class ManifestDict(
+class ManifestDict(  # pylint: disable=too-many-ancestors
     TypedDict, total=False
 ):  # When https://www.python.org/dev/peps/pep-0655/ is accepted, only make remotes optional
     """Serialized dict types."""
