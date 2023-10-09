@@ -34,7 +34,7 @@ dependencies = [
     "typing-extensions==4.7.1; python_version <= '3.7.0'",
     "typing-extensions==4.8.0; python_version > '3.7.0'",
     "sarif-om==1.0.4",
-    "semver==3.0.1",
+    "semver==3.0.2",
     "patch-ng==1.17.4",
     "importlib-resources==5.4.0; python_version <= '3.7.0'",
     "cyclonedx-python-lib==4.2.2",
