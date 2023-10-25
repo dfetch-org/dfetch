@@ -15,7 +15,7 @@ DONT_EDIT_WARNING = """\
 """
 
 
-class Options(TypedDict):
+class Options(TypedDict):  # pylint: disable=too-many-ancestors
     """Argument types for Metadata class construction."""
 
     last_fetch: datetime.datetime  # noqa
