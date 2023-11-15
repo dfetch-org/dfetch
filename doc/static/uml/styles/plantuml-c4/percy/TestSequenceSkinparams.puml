@@ -1,0 +1,116 @@
+@startuml
+
+!$UseTheme = "C4_green"
+
+' convert it with additional command line argument -DRELATIVE_INCLUDE="./.." to use locally
+!if %variable_exists("RELATIVE_INCLUDE")
+  ' !theme C4_FirstTest from %get_variable_value("RELATIVE_INCLUDE")/themes
+  !theme $UseTheme from ./../themes
+!else
+  !theme $UseTheme from https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/themes
+!endif
+
+' <<<<<<<<<<<<<<<<<< PART OF THEME 
+
+' $BOUNDARY_BG_COLOR... have to be defined in theme itself that it can be used in styles,...
+' (no default values which are defined in C4.puml) 
+' If skinparams and styles are defined with concrete values no variables are required 
+!$BOUNDARY_BG_COLOR ?= "transparent"
+!$BOUNDARY_COLOR ?= "#444444"
+!$ARROW_COLOR ?= "#666666"
+
+' replace transparent with concrete background that it can be used as font color too
+!if ($BOUNDARY_BG_COLOR == "transparent")
+  !$SEQUENCE_BG_COLOR = white
+!else
+  !$SEQUENCE_BG_COLOR = $BOUNDARY_BG_COLOR
+!endif
+
+' "C4 styled" default is no foot boxes
+hide footbox
+' "C4 styled" default is that lifeline is arrow color
+skinparam SequenceLifelineBorderColor $ARROW_COLOR
+
+skinparam SequenceGroupBodyBackgroundColor $SEQUENCE_BG_COLOR
+skinparam SequenceGroupFontColor $BOUNDARY_COLOR
+skinparam SequenceGroupBackgroundColor $BOUNDARY_COLOR
+skinparam SequenceGroupHeaderFontColor $SEQUENCE_BG_COLOR
+skinparam SequenceGroupBorderColor $BOUNDARY_COLOR
+
+skinparam SequenceReferenceBackgroundColor $SEQUENCE_BG_COLOR
+skinparam SequenceReferenceFontColor $BOUNDARY_COLOR
+skinparam SequenceReferenceHeaderBackgroundColor $BOUNDARY_COLOR
+' VIA STYLE
+' skinparam SequenceReferenceHeaderFontColor $SEQUENCE_BG_COLOR
+<style>
+referenceHeader {
+  fontcolor $SEQUENCE_BG_COLOR
+}
+</style>
+skinparam SequenceReferenceBorderColor $BOUNDARY_COLOR
+
+skinparam SequenceDividerBackgroundColor $SEQUENCE_BG_COLOR
+skinparam SequenceDividerFontColor $BOUNDARY_COLOR
+skinparam SequenceDividerBorderColor $BOUNDARY_COLOR
+
+' VIA STYLE
+' skinparam SequenceDelayFontColor green
+<style>
+sequenceDiagram {
+  delay {
+    FontColor $BOUNDARY_COLOR
+  }
+}
+</style>
+
+' >>>>>>>>>>>>>>>>>> PART OF THEME 
+
+!if %variable_exists("RELATIVE_INCLUDE")
+  !include %get_variable_value("RELATIVE_INCLUDE")/C4_Sequence.puml
+!else
+  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Sequence.puml
+!endif
+
+SHOW_INDEX(true)
+
+Person(Alice, "Alice")
+Person(Bob, "Bob")
+
+activate Bob
+
+Rel(Alice, Bob, "Authentication Request", $index = SetIndex(1), $rel= "->(39)")
+
+alt successful case
+    Rel(Bob, Alice, "Authentication Accepted")
+else some kind of failure
+    loop 1000 times
+        Rel(Alice, Bob, "DNS Attack")
+    end
+end
+
+ref over Alice, Bob : init
+
+Rel(Alice, Bob, "hello")
+
+ref over Bob
+  This can be on
+  several lines
+end ref
+
+== Initialization ==
+
+Rel(Alice, Bob, "Authentication Request")
+Rel(Bob, Alice, "Authentication Response")
+
+== Repetition ==
+
+Rel(Alice, Bob, "Another authentication Request")
+Rel(Bob, Alice, "another authentication Response")
+
+... 5 minutes later ...
+
+Rel(Alice, Bob, "calls via phone")
+
+
+SHOW_LEGEND()
+@enduml
