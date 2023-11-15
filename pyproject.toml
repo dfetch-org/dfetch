@@ -40,6 +40,7 @@ dependencies = [
     "importlib-resources==5.4.0; python_version <= '3.7.0'",
     "cyclonedx-python-lib==4.2.2",
     "infer-license==0.0.7",
+    'setuptools; python_version >= "3.12"',  # contains 'pkg_resources' for infer-license
 ]
 dynamic = ["version"]
 
