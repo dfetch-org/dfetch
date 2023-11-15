@@ -19,9 +19,9 @@
 # C4-PlantUML
 
 [comment]: # ("image is based on percy/C4_Container Diagram Sample - bigbankplc-styles.puml")
-[![Container diagram for Internet Banking System](https://www.plantuml.com/plantuml/png/hLRHZzgu4txdhvZILWM91VtKNrzEMgaivAvRmS81szuRciH3OjMnSxO3YqxtlzyuX6IXU-f3xmNYiUVxFdyUJ_BHURI-p5Nd7IH6xybwa1uEqcU0GaWlZKR5KtcEMe2IcW1jMkQaFTnCLz5ilBd_4ctl7oQpnsbqsnsEXiCkU0Eb8r0cGQMEdLTo1s_tQ2N6YhRq99rtlUvrShVV0NWbTQ9AGV0s9RzjSlQeIdefPJJv_tPYj4TMPeT5sCahKewUGsNU5-wNqSZYOPZopigOnTc4iqZx8UzjL2ZKmOKRvuMICOFUB4FeSJuRvUWysHTvj92xJcVzQV5rkunMwyN3Tl6ucTq_HBq--xd1r84hYy9O3zg0Ap0X1rA3pmWqvWIz61q9CATGgGLPjbZg508d6Nyio0tWaCaa0s7qEzy0rcYeZxcnr1y2Czxlch0biFHdIOmZpfIAKfOygF_1qrDzqbKIPEZ2mSK4WdPIa-YCXOWKXRFclVIwCIRVEB6neJk0DpiUJ8mozlPDD8lcqSDc--k2VoQBsMB5yt5wcks-Vl_-mtJy8UIu30kwZMIQ-RKK9DPXtElpp4dPXeNTdjaWETD1Zq8Ak93Jx_Q3l1MfIXgwequ2Dc_gh6UyMYs-Da92wVxhnDeV5TrEqMKaPbApc0lq03xwRoYCzor5nqkl21f3GKXCBUQmCnRkjIUhoSCTwc-X9DP7vodlT9PadT6zf7JUv6G7C6cUkcCuXy7igaEFENjmEkQYIaHLnG2Jn9JQkoxhE45lxpWWq1vxoVyOwrf0jmz_TG2WrTixKBp5ek35Noc6SL4ecM3e6LqEVSOz3c1Ts21-_cKIObDISiyoAcdEyze4wei8g4KLRdZZyyQNOnPvoUmAPBWrJokwMM9AWVtCkawiBFm0nZej5TeGNbgpbu8Se58li-nAdPpQdVH7yAPnqi5UOiYH5dZ345jpS6I_avIRM2gg_PY7GIDgyde0Vs2ELkfBCQ1aBiCLTMNio8FP_OIuam0Gj9S9NSkRnZs17aF32UTGFmOrwzzdS37snfA3q2F1KYgTjzMPWjHSbtdrF82ikYo0fSyWiIH8UudA3K9TaNEWJCe3yidmEwFgcyrEoL2oo_kNAsTgU9bjyowS-u53mHG6hguhfkxskzx5elvkwZvwyZtAKQgjgm9C5DtCULpVkS2yoGXaHOeAvZAnnfcTX-WfoL2d1ATCXds6MMjhKHbJxopcT7MfdzcEIfsh8E50ixzdvWF6flHj2GoQkpm0Rr4xh9nexU-iI3th5-sjVNJa0lUdpMQvveMNwro1FrpJ57q3TwBRFeHc7PkcHzHmJGUeaQhWHK4qX5N37S1dVg-EAlBsDAkf6g5Ly7D0spjERcGtb-KQT4Ke7EoioQk6TR3IamDl0b7DCxsRC6I3-Sojgo9RCwm3kWdH2gCLSbcFLnekyqedTThIh-URPGtKREOY_Reg6v_Qrnntg_disgjsck5FNpspwBVeOThhTtR6UB8WB1xqwMLp_dw2_H3UXWENHlVwbMVXwwgTvU6NytJd8wiiS_KF "Container diagram for Internet Banking System")](https://www.plantuml.com/plantuml/uml/hLRHZzgu4txdhvZILWM91VtKNrzEMgaivAvRmS81szuRciH3OjMnSxO3YqxtlzyuX6IXU-f3xmNYiUVxFdyUJ_BHURI-p5Nd7IH6xybwa1uEqcU0GaWlZKR5KtcEMe2IcW1jMkQaFTnCLz5ilBd_4ctl7oQpnsbqsnsEXiCkU0Eb8r0cGQMEdLTo1s_tQ2N6YhRq99rtlUvrShVV0NWbTQ9AGV0s9RzjSlQeIdefPJJv_tPYj4TMPeT5sCahKewUGsNU5-wNqSZYOPZopigOnTc4iqZx8UzjL2ZKmOKRvuMICOFUB4FeSJuRvUWysHTvj92xJcVzQV5rkunMwyN3Tl6ucTq_HBq--xd1r84hYy9O3zg0Ap0X1rA3pmWqvWIz61q9CATGgGLPjbZg508d6Nyio0tWaCaa0s7qEzy0rcYeZxcnr1y2Czxlch0biFHdIOmZpfIAKfOygF_1qrDzqbKIPEZ2mSK4WdPIa-YCXOWKXRFclVIwCIRVEB6neJk0DpiUJ8mozlPDD8lcqSDc--k2VoQBsMB5yt5wcks-Vl_-mtJy8UIu30kwZMIQ-RKK9DPXtElpp4dPXeNTdjaWETD1Zq8Ak93Jx_Q3l1MfIXgwequ2Dc_gh6UyMYs-Da92wVxhnDeV5TrEqMKaPbApc0lq03xwRoYCzor5nqkl21f3GKXCBUQmCnRkjIUhoSCTwc-X9DP7vodlT9PadT6zf7JUv6G7C6cUkcCuXy7igaEFENjmEkQYIaHLnG2Jn9JQkoxhE45lxpWWq1vxoVyOwrf0jmz_TG2WrTixKBp5ek35Noc6SL4ecM3e6LqEVSOz3c1Ts21-_cKIObDISiyoAcdEyze4wei8g4KLRdZZyyQNOnPvoUmAPBWrJokwMM9AWVtCkawiBFm0nZej5TeGNbgpbu8Se58li-nAdPpQdVH7yAPnqi5UOiYH5dZ345jpS6I_avIRM2gg_PY7GIDgyde0Vs2ELkfBCQ1aBiCLTMNio8FP_OIuam0Gj9S9NSkRnZs17aF32UTGFmOrwzzdS37snfA3q2F1KYgTjzMPWjHSbtdrF82ikYo0fSyWiIH8UudA3K9TaNEWJCe3yidmEwFgcyrEoL2oo_kNAsTgU9bjyowS-u53mHG6hguhfkxskzx5elvkwZvwyZtAKQgjgm9C5DtCULpVkS2yoGXaHOeAvZAnnfcTX-WfoL2d1ATCXds6MMjhKHbJxopcT7MfdzcEIfsh8E50ixzdvWF6flHj2GoQkpm0Rr4xh9nexU-iI3th5-sjVNJa0lUdpMQvveMNwro1FrpJ57q3TwBRFeHc7PkcHzHmJGUeaQhWHK4qX5N37S1dVg-EAlBsDAkf6g5Ly7D0spjERcGtb-KQT4Ke7EoioQk6TR3IamDl0b7DCxsRC6I3-Sojgo9RCwm3kWdH2gCLSbcFLnekyqedTThIh-URPGtKREOY_Reg6v_Qrnntg_disgjsck5FNpspwBVeOThhTtR6UB8WB1xqwMLp_dw2_H3UXWENHlVwbMVXwwgTvU6NytJd8wiiS_KF)
+[![Container diagram for Internet Banking System](https://www.plantuml.com/plantuml/png/hLRVZzf647xdhvYGH0690rLfNYgT50xSvYAuey0bVKDZxs1MMU-wksiuLFL_xwmnDYOdvI5zkMDdThxls_anyD5vjBx8LEST94RloNgG7WxIxm25a5uQZOfTMOPQW9AQ06rQPAGzt4oNqMoyllyIRUuV9hEdQNJR7Ow6movu0uKZK2P1fOwTLt8BR_Te9SQADlGidNUzxdLmjzy1U2LreWf1y3OblwbZzgWAUYbaDFbrCp7Q8okpmpoyv1KfHvTGE-zpzzjePF4mJFbbHSpYRC9HfFsGtpRA5UgGXHldXP8nWzuiWkbfFXjbw3pP5tcqaDjEP_NfyUjc4IrNZm-RnwVrxFuXwlKvdsjC7RWYputre0su71Do83Nu7O76ZA0NeoC1vcGgj23BAPOwXS19nXzpSWCux6Io0s7qEry3LcYeZvcnr1y2CzvlQxCbiFHtGOmZpfIAKfOygFw3f-UgqcKGxD25miK4WhPIa-YCXOWKXLhpMthT69Dl75YdeJk0Dri-J8mozlPDD8lcqSDwy_iZ_vaypXwNx8_JaxVx-ltx3zFnXn3ZTfZJRIJJdLz9GM8Lphq-UqxArYpizim6oPaEUXH2m8MOVhSVv2r9bTBG7NKIiFbHPptZvP8Bqr8J-lVIstAi_57HxHJTZiHCQbRKeWWCe_-HntZVy7Iyz8gWJYq8YQd53BR6mhtsP3Lvk4FzBJJ7wkWyPPtEWgmpkfSKpfkCx00czQVk6CvcCDko_3573qu5pyj0LAKDC4bCeRthieuJzEQE3GBjiPVymbZN0hfz-AS308tUte7Y3UOvN_vACOppNCa4m_Reikapxd40gzm6yVClas2Raf9xbb5ASvxl9b2D9A0MfRdcZSyFNunPP9lPvSXmAtOhkbbWIe7zpBfAhCpz0COwBHJQO5vOivSYp8XIBxDi2vsS5f_qH_2cpgI3lSGG8otmWo6svk38VYSfCx5KLELZ7WwrgCdh0Vo56N8gsc90oKo6ONL5xCXpqNv2t4a02DhBXAxbJUEUG8zXzOGwL1-3cjMVCsYTlR7a86nBi9HAvsrPKv2Q-p8hFmzWLquCOE5ta5WIfBr4vGQXhyWvK2Rb0_ba-5sYgXddJCdGielxbpjdQlYQRU9QcVj1Xa9I6BYSMKpTxNTRZ4NzM_TzzEnxbA5K6rSQc2YwcVEvchd0lDuHo98K5SnbOeqpMm_HSx93dHAS8Xds0hFIrg0ofjvQpEXgg2_IZagTko1XG_s-Y-G3ngRmJGiCwbaUWBUe7PQPQDBVMPAws1VDr3uvSe7xqtgzMF75zZsNum_lL4tVm5LqcuUmjcFJx8WIhja05L9fR3L4JLXktG5yvc_OKKdULBDqLGYDWfy3sjnnS2Ex6POsw99GEDXQavKBws2b9mVU1AAAPtetOSWQyo9RLqssObW7T1Ei9KOZvAeVsnhQSONZ_cZeL_FrWe5QDMY5NtLbawVckuwtrNnsdQl6pV2dtp-pw8_eOThhTxR6UB8WB1xqwSlc_4iAzaDu6mekZUxrovmrlxE2buzVpkxEHrPPPEe_ "Container diagram for Internet Banking System")](https://www.plantuml.com/plantuml/uml/hLRVZzf647xdhvYGH0690rLfNYgT50xSvYAuey0bVKDZxs1MMU-wksiuLFL_xwmnDYOdvI5zkMDdThxls_anyD5vjBx8LEST94RloNgG7WxIxm25a5uQZOfTMOPQW9AQ06rQPAGzt4oNqMoyllyIRUuV9hEdQNJR7Ow6movu0uKZK2P1fOwTLt8BR_Te9SQADlGidNUzxdLmjzy1U2LreWf1y3OblwbZzgWAUYbaDFbrCp7Q8okpmpoyv1KfHvTGE-zpzzjePF4mJFbbHSpYRC9HfFsGtpRA5UgGXHldXP8nWzuiWkbfFXjbw3pP5tcqaDjEP_NfyUjc4IrNZm-RnwVrxFuXwlKvdsjC7RWYputre0su71Do83Nu7O76ZA0NeoC1vcGgj23BAPOwXS19nXzpSWCux6Io0s7qEry3LcYeZvcnr1y2CzvlQxCbiFHtGOmZpfIAKfOygFw3f-UgqcKGxD25miK4WhPIa-YCXOWKXLhpMthT69Dl75YdeJk0Dri-J8mozlPDD8lcqSDwy_iZ_vaypXwNx8_JaxVx-ltx3zFnXn3ZTfZJRIJJdLz9GM8Lphq-UqxArYpizim6oPaEUXH2m8MOVhSVv2r9bTBG7NKIiFbHPptZvP8Bqr8J-lVIstAi_57HxHJTZiHCQbRKeWWCe_-HntZVy7Iyz8gWJYq8YQd53BR6mhtsP3Lvk4FzBJJ7wkWyPPtEWgmpkfSKpfkCx00czQVk6CvcCDko_3573qu5pyj0LAKDC4bCeRthieuJzEQE3GBjiPVymbZN0hfz-AS308tUte7Y3UOvN_vACOppNCa4m_Reikapxd40gzm6yVClas2Raf9xbb5ASvxl9b2D9A0MfRdcZSyFNunPP9lPvSXmAtOhkbbWIe7zpBfAhCpz0COwBHJQO5vOivSYp8XIBxDi2vsS5f_qH_2cpgI3lSGG8otmWo6svk38VYSfCx5KLELZ7WwrgCdh0Vo56N8gsc90oKo6ONL5xCXpqNv2t4a02DhBXAxbJUEUG8zXzOGwL1-3cjMVCsYTlR7a86nBi9HAvsrPKv2Q-p8hFmzWLquCOE5ta5WIfBr4vGQXhyWvK2Rb0_ba-5sYgXddJCdGielxbpjdQlYQRU9QcVj1Xa9I6BYSMKpTxNTRZ4NzM_TzzEnxbA5K6rSQc2YwcVEvchd0lDuHo98K5SnbOeqpMm_HSx93dHAS8Xds0hFIrg0ofjvQpEXgg2_IZagTko1XG_s-Y-G3ngRmJGiCwbaUWBUe7PQPQDBVMPAws1VDr3uvSe7xqtgzMF75zZsNum_lL4tVm5LqcuUmjcFJx8WIhja05L9fR3L4JLXktG5yvc_OKKdULBDqLGYDWfy3sjnnS2Ex6POsw99GEDXQavKBws2b9mVU1AAAPtetOSWQyo9RLqssObW7T1Ei9KOZvAeVsnhQSONZ_cZeL_FrWe5QDMY5NtLbawVckuwtrNnsdQl6pV2dtp-pw8_eOThhTxR6UB8WB1xqwSlc_4iAzaDu6mekZUxrovmrlxE2buzVpkxEHrPPPEe_)
 
-C4-PlantUML combines the benefits of [PlantUML](https://plantuml.com/) and the [C4 model](https://c4model.com/) for providing a simple way of describing and communicate software architectures – especially during up-front design sessions – with an intuitive language using open source and platform independent tools.
+C4-PlantUML combines the benefits of [PlantUML](https://plantuml.com/) and the [C4 model](https://c4model.com/) for providing a simple way of describing and communicating software architectures – especially during up-front design sessions – with an intuitive language using open source and platform independent tools.
 
 C4-PlantUML includes macros, stereotypes, and other goodies (like VSCode Snippets) for creating C4 diagrams with PlantUML.
 
@@ -30,6 +30,13 @@ C4-PlantUML includes macros, stereotypes, and other goodies (like VSCode Snippet
     - [Including the C4-PlantUML library](#including-the-c4-plantuml-library)
     - [Now let's create a C4 Container diagram](#now-lets-create-a-c4-container-diagram)
   - [Supported Diagram Types](#supported-diagram-types)
+    - [System Context & System Landscape diagrams](#system-context--system-landscape-diagrams)
+    - [Container diagram](#container-diagram)
+    - [Component diagram](#component-diagram)
+    - [Dynamic diagram](#dynamic-diagram)
+    - [Deployment diagram](#deployment-diagram)
+    - [(C4 styled) Sequence diagram](#c4-styled-sequence-diagram)
+    - [Samples](#samples)
   - [Relationship Types](#relationship-types)
   - [Layout (arrange) elements (without relationships)](#layout-arrange-elements-without-relationships)
   - [Global Layout Options](#global-layout-options)
@@ -41,7 +48,7 @@ C4-PlantUML includes macros, stereotypes, and other goodies (like VSCode Snippet
     - [Sample with different tag combinations](#sample-with-different-tag-combinations)
     - [Sample with tag dependent sprites and custom legend text](#sample-with-tag-dependent-sprites-and-custom-legend-text)
     - [Sample with different boundary tag combinations](#sample-with-different-boundary-tag-combinations)
-    - [Custom schema definition](#custom-schema-definition)
+    - [Custom schema definitions (via UpdateElementStyle())](#custom-schema-definitions-via-updateelementstyle)
   - [Element and Relationship properties](#element-and-relationship-properties)
   - [Version information](#version-information)
   - [Snippets for Visual Studio Code](#snippets-for-visual-studio-code)
@@ -55,8 +62,9 @@ C4-PlantUML includes macros, stereotypes, and other goodies (like VSCode Snippet
   - [Background](#background)
   - [License](#license)
 - [📄 Layout Options](LayoutOptions.md#layout-options)
+- [📄 Themes](Themes.md#themes)
 - samples
-  - [📄 Core Diagrams](samples/C4CoreDiagrams.md#c4-model-diagrams)
+  - [📄 C4 Model Diagrams](samples/C4CoreDiagrams.md#c4-model-diagrams)
 
 ## Getting Started
 
@@ -221,12 +229,13 @@ SHOW_LEGEND()
 > - `arg`: argument required (e.g. `alias`)
 > - `?arg`: argument optional (e.g. `?tags`); an optional argument can be directly set via its keyword `$arg=...` (e.g. `$tags="specificTag"`) without the other optional arguments
 
-- System Context & System Landscape diagrams
+### System Context & System Landscape diagrams
+
   - Import: `!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml`
   - Macros:
-    - `Person(alias, label, ?descr, ?sprite, ?tags, ?link)`
+    - `Person(alias, label, ?descr, ?sprite, ?tags, ?link, ?type)`
     - `Person_Ext`
-    - `System(alias, label, ?descr, ?sprite, ?tags, ?link)`
+    - `System(alias, label, ?descr, ?sprite, ?tags, ?link, ?type)`
     - `SystemDb`
     - `SystemQueue`
     - `System_Ext`
@@ -241,9 +250,12 @@ SHOW_LEGEND()
     - `robot`
     - `robot2`
 
-- Container diagram
+  - C4 Model extension: Person() and System() support `$type` argument too. Is uses the same notation as `$techn`, e.g. `$type="characteristic A"` is displayed as `[characteristic A]`
+
+### Container diagram
+
   - Import: `!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml`
-  - Additional Macros:
+  - Additional Macros  (based on context diagram macros):
     - `Container(alias, label, ?techn, ?descr, ?sprite, ?tags, ?link)`
     - `ContainerDb`
     - `ContainerQueue`
@@ -252,9 +264,10 @@ SHOW_LEGEND()
     - `ContainerQueue_Ext`
     - `Container_Boundary(alias, label, ?tags, ?link)`
 
-- Component diagram
+### Component diagram
+
   - Import: `!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml`
-  - Additional Macros:
+  - Additional Macros (based on container diagram macros):
     - `Component(alias, label, ?techn, ?descr, ?sprite, ?tags, ?link)`
     - `ComponentDb`
     - `ComponentQueue`
@@ -262,10 +275,10 @@ SHOW_LEGEND()
     - `ComponentDb_Ext`
     - `ComponentQueue_Ext`
 
-- Dynamic diagram
+### Dynamic diagram
+
   - Import: `!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Dynamic.puml`
-  - Additional Macros:
-    - `RelIndex(index, from, to, label, ?tags, ?link)`
+  - Additional Macros (based on component diagram macros):
     - (lowercase) `increment($offset=1)`: increase current index (procedure which has no direct output)
     - (lowercase) `setIndex($new_index)`: set the new index (procedure which has no direct output)
     - `LastIndex()`: return the last used index (function which can be used as argument)
@@ -274,13 +287,58 @@ SHOW_LEGEND()
     - `Index($offset=1)`: returns current index and calculates next index (function which can be used as argument)
     - `SetIndex($new_index)`: returns new set index and calculates next index (function which can be used as argument)
 
-- Deployment diagram
+  -  All relationship macros are extended with `?index= `:
+
+     > All `RelIndex...()` calls are obsolete and can be replaced with calls like Rel($index=..., ...) or Rel(..., $index=).
+     > A full sample see [samples/C4_Dynamic Diagram Sample - message bus.puml](samples/C4_Dynamic%20Diagram%20Sample%20-%20message%20bus.puml)
+
+### Deployment diagram
+
   - Import: `!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml`
-  - Additional Macros:
+  - Additional Macros (based on **container** diagram macros):
     - `Deployment_Node(alias, label, ?type, ?descr, ?sprite, ?tags, ?link)`
     - `Node(alias, label, ?type, ?descr, ?sprite, ?tags, ?link)`: short name of Deployment_Node()
     - `Node_L(alias, label, ?type, ?descr, ?sprite, ?tags, ?link)`: left aligned Node()
     - `Node_R(alias, label, ?type, ?descr, ?sprite, ?tags, ?link)`: right aligned Node()
+
+### (C4 styled) Sequence diagram
+
+C4-PlantUML **does not offer** a full sequence diagram support,
+but existing elements and relationships can be reused as participants and calls in the corresponding styles.
+
+> **!!! Contrary to all other diagrams, please define boundaries without `{` and `}` and mark a boundary end with `Boundary_End()` !!!**
+
+  - Import: `!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Sequence.puml`
+  - Macros (based on **component** diagram macros):
+    - Basically all element specific macros (Person, System, Container...) can be reused with following differences:
+      - element descriptions are typically not displayed (can be activated via SHOW_ELEMENT_DESCRIPTIONS())
+      - **boundaries have to be defined without `{` and `}`** and instead of `}` the **`Boundary_End()`** macro has to be called
+    - Additional (element specific) Macros:
+      - `Boundary_End()`
+    - Additional Layout Options:
+      - `SHOW_ELEMENT_DESCRIPTIONS(?show)`
+      - `SHOW_FOOT_BOXES(?show)`
+      - `SHOW_INDEX(?show)`
+    - Only following (extended) relationship specific macros is supported:
+      - `Rel($from, $to, $label, $techn="", $descr="", $sprite="", $tags="", $link="", $index="", $rel="")`  
+        `$index` enables the definition of active/next index with e.g. the related index macros below  
+        `$rel` enables the definition of all PlantUML specific arrow types, details see e.g.
+        [All arrow types](https://plantuml.com/sequence-diagram#4764f83f72ed032f) and
+        [Slanted or odd arrows](https://plantuml.com/sequence-diagram#5bd6712206960fab)
+    - The index related macros (like the dynamic diagram)
+      - `Index($offset=1)`: returns current index and calculates next index (function which can be used as argument)
+      - `SetIndex($new_index)`: returns new set index and calculates next index (function which can be used as argument)
+      - `LastIndex()`: return the last used index (function which can be used as argument)
+      - (lowercase) `increment($offset=1)`: increase current index (procedure which has no direct output)
+      - (lowercase) `setIndex($new_index)`: set the new index (procedure which has no direct output)
+
+  - (Typically additional used) PlantUML statements:
+    - [Grouping message](https://plantuml.com/sequence-diagram#425ba4350c02142c)
+    - [Divider or separator](https://plantuml.com/sequence-diagram#d4b2df53a72661cc)
+    - [Reference](https://plantuml.com/sequence-diagram#63d5049791d9d79d)
+    - [Delay](https://plantuml.com/sequence-diagram#8f497c1a3d15af9e)
+
+### Samples
 
 Take a look at each of the [C4 Model Diagram Samples](samples/C4CoreDiagrams.md).
 
@@ -371,7 +429,7 @@ Rel_L(x, s4, "uses")
 
 ![Relationship versus Layout](https://www.plantuml.com/plantuml/png/LSt1QeD04CRnkq-HvgJGA55FFQLLeGLBHIEq9rbrQ8HrbTrPshnzPmn5Svl_3_RRaq6XqOxIUHXK9sqFkmlYR9w2G8iV_tl0Yssj0TrD2a6XtqrZC4kX-Ct1O2-7DaZYGy5Kl-V1A0o29ceIUY461TgVUV_rBSsQwfoLsSVvgyXSpt4Aq6PIhdZSxP_ttd-sb2zhTfJ9cZrbkYPGPfHEBgvDpLEjjzmbtztjJldkRtVEDwoV_zB09mrKLuCmkkP8NHqt43A46uWOeWt43361Ku9iQfvSPgm1GyfOBXZUOxfWT8_vWl6A9r2z7UKV "Relationship versus Layout")
 
-(In combination with [SHOW_FLOATING_LEGEND()](LayoutOptions.md#show_floating_legend)) a greater distance between an element and the
+(In combination with [SHOW_FLOATING_LEGEND()](LayoutOptions.md#show_floating_legendalias-hidestereotype-details-and-legend)) a greater distance between an element and the
 e.g. floating legend could be required that all e.g. corners of the drawing area can be reached.
 
 - `Lay_Distance(from, to, ?distance)`: Sets the distance between `from` and `to` with down alignment (Lay_Distance(from,to,0) equals Lay_D(from, to)). The default alias of the floating legend is LEGEND().
@@ -465,7 +523,7 @@ Color of the displayed images can be changed with `,color={color}`.
 !include <office/users/users.puml>
 
 
-AddRelTag("plantuml", $textColor="$ARROW_COLOR", $lineColor="$ARROW_COLOR", $sprite="img:http://plantuml.com/logo3.png{scale=0.3}", $legendSprite="img:http://plantuml.com/logo3.png{scale=0.1}", $legendText="console triggered")
+AddRelTag("plantuml", $textColor="$ARROW_FONT_COLOR", $lineColor="$ARROW_COLOR", $sprite="img:http://plantuml.com/logo3.png{scale=0.3}", $legendSprite="img:http://plantuml.com/logo3.png{scale=0.1}", $legendText="console triggered")
 
 Person(user, "user group displayed with a sprite", $sprite="users")
 
@@ -538,24 +596,25 @@ Rel_D(user, user1, "requests", "async message", "if sprite starts with &, it def
 
 Additional tags/stereotypes can be added to the existing element stereotypes (component, ...) and highlight,... specific aspects:
 
-- `AddElementTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?techn, ?legendText, ?legendSprite)`:
+- `AddElementTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?techn, ?legendText, ?legendSprite, ?borderStyle, ?borderThickness)`:
   Introduces a new element tag. The styles of the tagged elements are updated and the tag is displayed in the calculated legend.
 - `AddRelTag(tagStereo, ?textColor, ?lineColor, ?lineStyle, ?sprite, ?techn, ?legendText, ?legendSprite, ?lineThickness)`:
   Introduces a new Relationship tag. The styles of the tagged relationships are updated and the tag is displayed in the calculated legend.
-- `AddBoundaryTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?type, ?legendText)`:
+- `AddBoundaryTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?type, ?legendText, ?borderStyle, ?borderThickness, ?borderStyle, ?borderThickness)`:
   Introduces a new Boundary tag. The styles of the tagged boundaries are updated and the tag is displayed in the calculated legend.
-- `UpdateElementStyle(elementName, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?techn, ?legendText, ?legendSprite)`:
+- `UpdateElementStyle(elementName, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?techn, ?legendText, ?legendSprite, ?borderStyle, ?borderThickness)`:
   This call updates the default style of the elements (component, ...) and creates no additional legend entry.
 - `UpdateRelStyle(textColor, lineColor)`:
   This call updates the default relationship colors and creates no additional legend entry.
-- `UpdateBoundaryStyle(?elementName, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?type, ?legendText)`:
+- `UpdateBoundaryStyle(?elementName, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?type, ?legendText, ?borderStyle, ?borderThickness)`:
   This call updates the default style of the existing boundaries and creates no additional legend entry.
   If the element name is "" then it updates generic, enterprise, system and container boundary style in on call.
 - `RoundedBoxShape()`: This call returns the name of the rounded box shape and can be used as ?shape argument.
 - `EightSidedShape()`: This call returns the name of the eight sided shape and can be used as ?shape argument.
-- `DashedLine()`: This call returns the name of the dashed line and can be used as ?lineStyle argument.
-- `DottedLine()`: This call returns the name of the dotted line and can be used as ?lineStyle argument.
-- `BoldLine()`: This call returns the name of the bold line and can be used as ?lineStyle argument.
+- `DashedLine()`: This call returns the name of the dashed line and can be used as ?lineStyle or ?borderStyle argument.
+- `DottedLine()`: This call returns the name of the dotted line and can be used as ?lineStyle or ?borderStyle argument.
+- `BoldLine()`: This call returns the name of the bold line and can be used as ?lineStyle or ?borderStyle argument.
+- `SolidLine()`: This call returns the name of the solid line and can be used as ?lineStyle or ?borderStyle argument (enables e.g. a reset of dashed boundaries).
 
 Each element can be extended with one or multiple custom tags via the keyword argument `$tags="..."`, like `Container(spaAdmin, "Admin SPA", $tags="v1.1")`.
 Multiple tags can be combined with `+`, like `Container(api, "API", $tags="v1.0+v1.1")`.
@@ -565,7 +624,7 @@ Multiple tags can be combined with `+`, like `Container(api, "API", $tags="v1.0+
 Sometimes an added element tag is element specific and all element specific colors should be used, e.g. a specific user role should be defined as element tag with the specific colors `...PERSON_...` like
 
 ```plantuml
-AddElementTag("admin", $fontColor=$ELEMENT_FONT_COLOR, $bgColor=$PERSON_BG_COLOR, $borderColor=$PERSON_BORDER_COLOR, $sprite="osa_user_audit", $legendText="administration user")
+AddElementTag("admin", $fontColor=$PERSON_FONT_COLOR, $bgColor=$PERSON_BG_COLOR, $borderColor=$PERSON_BORDER_COLOR, $sprite="osa_user_audit", $legendText="administration user")
 ```
 
 Therefore element Add...Tag() shortcuts are added which use the specific colors as default values and the call can be simplified like
@@ -576,24 +635,24 @@ AddPersonTag("admin", $sprite="osa_user_audit", $legendText="administration user
 
 Following calls introduces new element tags with element specific default colors:
 
-- `AddPersonTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?legendText, ?legendSprite)`
-- `AddExternalPersonTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?legendText, ?legendSprite)`
-- `AddSystemTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?legendText, ?legendSprite)`
-- `AddExternalSystemTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?legendText, ?legendSprite)`
-- `AddComponentTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?techn, ?legendText, ?legendSprite)`
-- `AddExternalComponentTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?techn, ?legendText, ?legendSprite)`
-- `AddContainerTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?techn, ?legendText, ?legendSprite)`
-- `AddExternalContainerTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?techn, ?sprite, ?legendText, ?legendSprite)`
-- `AddNodeTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?techn, ?legendText, ?legendSprite)`
+- `AddPersonTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?legendText, ?legendSprite, ?type, ?borderStyle, ?borderThickness)`
+- `AddExternalPersonTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?legendText, ?legendSprite, ?type, ?borderStyle, ?borderThickness)`
+- `AddSystemTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?legendText, ?legendSprite, ?type, ?borderStyle, ?borderThickness)`
+- `AddExternalSystemTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?legendText, ?legendSprite, ?type, ?borderStyle, ?borderThickness)`
+- `AddComponentTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?techn, ?legendText, ?legendSprite, ?borderStyle, ?borderThickness)`
+- `AddExternalComponentTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?techn, ?legendText, ?legendSprite, ?borderStyle, ?borderThickness)`
+- `AddContainerTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?techn, ?legendText, ?legendSprite, ?borderStyle, ?borderThickness)`
+- `AddExternalContainerTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?techn, ?sprite, ?legendText, ?legendSprite, ?borderStyle, ?borderThickness)`
+- `AddNodeTag(tagStereo, ?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?sprite, ?techn, ?legendText, ?legendSprite, ?borderStyle, ?borderThickness)`
   (node specific: $type reuses $techn definition of $tags)
 
 ### Boundary specific tag definitions
 
 Like the element specific tag definitions exist boundary specific calls with their default colors **and type**:
 
-- `UpdateContainerBoundaryStyle(?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?type, ?legendText)`
-- `UpdateSystemBoundaryStyle(?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?type, ?legendText)`
-- `UpdateEnterpriseBoundaryStyle(?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?type, ?legendText)`
+- `UpdateContainerBoundaryStyle(?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?type, ?legendText, ?borderStyle, ?borderThickness)`
+- `UpdateSystemBoundaryStyle(?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?type, ?legendText, ?borderStyle, ?borderThickness)`
+- `UpdateEnterpriseBoundaryStyle(?bgColor, ?fontColor, ?borderColor, ?shadowing, ?shape, ?type, ?legendText, ?borderStyle, ?borderThickness)`
 
 ### Comments
 
@@ -679,7 +738,7 @@ AddContainerTag("db", $sprite="database_server", $legendText="database container
 AddContainerTag("files", $sprite="file_server", $legendText="file server container")
 AddContainerTag("conApp", $sprite="service_application", $legendText="console app container")
 
-AddRelTag("firewall", $textColor="$ARROW_COLOR", $lineColor="$ARROW_COLOR", $sprite="firewall,scale=0.3,color=red", $legendText="firewall")
+AddRelTag("firewall", $textColor="$ARROW_FONT_COLOR", $lineColor="$ARROW_COLOR", $sprite="firewall,scale=0.3,color=red", $legendText="firewall")
 
 Person_Ext(anonymous_user, "Bob", $tags="anonymous_ext")
 Person(aggregated_user, "Sam, Ivone", $tags="customer")
@@ -762,14 +821,18 @@ SHOW_LEGEND()
 
 ![custom border tags](https://www.plantuml.com/plantuml/png/bLHHRzem47xFhxX5bKYa0ghKfqr8fO3QXm8Lj9hwX9puIAmcTcGxfMZQVvyF4vg6RTgUsllkxlEN--wuCPPfMvT5y4N8jAWvGcvjPRuEXvhj1fcmUPtK1dMgf4Lf1wagXrN19FNqZUM5I8QJw_uZGS_pXs79Z4NjeCr4bPMIr5CHVz23vuepYs1pX0mbQf52ech9cTw3iVi2WKb-I8TcxsZAy192Hu2wqi8WHII32TSRDgq2ZMysO9KA_1ktHzer9QAB99keGkbHcAc2EvgBhQCvGebMEqbOeZH7_GcDdUXeXVtOivg3DY-jezny0urzWnQQnu2zAS4Dz2Af867fAwG4npqG4WhCKFAMuFM1z3zaxt9XiIExGUCWQ9YYn0rj34qOnl0Z-1a4asQCcrDXwYjFcRCUB_6ZmVW63vzLzu3Zrl4OO21n1rxcqMPQjK4RjliAWp7d3SiJow9GOwMCiCgHNa9h61fH_liq23KvusedP3OAhQuRg48OmOfUHFVm-vgGA7OvKZCAxuIzhnDegMZFDRrUeMaoRX1_kOcGA5bcHkqleZ41d6uaqiZu71tHQZQUpcU3aWmFvqo_Sh-9DDEFfIC-O9f6QL5BLXHxm7UBz2sm4pQ7tgOfxe7DcGLXeJO7FxZORb6Zj21PYM0gbc90LS80IfOKQ5erM619VvdatQM7hTB-9eZ7QIB2SoFVhZuPM8WijxzpqMDT5pqQ4-lCI_aZgSRkcH3I9IIiRIMJokQecvYscf3s2PoMudRvl9YELo_mzF8uEnbBOZg6Dgmde4LxmWu4cEPo54wMyyVbOhPuEcEc_pcQr2dtZLqpoDQMNwwlvQlnvYVkPNYxydkJCjdfyNRwBNjW-ysAVZVI93u6gOkCYmxXz91hht_SD7MEeZDOLxQ-NtxVFCpkPejf50StABaxcLy0 "custom border tags")
 
-### Custom schema definition
+### Custom schema definitions (via UpdateElementStyle())
 
-If the custom (color) schema is defined via `UpdateElementStyle()` then the legend of existing elements is updated too.
+Via `UpdateElementStyle()` calls, it is possible to change the default colors, sprites, legend text, tags, ...
+It automatically updates the legend too.  
+If the corresponding section is stored in a separate file then it can be reused as default of all diagrams.
 
 ```plantuml
 @startuml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
+' <<<<< this section could be stored in a separate file and reused in all other diagrams too
+' it defines new default colors, different default sprites and legend 
 !$COLOR_A_5 = "#7f3b08"
 !$COLOR_A_4 = "#b35806"
 !$COLOR_A_3 = "#e08214"
@@ -784,11 +847,12 @@ If the custom (color) schema is defined via `UpdateElementStyle()` then the lege
 !$COLOR_REL_LINE = "#8073ac"
 !$COLOR_REL_TEXT = "#8073ac"
 
-UpdateElementStyle("person", $bgColor=$COLOR_A_5, $fontColor=$COLOR_NEUTRAL, $borderColor=$COLOR_A_1, $shadowing="true")
-UpdateElementStyle("external_person", $bgColor=$COLOR_B_5, $fontColor=$COLOR_NEUTRAL, $borderColor=$COLOR_B_1)
-UpdateElementStyle("system", $bgColor=$COLOR_A_4, $fontColor=$COLOR_NEUTRAL, $borderColor=$COLOR_A_2)
-UpdateElementStyle("external_system", $bgColor=$COLOR_B_4, $fontColor=$COLOR_NEUTRAL, $borderColor=$COLOR_B_2)
+UpdateElementStyle("person", $bgColor=$COLOR_A_5, $fontColor=$COLOR_NEUTRAL, $borderColor=$COLOR_A_1, $shadowing="true", $legendText="Internal user")
+UpdateElementStyle("external_person", $bgColor=$COLOR_B_5, $fontColor=$COLOR_NEUTRAL, $borderColor=$COLOR_B_1, $legendText="External user")
+UpdateElementStyle("system", $bgColor=$COLOR_A_4, $fontColor=$COLOR_NEUTRAL, $borderColor=$COLOR_A_2, $sprite="robot", $legendText="Our chatbot based system")
+UpdateElementStyle("external_system", $bgColor=$COLOR_B_4, $fontColor=$COLOR_NEUTRAL, $borderColor=$COLOR_B_2, $legendText="External system")
 UpdateRelStyle($lineColor=$COLOR_REL_LINE, $textColor=$COLOR_REL_TEXT)
+' >>>>> end of section
 
 Person(customer, "Personal Banking Customer")
 System(banking_system, "Internet Banking System")
@@ -805,7 +869,7 @@ SHOW_LEGEND()
 @enduml
 ```
 
-![custom schema](https://www.plantuml.com/plantuml/png/dPHVRzem5CNVyodI34qWyIU4KA99I6rOj5LAeUAFjhV8YIyGrN6GxQZqsy-9iyMqwIeXNk1tpxdt7jlYZWl4H94HuoQb2Iamc4SXJlpRQCJGo_2GYcCH5nnOabC1L0oJF1kT2AAbPy059cayMhY3fnBj7iDHXhW09b6qA1rdCJoLtOsRpc8LhjRHVJGrvwRrPRQVnBPdQTojU3oPUlQjpYSL1zjpngxEdOhlSUpTJdG-LXp0ZhK-os2tNT-7gZOhFqtDhptOmmXYdQiPiODYxEXSxUJPimbATAuoJ5rdvdawLvaTRDkkrdyTX57ui0nQcgdYDlYzlIWQknD60W826L2n4Qy4kjO96C-frJSxyM6HavpDcxEMS9zJeV3bKPJwd65WRpnZMU17XFENb1xcbc05MBtMmN0Mm2WYqOSR-5Ti86-ZVHn_vGAorfpk5JcTJq9zECw_OfpVZ5i3KQCw9AMWgPe7qJU_2ZXhxRNtq3ECf-gukqd1HPu1wvkM8eYOFgBFyjhCHLsJDxUfSdHZLQbZISy3BOE2-ETHGkceBL5m5jqCfQJn18FojybhvHiXtJEKWPGz_ltUqbl6rpP_jzME0vSogOfyb3nhqijDDa0nDw7QXviYhprBI0z7UVxlulx7hQnj3XMYsShO_5pzYiBWHx3ytkqPTx9B-UVs1m00 "custom schema")
+![custom schema](https://www.plantuml.com/plantuml/png/dLJlJ-904FtUlsBicHmcAbXGcijnKRZcpWJ1y2DttvfjTmgDsrsoEututz-MHIs8PsBvGFlUl9StivEzDiGqbONmZdAPYf8ZB8bMvbkpgTdZ-IAdPPcK1dMg9A6ayrGLpPLWijAS6U8YJvg3pjbz1StlXis26K9jeNXGATPqlghSlQ_mlNg0bha1WodbIaAgIi4XGJ2aD7B89J1BhfXcX93b0e593XfBisM504LBrC1pjj2iC41AMVESW6EMIpGWyR5wPwKWI9LGsfpQwYn3RVE_C6QbSqApyHUuGFld7HqFniFn9Bw9Bw47_fTkravQeL_3EniyQL-6hQiwtjxWs0g3YquT3pPunfFmgbt7BnoEs4fgFgDeFflS31tNhNwlN7-huI5dcDJnm6KAMCA3EkuoXQrkcwLrtFLmsGcwOLZ7NSy1RxKwDVz9D8o7jwFeW9aZPz7VsGxfpLUS4KO22vGqfIU13N-5sYZfdy9niXXKXz9xdRK5CoN9mRkZgEgLvgZtD1UMC4l6rMCk5psVT8cLjpl86QwfvzzAGYsPW6fx_PE3gN3jQk9tu_K_4SyUrLwMQFrn5lDa28k34-fyOaA19ToEztoj4aNxyncN6j8b8qj1mWnoS0a-6jMxEVkVo6ctzxrHxQMPe719ZaKkqPdihQXr8klXkBqDFR5tn8_g0PGSLFPy1NdU_URe6sbfI1MeJy5tY8tGP_B1xXSCjfmDCzsaQYIEsGx3Qjos8Rrefi_njvBODjOeM2vUDT6P_QurkbieCyqAj6Ltp-y7lErKQidVf9eRDBRCLiLzbZxKIdUJJ55o0xZ9Ou3KLZF2VB5CbDvhzxzg9tshg3MqJULDVu__nCFeLpJwsJZnhgrBMOX_ "custom schema")
 
 ## Element and Relationship properties
 
@@ -933,7 +997,15 @@ Source: [C4_Container Diagram Sample - techtribesjs.puml](samples/C4_Container%2
 
 Source: [C4_Container Diagram Sample - message bus.puml](samples/C4_Container%20Diagram%20Sample%20-%20message%20bus.puml)
 
-![messagebus](https://www.plantuml.com/plantuml/png/ZLNVRzis47xtNt7p1am6d1WTzZGWGFt3M5iuYMlPwADn4iyIKOeaICgfD-n_7odPAjqegFEGaCUxx_lkFb9vRnqQLrTYy0kNkQWPGUcSjdzD9WPVxWlkoZghBPbSIKVItUUgccY1CjJSMSS4poRpF-_M8RHxN4qgj8wC3-tdlWAv97El0_xlK4jVN7aGS2N1GGcXNhWiGFWaGCdWwfWRwrSAF3a8bQCG9u_HgNnDC9WojXGK4BPO9CEAvqQbP8uyf-4OVhCbQdfOyg9qAMV4qh1FHluaA-PAAFCmd2iZ3ruLcPcecwA3vpWVlfJSDJ511KcsfM_keIK1sx90GW4TR80V3KS_Ah9E6ImYCHjLIvywKzzwn8X6wTVJMr8y_Y3zyFnblrvkqkUd_VDkk_huj4nyU4t6AfdajMUio8nXtgs6KxY46u2JTLJjPq48cbEIl_CfbspuA0_ALEYuaiCH_3i0_zDDFK6ju-IfreBdRRAFVy8ZsjnmxSOmbKKjq8JmDBXkEmqsM5oXn8A2xTo0Dkh0HUZkckrIiJyFEwRkN6vfnv1g4sxMJ2aNWjkIG2ik7QW3O9wJjU0xwrG0ZnhretPOM7Y0-0gz5bHv52zxdzNMKposEvZLDZ1kCCkuU_pSi1kKLYlZ6awVpcKGG4UIphw2DHHIlVgeqSqb5dUwgRDJ-3itX8uioD21u9OOC7JOa7LWe6kZbILxStjOC-uY3TEmZ_ddlqxkdvRRi5mRTUICB2XJeEIs6UJTYmz10nC4733dmYzlbx38lflEijZl1JhCq3OodWtcWk3T7tdOfKuPiZyrjds9VOpTn09bFFcOy_6KVbv5T7WP_Z_4u4Z6UhhcgWdH-VtT56HGghp7crw5_RRuqyYKi0jobaUItRPJ5yq0C5ErEryzS2KwAF58_fVM98drA_XlCDYGs2-Y3qhxzdUjwE67xNQT-iHpMdFOyrvtcg5xmnq8Ooe26DgJpCVmoN_J9bV0k-GrPgiZ9SbirvKAA5yeIrN-bPolVgiuUi4TIAUjRiH6e0rE3qfqHxkPjsRpzaEucCtFBIHNZ7ql_JOHCKpxmcw7k4ZfOUz2lQsqr3-mnTUngsYvsfh12a_xJH_R5TBbVzbg-VVoQP6C1kzz5tKb_WS0 "messagebus")
+![messagebus](https://www.plantuml.com/plantuml/png/ZLLDR-Cs4BtxLqpT0dK09yOMFHK8iFumkhjm4gzbOoy5Z94qbeYbI8Aad7MB_lSE9LjX4WLD3Z4vd7dlpGUfZywZzNKb1py9bSaw9oYzD-wFoSJYuqqXV5cdjIERQUL9-PjCLnCZKOMOQ-TpATB9_FVhTJ3jxbQJ2fqdowRzd2DGAB8t9k3_2hNYu8f1m9S41osbVXIg0CbEW2g7PyV2EbvfO7AGEaCfJupHgNnDC9Zc-L9IGDXYCHfM8hCw8NiK6Gt7y8ihqT3jKXIbJqHEUHBseoi-IOkvbjhU3kVQgWEh8ZkJTHDqO8xpuMCfV6EJL93Aj_J3txOau5gMlnG5T701VdZrKf3psc8HQTdeMh7dJF_eqI8ReTzFRobX_47owU7RVhtS90_t-uVTTlNvVZbYyvgiqsgKrSnOaHt3l5iDft0nDm0dxbQrdmKXQ4-Zx0ExNBpXipfeMw4NMWslu9y1y5zNz14Q4pjFZP4YQvtP_WMFw38hZ1_3L1MrH1lCqz1qrsbmeSCLAYmeT5rOC5OVXEJiNh1T8lRdMiVKNPDRsZ4aneR1ccdjWt5R4XWjb0Tz0CmoSWuuiqu5Y2XHBhN7mi4jn1FqMb35A2nxdzQEAUxQ7Sng5nWtcAR2ttrjs2qgPxJr3IUx2nK4q96KTwzWBGLNLXybkhdOuamtTNeAltDBwCc12Xb8uIY773qsPBOBDBKrsf5xTtfOvy976gPX7_FFVvxSt2-tORcs-YXorg1jWKguff3NZso21YO8E60c92_VBs6HFZKzJ-D-Bz1ZYgwHyM0namGVVil2Bl7QallVnhOtiOSnAZzJnfMFEUzEoTTLH8UNulzDEHp9EgPhHatAhjzFJS4SIftrzAPNONzR-3HgIjW5EKiUgMxRgOjg09Zgsfz73to97aey4lypXXJb_Gh-7Gms9FUBw45fx_wk5JtyjDsk4tOykpM7FVTrPxW6RtG7GfcA08RkfB8nVE4tRV8CUDVp1hGw4bAvwxBI0UKRfOdElfFdwBU2enlSWNJQwaPi1DhWzA34CzhLl6csQ1_2nMn-Jk7vcz5tqzyd8ePfRzZx8IvIUjWxKsygBVKBjdWSkuYMguqPhF2qt_ImFTTz-PQjbdykxnVy3Vl8MTIL_0y0 "messagebus")
+
+### (C4 styled) Sequence diagram
+
+TODO: better sample is missing ...
+
+Source: [C4_Sequence Diagram Sample - complex.puml](samples/C4_Sequence%20Diagram%20Sample%20-%20complex.puml)
+
+![sequence](https://www.plantuml.com/plantuml/png/hP1FQzn03CNlyocKd19ex2saby12jabe2saQTbjw3BDZkHQHDQwbsK8_VMMd8OSD_GCPi8sUzNvlf7ErE5hfEHnOXpt2nUbT4J9ie1rp3vtPe6TrFSOVrJUohcoBufYo68fLAVVrm54cm8bQmxIjBqvFRYVfoyVhkezgEDOpMSC1IUBIuCj0_Q8R_5vG4bR3D42unL6p7AsO4hw2m_bxUFmelyrR5_tjKeZ9Q1SDmUiGriYFBgydQx4EnIX5eoomddBKPYCRQ4a9LTl2aA9Y03yJOlREd7t4oYs3OUCCP4NGt2FSapIGMsWZSHaVG9pp0AyNYmKOJKk3tsVlZfSt6rYPnNJlJF23qeJf2IEsa7SumbC_d049sJEZTiYSdV3aSjrvdpjII55WYv351KN_6HcO17KA0dU4i5p21oTJPFhvCEfo-JyR_TlYrgX35aLlzIml1pJwGuvajuyG_palxZdsSgkgWZVGanH31OxcxQuz4vyYiyAE8WnTbjcyUV_fwztrrRkhcykZut2EqfIUVm40 "sequence")
 
 ## Background
 
