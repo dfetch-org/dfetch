@@ -5,8 +5,8 @@ Release 0.8.0 (unreleased)
 * Drop python 3.6 support (#386)
 * Fix checking project from svn branch (#383)
 * Move all configuration into single ``pyproject.toml`` (#401)
-* Also build for python 3.11 in CI
-* Add 3.11 classifier to pyproject
+* Also build for python 3.11, 3.12 in CI
+* Add 3.11, 3.12 classifier to pyproject
 * When importing non-std SVN external, identify `src` path
 
 Release 0.7.0 (released 2022-06-22)
