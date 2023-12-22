@@ -15,15 +15,10 @@ import json
 import re
 from typing import List, cast
 
-from cyclonedx.model import (
-    ExternalReference,
-    ExternalReferenceType,
-    LicenseChoice,
-    Tool,
-    XsUri,
-)
+from cyclonedx.model import ExternalReference, ExternalReferenceType, Tool, XsUri
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
+from cyclonedx.model.license import LicenseExpression
 from cyclonedx.output import get_instance
 from cyclonedx.output.json import Json
 from cyclonedx.schema import OutputFormat
@@ -90,7 +85,7 @@ class SbomReporter(Reporter):
             )
 
         if license_name:
-            component.licenses.add(LicenseChoice(expression=license_name))
+            component.licenses.add(LicenseExpression(license_name))
         self._bom.components.add(component)
 
     @staticmethod
