@@ -64,7 +64,7 @@ development = [
     'vulture==2.10',
     'pyroma==4.2',
     'isort==5.13.2',
-    'pylint==3.0.2',
+    'pylint==3.0.3',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml
     'pre-commit==3.6.0',
 ]
