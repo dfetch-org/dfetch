@@ -169,3 +169,34 @@ Feature: Let check report to jenkins
                 ]
             }
             """
+
+    Scenario: Non-existent revision is reported
+        Given a git repository "SomeProject.git"
+        And the manifest 'dfetch.yaml'
+            """
+            manifest:
+                version: 0.0
+                projects:
+                  - name: SomeProject
+                    url: some-remote-server/SomeProject.git
+                    revision: '0123112321234123512361236123712381239123'
+            """
+        When I run "dfetch check --jenkins-json jenkins.json SomeProject"
+        Then the 'jenkins.json' file contains
+            """
+            {
+                "_class": "io.jenkins.plugins.analysis.core.restapi.ReportApi",
+                "issues": [
+                    {
+                        "fileName": "dfetch.yaml",
+                        "severity": "High",
+                        "message": "SomeProject : SomeProject was never fetched!",
+                        "description": "The manifest requires version '0123112321234123512361236123712381239123' of SomeProject. it was never fetched, fetch it with 'dfetch update SomeProject. The latest version available is 'master - 8ca68e7865f4b1b04bb10f76098ba7763ae0b02f'",
+                        "lineStart": 4,
+                        "lineEnd": 4,
+                        "columnStart": 15,
+                        "columnEnd": 25
+                    }
+                ]
+            }
+            """

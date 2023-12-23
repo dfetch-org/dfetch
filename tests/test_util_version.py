@@ -81,7 +81,7 @@ def test_version_parsing(
 
 
 @pytest.mark.parametrize(
-    "name, current_tag, available_tags, expected_result",
+    "name, current_tag, available_tags, expected_tag",
     [
         ("single-available-tags", "v1.0.0", ["v1.0.0"], "v1.0.0"),
         (
@@ -114,10 +114,40 @@ def test_version_parsing(
             ["no-version", "v1.0.0", "v2.0.0"],
             "no-version",
         ),
+        (
+            "newer available",
+            "1.2.3",
+            ["1.2.3", "1.2.4"],
+            "1.2.4",
+        ),
+        (
+            "same available",
+            "1.2.0",
+            ["1.2.0"],
+            "1.2.0",
+        ),
+        (
+            "no newer available",
+            "1.2.4",
+            ["1.2.1", "1.2.2", "1.2.4"],
+            "1.2.4",
+        ),
+        (
+            "non-existent tag",
+            "5.2.3",
+            ["1.2.1", "1.2.2", "1.2.4"],
+            "5.2.3",
+        ),
+        (
+            "non-numerical tag",
+            "some-word",
+            ["some-word", "some-other"],
+            "some-word",
+        ),
+        ("issue", "non-existent-tag", ["v3.3", "v3.4"], "non-existent-tag"),
     ],
 )
-def test_latest_tag_from_list(name, current_tag, available_tags, expected_result):
-    assert (
-        dfetch.util.versions.latest_tag_from_list(current_tag, available_tags)
-        == expected_result
-    )
+def test_latest_tag_from_list(name, current_tag, available_tags, expected_tag):
+    latest_tag = dfetch.util.versions.latest_tag_from_list(current_tag, available_tags)
+
+    assert expected_tag == latest_tag

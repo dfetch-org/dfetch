@@ -157,3 +157,32 @@ Feature: Checking dependencies from a git repository
             'https://giiiiiidhub.com/i-do-not-exist/broken' is not a valid URL or unreachable:
             fatal: unable to access 'https://giiiiiidhub.com/i-do-not-exist/broken/': Could not resolve host: giiiiiidhub.com
             """
+
+      Scenario: A non-existent repo is reported
+        Given a git repository "SomeProject.git"
+        And the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: SomeProjectMissingTag
+                  tag: i-dont-exist
+                  url: some-remote-server/SomeProject.git
+
+                - name: SomeProjectNonExistentBranch
+                  branch: i-dont-exist
+                  url: some-remote-server/SomeProject.git
+
+                - name: SomeProjectNonExistentRevision
+                  revision: '0123112321234123512361236123712381239123'
+                  url: some-remote-server/SomeProject.git
+            """
+        When I run "dfetch check"
+        Then the output shows
+            """
+            Dfetch (0.7.0)
+              SomeProjectMissingTag: wanted (i-dont-exist), but not available at the upstream.
+              SomeProjectNonExistentBranch: wanted (i-dont-exist), but not available at the upstream.
+              SomeProjectNonExistentRevision: wanted (0123112321234123512361236123712381239123), but not available at the upstream.
+            """

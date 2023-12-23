@@ -152,17 +152,33 @@ class VCS(ABC):
         ):
             latest_version = self._check_for_newer_version()
 
+        if not latest_version:
+            for reporter in reporters:
+                reporter.unavailable_project(self.__project, self.wanted_version)
+            return
+
         if not on_disk_version:
             for reporter in reporters:
                 reporter.unfetched_project(
                     self.__project, self.wanted_version, latest_version
                 )
+
             return
 
         if self._are_there_local_changes():
             for reporter in reporters:
                 reporter.local_changes(self.__project)
 
+        self._check_latest_with_on_disk_version(
+            latest_version, on_disk_version, reporters
+        )
+
+    def _check_latest_with_on_disk_version(
+        self,
+        latest_version: Version,
+        on_disk_version: Version,
+        reporters: Sequence[AbstractCheckReporter],
+    ) -> None:
         if latest_version == on_disk_version:
             for reporter in reporters:
                 reporter.up_to_date_project(self.__project, latest_version)
@@ -267,17 +283,29 @@ class VCS(ABC):
             )
             return None
 
-    def _check_for_newer_version(self) -> Version:
+    def _check_for_newer_version(self) -> Optional[Version]:
         """Check if a newer version is available on the given branch."""
         if self.wanted_version.tag:
+            available_tags = self._list_of_tags()
+            if self.wanted_version.tag not in available_tags:
+                return None
             return Version(
-                tag=latest_tag_from_list(self.wanted_version.tag, self._list_of_tags())
+                tag=latest_tag_from_list(self.wanted_version.tag, available_tags)
             )
         if self.wanted_version.branch == " ":
             branch = ""
         else:
             branch = self.wanted_version.branch or self.DEFAULT_BRANCH
-        return Version(revision=self._latest_revision_on_branch(branch), branch=branch)
+
+        if (
+            not self.wanted_version.branch
+            and self.wanted_version.revision
+            and self.revision_is_enough()
+        ):
+            return Version(revision=self.wanted_version.revision)
+
+        revision = self._latest_revision_on_branch(branch)
+        return Version(revision, branch=branch) if revision else None
 
     def _are_there_local_changes(self) -> bool:
         """Check if there are local changes.
