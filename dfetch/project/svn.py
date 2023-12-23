@@ -116,7 +116,7 @@ class SvnRepo(VCS):
             if exc.stdout.startswith("svn: E170013"):
                 raise RuntimeError(
                     f">>>{exc.cmd}<<< failed!\n"
-                    + f"'{self.remote}' is not a valid URL or unreachable:\n{exc.stdout}"
+                    + f"'{self.remote}' is not a valid URL or unreachable:\n{exc.stderr or exc.stdout}"
                 ) from exc
             return False
         except RuntimeError:
