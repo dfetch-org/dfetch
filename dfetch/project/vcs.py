@@ -179,7 +179,11 @@ class VCS(ABC):
         on_disk_version: Version,
         reporters: Sequence[AbstractCheckReporter],
     ) -> None:
-        if latest_version == on_disk_version:
+        if (latest_version == on_disk_version) or (
+            self.revision_is_enough()
+            and latest_version.revision
+            and latest_version.revision == on_disk_version.revision
+        ):
             for reporter in reporters:
                 reporter.up_to_date_project(self.__project, latest_version)
         elif on_disk_version == self.wanted_version:
@@ -302,10 +306,11 @@ class VCS(ABC):
             and self.wanted_version.revision
             and self.revision_is_enough()
         ):
+            # FIXME: This does not check if the revision even exists!
             return Version(revision=self.wanted_version.revision)
 
         revision = self._latest_revision_on_branch(branch)
-        return Version(revision, branch=branch) if revision else None
+        return Version(revision=revision, branch=branch) if revision else None
 
     def _are_there_local_changes(self) -> bool:
         """Check if there are local changes.
