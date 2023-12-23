@@ -27,7 +27,7 @@ Feature: Checking dependencies from a git repository
         Then the output shows
             """
             Dfetch (0.8.0)
-              ext/test-repo-rev-only: wanted (e1fda19a57b873eb8e6ae37780594cbb77b70f1a), available (master)
+              ext/test-repo-rev-only: wanted (e1fda19a57b873eb8e6ae37780594cbb77b70f1a), available (e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
               ext/test-rev-and-branch: wanted (main - 8df389d0524863b85f484f15a91c5f2c40aefda1), available (main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
             """
 
@@ -80,7 +80,7 @@ Feature: Checking dependencies from a git repository
         Then the output shows
             """
             Dfetch (0.8.0)
-              ext/test-repo-rev-only: wanted (e1fda19a57b873eb8e6ae37780594cbb77b70f1a), current (master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a), available (master)
+              ext/test-repo-rev-only: up-to-date (e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
               ext/test-rev-and-branch: wanted & current (main - 8df389d0524863b85f484f15a91c5f2c40aefda1), available (main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
             """
 
