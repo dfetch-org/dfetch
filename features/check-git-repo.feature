@@ -136,3 +136,24 @@ Feature: Checking dependencies from a git repository
               SomeProject         : Local changes were detected, please generate a patch using 'dfetch diff SomeProject' and add it to your manifest using 'patch:'. Alternatively overwrite the local changes with 'dfetch update --force SomeProject'
               SomeProject         : up-to-date (master - 90be799b58b10971691715bdc751fbe5237848a0)
             """
+
+    Scenario: A non-existent remote is reported
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: non-existent-url
+                  revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+                  dst: ext/test-repo-rev-only
+                  url: https://github.com/i-do-not-exist/broken.git
+            """
+        When I run "dfetch check"
+        Then the output shows
+            """
+            Dfetch (0.8.0)
+            >>>git ls-remote --heads --tags https://github.com/i-do-not-exist/broken.git<<< returned 128:
+            remote: Repository not found.
+            fatal: repository 'https://github.com/i-do-not-exist/broken.git/' not found
+            """
