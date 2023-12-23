@@ -127,10 +127,7 @@ class GitLocalRepo:
             with in_directory(self._path):
                 run_on_cmdline(logger, "git status")
             return True
-        except SubprocessCommandError as exc:
-            print(exc)
-            return False
-        except RuntimeError:
+        except (SubprocessCommandError, RuntimeError):
             return False
 
     def checkout_version(
