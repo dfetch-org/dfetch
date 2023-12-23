@@ -115,7 +115,8 @@ class SvnRepo(VCS):
         except SubprocessCommandError as exc:
             if exc.stdout.startswith("svn: E170013"):
                 raise RuntimeError(
-                    f"'{self.remote}' is not a valid URL or unreachable"
+                    f">>>{exc.cmd}<<< failed!\n"
+                    + f"'{self.remote}' is not a valid URL or unreachable:\n{exc.stdout}"
                 ) from exc
             return False
         except RuntimeError:
@@ -144,7 +145,7 @@ class SvnRepo(VCS):
 
     def _list_of_tags(self) -> List[str]:
         """Get list of all available tags."""
-        result = run_on_cmdline(logger, f"svn ls {self.remote}/tags")
+        result = run_on_cmdline(logger, f"svn ls --non-interactive {self.remote}/tags")
         return [
             str(tag).strip("/\r") for tag in result.stdout.decode().split("\n") if tag
         ]
@@ -250,14 +251,16 @@ class SvnRepo(VCS):
     def _export(url: str, rev: str = "", dst: str = ".") -> None:
         run_on_cmdline(
             logger,
-            ["svn", "export", "--force"] + rev.split(" ") + [url, dst],
+            ["svn", "export", "--non-interactive", "--force"]
+            + rev.split(" ")
+            + [url, dst],
         )
 
     @staticmethod
     def _files_in_path(url_path: str) -> List[str]:
         return [
             str(line)
-            for line in run_on_cmdline(logger, f"svn list {url_path}")
+            for line in run_on_cmdline(logger, f"svn list --non-interactive {url_path}")
             .stdout.decode()
             .splitlines()
         ]
@@ -273,7 +276,17 @@ class SvnRepo(VCS):
 
     @staticmethod
     def _get_info_from_target(target: str = "") -> Dict[str, str]:
-        result = run_on_cmdline(logger, f"svn info {target.strip()}").stdout.decode()
+        try:
+            result = run_on_cmdline(
+                logger, f"svn info --non-interactive {target.strip()}"
+            ).stdout.decode()
+        except SubprocessCommandError as exc:
+            if exc.stdout.startswith("svn: E170013"):
+                raise RuntimeError(
+                    f">>>{exc.cmd}<<< failed!\n"
+                    + f"'{target.strip()}' is not a valid URL or unreachable:\n{exc.stdout}"
+                ) from exc
+            raise
 
         return {
             key.strip(): value.strip()
@@ -300,7 +313,8 @@ class SvnRepo(VCS):
 
         return str(
             run_on_cmdline(
-                logger, f"svn info --show-item last-changed-revision {target.strip()}"
+                logger,
+                f"svn info --non-interactive --show-item last-changed-revision {target.strip()}",
             )
             .stdout.decode()
             .strip()
