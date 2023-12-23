@@ -50,6 +50,17 @@ class AbstractCheckReporter(ABC):
         """
 
     @abstractmethod
+    def unavailable_project(
+        self, project: ProjectEntry, wanted_version: Version
+    ) -> None:
+        """Report an unavailable project.
+
+        Args:
+            project (ProjectEntry): Project that is unavailable
+            wanted_version (Version): Version that is wanted by manifest
+        """
+
+    @abstractmethod
     def out_of_date_project(
         self,
         project: ProjectEntry,

@@ -43,6 +43,20 @@ class CheckStdoutReporter(CheckReporter):
         """
         logger.print_info_line(project.name, f"up-to-date ({latest})")
 
+    def unavailable_project(
+        self, project: ProjectEntry, wanted_version: Version
+    ) -> None:
+        """Report an pinned but unavailable project.
+
+        Args:
+            project (ProjectEntry): Project that is pinned but unavailable
+            wanted_version (Version): Version that is wanted by manifest
+        """
+        logger.print_info_line(
+            project.name,
+            f"wanted ({wanted_version}), but not available at the upstream.",
+        )
+
     def pinned_but_out_of_date_project(
         self, project: ProjectEntry, wanted_version: Version, latest: Version
     ) -> None:

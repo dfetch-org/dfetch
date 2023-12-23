@@ -134,3 +134,25 @@ Feature: Checking dependencies from a svn repository
             svn: E170013: Unable to connect to a repository at URL 'https://giiiiiidhub.com/i-do-not-exist/broken/trunk'
             svn: E670002: Name or service not known
             """
+
+    Scenario: A non-existent tag in svn repo
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+              version: '0.0'
+
+              remotes:
+                - name: github-com-dfetch-org
+                  url-base: https://github.com/dfetch-org/test-repo
+
+              projects:
+                - name: SomeProject
+                  vcs: svn
+                  tag: non-existent-tag
+            """
+        When I run "dfetch check" in MyProject
+        Then the output shows
+            """
+            Dfetch (0.7.0)
+              SomeProject         : wanted (non-existent-tag), but not available at the upstream.
+            """
