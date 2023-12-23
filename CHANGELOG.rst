@@ -1,7 +1,7 @@
 Release 0.9.0 (unreleased)
 ===================================
 
-* nothing yet
+* Warn user if the remote does not exist (#185, #171)
 
 Release 0.8.0 (released 2023-12-23)
 ===================================
