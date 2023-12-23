@@ -113,3 +113,25 @@ Feature: Checking dependencies from a svn repository
             Dfetch (0.8.0)
               SomeProject         : wanted (latest), current (1), available (1)
             """
+
+    Scenario: A non-existent remote is reported
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: non-existent-url
+                  url: https://github.com/i-do-not-exist/broken
+                  vcs: svn
+            """
+        When I run "dfetch check"
+        Then the output shows
+            """
+            Dfetch (0.8.0)
+            >>>svn info --non-interactive https://github.com/i-do-not-exist/broken/trunk<<< failed!
+            'https://github.com/i-do-not-exist/broken/trunk' is not a valid URL or unreachable:
+            svn: E170013: Unable to connect to a repository at URL 'https://github.com/i-do-not-exist/broken/trunk'
+            svn: E215004: No more credentials or we tried too many times.
+            Authentication failed
+            """
