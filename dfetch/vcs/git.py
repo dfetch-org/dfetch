@@ -43,7 +43,8 @@ class GitRemote:
         except SubprocessCommandError as exc:
             if exc.returncode == 128 and "Could not resolve host" in exc.stdout:
                 raise RuntimeError(
-                    f"'{self._remote}' is not a valid URL or unreachable: {exc.stderr}"
+                    f">>>{exc.cmd}<<< failed!\n"
+                    + f"'{self._remote}' is not a valid URL or unreachable:\n{exc.stderr or exc.stdout}"
                 ) from exc
             return False
         except RuntimeError:

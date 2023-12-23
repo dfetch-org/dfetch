@@ -147,12 +147,13 @@ Feature: Checking dependencies from a git repository
                 - name: non-existent-url
                   revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
                   dst: ext/test-repo-rev-only
-                  url: https://giiiiiidhub.com/i-do-not-exist/broken.git
+                  url: https://giiiiiidhub.com/i-do-not-exist/broken
             """
         When I run "dfetch check"
         Then the output shows
             """
             Dfetch (0.8.0)
-            >>>git ls-remote --heads --tags https://giiiiiidhub.com/i-do-not-exist/broken.git<<< returned 128:
-            fatal: unable to access 'https://giiiiiidhub.com/i-do-not-exist/broken.git/': Could not resolve host: giiiiiidhub.com
+            >>>git ls-remote --heads https://giiiiiidhub.com/i-do-not-exist/broken<<< failed!
+            'https://giiiiiidhub.com/i-do-not-exist/broken' is not a valid URL or unreachable:
+            fatal: unable to access 'https://giiiiiidhub.com/i-do-not-exist/broken/': Could not resolve host: giiiiiidhub.com
             """
