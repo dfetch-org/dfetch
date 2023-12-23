@@ -1,4 +1,4 @@
-Release 0.8.0 (unreleased)
+Release 0.8.0 (released 2023-12-23)
 ===================================
 
 * Don't break if no suggestion found (#358)

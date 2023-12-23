@@ -63,7 +63,7 @@ Feature: Fetching dependencies from a git repository
         And I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.7.0)
+            Dfetch (0.8.0)
               ext/test-repo-tag   : Fetched v2.0
             """
 
@@ -83,6 +83,6 @@ Feature: Fetching dependencies from a git repository
         When I run "dfetch update --force"
         Then the output shows
             """
-            Dfetch (0.7.0)
+            Dfetch (0.8.0)
               ext/test-repo-tag   : Fetched v1
             """
