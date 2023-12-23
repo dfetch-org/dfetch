@@ -51,7 +51,8 @@
 				"module": "behave",
 				"args": [
 					"features",
-					"--wip"
+					"--wip",
+					"--no-skipped"
 				]
 			},
 			{
