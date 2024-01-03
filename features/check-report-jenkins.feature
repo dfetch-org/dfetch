@@ -70,16 +70,6 @@ Feature: Let check report to jenkins
                 "issues": [
                     {
                         "fileName": "dfetch.yaml",
-                        "severity": "Normal",
-                        "message": "ext/test-repo-rev-only : ext/test-repo-rev-only current version is 'master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a', the wanted version is 'e1fda19a57b873eb8e6ae37780594cbb77b70f1a', but 'master' is available.",
-                        "description": "The manifest requires version 'e1fda19a57b873eb8e6ae37780594cbb77b70f1a' of ext/test-repo-rev-only. Currently version 'master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a' is present. There is a newer version available 'master'. Please update using 'dfetch update ext/test-repo-rev-only.",
-                        "lineStart": 9,
-                        "lineEnd": 9,
-                        "columnStart": 13,
-                        "columnEnd": 34
-                    },
-                    {
-                        "fileName": "dfetch.yaml",
                         "severity": "Low",
                         "message": "ext/test-rev-and-branch : ext/test-rev-and-branch wanted & current version is 'main - 8df389d0524863b85f484f15a91c5f2c40aefda1', but 'main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a' is available.",
                         "description": "The manifest requires version 'main - 8df389d0524863b85f484f15a91c5f2c40aefda1' of ext/test-rev-and-branch. This is also the current version. There is a newer version available 'main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a' You can update the version in the manifest and run 'dfetch update ext/test-rev-and-branch'",
@@ -189,9 +179,9 @@ Feature: Let check report to jenkins
                 "issues": [
                     {
                         "fileName": "dfetch.yaml",
-                        "severity": "High",
-                        "message": "SomeProject : SomeProject was never fetched!",
-                        "description": "The manifest requires version '0123112321234123512361236123712381239123' of SomeProject. it was never fetched, fetch it with 'dfetch update SomeProject. The latest version available is 'master - 8ca68e7865f4b1b04bb10f76098ba7763ae0b02f'",
+                        "severity": "Low",
+                        "message": "SomeProject : SomeProject wanted version is '0123112321234123512361236123712381239123', but '0123112321234123512361236123712381239123' is unavailable.",
+                        "description": "The manifest requires version '0123112321234123512361236123712381239123' of SomeProject. However the version is unavailable ",
                         "lineStart": 4,
                         "lineEnd": 4,
                         "columnStart": 15,
