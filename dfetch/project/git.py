@@ -2,12 +2,14 @@
 
 import os
 import pathlib
+import tempfile
 from typing import List, Optional
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.vcs import VCS
+from dfetch.util.cmdline import SubprocessCommandError
 from dfetch.util.util import safe_rmtree
 from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
 
@@ -33,6 +35,22 @@ class GitRepo(VCS):
     def _latest_revision_on_branch(self, branch: str) -> str:
         """Get the latest revision on a branch."""
         return str(self._remote_repo.last_sha_on_branch(branch))
+
+    def _does_revision_exist(self, revision: str) -> bool:
+        """Check if the given revision exists."""
+        temp_dir = tempfile.mkdtemp()
+
+        exists = False
+        try:
+            GitLocalRepo(temp_dir).checkout_version(self.remote, revision, None, None)
+            exists = True
+        except SubprocessCommandError as exc:
+            if not (exc.cmd.startswith("git fetch") and exc.returncode == 128):
+                raise
+
+        safe_rmtree(temp_dir)
+
+        return exists
 
     def _list_of_tags(self) -> List[str]:
         """Get list of all available tags."""

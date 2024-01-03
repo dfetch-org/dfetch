@@ -143,6 +143,12 @@ class SvnRepo(VCS):
             branch = f"branches/{branch}"
         return self._get_revision(branch)
 
+    def _does_revision_exist(self, revision: str) -> bool:
+        """Check if the given revision exists."""
+        raise NotImplementedError(
+            "In SVN only a revision is NOT enough, this should not be called!"
+        )
+
     def _list_of_tags(self) -> List[str]:
         """Get list of all available tags."""
         result = run_on_cmdline(logger, f"svn ls --non-interactive {self.remote}/tags")

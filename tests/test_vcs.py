@@ -29,6 +29,9 @@ class ConcreteVCS(VCS):
     def revision_is_enough(self):
         pass
 
+    def _does_revision_exist(self, revision):
+        return True
+
     @property
     def wanted_version(self):
         return self._wanted_version
