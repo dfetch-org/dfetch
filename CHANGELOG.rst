@@ -2,7 +2,7 @@ Release 0.9.0 (unreleased)
 ===================================
 
 * Warn user if the remote does not exist (#185, #171)
-* Report unavailable project during check (#381)
+* Report unavailable project or version during check (#381)
 
 Release 0.8.0 (released 2023-12-23)
 ===================================
