@@ -50,12 +50,12 @@ Feature: Let check report to sarif
                                         }
                                     },
                                     {
-                                        "id": "unavailable-project",
+                                        "id": "unavailable-project-version",
                                         "help": {
                                             "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. However the specific version is not available at the upstream of the project. Check if the remote has the given version. "
                                         },
                                         "shortDescription": {
-                                            "text": "Project is unavailable at the remote"
+                                            "text": "Requested project version is unavailable at the remote"
                                         }
                                     },
                                     {
@@ -179,12 +179,12 @@ Feature: Let check report to sarif
                                         }
                                     },
                                     {
-                                        "id": "unavailable-project",
+                                        "id": "unavailable-project-version",
                                         "help": {
                                             "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. However the specific version is not available at the upstream of the project. Check if the remote has the given version. "
                                         },
                                         "shortDescription": {
-                                            "text": "Project is unavailable at the remote"
+                                            "text": "Requested project version is unavailable at the remote"
                                         }
                                     },
                                     {
@@ -310,12 +310,12 @@ Feature: Let check report to sarif
                                         }
                                     },
                                     {
-                                        "id": "unavailable-project",
+                                        "id": "unavailable-project-version",
                                         "help": {
                                             "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. However the specific version is not available at the upstream of the project. Check if the remote has the given version. "
                                         },
                                         "shortDescription": {
-                                            "text": "Project is unavailable at the remote"
+                                            "text": "Requested project version is unavailable at the remote"
                                         }
                                     },
                                     {
@@ -431,12 +431,12 @@ Feature: Let check report to sarif
                                     }
                                 },
                                 {
-                                    "id": "unavailable-project",
+                                    "id": "unavailable-project-version",
                                     "help": {
                                         "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. However the specific version is not available at the upstream of the project. Check if the remote has the given version. "
                                     },
                                     "shortDescription": {
-                                        "text": "Project is unavailable at the remote"
+                                        "text": "Requested project version is unavailable at the remote"
                                     }
                                 },
                                 {

@@ -153,6 +153,6 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.7.0)
+            Dfetch (0.8.0)
               SomeProject         : wanted (non-existent-tag), but not available at the upstream.
             """
