@@ -77,29 +77,6 @@ Feature: Let check report to code climate
             """
             [
                 {
-                    "description": "The manifest requires version 'e1fda19a57b873eb8e6ae37780594cbb77b70f1a' of ext/test-repo-rev-only. Currently version 'master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a' is present. There is a newer version available 'master'. Please update using 'dfetch update ext/test-repo-rev-only.",
-                    "check_name": "out-of-date-project",
-                    "categories": [
-                        "Security",
-                        "Bug risk"
-                    ],
-                    "fingerprint": "443fbc33d4f9c5cc7a9ed34e31ec786f10c20e64c7480aff59d7947ad5e23c8a",
-                    "severity": "minor",
-                    "location": {
-                        "path": "dfetch.yaml",
-                        "positions": {
-                            "begin": {
-                                "line": 9,
-                                "column": 13
-                            },
-                            "end": {
-                                "line": 9,
-                                "column": 34
-                            }
-                        }
-                    }
-                },
-                {
                     "description": "The manifest requires version 'main - 8df389d0524863b85f484f15a91c5f2c40aefda1' of ext/test-rev-and-branch. This is also the current version. There is a newer version available 'main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a' You can update the version in the manifest and run 'dfetch update ext/test-rev-and-branch'",
                     "check_name": "pinned-but-out-of-date-project",
                     "categories": [

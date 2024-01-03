@@ -50,6 +50,15 @@ Feature: Let check report to sarif
                                         }
                                     },
                                     {
+                                        "id": "unavailable-project",
+                                        "help": {
+                                            "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. However the specific version is not available at the upstream of the project. Check if the remote has the given version. "
+                                        },
+                                        "shortDescription": {
+                                            "text": "Project is unavailable at the remote"
+                                        }
+                                    },
+                                    {
                                         "id": "pinned-but-out-of-date-project",
                                         "help": {
                                             "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. This is currently the state of the project. However a newer version is available at the upstream of the project. Either ignore this warning or update the version to the latest and update using 'dfetch update <project>' and commit the result to your repository."
@@ -150,7 +159,7 @@ Feature: Let check report to sarif
                             "driver": {
                                 "name": "DFetch",
                                 "informationUri": "https://dfetch.rtfd.io",
-                                                                "rules": [
+                                 "rules": [
                                     {
                                         "id": "unfetched-project",
                                         "help": {
@@ -167,6 +176,15 @@ Feature: Let check report to sarif
                                         },
                                         "shortDescription": {
                                             "text": "Project is up-to-date"
+                                        }
+                                    },
+                                    {
+                                        "id": "unavailable-project",
+                                        "help": {
+                                            "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. However the specific version is not available at the upstream of the project. Check if the remote has the given version. "
+                                        },
+                                        "shortDescription": {
+                                            "text": "Project is unavailable at the remote"
                                         }
                                     },
                                     {
@@ -208,29 +226,6 @@ Feature: Let check report to sarif
                             }
                         ],
                         "results": [
-                            {
-                                "message": {
-                                    "text": "ext/test-repo-rev-only : ext/test-repo-rev-only current version is 'master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a', the wanted version is 'e1fda19a57b873eb8e6ae37780594cbb77b70f1a', but 'master' is available."
-                                },
-                                "level": "warning",
-                                "locations": [
-                                    {
-                                        "physicalLocation": {
-                                            "artifactLocation": {
-                                                "index": 0,
-                                                "uri": "dfetch.yaml"
-                                            },
-                                            "region": {
-                                                "endColumn": 35,
-                                                "endLine": 9,
-                                                "startColumn": 13,
-                                                "startLine": 9
-                                            }
-                                        }
-                                    }
-                                ],
-                                "ruleId": "out-of-date-project"
-                            },
                             {
                                 "message": {
                                     "text": "ext/test-rev-and-branch : ext/test-rev-and-branch wanted & current version is 'main - 8df389d0524863b85f484f15a91c5f2c40aefda1', but 'main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a' is available."
@@ -312,6 +307,15 @@ Feature: Let check report to sarif
                                         },
                                         "shortDescription": {
                                             "text": "Project is up-to-date"
+                                        }
+                                    },
+                                    {
+                                        "id": "unavailable-project",
+                                        "help": {
+                                            "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. However the specific version is not available at the upstream of the project. Check if the remote has the given version. "
+                                        },
+                                        "shortDescription": {
+                                            "text": "Project is unavailable at the remote"
                                         }
                                     },
                                     {
@@ -424,6 +428,15 @@ Feature: Let check report to sarif
                                     },
                                     "shortDescription": {
                                         "text": "Project is up-to-date"
+                                    }
+                                },
+                                {
+                                    "id": "unavailable-project",
+                                    "help": {
+                                        "text": "The project mentioned in the manifest is pinned to a specific version, For instance a branch, tag, or revision. However the specific version is not available at the upstream of the project. Check if the remote has the given version. "
+                                    },
+                                    "shortDescription": {
+                                        "text": "Project is unavailable at the remote"
                                     }
                                 },
                                 {
