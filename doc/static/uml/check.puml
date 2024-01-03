@@ -8,14 +8,30 @@ skinparam defaultFontName Frutiger
 
 if (Tag given?) then (yes)
   :Get all tags;
-  :Parse tags;
-  :Show versions:
-   - wanted tag
-   - on disk tag
-   - available tag;
+  if (Tag exists?) then (no)
+    stop
+  endif
+    :Parse tags;
+    :Show versions:
+    - wanted tag
+    - on disk tag
+    - available tag;
 else (no)
+
   if (Branch given?) then (no)
-    :Use default branch;
+     if (Revision enough?) then (yes)
+       if (Does revision exist?) then (no)
+         stop
+       else (yes)
+         :Show versions:
+         - wanted revision
+         - on disk revision;
+         stop
+       endif
+     else (no)
+      :Use default branch;
+     endif
+  else (yes)
   endif
 
   :Get latest revision of branch;
