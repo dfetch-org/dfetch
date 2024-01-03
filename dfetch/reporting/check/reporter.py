@@ -9,8 +9,8 @@ All reports can contain the following results:
     Project was never fetched. Fetch it using :ref:`dfetch update <update>`.
 * ``up-to-date-project``
     Project is up-to-date.
-* ``unavailable-project``
-    Project is unavailable at the remote.
+* ``unavailable-project-version``
+    Requested project version is unavailable at the remote.
 * ``pinned-but-out-of-date-project``
     Project is pinned, but out-of-date. Either ignore this message, or update the version in the manifest.
 * ``out-of-date-project``
@@ -86,8 +86,8 @@ class CheckReporter(AbstractCheckReporter):
             ),
         ),
         Rule(
-            name="unavailable-project",
-            description="Project is unavailable at the remote",
+            name="unavailable-project-version",
+            description="Requested project version is unavailable at the remote",
             long_description=(
                 "The project mentioned in the manifest is pinned to a specific version, "
                 "For instance a branch, tag, or revision. "
@@ -173,18 +173,18 @@ class CheckReporter(AbstractCheckReporter):
         del project
         del latest
 
-    def unavailable_project(
+    def unavailable_project_version(
         self, project: ProjectEntry, wanted_version: Version
     ) -> None:
-        """Report an unavailable project.
+        """Report an pinned but unavailable project version.
 
         Args:
-            project (ProjectEntry): Project that is unavailable
+            project (ProjectEntry): Project that with an unavailable version.
             wanted_version (Version): Version that is wanted by manifest
         """
         issue = Issue(
             severity=IssueSeverity.LOW,
-            rule_id="unavailable-project",
+            rule_id="unavailable-project-version",
             message=(
                 f"{project.name} wanted version is '{str(wanted_version) or 'latest'}',"
                 f" but '{str(wanted_version)}' is unavailable."

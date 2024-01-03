@@ -158,7 +158,7 @@ Feature: Checking dependencies from a git repository
             fatal: unable to access 'https://giiiiiidhub.com/i-do-not-exist/broken/': Could not resolve host: giiiiiidhub.com
             """
 
-      Scenario: A non-existent repo is reported
+      Scenario: A non-existent tag, branch or revision is reported
         Given a git repository "SomeProject.git"
         And the manifest 'dfetch.yaml'
             """
@@ -181,7 +181,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.7.0)
+            Dfetch (0.8.0)
               SomeProjectMissingTag: wanted (i-dont-exist), but not available at the upstream.
               SomeProjectNonExistentBranch: wanted (i-dont-exist), but not available at the upstream.
               SomeProjectNonExistentRevision: wanted (0123112321234123512361236123712381239123), but not available at the upstream.

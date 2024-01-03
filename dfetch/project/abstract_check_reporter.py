@@ -50,13 +50,13 @@ class AbstractCheckReporter(ABC):
         """
 
     @abstractmethod
-    def unavailable_project(
+    def unavailable_project_version(
         self, project: ProjectEntry, wanted_version: Version
     ) -> None:
-        """Report an unavailable project.
+        """Report an pinned but unavailable project version.
 
         Args:
-            project (ProjectEntry): Project that is unavailable
+            project (ProjectEntry): Project that with an unavailable version.
             wanted_version (Version): Version that is wanted by manifest
         """
 

@@ -154,7 +154,9 @@ class VCS(ABC):
 
         if not latest_version:
             for reporter in reporters:
-                reporter.unavailable_project(self.__project, self.wanted_version)
+                reporter.unavailable_project_version(
+                    self.__project, self.wanted_version
+                )
             return
 
         if not on_disk_version:
