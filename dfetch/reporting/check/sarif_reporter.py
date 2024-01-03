@@ -23,7 +23,7 @@ The information has several severities:
 
 * ``Error`` : An unfetched project. Fetch the project to solve the issue.
 * ``Warning`` : An out-of-date project. The project is not pinned and a newer version is available.
-* ``Note`` : An pinned but out-of-date project. The project is pinned to a specific version,
+* ``Note`` : a pinned but out-of-date project. The project is pinned to a specific version,
              but a newer version is available.
 
 Usage

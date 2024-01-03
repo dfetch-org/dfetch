@@ -7,7 +7,7 @@ The information has several severities:
 
 * ``major`` : An unfetched project. Fetch the project to solve the issue.
 * ``minor`` : An out-of-date project. The project is not pinned and a newer version is available.
-* ``info`` : An pinned but out-of-date project. The project is pinned to a specific version,
+* ``info`` : a pinned but out-of-date project. The project is pinned to a specific version,
             but a newer version is available.
 
 The report generated is the `code-climate json format`_, the fields described in the
