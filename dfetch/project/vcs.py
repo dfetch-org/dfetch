@@ -243,6 +243,10 @@ class VCS(ABC):
         """Get the latest revision on a branch."""
 
     @abstractmethod
+    def _does_revision_exist(self, revision: str) -> bool:
+        """Check if the given revision exists."""
+
+    @abstractmethod
     def _list_of_tags(self) -> List[str]:
         """Get list of all available tags."""
 
@@ -288,7 +292,10 @@ class VCS(ABC):
             return None
 
     def _check_for_newer_version(self) -> Optional[Version]:
-        """Check if a newer version is available on the given branch."""
+        """Check if a newer version is available on the given branch.
+
+        In case wanted_version does not exist (anymore) on the remote return None.
+        """
         if self.wanted_version.tag:
             available_tags = self._list_of_tags()
             if self.wanted_version.tag not in available_tags:
@@ -306,8 +313,11 @@ class VCS(ABC):
             and self.wanted_version.revision
             and self.revision_is_enough()
         ):
-            # FIXME: This does not check if the revision even exists!
-            return Version(revision=self.wanted_version.revision)
+            return (
+                Version(revision=self.wanted_version.revision)
+                if self._does_revision_exist(self.wanted_version.revision)
+                else None
+            )
 
         revision = self._latest_revision_on_branch(branch)
         return Version(revision=revision, branch=branch) if revision else None
