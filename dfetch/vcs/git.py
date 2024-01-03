@@ -3,6 +3,7 @@
 import os
 import re
 import shutil
+import tempfile
 from collections import namedtuple
 from pathlib import PurePath
 from typing import Dict, List, Optional, Tuple
@@ -110,6 +111,36 @@ class GitRemote:
                     branch = reference.replace("refs/heads/", "")
                 break
         return (branch, tag)
+
+    def check_version_exists(
+        self,
+        version: str,
+    ) -> bool:
+        """Check if a specific version exists on the remote by simulating a local checkout.
+
+        Args:
+            version (str): A target to checkout, can be branch, tag or sha
+
+        Returns:
+            exists: A bool indicating if the version is available on the remote.
+        """
+        temp_dir = tempfile.mkdtemp()
+        exists = False
+        with in_directory(temp_dir):
+            run_on_cmdline(logger, "git init")
+            run_on_cmdline(logger, f"git remote add origin {self._remote}")
+            run_on_cmdline(logger, "git checkout -b dfetch-local-branch")
+            try:
+                run_on_cmdline(
+                    logger, f"git fetch --dry-run --depth 1 origin {version}"
+                )
+                exists = True
+            except SubprocessCommandError as exc:
+                if exc.returncode != 128:
+                    raise
+        safe_rmtree(temp_dir)
+
+        return exists
 
 
 class GitLocalRepo:
