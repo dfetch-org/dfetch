@@ -50,8 +50,10 @@ def in_directory(path: str) -> Generator[str, None, None]:
     if not os.path.isdir(path):
         path = os.path.dirname(path)
     os.chdir(path)
-    yield path
-    os.chdir(pwd)
+    try:
+        yield path
+    finally:
+        os.chdir(pwd)
 
 
 @contextmanager
