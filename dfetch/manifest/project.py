@@ -28,6 +28,8 @@ Below manifest will download tag ``v1.13`` of ``mymodule``.
 The ``tag:`` attribute takes priority over ``revision:`` and ``branch:``.
 With ``revision:`` a specific commit (git) or revision (svn) is retrieved. For git,
 revisions must be complete 40 character long SHA-hashes.
+For git if only a revision is provided and no branch, *DFetch* cannot determine if there are updates,
+so it will assume you require that specific version.
 
 .. code-block:: yaml
 

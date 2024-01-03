@@ -7,7 +7,7 @@ The information has several severities:
 
 * ``high`` : An unfetched project. Fetch the project to solve the issue.
 * ``normal`` : An out-of-date project. The project is not pinned and a newer version is available.
-* ``low`` : An pinned but out-of-date project. The project is pinned to a specific version,
+* ``low`` : a pinned but out-of-date project. The project is pinned to a specific version,
             but a newer version is available.
 
 The report generated is the `native json format`_ of the `warnings-ng plugin`_. The plugin will

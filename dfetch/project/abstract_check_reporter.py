@@ -41,7 +41,7 @@ class AbstractCheckReporter(ABC):
     def pinned_but_out_of_date_project(
         self, project: ProjectEntry, wanted_version: Version, latest: Version
     ) -> None:
-        """Report an pinned but out-of-date project.
+        """Report a pinned but out-of-date project.
 
         Args:
             project (ProjectEntry): Project that is pinned but out-of-date
@@ -53,10 +53,10 @@ class AbstractCheckReporter(ABC):
     def unavailable_project_version(
         self, project: ProjectEntry, wanted_version: Version
     ) -> None:
-        """Report an pinned but unavailable project version.
+        """Report a pinned but unavailable project version.
 
         Args:
-            project (ProjectEntry): Project that with an unavailable version.
+            project (ProjectEntry): Project that does not have the wanted_version available.
             wanted_version (Version): Version that is wanted by manifest
         """
 

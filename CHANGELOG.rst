@@ -2,7 +2,10 @@ Release 0.9.0 (unreleased)
 ===================================
 
 * Warn user if the remote does not exist (#185, #171)
-* Report unavailable project or version during check (#381)
+* Report unavailable project version during check (#381)
+* Don't look for update on random branch if only revision is provided in git (#393)
+* Don't report update available if revision on disk matches revision in manifest for git (#393)
+* Report the revision available in git if only revision is in git (#393)
 
 Release 0.8.0 (released 2023-12-23)
 ===================================
@@ -13,7 +16,7 @@ Release 0.8.0 (released 2023-12-23)
 * Move all configuration into single ``pyproject.toml`` (#401)
 * Also build for python 3.11, 3.12 in CI
 * Add 3.11, 3.12 classifier to pyproject
-* When importing non-std SVN external, identify `src` path
+* When importing non-std SVN external, identify ``src`` path
 
 Release 0.7.0 (released 2022-06-22)
 ===================================
