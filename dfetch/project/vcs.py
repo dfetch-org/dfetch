@@ -231,6 +231,11 @@ class VCS(ABC):
         """Get the source folder of this VCS."""
         return self.__project.source
 
+    @property
+    def ignore(self) -> Sequence[str]:
+        """Get the files/folders to ignore of this VCS."""
+        return self.__project.ignore
+
     @abstractmethod
     def check(self) -> bool:
         """Check if it can handle the type."""

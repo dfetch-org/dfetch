@@ -138,6 +138,34 @@ The following manifest will only checkout files in folder ``src`` with the ``*.h
           src: src/*.h
           repo-path: cpputest/cpputest
 
+Ignore
+######
+In larger projects or mono-repo's it is often desirable to ignore certain files such as Tests
+*Dfetch* makes this possible through the ``ignore:`` attribute.
+
+For instance if you are not interested in the ``tests`` folder of ``cpputest`` you can
+limit the checkout to ignore that folder. *Dfetch* will retain any license file in the
+root of the repository.
+
+.. code-block:: yaml
+
+    manifest:
+        version: 0.0
+
+        remotes:
+        - name: github
+          url-base: https://github.com/
+
+        projects:
+        - name: cpputest
+          ignore:
+          - tests
+          repo-path: cpputest/cpputest
+
+.. note:: For projects using ``src:`` field, the ignore list will be relative to that folder.
+          And the ignores will be applied *after* the ``src:`` pattern was applied.
+
+
 VCS type
 ########
 *DFetch* does it best to find out what type of version control system (vcs) the remote url is,
@@ -208,7 +236,7 @@ For more details see the `git-diff`_ or `svn-diff`_ documentation.
 
 """
 import copy
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Sequence, Union
 
 from typing_extensions import TypedDict
 
@@ -230,6 +258,7 @@ ProjectEntryDict = TypedDict(
         "tag": str,
         "repo-path": str,
         "vcs": str,
+        "ignore": Sequence[str],
         "default_remote": Optional[Remote],
     },
     total=False,
@@ -254,6 +283,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._branch: str = kwargs.get("branch", "")
         self._tag: str = kwargs.get("tag", "")
         self._vcs: str = kwargs.get("vcs", "")
+        self._ignore: Sequence[str] = kwargs.get("ignore", [])
 
     @classmethod
     def from_yaml(
@@ -365,6 +395,11 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
     def vcs(self) -> str:
         """Get the type of version control system."""
         return self._vcs
+
+    @property
+    def ignore(self) -> Sequence[str]:
+        """Get the list of files/folders to ignore from this project (relative to src)."""
+        return self._ignore
 
     def __repr__(self) -> str:
         """Get a string representation of this project entry."""

@@ -6,7 +6,7 @@ import shutil
 import tempfile
 from collections import namedtuple
 from pathlib import PurePath
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Generator, List, Optional, Sequence, Tuple
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -161,12 +161,13 @@ class GitLocalRepo:
         except (SubprocessCommandError, RuntimeError):
             return False
 
-    def checkout_version(
+    def checkout_version(  # pylint: disable=too-many-arguments
         self,
         remote: str,
         version: str,
         src: Optional[str],
         must_keeps: Optional[List[str]],
+        ignore: Optional[Sequence[str]],
     ) -> None:
         """Checkout a specific version from a given remote.
 
@@ -175,40 +176,74 @@ class GitLocalRepo:
             version (str): A target to checkout, can be branch, tag or sha
             src (Optional[str]): Optional path to subdirectory or file in repo
             must_keeps (Optional[List[str]]): Optional list of glob patterns to keep
+            ignore (Optional[Sequence[str]]): Optional sequence of glob patterns to ignore (relative to src)
         """
         with in_directory(self._path):
             run_on_cmdline(logger, "git init")
             run_on_cmdline(logger, f"git remote add origin {remote}")
             run_on_cmdline(logger, "git checkout -b dfetch-local-branch")
 
-            if src:
+            if src or ignore:
                 run_on_cmdline(logger, "git config core.sparsecheckout true")
                 with open(
                     ".git/info/sparse-checkout", "a", encoding="utf-8"
                 ) as sparse_checkout_file:
                     sparse_checkout_file.write(
-                        "\n".join(list([f"/{src}"] + (must_keeps or [])))
+                        "\n".join(list((must_keeps or []) + [f"/{src or '*'}"]))
                     )
+
+                    if ignore:
+                        ignore_abs_paths = self._determine_ignore_paths(src, ignore)
+
+                        sparse_checkout_file.write("\n")
+                        sparse_checkout_file.write("\n".join(ignore_abs_paths))
 
             run_on_cmdline(logger, f"git fetch --depth 1 origin {version}")
             run_on_cmdline(logger, "git reset --hard FETCH_HEAD")
 
             if src:
-                full_src = src
-                if not os.path.isdir(src):
-                    src = os.path.dirname(src)
+                self.move_src_folder_up(remote, src)
 
-                if not src:
-                    return
+    def move_src_folder_up(self, remote: str, src: str) -> None:
+        """Move the files from the src folder into the root of the project.
 
-                try:
-                    for file_to_copy in os.listdir(src):
-                        shutil.move(src + "/" + file_to_copy, ".")
-                    safe_rmtree(PurePath(src).parts[0])
-                except FileNotFoundError:
-                    logger.warning(
-                        f"The 'src:' filter '{full_src}' didn't match any files from '{remote}'"
-                    )
+        Args:
+            remote (str): Name of the root
+            src (str): Src folder to move up
+        """
+        full_src = src
+        if not os.path.isdir(src):
+            src = os.path.dirname(src)
+
+        if not src:
+            return
+
+        try:
+            for file_to_copy in os.listdir(src):
+                shutil.move(src + "/" + file_to_copy, ".")
+            safe_rmtree(PurePath(src).parts[0])
+        except FileNotFoundError:
+            logger.warning(
+                f"The 'src:' filter '{full_src}' didn't match any files from '{remote}'"
+            )
+        return
+
+    @staticmethod
+    def _determine_ignore_paths(
+        src: Optional[str], ignore: Sequence[str]
+    ) -> Generator[str, None, None]:
+        """Determine the ignore patterns relative to the given src."""
+        if not src:
+            ignore_base = ""
+        else:
+            src_parts = src.split("/")
+            ignore_base = src if not "*" in src_parts[-1] else "/".join(src_parts[:-1])
+
+            ignore_base = (
+                ignore_base if ignore_base.endswith("/") else f"{ignore_base}/"
+            )
+
+        return (f"!/{ignore_base}{path}" for path in ignore)
 
     def get_last_file_hash(self, path: str) -> str:
         """Get the hash of a specific file."""

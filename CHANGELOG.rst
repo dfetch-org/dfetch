@@ -6,6 +6,7 @@ Release 0.9.0 (unreleased)
 * Don't look for update on random branch if only revision is provided in git (#393)
 * Don't report update available if revision on disk matches revision in manifest for git (#393)
 * Report the revision available in git if only revision is in git (#393)
+* Add ``ignore`` list to project entries in the manifest (#571)
 
 Release 0.8.0 (released 2023-12-23)
 ===================================
