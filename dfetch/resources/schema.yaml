@@ -33,3 +33,8 @@ mapping:
                    "vcs": { type: str, enum: ['git', 'svn'] }
                    "src":
                       type: any
+                   "ignore":
+                        required: False
+                        type: seq
+                        sequence:
+                          - type: str
