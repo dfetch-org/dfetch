@@ -31,6 +31,7 @@ Feature: List dependencies
                   license         : MIT License
             """
 
+    @remote-svn
     Scenario: SVN projects are specified in the manifest
         Given the manifest 'dfetch.yaml'
             """
