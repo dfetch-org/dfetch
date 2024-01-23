@@ -1,4 +1,5 @@
-Feature: Patch after fetching from git repo
+@remote-svn
+Feature: Patch after fetching from svn repo
 
     Sometimes a patch needs to be applied after fetching. *DFetch* makes it
     possible to specify a patch file.

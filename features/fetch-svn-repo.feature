@@ -1,3 +1,4 @@
+@remote-svn
 Feature: Fetching dependencies from a svn repository
 
     The main functionality of *DFetch* is fetching remote dependencies.
