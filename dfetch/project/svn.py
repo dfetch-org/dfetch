@@ -10,7 +10,12 @@ from dfetch.log import get_logger
 from dfetch.manifest.version import Version
 from dfetch.project.vcs import VCS
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
-from dfetch.util.util import find_non_matching_files, in_directory
+from dfetch.util.util import (
+    find_matching_files,
+    find_non_matching_files,
+    in_directory,
+    safe_rm,
+)
 
 logger = get_logger(__name__)
 
@@ -235,6 +240,10 @@ class SvnRepo(VCS):
                 )
                 SvnRepo._export(f"{root_branch_path}/{file}", rev_arg, dest)
                 break
+
+        if self.ignore:
+            for file_or_dir in find_matching_files(self.local_path, self.ignore):
+                safe_rm(file_or_dir)
 
         return Version(tag=version.tag, branch=branch, revision=revision)
 
