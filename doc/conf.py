@@ -190,7 +190,7 @@ texinfo_documents = [
 sphinxcontrib_asciinema_defaults = {
     "theme": "monokai",
     "preload": 1,
-    "font-size": "15px",
+    "terminalFontSize": "15px",
     "speed": 1.5,
     "loop": False,
     "autoplay": True,
