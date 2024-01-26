@@ -116,6 +116,10 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["static"]
 
+html_js_files = [
+    "https://cdn.jsdelivr.net/npm/asciinema-player@3.6.3/dist/bundle/asciinema-player.min.js"
+]
+
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
