@@ -203,6 +203,12 @@ class SvnRepo(VCS):
 
         return (branch, branch_path, revision)
 
+    def _remove_ignored_files(self) -> None:
+        """Remove any ignored files, whilst keeping license files."""
+        for file_or_dir in find_matching_files(self.local_path, self.ignore):
+            if not (file_or_dir.is_file() and self.is_license_file(file_or_dir.name)):
+                safe_rm(file_or_dir)
+
     def _fetch_impl(self, version: Version) -> Version:
         """Get the revision of the remote and place it at the local path."""
         branch, branch_path, revision = self._determine_what_to_fetch(version)
@@ -242,8 +248,7 @@ class SvnRepo(VCS):
                 break
 
         if self.ignore:
-            for file_or_dir in find_matching_files(self.local_path, self.ignore):
-                safe_rm(file_or_dir)
+            self._remove_ignored_files()
 
         return Version(tag=version.tag, branch=branch, revision=revision)
 

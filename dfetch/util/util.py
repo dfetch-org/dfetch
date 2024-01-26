@@ -7,7 +7,7 @@ import shutil
 import stat
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Generator, Iterator, List, Optional, Sequence
+from typing import Any, Generator, Iterator, List, Optional, Sequence, Union
 
 
 def _remove_readonly(func: Any, path: str, _: Any) -> None:
@@ -26,7 +26,7 @@ def find_non_matching_files(directory: str, pattern: str) -> Iterator[str]:
                 yield os.path.join(root, basename)
 
 
-def find_matching_files(directory: str, patterns: Sequence[str]) -> Iterator[str]:
+def find_matching_files(directory: str, patterns: Sequence[str]) -> Iterator[Path]:
     """Find files matching the given pattern."""
     directory_path = Path(directory)
 
@@ -36,13 +36,13 @@ def find_matching_files(directory: str, patterns: Sequence[str]) -> Iterator[str
         matching_paths = directory_path.rglob(pattern)
 
         for path in matching_paths:
-            yield str(path)
+            yield Path(path)
 
 
-def safe_rm(path: str) -> None:
+def safe_rm(path: Union[str, Path]) -> None:
     """Delete an file or directory safely."""
     if os.path.isdir(path):
-        safe_rmtree(path)
+        safe_rmtree(str(path))
     else:
         os.remove(path)
 
