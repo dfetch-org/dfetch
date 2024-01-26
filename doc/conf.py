@@ -116,9 +116,9 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["static"]
 
-html_js_files = [
-    "https://cdn.jsdelivr.net/npm/asciinema-player@3.6.3/dist/bundle/asciinema-player.min.js"
-]
+# html_js_files = [
+#     "https://cdn.jsdelivr.net/npm/asciinema-player@3.6.3/dist/bundle/asciinema-player.min.js"
+# ]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -194,7 +194,7 @@ texinfo_documents = [
 sphinxcontrib_asciinema_defaults = {
     "theme": "monokai",
     "preload": 1,
-    "terminalFontSize": "15px",
+    "font-size": "15px",
     "speed": 1.5,
     "loop": False,
     "autoplay": True,
