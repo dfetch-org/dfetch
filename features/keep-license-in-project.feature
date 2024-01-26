@@ -5,7 +5,7 @@ Feature: Keep license in project
     When fetching only a part of a repository with the 'src:' tag, the risk
     is you forget the license file.
 
-    Scenario: License is preserved in git repo sparse checkout
+    Scenario: License is preserved in git repo sparse checkout and cannot be ignored
         Given the manifest 'dfetch.yaml' in MyProject
             """
             manifest:
@@ -15,6 +15,8 @@ Feature: Keep license in project
                       url: some-remote-server/SomeProjectWithLicense.git
                       src: SomeFolder/
                       tag: v1
+                      ignore:
+                          - LICENSE
             """
         And a git-repository "SomeProjectWithLicense.git" with the files
             | path                                  |
@@ -38,7 +40,7 @@ Feature: Keep license in project
                 dfetch.yaml
             """
 
-    Scenario: License is preserved in svn repo sparse checkout
+    Scenario: License is preserved in svn repo sparse checkout and cannot be ignored
         Given the manifest 'dfetch.yaml' in MyProject
             """
             manifest:
@@ -47,6 +49,8 @@ Feature: Keep license in project
                     - name: SomeProjectWithLicense
                       url: some-remote-server/SomeProjectWithLicense
                       src: SomeFolder/
+                      ignore:
+                          - LICENSE
             """
         And a svn-server "SomeProjectWithLicense" with the files
             | path                                  |

@@ -164,6 +164,7 @@ root of the repository.
 
 .. note:: For projects using ``src:`` field, the ignore list will be relative to that folder.
           And the ignores will be applied *after* the ``src:`` pattern was applied.
+          License files will never be excluded, since you likely shouldn't be doing that.
 
 
 VCS type
