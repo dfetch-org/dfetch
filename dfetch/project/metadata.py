@@ -26,6 +26,7 @@ class Options(TypedDict):  # pylint: disable=too-many-ancestors
     destination: str
     hash: str
     patch: str
+    eol: str
 
 
 class Metadata:
@@ -50,6 +51,7 @@ class Metadata:
         self._destination: str = str(kwargs.get("destination", ""))
         self._hash: str = str(kwargs.get("hash", ""))
         self._patch: str = str(kwargs.get("patch", ""))
+        self._eol: str = str(kwargs.get("eol", ""))
 
     @classmethod
     def from_project_entry(
@@ -65,6 +67,7 @@ class Metadata:
             "last_fetch": datetime.datetime(2000, 1, 1, 0, 0, 0),
             "hash": "",
             "patch": project.patch,
+            "eol": "",
         }
         return cls(data)
 
@@ -75,12 +78,15 @@ class Metadata:
             data: Options = yaml.safe_load(metadata_file)["dfetch"]
             return cls(data)
 
-    def fetched(self, version: Version, hash_: str = "", patch_: str = "") -> None:
+    def fetched(
+        self, version: Version, hash_: str = "", patch_: str = "", eol_: str = ""
+    ) -> None:
         """Update metadata."""
         self._last_fetch = datetime.datetime.now()
         self._version = version
         self._hash = hash_
         self._patch = patch_
+        self._eol = eol_
 
     @property
     def version(self) -> Version:
@@ -137,6 +143,11 @@ class Metadata:
             os.path.join(os.path.dirname(self._destination), filename)
         )
 
+    @property
+    def eol(self) -> str:
+        """End-of-line character on platform that fetched project."""
+        return self._eol
+
     def __eq__(self, other: object) -> bool:
         """Check if other object is the same."""
         if not isinstance(other, Metadata):
@@ -149,6 +160,7 @@ class Metadata:
                 other._version.revision == self._version.revision,
                 other.hash == self.hash,
                 other.patch == self.patch,
+                other.eol == self.eol,
             ]
         )
 
@@ -163,6 +175,7 @@ class Metadata:
                 "tag": self._version.tag,
                 "hash": self.hash,
                 "patch": self.patch,
+                "eol": self.eol,
             }
         }
 

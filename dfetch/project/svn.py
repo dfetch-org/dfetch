@@ -355,3 +355,15 @@ class SvnRepo(VCS):
             cmd += f":{new_revision}"
 
         return "\n".join(run_on_cmdline(logger, cmd).stdout.decode().splitlines())
+
+    def _get_eol_style(self) -> str:
+        """Get the end-of-line character style used."""
+
+        return str(
+            run_on_cmdline(
+                logger,
+                f"svn propget --non-interactive svn:eol-style --recursive {self.remote}",
+            )
+            .stdout.decode()
+            .strip()
+        )

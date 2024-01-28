@@ -126,6 +126,7 @@ class VCS(ABC):
             actually_fetched,
             hash_=hash_directory(self.local_path, skiplist=[self.__metadata.FILENAME]),
             patch_=applied_patch,
+            eol_=self._get_eol_style(),
         )
 
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
@@ -357,6 +358,10 @@ class VCS(ABC):
     @abstractmethod
     def get_diff(self, old_revision: str, new_revision: Optional[str]) -> str:
         """Get the diff of two revisions."""
+
+    @abstractmethod
+    def _get_eol_style(self) -> str:
+        """Get the end-of-line character style used."""
 
     @staticmethod
     def is_license_file(filename: str) -> bool:

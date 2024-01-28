@@ -405,3 +405,18 @@ class GitLocalRepo:
         ]
 
         return "" if not branches else branches[0]
+
+    def autocrlf_is_enabled(self) -> bool:
+        """Is auto crlf enabled?"""
+        with in_directory(self._path):
+            try:
+                result = run_on_cmdline(
+                    logger,
+                    ["git", "config", "core.autocrlf"],
+                )
+            except SubprocessCommandError as exc:
+                if exc.returncode == 1:
+                    return False  # It is not configured
+                raise
+
+        return bool(str(result.stdout.decode()))

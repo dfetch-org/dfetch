@@ -54,6 +54,13 @@ class GitRepo(VCS):
         """Get the diff of two revisions."""
         return str(self._local_repo.create_diff(old_revision, new_revision))
 
+    def _get_eol_style(self) -> str:
+        """Get the end-of-line character style used."""
+        if os.linesep == "\n" or not self._local_repo.autocrlf_is_enabled():
+            return "LF"
+        else:
+            return "CRLF"
+
     @staticmethod
     def revision_is_enough() -> bool:
         """See if this VCS can uniquely distinguish branch with revision only."""
