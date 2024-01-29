@@ -51,7 +51,7 @@ Repository = "https://github.com/dfetch-org/dfetch"
 [project.optional-dependencies]
 development = [
     # Quality dependencies
-    'black==23.12.1',
+    'black==24.1.1',
     'doc8==1.1.1',
     'pydocstyle==6.3.0',
     'radon==6.0.1',
