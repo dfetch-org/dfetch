@@ -1,4 +1,5 @@
 """Test the check command."""
+
 # mypy: ignore-errors
 # flake8: noqa
 

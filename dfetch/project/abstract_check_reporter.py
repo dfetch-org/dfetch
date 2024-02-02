@@ -1,4 +1,5 @@
 """Interface for reporting check results."""
+
 from abc import ABC, abstractmethod
 
 from dfetch.manifest.project import ProjectEntry

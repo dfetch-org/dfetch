@@ -1,4 +1,5 @@
 """Test the import command."""
+
 # mypy: ignore-errors
 # flake8: noqa
 

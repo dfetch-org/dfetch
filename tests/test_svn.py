@@ -1,4 +1,5 @@
 """Test the svn externals parsing command."""
+
 # mypy: ignore-errors
 # flake8: noqa
 

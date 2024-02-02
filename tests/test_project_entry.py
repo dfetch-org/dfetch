@@ -1,4 +1,5 @@
 """Test the Version object command."""
+
 # mypy: ignore-errors
 # flake8: noqa
 

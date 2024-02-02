@@ -1,4 +1,5 @@
 """All Project related items."""
+
 import dfetch.manifest.project
 from dfetch.project.git import GitRepo
 from dfetch.project.svn import SvnRepo

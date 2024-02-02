@@ -1,4 +1,5 @@
 """Test the manifest."""
+
 # mypy: ignore-errors
 # flake8: noqa
 

@@ -4,7 +4,6 @@ Depending on the state of the projects it will show as much information
 from the manifest or the metadata (``.dfetch_data.yaml``).
 """
 
-
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.metadata import Metadata

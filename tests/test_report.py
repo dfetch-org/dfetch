@@ -1,4 +1,5 @@
 """Test the report command."""
+
 # mypy: ignore-errors
 # flake8: noqa
 

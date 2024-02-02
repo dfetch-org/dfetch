@@ -236,6 +236,7 @@ For more details see the `git-diff`_ or `svn-diff`_ documentation.
 .. _`svn-diff`: http://svnbook.red-bean.com/en/1.7/svn.ref.svn.c.diff.html
 
 """
+
 import copy
 from typing import Dict, Optional, Sequence, Union
 
