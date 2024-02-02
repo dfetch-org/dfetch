@@ -1,4 +1,5 @@
 """Test the git."""
+
 # mypy: ignore-errors
 # flake8: noqa
 

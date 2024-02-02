@@ -1,6 +1,5 @@
 """Mock for Manifest class."""
 
-
 from unittest.mock import MagicMock, Mock
 
 from dfetch.manifest.manifest import Manifest

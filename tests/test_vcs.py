@@ -1,4 +1,5 @@
 """Test the vcs class."""
+
 # mypy: ignore-errors
 # flake8: noqa
 

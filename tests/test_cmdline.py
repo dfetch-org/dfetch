@@ -1,4 +1,5 @@
 """Test the cmdline."""
+
 # mypy: ignore-errors
 # flake8: noqa
 

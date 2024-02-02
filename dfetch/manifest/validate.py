@@ -1,4 +1,5 @@
 """Validate manifests."""
+
 import logging
 
 import pykwalify
