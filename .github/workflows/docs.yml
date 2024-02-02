@@ -1,5 +1,5 @@
 name: "Docs"
-on: 
+on:
 - pull_request
 
 jobs:
@@ -15,10 +15,9 @@ jobs:
 
     - name: Install documentation requirements
       run: "pip install .[docs] && pip install sphinx_design"
-        
+
     - name: Build docs
       run: "make -C doc html"
-        
+
     - name: Build landing-page
       run: "make -C doc/landing-page html"
-      
