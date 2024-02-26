@@ -13,7 +13,8 @@ vscode:
     - ms-python.python
     - ms-python.isort
     - ms-python.black-formatter
+    - ms-python.debugpy
     - mhutchie.git-graph
-    - bungcip.better-toml
+    - tamasfe.even-better-toml
     - trond-snekvik.simple-rst
     - jebbs.plantuml
