@@ -44,7 +44,7 @@
 		"configurations": [
 			{
 				"name": "Feature tests (wip)",
-				"type": "python",
+				"type": "debugpy",
 				"justMyCode": false,
 				"console": "integratedTerminal",
 				"request": "launch",
@@ -57,7 +57,7 @@
 			},
 			{
 				"name": "DFetch update",
-				"type": "python",
+				"type": "debugpy",
 				"request": "launch",
 				"module": "dfetch.__main__",
 				"justMyCode": false,
@@ -69,14 +69,16 @@
 	},
 	"extensions": {
 		"recommendations": [
-			"lextudio.restructuredtext",
 			"alexkrechik.cucumberautocomplete",
-			"ms-python.python",
-			"ms-python.isort",
-			"ms-python.black-formatter",
 			"bungcip.better-toml",
+			"jebbs.plantuml",
+			"lextudio.restructuredtext",
+			"ms-python.black-formatter",
+			"ms-python.debugpy",
+			"ms-python.isort",
+			"ms-python.pylint",
+			"ms-python.python",
 			"trond-snekvik.simple-rst",
-			"jebbs.plantuml"
 		]
 	}
 }
