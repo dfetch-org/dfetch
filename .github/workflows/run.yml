@@ -8,6 +8,36 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+
+  test-cygwin:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cygwin/cygwin-install-action@master
+
+      - name: Install dfetch
+        run: pip install .
+
+      - run: dfetch environment
+      - run: dfetch validate
+      - run: dfetch check
+      - run: dfetch update
+      - run: dfetch update
+      - run: dfetch check --sarif sarif.json
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: sarif.json
+
+      - name: Run example
+        working-directory: ./example
+        run: |
+            dfetch update
+            dfetch update
+            dfetch report
+
   test:
     strategy:
       matrix:
