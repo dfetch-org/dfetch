@@ -6,6 +6,9 @@ manifest:
     url-base: https://github.com/                                  # Allow git modules
     default: true                                                 # Set it as default
 
+  - name: sourceforge
+    url-base: svn://svn.code.sf.net/p/
+
   projects:
 
   - name: cpputest-git-tag
@@ -13,30 +16,25 @@ manifest:
     url: https://github.com/cpputest/cpputest.git                 # Use external git directly
     tag: v3.4                                                  # revision can also be a tag
 
-  - name: cpputest-svn-branch-rev
-    dst: Tests/cpputest-svn-branch-rev/
-    remote: github
-    branch: trunk
-    revision: '3973'
-    vcs: svn                                                      # (optionally) explicitly state vcs type
-    repo-path: cpputest/cpputest                                  # Use external git directly
+  - name: tortoise-svn-branch-rev
+    dst: Tests/tortoise-svn-branch-rev/
+    remote: sourceforge
+    branch: 1.10.x/src
+    revision: '28553'
+    vcs: svn
+    repo-path: tortoisesvn/code
 
-  - name: cpputest-svn-tag
-    dst: Tests/cpputest-svn-tag/
-    remote: github
-    tag: v3.4
-    vcs: svn                                                      # (optionally) explicitly state vcs type
-    repo-path: cpputest/cpputest                                  # Use external git directly
+  - name: tortoise-svn-tag
+    dst: Tests/tortoise-svn-tag/
+    remote: sourceforge
+    tag: version-1.13.1
+    src: src
+    vcs: svn
+    repo-path: tortoisesvn/code
 
   - name: cpputest-git-src
     dst: Tests/cpputest-git-src
     repo-path: cpputest/cpputest.git                              # Use external git directly
-    src: src
-
-  - name: cpputest-svn-src
-    dst: Tests/cpputest-svn-src
-    repo-path: cpputest/cpputest
-    vcs: svn
     src: src
 
   - name: cpputest-git-rev-only
