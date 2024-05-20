@@ -77,7 +77,7 @@ docs =[
     # 'sphinx_design==0.3.0' # Required for landing page, but requires sphinx <6
 ]
 test = [
-    'pytest==8.1.1',
+    'pytest==8.2.1',
     'pytest-cov==5.0.0',
     'behave==1.2.6',
 ]
