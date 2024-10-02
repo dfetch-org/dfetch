@@ -1,0 +1,26 @@
+{
+    "name": "Dfetch Dev Container",
+    "build": {
+      "context": "..",
+      "dockerfile": "Dockerfile"
+    },
+    "postCreateCommand": "pip install -e .[development,docs,casts]",
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "lextudio.restructuredtext",
+          "alexkrechik.cucumberautocomplete",
+          "ms-python.python",
+          "ms-python.isort",
+          "ms-python.black-formatter",
+          "ms-python.debugpy",
+          "mhutchie.git-graph",
+          "tamasfe.even-better-toml",
+          "trond-snekvik.simple-rst",
+          "jebbs.plantuml"
+        ]
+      }
+    },
+    "workspaceFolder": "/workspaces/dfetch",
+    "remoteUser": "gitpod"
+  }
