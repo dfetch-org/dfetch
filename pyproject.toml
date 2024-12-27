@@ -71,7 +71,7 @@ development = [
 ]
 docs =[
     'sphinx==7.3.7',
-    'sphinx-argparse==0.4.0',
+    'sphinx-argparse==0.5.2',
     'plantweb==1.2.1',
     'sphinxcontrib.asciinema==0.3.8',
     # 'sphinx_design==0.3.0' # Required for landing page, but requires sphinx <6
