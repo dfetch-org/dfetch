@@ -36,7 +36,7 @@ dependencies = [
     "typing-extensions==4.12.2; python_version > '3.7.0'",
     "sarif-om==1.0.4",
     "semver==3.0.2",
-    "patch-ng==1.17.4",
+    "patch-ng==1.18.1",
     "importlib-resources==5.4.0; python_version <= '3.7.0'",
     "cyclonedx-python-lib==4.2.2",
     "infer-license==0.1.0; python_version <= '3.10.0'",
