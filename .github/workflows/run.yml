@@ -17,6 +17,11 @@ jobs:
 
       - uses: cygwin/cygwin-install-action@master
 
+      - name: Install Subversion (SVN) on Windows
+        run: |
+          choco install subversion -y
+          svn --version  # Verify installation
+
       - name: Install dfetch
         run: pip install .
 
@@ -52,6 +57,25 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Install Subversion (SVN)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y subversion
+          svn --version  # Verify installation
+
+      - name: Install Subversion (SVN)
+        if: matrix.platform == 'macos-latest'
+        run: |
+          brew install svn
+          svn --version  # Verify installation
+
+      - name: Install Subversion (SVN)
+        if: matrix.platform == 'windows-latest'
+        run: |
+          choco install subversion -y
+          svn --version  # Verify installation
 
       - name: Install dfetch
         run: pip install .
