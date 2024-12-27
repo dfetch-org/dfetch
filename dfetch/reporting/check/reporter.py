@@ -136,7 +136,6 @@ class CheckReporter(AbstractCheckReporter):
         Args:
             manifest_path (str): The path to the manifest.
         """
-        super().__init__(manifest_path=manifest_path)
         self._manifest_path = manifest_path
         with open(self._manifest_path, "r", encoding="utf-8") as manifest:
             self._manifest_buffer = io.StringIO(manifest.read())
