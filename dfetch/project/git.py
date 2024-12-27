@@ -78,7 +78,11 @@ class GitRepo(VCS):
         ]
 
         self._local_repo.checkout_version(
-            self.remote, rev_or_branch_or_tag, self.source, license_globs, self.ignore
+            remote=self.remote,
+            version=rev_or_branch_or_tag,
+            src=self.source,
+            must_keeps=license_globs,
+            ignore=self.ignore,
         )
 
         safe_rmtree(os.path.join(self.local_path, self._local_repo.METADATA_DIR))

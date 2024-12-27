@@ -163,11 +163,12 @@ class GitLocalRepo:
 
     def checkout_version(  # pylint: disable=too-many-arguments
         self,
+        *,
         remote: str,
         version: str,
-        src: Optional[str],
-        must_keeps: Optional[List[str]],
-        ignore: Optional[Sequence[str]],
+        src: Optional[str] = None,
+        must_keeps: Optional[List[str]] = None,
+        ignore: Optional[Sequence[str]] = None,
     ) -> None:
         """Checkout a specific version from a given remote.
 
