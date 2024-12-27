@@ -11,7 +11,7 @@ Feature: Check for dependencies in projects
                 version: 0.0
                 projects:
                     - name: SomeProject
-                      dst: ThirdParty/SomeProject
+                      dst: third-party/SomeProject
                       url: some-remote-server/SomeProject.git
                       tag: v1
             """
@@ -40,7 +40,7 @@ Feature: Check for dependencies in projects
                 version: 0.0
                 projects:
                     - name: SomeProject
-                      dst: ThirdParty/SomeProject
+                      dst: third-party/SomeProject
                       url: some-remote-server/SomeProject.git
                       tag: v1
             """
@@ -63,7 +63,7 @@ Feature: Check for dependencies in projects
               SomeProject         : up-to-date (v1)
 
             "SomeProject" depends on the following project(s) which are not part of your manifest:
-            (found in ThirdParty/SomeProject/dfetch.yaml)
+            (found in third-party/SomeProject/dfetch.yaml)
 
             -   name: SomeOtherProject
                 url: some-remote-server/SomeOtherProject.git
@@ -77,7 +77,7 @@ Feature: Check for dependencies in projects
                 version: 0.0
                 projects:
                     - name: SomeProject
-                      dst: ThirdParty/SomeProject
+                      dst: third-party/SomeProject
                       url: some-remote-server/SomeProject.git
                       tag: v1
 

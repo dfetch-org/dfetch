@@ -11,11 +11,11 @@ Feature: Updated project has dependencies
                 version: 0.0
                 projects:
                     - name: SomeProjectWithChild
-                      dst: ThirdParty/SomeProjectWithChild
+                      dst: third-party/SomeProjectWithChild
                       url: some-remote-server/SomeProjectWithChild.git
                       tag: v1
                     - name: SomeProjectWithoutChild
-                      dst: ThirdParty/SomeProjectWithoutChild
+                      dst: third-party/SomeProjectWithoutChild
                       url: some-remote-server/SomeProjectWithoutChild.git
                       tag: v1
             """
@@ -37,7 +37,7 @@ Feature: Updated project has dependencies
               SomeProjectWithChild: Fetched v1
 
             "SomeProjectWithChild" depends on the following project(s) which are not part of your manifest:
-            (found in ThirdParty/SomeProjectWithChild/dfetch.yaml)
+            (found in third-party/SomeProjectWithChild/dfetch.yaml)
 
             -   name: SomeOtherProject
                 url: some-remote-server/SomeOtherProject.git
@@ -48,7 +48,8 @@ Feature: Updated project has dependencies
         And 'MyProject' looks like:
             """
             MyProject/
-                ThirdParty/
+                dfetch.yaml
+                third-party/
                     SomeProjectWithChild/
                         .dfetch_data.yaml
                         README.md
@@ -56,7 +57,6 @@ Feature: Updated project has dependencies
                     SomeProjectWithoutChild/
                         .dfetch_data.yaml
                         README.md
-                dfetch.yaml
             """
 
     Scenario: A child-project has an invalid manifest
@@ -66,7 +66,7 @@ Feature: Updated project has dependencies
                 version: 0.0
                 projects:
                     - name: SomeProject
-                      dst: ThirdParty/SomeProject
+                      dst: third-party/SomeProject
                       url: some-remote-server/SomeProject.git
                       tag: v1
             """
@@ -85,10 +85,10 @@ Feature: Updated project has dependencies
         And 'MyProject' looks like:
             """
             MyProject/
-                ThirdParty/
+                dfetch.yaml
+                third-party/
                     SomeProject/
                         .dfetch_data.yaml
                         README.md
                         dfetch.yaml
-                dfetch.yaml
             """
