@@ -49,7 +49,8 @@ class SvnRepo(VCS):
         externals = []
         path_pattern = r"([^\s^-]+)\s+-"
         for entry in result.stdout.decode().split(os.linesep * 2):
-            match = None
+            match: Optional[re.Match[str]] = None
+            local_path: str = ""
             for match in re.finditer(path_pattern, entry):
                 pass
             if match:
