@@ -27,7 +27,7 @@ classifiers = [
     "Programming Language :: Python",
 ]
 dependencies = [
-    "PyYAML==6.0.1",
+    "PyYAML==6.0.2",
     "coloredlogs==15.0.1",
     "pykwalify==1.8.0",
     "halo==0.0.31",
