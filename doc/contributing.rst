@@ -21,15 +21,15 @@ install all runtime dependencies from ``pyproject.toml``.
 
 .. important :: *dfetch* is primarily developed with python 3.8
 
-Running in Gitpod
------------------
-Gitpod makes it possible to edit dfetch directly in the browser in a VSCode instance.
+Running in Github Codespaces
+----------------------------
+Github codespaces make it possible to edit dfetch directly in the browser in a VSCode instance.
 All dependencies are pre-installed and makes it easy to get started.
 
-|GitpodLink|_
+|CodespacesLink|_
 
-.. |GitpodLink| image:: https://gitpod.io/button/open-in-gitpod.svg
-.. _GitpodLink: https://gitpod.io/#https://github.com/dfetch-org/dfetch/
+.. |CodespacesLink| image:: https://github.com/codespaces/badge.svg
+.. _CodespacesLink: https://codespaces.new/dfetch-org/dfetch
 
 
 Running in VSCode
