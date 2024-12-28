@@ -13,7 +13,8 @@
 [![GitHub issues](https://img.shields.io/github/issues/dfetch-org/dfetch)](https://github.com/dfetch-org/dfetch/issues)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dfetch)
 [![PyPI](https://img.shields.io/pypi/v/dfetch)](https://pypi.org/project/dfetch/)
-[![Contribute with Gitpod](https://img.shields.io/badge/Contribute%20with-Gitpod-908a85?logo=gitpod)](https://gitpod.io/#https://github.com/dfetch-org/dfetch/)
+[![Contribute with Codespaces](https://img.shields.io/static/v1?label=Codespaces&message=Open&color=blue)](https://codespaces.new/dfetch-org/dfetch)
+
 
 **DFetch can manage dependencies**
 
