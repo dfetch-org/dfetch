@@ -6,7 +6,9 @@
 	],
 	"settings": {
 		"behaveTestAdapter.featuresFolderPath": "${workspaceFolder}/features",
-		"python.defaultInterpreterPath": "${workspaceFolder}/venv/Scripts/python",
+		"[windows]": {
+			"python.defaultInterpreterPath": "${workspaceFolder}/venv/Scripts/python",
+		},
 		"editor.codeActionsOnSave": {
 			"source.organizeImports": "explicit"
 		},
