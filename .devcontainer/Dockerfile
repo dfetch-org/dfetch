@@ -11,8 +11,8 @@ WORKDIR /workspaces/dfetch
 
 COPY . .
 
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -e .[development,docs,test,casts] && \
+RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip && \
+    pip install --no-cache-dir --root-user-action=ignore -e .[development,docs,test,casts] && \
     pre-commit install --install-hooks
 
 # Add a non-root user (dev)
