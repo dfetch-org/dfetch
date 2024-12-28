@@ -2,9 +2,9 @@
 # For more info see https://dfetch.rtfd.io/en/latest/getting_started.html
 dfetch:
   branch: master
-  hash: 4d34c4e6b28a20edf2e2cb872e63f21d
-  last_fetch: 15/11/2023, 17:24:49
+  hash: 5a19e726e260b5f696463af4eff0623b
+  last_fetch: 28/12/2024, 22:24:51
   patch: ''
   remote_url: https://github.com/plantuml-stdlib/C4-PlantUML.git
-  revision: ba89acfa58cae05cb0db4762bc85f6ef865010e9
+  revision: 9e7177f65e5425efd50c10e848ec89e49f6f45be
   tag: ''

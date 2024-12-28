@@ -14,3 +14,4 @@ manifest:
   - name: plantuml-c4
     repo-path: plantuml-stdlib/C4-PlantUML.git
     dst: doc/static/uml/styles/plantuml-c4
+    src: '*.puml'
