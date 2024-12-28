@@ -19,7 +19,8 @@
         "mhutchie.git-graph",
         "tamasfe.even-better-toml",
         "trond-snekvik.simple-rst",
-        "jebbs.plantuml"
+        "jebbs.plantuml",
+        "YouneselBarnoussi.vscode-behave-test-adapter"
       ]
     }
   },
