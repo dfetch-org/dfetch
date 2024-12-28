@@ -18,3 +18,6 @@ RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip && \
 # Add a non-root user (dev)
 RUN useradd -m dev && chown -R dev:dev /workspaces/dfetch
 USER dev
+
+# Set bash as the default shell
+SHELL ["/bin/bash", "-ec"]

@@ -21,7 +21,16 @@
         "trond-snekvik.simple-rst",
         "jebbs.plantuml",
         "YouneselBarnoussi.vscode-behave-test-adapter"
-      ]
+      ],
+      "settings": {
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+          },
+        },
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
     }
   },
   "workspaceFolder": "/workspaces/dfetch",
