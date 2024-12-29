@@ -20,7 +20,7 @@
         "tamasfe.even-better-toml",
         "trond-snekvik.simple-rst",
         "jebbs.plantuml",
-        "YouneselBarnoussi.vscode-behave-test-adapter"
+        "jimasp.behave-vsc"
       ],
       "settings": {
         "terminal.integrated.profiles.linux": {
