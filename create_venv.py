@@ -1,4 +1,4 @@
-#!python3.7
+#!python3.12
 """Script to setup a venv."""
 
 import argparse
@@ -55,7 +55,9 @@ class MyEnvBuilder(venv.EnvBuilder):
 
 if __name__ == "__main__":
     PARSER = argparse.ArgumentParser()
-    PARSER.add_argument("-e", "--extra_requirements", type=str)
+    PARSER.add_argument(
+        "-e", "--extra_requirements", type=str, default="development,test,doc"
+    )
     ARGS = PARSER.parse_args()
 
     MyEnvBuilder(
