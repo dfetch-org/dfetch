@@ -186,6 +186,13 @@ def step_impl(context, name):
     check_file(name, context.text)
 
 
+@then("the first line of '{name}' is changed to")
+def step_impl(context, name):
+    """Check the first line of the file."""
+    with open(name, "r") as file_to_check:
+        check_content(context.text.strip(), file_to_check.readline().strip())
+
+
 @then("the patch file '{name}' is generated")
 def step_impl(context, name):
     """Check a manifest."""

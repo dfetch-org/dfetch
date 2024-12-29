@@ -39,10 +39,11 @@ Feature: List dependencies
               version: '0.0'
 
               projects:
-                - name: ext/test-repo-tag
-                  url: https://github.com/dfetch-org/test-repo
-                  tag: v2.0
+                - name: cutter-svn-tag
+                  url: svn://svn.code.sf.net/p/cutter/svn/cutter
+                  tag: 1.1.7
                   vcs: svn
+                  src: acmacros
 
             """
         And all projects are updated
@@ -50,15 +51,15 @@ Feature: List dependencies
         Then the output shows
             """
             Dfetch (0.8.0)
-              project             : ext/test-repo-tag
+              project             : cutter-svn-tag
                   remote          : <none>
-                  remote url      : https://github.com/dfetch-org/test-repo
+                  remote url      : svn://svn.code.sf.net/p/cutter/svn/cutter
                   branch          : <none>
-                  tag             : v2.0
-                  last fetch      : 02/07/2021, 20:25:56
-                  revision        : 5
+                  tag             : 1.1.7
+                  last fetch      : 29/12/2024, 20:09:21
+                  revision        : 4007
                   patch           : <none>
-                  license         : MIT License
+                  license         : <none>
             """
 
     Scenario: Git repo with applied patch

@@ -41,9 +41,9 @@ Feature: Freeze dependencies
               version: '0.0'
 
               projects:
-                - name: ext/test-repo-tag
-                  url: https://github.com/dfetch-org/test-repo
+                - name: cunit-svn
                   vcs: svn
+                  url: svn://svn.code.sf.net/p/cunit/code
 
             """
         And all projects are updated
@@ -54,9 +54,9 @@ Feature: Freeze dependencies
               version: '0.0'
 
               projects:
-              - name: ext/test-repo-tag
-                revision: '5'
-                url: https://github.com/dfetch-org/test-repo
+              - name: cunit-svn
+                revision: '170'
+                url: svn://svn.code.sf.net/p/cunit/code
                 branch: trunk
                 vcs: svn
 

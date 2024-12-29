@@ -16,33 +16,39 @@ Feature: Fetching dependencies from a svn repository
               version: '0.0'
 
               remotes:
-                - name: github-com-dfetch-org
-                  url-base: https://github.com/dfetch-org/test-repo
+                - name: cunit
+                  url-base: svn://svn.code.sf.net/p/cunit/code
+                  default: true
+
+                - name: cutter
+                  url-base: svn://svn.code.sf.net/p/cutter/svn/cutter
 
               projects:
-                - name: ext/test-repo-rev-only
-                  revision: '1'
+                - name: cunit-svn-rev-only
+                  revision: '170'
                   vcs: svn
-                  dst: ext/test-repo-rev-only
+                  dst: ext/cunit-svn-rev-only
 
-                - name: ext/test-rev-and-branch
-                  revision: '2'
-                  branch: trunk
+                - name: cunit-svn-rev-and-branch
+                  revision: '156'
                   vcs: svn
-                  dst: ext/test-rev-and branch
+                  branch: mingw64
+                  dst: ext/cunit-svn-rev-and-branch
 
-                - name: ext/test-repo-tag-v1
-                  tag: v1
+                - name: cutter-svn-tag
                   vcs: svn
-                  dst: ext/test-repo-tag-v1
+                  tag: 1.1.7
+                  src: acmacros
+                  dst: ext/cutter-svn-tag
+                  remote: cutter
 
             """
         When I run "dfetch update"
         Then the following projects are fetched
-            | path                       |
-            | ext/test-repo-rev-only     |
-            | ext/test-rev-and branch    |
-            | ext/test-repo-tag-v1       |
+            | path                         |
+            | ext/cunit-svn-rev-only       |
+            | ext/cunit-svn-rev-and-branch |
+            | ext/cutter-svn-tag           |
 
     Scenario: Directory in a non-standard SVN repository can be fetched
         Given the manifest 'dfetch.yaml' in MyProject

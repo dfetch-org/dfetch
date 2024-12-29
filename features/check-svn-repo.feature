@@ -10,28 +10,28 @@ Feature: Checking dependencies from a svn repository
               version: '0.0'
 
               remotes:
-                - name: github-com-dfetch-org
-                  url-base: https://github.com/dfetch-org/test-repo
+                - name: cunit
+                  url-base: svn://svn.code.sf.net/p/cunit/code
 
               projects:
-                - name: ext/test-repo-rev-only
-                  revision: '2'
+                - name: cunit-svn-rev-only
+                  revision: '170'
                   vcs: svn
-                  dst: ext/test-repo-rev-only
+                  dst: ext/cunit-svn-rev-only
 
-                - name: ext/test-rev-and-branch
-                  revision: '1'
+                - name: cunit-svn-rev-and-branch
+                  revision: '156'
                   vcs: svn
-                  branch: some-branch
-                  dst: ext/test-rev-and-branch
+                  branch: mingw64
+                  dst: ext/cunit-svn-rev-and-branch
 
             """
         When I run "dfetch check"
         Then the output shows
             """
             Dfetch (0.8.0)
-              ext/test-repo-rev-only: wanted (2), available (trunk - 5)
-              ext/test-rev-and-branch: wanted (some-branch - 1), available (some-branch - 5)
+              cunit-svn-rev-only  : wanted (170), available (trunk - 170)
+              cunit-svn-rev-and-branch: wanted (mingw64 - 156), available (mingw64 - 170)
             """
 
     Scenario: A newer tag is available than in manifest
@@ -41,21 +41,21 @@ Feature: Checking dependencies from a svn repository
               version: '0.0'
 
               remotes:
-                - name: github-com-dfetch-org
-                  url-base: https://github.com/dfetch-org/test-repo
+                - name: cutter
+                  url-base: svn://svn.code.sf.net/p/cutter/svn/cutter
 
               projects:
-                - name: ext/test-repo-tag-v1
+                - name: cutter-svn-tag
                   vcs: svn
-                  tag: v1
-                  dst: ext/test-repo-tag-v1
+                  tag: 1.1.7
+                  dst: ext/cutter-svn-tag
 
             """
         When I run "dfetch check"
         Then the output shows
             """
             Dfetch (0.8.0)
-              ext/test-repo-tag-v1: wanted (v1), available (v2.0)
+              cutter-svn-tag      : wanted (1.1.7), available (1.1.8)
             """
 
     Scenario: Check is done after an update
@@ -65,20 +65,21 @@ Feature: Checking dependencies from a svn repository
               version: '0.0'
 
               remotes:
-                - name: github-com-dfetch-org
-                  url-base: https://github.com/dfetch-org/test-repo
+                - name: cunit
+                  url-base: svn://svn.code.sf.net/p/cunit/code
+                  default: true
 
               projects:
-                - name: ext/test-repo-rev-only
-                  revision: '2'
+                - name: cunit-svn-rev-only
+                  revision: '169'
                   vcs: svn
-                  dst: ext/test-repo-rev-only
+                  dst: ext/cunit-svn-rev-only
 
-                - name: ext/test-rev-and-branch
-                  revision: '1'
+                - name: cunit-svn-rev-and-branch
+                  revision: '156'
                   vcs: svn
-                  branch: trunk
-                  dst: ext/test-rev-and-branch
+                  branch: mingw64
+                  dst: ext/cunit-svn-rev-and-branch
 
                 - name: ext/test-non-standard-svn
                   url: some-remote-server/SomeProject
@@ -91,8 +92,8 @@ Feature: Checking dependencies from a svn repository
         Then the output shows
             """
             Dfetch (0.8.0)
-              ext/test-repo-rev-only: wanted (2), current (trunk - 2), available (trunk - 5)
-              ext/test-rev-and-branch: wanted & current (trunk - 1), available (trunk - 5)
+              cunit-svn-rev-only  : wanted (169), current (trunk - 169), available (trunk - 170)
+              cunit-svn-rev-and-branch: wanted & current (mingw64 - 156), available (mingw64 - 170)
               ext/test-non-standard-svn: wanted (latest), current (1), available (1)
             """
 
@@ -143,11 +144,11 @@ Feature: Checking dependencies from a svn repository
               version: '0.0'
 
               remotes:
-                - name: github-com-dfetch-org
-                  url-base: https://github.com/dfetch-org/test-repo
+                - name: cutter
+                  url-base: svn://svn.code.sf.net/p/cutter/svn/cutter
 
               projects:
-                - name: SomeProject
+                - name: cutter-svn-tag
                   vcs: svn
                   tag: non-existent-tag
             """
@@ -155,5 +156,5 @@ Feature: Checking dependencies from a svn repository
         Then the output shows
             """
             Dfetch (0.8.0)
-              SomeProject         : wanted (non-existent-tag), but not available at the upstream.
+              cutter-svn-tag      : wanted (non-existent-tag), but not available at the upstream.
             """

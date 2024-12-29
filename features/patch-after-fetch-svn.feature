@@ -11,32 +11,34 @@ Feature: Patch after fetching from svn repo
                 version: '0.0'
 
                 remotes:
-                - name: github-com-dfetch-org
-                  url-base: https://github.com/dfetch-org/test-repo
+                - name: cutter
+                  url-base: svn://svn.code.sf.net/p/cutter/svn/cutter
 
                 projects:
-                - name: ext/test-repo-tag
-                  tag: v2.0
+                - name: cutter
                   vcs: svn
-                  dst: ext/test-repo-tag
+                  tag: 1.1.7
+                  dst: ext/cutter
                   patch: diff.patch
+                  src: apt
             """
         And the patch file 'diff.patch'
             """
-            Index: README.md
+            Index: build-deb.sh
             ===================================================================
-            --- README.md	(revision 2)
-            +++ README.md	(revision 3)
-            @@ -1,2 +1,2 @@
-             # Test-repo
-            -A test repo for testing dfetch.
-            +A test repo for testing patch.
+            --- build-deb.sh	(revision 4007)
+            +++ build-deb.sh	(working copy)
+            @@ -1,4 +1,4 @@
+            -#!/bin/sh
+            +#!/bin/bash
+             
+             LANG=C
+             
             """
         When I run "dfetch update"
-        Then the patched 'ext/test-repo-tag/README.md' is
+        Then the first line of 'ext/cutter/build-deb.sh' is changed to
             """
-            # Test-repo
-            A test repo for testing patch.
+            #!/bin/bash
             """
 
     Scenario: Applying patch file fails
@@ -46,34 +48,37 @@ Feature: Patch after fetching from svn repo
                 version: '0.0'
 
                 remotes:
-                - name: github-com-dfetch-org
-                  url-base: https://github.com/dfetch-org/test-repo
+                - name: cutter
+                  url-base: svn://svn.code.sf.net/p/cutter/svn/cutter
 
                 projects:
-                - name: ext/test-repo-tag
-                  tag: v2.0
+                - name: cutter
                   vcs: svn
-                  dst: ext/test-repo-tag
+                  tag: 1.1.7
+                  dst: ext/cutter
                   patch: diff.patch
+                  src: apt
             """
         And the patch file 'diff.patch'
             """
-            Index: README.md
+            Index: build-deb.sh
             ===================================================================
-            --- README1.md	(revision 2)
-            +++ README1.md	(revision 3)
-            @@ -1,2 +1,2 @@
-             # Test-repo
-            -A test repo for testing dfetch.
-            +A test repo for testing patch.
+            --- build-deb2.sh	(revision 4007)
+            +++ build-deb2.sh	(working copy)
+            @@ -1,4 +1,4 @@
+            -#!/bin/sh
+            +#!/bin/bash
+             
+             LANG=C
+             
             """
         When I run "dfetch update"
         Then the output shows
             """
             Dfetch (0.8.0)
-              ext/test-repo-tag   : Fetched v2.0
+              cutter              : Fetched 1.1.7
             source/target file does not exist:
-              --- b'README1.md'
-              +++ b'README1.md'
+              --- b'build-deb2.sh'
+              +++ b'build-deb2.sh'
             Applying patch "diff.patch" failed
             """
