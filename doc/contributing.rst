@@ -11,9 +11,9 @@ After implementing (with tests and documentation) create a PR on Github and let 
 Virtual Environment
 -------------------
 Create a virtual environment by double-clicking ``create_venv.py`` or by running the following command.
-This will install all ``develop`` dependencies from ``pyproject.toml``, install *DFetch* as
-`editable package <https://pip.pypa.io/en/stable/cli/pip_wheel/?highlight=editable#cmdoption-e>`_ and
-install all runtime dependencies from ``pyproject.toml``.
+This will install all ``development``, ``test`` and ``doc`` dependencies from ``pyproject.toml``, install
+*DFetch* as `editable package <https://pip.pypa.io/en/stable/cli/pip_wheel/?highlight=editable#cmdoption-e>`_
+and install all runtime dependencies from ``pyproject.toml``.
 
 .. code-block:: bash
 
@@ -31,7 +31,6 @@ All dependencies are pre-installed and makes it easy to get started.
 .. |CodespacesLink| image:: https://github.com/codespaces/badge.svg
 .. _CodespacesLink: https://codespaces.new/dfetch-org/dfetch
 
-
 Running in VSCode
 -----------------
 To debug or run directly from VSCode create the :ref:`virtual environment`.
@@ -44,7 +43,7 @@ To avoid any discussion about formatting `black <https://github.com/psf/black>`_
 Next to that `isort <https://github.com/PyCQA/isort>`_ is used for sorting the imports.
 And `doc8 <https://github.com/pycqa/doc8>`_ is used as rst linter.
 
-Run `check_quality.bat` (or GitHub will run it for you).
+Run `check_quality.bat` (or GitHub will run it for you). Alternatively when using VSCode run the `Check Quality` task from the command palette.
 
 Testing
 -------
@@ -60,6 +59,7 @@ To see coverage, in the virtual environment run ``pytest`` with coverage
 
     pytest --cov=dfetch tests
 
+From VSCode all tests can be run from the Test view.
 
 Feature tests
 ~~~~~~~~~~~~~
@@ -74,6 +74,8 @@ Test can be run directly from the command-line
 
     behave features
 
+Alternatively in VSCode run the ``Run all feature tests`` task from the command palette.
+
 To debug these tests, mark the ``Feature:`` or ``Scenario:`` to debug with the ``@wip`` tag
 and add run the ``Feature tests (wip)`` debug configuration in VSCode.
 
@@ -82,7 +84,7 @@ Creating documentation
 ----------------------
 Run ``create_docs.bat`` and open ``index.html`` in ``doc/_build/html`` to read it.
 See `This example <https://pythonhosted.org/an_example_pypi_project/sphinx.html>`_ for documenting the code.
-
+Alternatively in VSCode run the ``Create Docs`` task from the command palette.
 
 Releasing
 ---------
