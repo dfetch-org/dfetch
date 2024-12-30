@@ -100,3 +100,8 @@ Say goodbye to the hassle of traditional dependency management solutions and hel
 
    .. literalinclude:: ../../dfetch.yaml
       :language: yaml
+
+
+.. div:: sd-text-left sd-text-muted sd-font-weight-light
+
+    Generated: |today|
