@@ -27,7 +27,7 @@ Feature: Keep license in project
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.8.0)
+            Dfetch (0.9.0)
               SomeProjectWithLicense: Fetched v1
             """
         Then 'MyProject' looks like:
@@ -60,7 +60,7 @@ Feature: Keep license in project
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.8.0)
+            Dfetch (0.9.0)
               SomeProjectWithLicense: Fetched trunk - 1
             """
         Then 'MyProject' looks like:
@@ -92,7 +92,7 @@ Feature: Keep license in project
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.8.0)
+            Dfetch (0.9.0)
               SomeProjectWithLicense: Fetched trunk - 1
             """
         Then 'MyProject' looks like:

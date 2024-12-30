@@ -27,6 +27,6 @@ Feature: Checking specific projects
         When I run "dfetch check ext/test-rev-and-branch"
         Then the output shows
             """
-            Dfetch (0.8.0)
+            Dfetch (0.9.0)
               ext/test-rev-and-branch: wanted (main - 8df389d0524863b85f484f15a91c5f2c40aefda1), available (main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
             """

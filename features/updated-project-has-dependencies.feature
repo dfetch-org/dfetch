@@ -33,7 +33,7 @@ Feature: Updated project has dependencies
         When I run "dfetch update" in MyProject
         Then the output shows
             """
-            Dfetch (0.8.0)
+            Dfetch (0.9.0)
               SomeProjectWithChild: Fetched v1
 
             "SomeProjectWithChild" depends on the following project(s) which are not part of your manifest:
@@ -77,7 +77,7 @@ Feature: Updated project has dependencies
         When I run "dfetch update" in MyProject
         Then the output shows
             """
-            Dfetch (0.8.0)
+            Dfetch (0.9.0)
               SomeProject         : Fetched v1
             SomeProject/dfetch.yaml: Schema validation failed:
              - Value 'very-invalid-manifest' is not a dict. Value path: ''.

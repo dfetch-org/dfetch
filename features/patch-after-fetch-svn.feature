@@ -75,7 +75,7 @@ Feature: Patch after fetching from svn repo
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.8.0)
+            Dfetch (0.9.0)
               cutter              : Fetched 1.1.7
             source/target file does not exist:
               --- b'build-deb2.sh'

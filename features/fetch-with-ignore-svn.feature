@@ -27,7 +27,7 @@ Feature: Fetch with ignore in svn
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.8.0)
+            Dfetch (0.9.0)
               SomeInterestingProject: Fetched trunk - 1
             """
         Then 'MyProject' looks like:
@@ -55,7 +55,7 @@ Feature: Fetch with ignore in svn
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.8.0)
+            Dfetch (0.9.0)
               SomeInterestingProject: Fetched trunk - 1
             """
         Then 'MyProject' looks like:
@@ -86,7 +86,7 @@ Feature: Fetch with ignore in svn
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.8.0)
+            Dfetch (0.9.0)
               SomeInterestingProject: Fetched trunk - 1
             """
         Then 'MyProject' looks like:
