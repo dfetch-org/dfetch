@@ -1,4 +1,4 @@
-Release 0.9.0 (unreleased)
+Release 0.9.0 (released 2024-12-30)
 ===================================
 
 * Warn user if the remote does not exist (#185, #171)
