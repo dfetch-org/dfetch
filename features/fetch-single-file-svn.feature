@@ -10,7 +10,7 @@ Feature: Fetch single file from svn repo
                 version: 0.0
                 projects:
                     - name: SomeProjectWithAnInterestingFile
-                      dst: SomeFile.txt
+                      dst: MyOwnFileName.txt
                       url: some-remote-server/SomeProjectWithAnInterestingFile
                       src: SomeFolder/SomeFile.txt
             """
@@ -24,10 +24,10 @@ Feature: Fetch single file from svn repo
             Dfetch (0.8.0)
               SomeProjectWithAnInterestingFile: Fetched trunk - 1
             """
-        Then 'MyProject' looks like:
+        And 'MyProject' looks like:
             """
             MyProject/
-                .dfetch_data-SomeFile.txt.yaml
-                SomeFile.txt
+                .dfetch_data-MyOwnFileName.txt.yaml
+                MyOwnFileName.txt
                 dfetch.yaml
             """
