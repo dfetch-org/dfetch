@@ -91,6 +91,30 @@
 				}
 			},
 			{
+				"label": "Build Landing page",
+				"type": "shell",
+				"linux": {
+					"command": "make"
+				},
+				"windows": {
+					"command": "make.bat"
+				},
+				"args": [
+					"html"
+				],
+				"options": {
+					"cwd": "${workspaceFolder}/doc/landing-page"
+				},
+				"group": {
+					"kind": "build",
+					"isDefault": true
+				},
+				"presentation": {
+					"reveal": "always",
+					"panel": "shared"
+				}
+			},
+			{
 				"label": "Check quality (pre-commit)",
 				"type": "shell",
 				"command": "pre-commit",
