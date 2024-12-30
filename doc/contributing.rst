@@ -91,6 +91,10 @@ Releasing
 
 - Update ``CHANGELOG.rst`` with release date.
 - Bump version number in ``dfetch/__init__.py``.
+- Find/replace ``Dfetch(x.x.x)`` with the new version number ``Dfetch (y.y.y)``.
+- Double check any feature scenarios for a version number.
+- Re-generate asciicasts using VSCode task (linux/mac).
+- Commit all release changes.
 - Create annotated tag and push it:
 
 .. code-block:: bash
