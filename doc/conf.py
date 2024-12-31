@@ -196,7 +196,7 @@ sphinxcontrib_asciinema_defaults = {
     "preload": 1,
     "terminalFontsize": "15px",
     "speed": 1.5,
-    "loop": False,
+    "loop": True,
     "autoPlay": True,
     "cols": 120,
     "rows": 30,
