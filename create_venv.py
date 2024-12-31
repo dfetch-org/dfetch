@@ -4,7 +4,7 @@
 import argparse
 import subprocess  # nosec
 import venv
-from typing import Any, Optional
+from typing import Any
 
 
 class MyEnvBuilder(venv.EnvBuilder):
