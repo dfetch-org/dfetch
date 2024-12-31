@@ -11,7 +11,7 @@ WORKDIR /workspaces/dfetch
 
 COPY . .
 
-RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip && \
+RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip==24.3.1 && \
     pip install --no-cache-dir --root-user-action=ignore -e .[development,docs,test,casts] && \
     pre-commit install --install-hooks
 
