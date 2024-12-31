@@ -3,8 +3,8 @@ FROM mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
 # Install dependencies
 # pv is required for asciicasts
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    pv \
-    subversion \
+    pv=1.6.6-1+b1 \
+    subversion=1.14.1-3+deb11u1 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspaces/dfetch
