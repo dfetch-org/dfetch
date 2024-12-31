@@ -28,12 +28,9 @@ Feature: Patch after fetching from svn repo
             ===================================================================
             --- build-deb.sh	(revision 4007)
             +++ build-deb.sh	(working copy)
-            @@ -1,4 +1,4 @@
+            @@ -1,1 +1,1 @@
             -#!/bin/sh
             +#!/bin/bash
-             
-             LANG=C
-             
             """
         When I run "dfetch update"
         Then the first line of 'ext/cutter/build-deb.sh' is changed to
@@ -65,17 +62,14 @@ Feature: Patch after fetching from svn repo
             ===================================================================
             --- build-deb2.sh	(revision 4007)
             +++ build-deb2.sh	(working copy)
-            @@ -1,4 +1,4 @@
+            @@ -1,1 +1,1 @@
             -#!/bin/sh
             +#!/bin/bash
-             
-             LANG=C
-             
             """
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.9.0)
+            Dfetch (0.9.1)
               cutter              : Fetched 1.1.7
             source/target file does not exist:
               --- b'build-deb2.sh'

@@ -42,7 +42,7 @@ Feature: Create an CycloneDX sbom
                         {
                             "vendor": "dfetch-org",
                             "name": "dfetch",
-                            "version": "0.9.0"
+                            "version": "0.9.1"
                         },
                         {
                             "vendor": "CycloneDX",

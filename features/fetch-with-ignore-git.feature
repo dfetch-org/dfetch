@@ -28,7 +28,7 @@ Feature: Fetch with ignore in git
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.9.0)
+            Dfetch (0.9.1)
               SomeInterestingProject: Fetched v1
             """
         Then 'MyProject' looks like:
@@ -57,7 +57,7 @@ Feature: Fetch with ignore in git
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.9.0)
+            Dfetch (0.9.1)
               SomeInterestingProject: Fetched v1
             """
         Then 'MyProject' looks like:
@@ -89,7 +89,7 @@ Feature: Fetch with ignore in git
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.9.0)
+            Dfetch (0.9.1)
               SomeInterestingProject: Fetched v1
             """
         Then 'MyProject' looks like:

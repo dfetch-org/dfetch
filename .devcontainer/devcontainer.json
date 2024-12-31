@@ -27,7 +27,7 @@
           "bash": {
             "path": "bash",
             "icon": "terminal-bash"
-          },
+          }
         },
         "terminal.integrated.defaultProfile.linux": "bash"
       }
