@@ -7,6 +7,9 @@ on:
   release:
     types: [created]
 
+  # Allows to run this workflow manually
+  workflow_dispatch:
+
 environment:
   name: PyPi
 
