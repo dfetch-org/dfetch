@@ -10,13 +10,11 @@ on:
   # Allows to run this workflow manually
   workflow_dispatch:
 
-environment:
-  name: PyPi
-
 jobs:
   deploy:
 
     runs-on: ubuntu-latest
+    environment: PyPi
     permissions:
       id-token: write
 
