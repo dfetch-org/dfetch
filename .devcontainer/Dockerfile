@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/python:1-3.12-bullseye@sha256:cf244ba2b96e9515d1f9efb6641419e9cfec8a9de5fa15bf1e6c76a7928f5383
+FROM mcr.microsoft.com/devcontainers/python:3.13-bullseye@sha256:ddfa85f6219cb344894c62351c7a16925c6b89f070c8106576095bfa14622577
 
 # Install dependencies
 # pv is required for asciicasts
