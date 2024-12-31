@@ -198,4 +198,6 @@ sphinxcontrib_asciinema_defaults = {
     "speed": 1.5,
     "loop": False,
     "autoPlay": True,
+    "cols": 120,
+    "rows": 30,
 }
