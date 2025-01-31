@@ -4,20 +4,23 @@ FROM mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
 # pv is required for asciicasts
 RUN apt-get update && apt-get install --no-install-recommends -y \
     pv=1.6.6-1+b1 \
-    subversion=1.14.1-3+deb11u1 \
-    && rm -rf /var/lib/apt/lists/*
+    subversion=1.14.1-3+deb11u1 && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspaces/dfetch
 
-COPY . .
-
-RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip==24.3.1 && \
-    pip install --no-cache-dir --root-user-action=ignore -e .[development,docs,test,casts] && \
-    pre-commit install --install-hooks
-
 # Add a non-root user (dev)
 RUN useradd -m dev && chown -R dev:dev /workspaces/dfetch
+
 USER dev
+
+ENV PATH="/home/dev/.local/bin:${PATH}"
+
+COPY --chown=dev:dev . .
+
+RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip==24.3.1 \
+    && pip install --no-cache-dir --root-user-action=ignore -e .[development,docs,test,casts] \
+    && pre-commit install --install-hooks
 
 # Set bash as the default shell
 SHELL ["/bin/bash", "-ec"]
