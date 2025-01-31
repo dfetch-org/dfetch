@@ -50,7 +50,9 @@ def safe_rm(path: Union[str, Path]) -> None:
 def safe_rmtree(path: str) -> None:
     """Delete an entire directory and all its subfolders and files."""
     try:
-        shutil.rmtree(path, onerror=_remove_readonly)
+        shutil.rmtree(  # pylint: disable=deprecated-argument
+            path, onerror=_remove_readonly
+        )
     except PermissionError as exc:
         raise RuntimeError(
             f"File or directory in use, cannot remove files at {path}, remove manually and retry"
