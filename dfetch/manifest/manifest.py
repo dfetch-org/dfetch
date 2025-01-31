@@ -156,7 +156,7 @@ class Manifest:
 
     @staticmethod
     def _determine_remotes(
-        remotes_from_manifest: Sequence[Union[RemoteDict, Remote]]
+        remotes_from_manifest: Sequence[Union[RemoteDict, Remote]],
     ) -> Tuple[Dict[str, Remote], List[Remote]]:
         default_remotes: List[Remote] = []
         remotes: Dict[str, Remote] = {}
