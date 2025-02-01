@@ -4,6 +4,7 @@ import fnmatch
 import os
 import pathlib
 from abc import ABC, abstractmethod
+from contextlib import suppress
 from typing import Iterable, List, Optional, Sequence, Tuple
 
 from halo import Halo
@@ -116,7 +117,20 @@ class VCS(ABC):
 
         if os.path.exists(self.local_path):
             logger.debug(f"Clearing destination {self.local_path}")
-            safe_rm(self.local_path)
+
+            with suppress(TypeError):
+                metadata_files = Metadata.from_file(self.__metadata.path).files
+
+            if metadata_files:
+                for file in metadata_files:
+                    full_path = os.path.join(self.local_path, file.path)
+                    safe_rm(full_path)
+                    parent_dir = os.path.dirname(full_path)
+                    # remove parent if empty
+                    if not os.listdir(parent_dir):
+                        safe_rm(parent_dir)
+            else:
+                safe_rm(self.local_path)
 
         with Halo(
             text=f"Fetching {self.__project.name} {to_fetch}",
