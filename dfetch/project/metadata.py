@@ -128,6 +128,11 @@ class Metadata:
         return self._version.branch
 
     @property
+    def files(self) -> Iterable[FileInfo]:
+        """File info as stored in the metadata."""
+        return self._files
+
+    @property
     def tag(self) -> str:
         """Tag as stored in the metadata."""
         return self._version.tag

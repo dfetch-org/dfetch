@@ -4,7 +4,7 @@ import fnmatch
 import os
 import pathlib
 from abc import ABC, abstractmethod
-from typing import List, Optional, Sequence, Tuple
+from typing import Iterable, List, Optional, Sequence, Tuple
 
 from halo import Halo
 from patch_ng import fromfile
@@ -318,23 +318,24 @@ class VCS(ABC):
             )
             return None
 
-    def _on_disk_hash(self) -> Optional[str]:
+    def _on_disk_hash(self) -> Tuple[Iterable[FileInfo], Optional[str]]:
         """Get the hash of the project on disk.
 
         Returns:
             Str: Could be None if no on disk version
         """
         if not os.path.exists(self.__metadata.path):
-            return None
+            return [], None
 
         try:
-            return Metadata.from_file(self.__metadata.path).hash
+            metadata = Metadata.from_file(self.__metadata.path)
+            return metadata.files, metadata.hash
         except TypeError:
             logger.warning(
                 f"{pathlib.Path(self.__metadata.path).relative_to(os.getcwd()).as_posix()}"
                 " is an invalid metadata file, not checking local hash!"
             )
-            return None
+            return [], None
 
     def _check_for_newer_version(self) -> Optional[Version]:
         """Check if a newer version is available on the given branch.
@@ -374,11 +375,24 @@ class VCS(ABC):
           Bool: True if there are local changes, false if no were detected or no hash was found.
         """
         logger.debug(f"Checking if there were local changes in {self.local_path}")
-        on_disk_hash = self._on_disk_hash()
 
-        return bool(on_disk_hash) and on_disk_hash != hash_directory(
-            self.local_path, skiplist=[self.__metadata.FILENAME]
-        )
+        file_info, on_disk_hash = self._on_disk_hash()
+
+        if not file_info:
+            return bool(on_disk_hash) and on_disk_hash != hash_directory(
+                self.local_path, skiplist=[self.__metadata.FILENAME]
+            )
+
+        for file in file_info:
+            full_path = os.path.join(self.local_path, file.path)
+            if hash_file_normalized(full_path).hexdigest() != file.hash:
+                logger.debug(f"The hash of {full_path} changed!")
+                return True
+            if oct(os.stat(full_path).st_mode)[-3:] != file.permissions:
+                logger.debug(f"The file permissions of {full_path} changed!")
+                return True
+
+        return False
 
     @abstractmethod
     def _fetch_impl(self, version: Version) -> Version:
