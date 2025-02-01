@@ -194,15 +194,15 @@ class Metadata:
             "dfetch": {
                 "remote_url": self.remote_url,
                 "branch": self._version.branch,
-                "revision": self._version.revision,
-                "last_fetch": self.last_fetch_string(),
-                "tag": self._version.tag,
                 "hash": self.hash,
+                "last_fetch": self.last_fetch_string(),
                 "patch": self.patch,
+                "revision": self._version.revision,
+                "tag": self._version.tag,
                 "files": [str(info) for info in self._files or []],
             }
         }
 
         with open(self.path, "w+", encoding="utf-8") as metadata_file:
             metadata_file.write(DONT_EDIT_WARNING)
-            yaml.dump(metadata, metadata_file)
+            yaml.dump(metadata, metadata_file, sort_keys=False)
