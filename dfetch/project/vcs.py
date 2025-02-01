@@ -13,8 +13,13 @@ from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.abstract_check_reporter import AbstractCheckReporter
-from dfetch.project.metadata import Metadata
-from dfetch.util.util import hash_directory, safe_rm
+from dfetch.project.metadata import FileInfo, Metadata
+from dfetch.util.util import (
+    hash_directory,
+    hash_file_normalized,
+    recursive_listdir,
+    safe_rm,
+)
 from dfetch.util.versions import latest_tag_from_list
 
 logger = get_logger(__name__)
@@ -130,10 +135,34 @@ class VCS(ABC):
             else:
                 logger.warning(f"Skipping non-existent patch {self.__project.patch}")
 
+        if os.path.isfile(self.local_path):
+            files_list = (
+                FileInfo(
+                    os.path.basename(self.local_path),
+                    hash_file_normalized(os.path.join(self.local_path)).hexdigest(),
+                    oct(os.stat(os.path.join(self.local_path)).st_mode)[-3:],
+                ),
+            )
+        else:
+            all_files = (
+                file_path
+                for file_path in recursive_listdir(self.local_path)
+                if file_path is not self.__metadata.FILENAME
+            )
+            files_list = (
+                FileInfo(
+                    os.path.relpath(file_path, self.local_path),
+                    hash_file_normalized(file_path).hexdigest(),
+                    oct(os.stat(file_path).st_mode)[-3:],
+                )
+                for file_path in all_files
+            )
+
         self.__metadata.fetched(
             actually_fetched,
             hash_=hash_directory(self.local_path, skiplist=[self.__metadata.FILENAME]),
             patch_=applied_patch,
+            files=files_list,
         )
 
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
