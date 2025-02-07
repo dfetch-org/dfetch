@@ -9,6 +9,10 @@ The tools track vulnerabilities or can enforce a license policy within an organi
 See https://cyclonedx.org/use-cases/ for more details.
 
 *Dfetch* will try to parse the license of project, this is retained during an :ref:`Update`.
+
+.. scenario-include:: ../features/report-sbom.feature
+   :scenario:
+        An fetched project generates an sbom
 """
 
 import json

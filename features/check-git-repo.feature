@@ -2,7 +2,7 @@ Feature: Checking dependencies from a git repository
 
     *DFetch* can check if there are new versions.
 
-    Scenario: Git projects are specified in the manifest
+    Scenario: Git projects have changes
         Given the manifest 'dfetch.yaml'
             """
             manifest:

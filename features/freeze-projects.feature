@@ -6,7 +6,7 @@ Feature: Freeze dependencies
 
     The same rules apply as for fetching, a tag has precedence over a branch and revision.
 
-    Scenario: Git projects are specified in the manifest
+    Scenario: Git projects are frozen
         Given the manifest 'dfetch.yaml'
             """
             manifest:
