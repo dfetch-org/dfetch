@@ -91,29 +91,6 @@ Update
 
 .. automodule:: dfetch.commands.update
 
-Examples
-''''''''
-
-.. details:: **Example**: Git projects are specified in the manifest
-
-   .. literalinclude:: ../features/fetch-git-repo.feature
-      :prepend:
-         # -- FILE: features/fetch-git-repo.feature
-      :language: gherkin
-      :start-after: Scenario: Git projects are specified in the manifest
-      :end-before: Scenario:
-      :dedent:
-
-.. details:: **Example**: Tag is updated in manifest
-
-   .. literalinclude:: ../features/fetch-git-repo.feature
-      :prepend:
-         # -- FILE: features/fetch-git-repo.feature
-      :language: gherkin
-      :start-after: Scenario: Tag is updated in manifest
-      :end-before: Scenario:
-      :dedent:
-
 Validate
 --------
 .. argparse::

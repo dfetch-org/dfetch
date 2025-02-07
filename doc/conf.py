@@ -18,10 +18,14 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import sys
 
 from dfetch import __version__
 
 # -- General configuration ------------------------------------------------
+
+ext_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "_ext"))
+sys.path.insert(0, ext_path)
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
@@ -40,6 +44,7 @@ extensions = [
     "sphinxarg.ext",
     "sphinxcontrib.asciinema",
     "sphinxcontrib.details.directive",
+    "scenario_directive",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
