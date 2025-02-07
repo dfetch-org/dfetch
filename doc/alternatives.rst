@@ -16,6 +16,7 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 `Braid`_                    ✔    ✘       ✔        ✔             ✔                   ✔
 `CGet`_                     ✔    ✘       ✔        ✔         ✘ (C/C++)             ✘ (CMake)
 `CMake ExternalProject`_    ✔    ✘       ✔        ✔         ✘ (C/C++)             ✘ (CMake)
+`Combo-layer`_              ✔    ✘       ✔        ✔         ✘ (C/C++)             ✘ (CMake)
 `CPM.cmake`_                ✔    ✘       ✔        ✔         ✘ (C/C++)             ✘ (CMake)
 `CPPAN`_                    ✔    ✘       ✔        ✔         ✘ (C/C++)               ✔
 `Garden`_                   ✔    ✘       ✘        ✔             ✔                   ✔
@@ -23,16 +24,20 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 `Git submodules`_           ✔    ✘       ✔        ✔             ✔                   ✔
 `Git subtree`_              ✔    ✘       ✔        ✔             ✔                   ✔
 `Git-externals`_            ✔    ✘       ✔        ✔             ✔                   ✔
+`git-toprepo`_              ✔    ✘       ✔        ✔             ✔                   ✔
+`Git X-modules`_            ✔    ✘       ✔        ✔             ✔                   ✔
 `Gitman`_                   ✔    ✘       ✔        ✔             ✔                   ✔
 `Gitslave`_                 ✔    ✘       ✘        ✔             ✔                   ✔
 `Google Repo`_              ✔    ✘       ✔        ✔             ✔                   ✔
 `Grit`_                     ✔    ✘       ✔        ✔             ✔                   ✔
+`josh`_                     ✔    ✘       ✔        ✔             ✔                   ✔
 `Kitenet mr`_               ✔    ✔       ?         ✔             ✔                   ✔
 `mdlr`_                     ✔    ✘       Beta      ✔             ✔                   ✔
 `myrepos`_                  ✔    ✘       ✘        ✔             ✔                   ✔
 `Quack`_                    ✔    ✘       ✘        ✔             ✔                   ✔
 `Quark`_                    ✔    ✔       ✔        ✔             ✔                   ✔
 `SVN Externals`_            ✘    ✔       ✔        ✔             ✔                   ✔
+`subpatch`_                 ✔    ✘       ✔        ✔             ✔                   ✔
 `tsrc`_                     ✔    ✘       ✔        ✔             ✔                   ✔
 `SoftwareNetwork`_          ✔    ✘       ✔        ✔         ✘ (C/C++)               ✔
 `Vcpkg`_                    ✔    ✘       ✔        ✔         ✘ (C/C++)               ✘
@@ -43,6 +48,7 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 .. _`Braid`: https://github.com/cristibalan/braid
 .. _`CGet`: https://github.com/pfultz2/cget
 .. _`CMAke ExternalProject`: https://cmake.org/cmake/help/latest/module/ExternalProject.html
+.. _`Combo-layer`: https://wiki.yoctoproject.org/wiki/Combo-layer
 .. _`CPM.cmake`: https://github.com/cpm-cmake/CPM.cmake
 .. _`CPPAN`: https://github.com/cppan/cppan
 .. _`Dfetch`: https://github.com/dfetch-org/dfetch
@@ -51,16 +57,20 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 .. _`Git submodules`: https://git-scm.com/book/en/v2/Git-Tools-Submodules
 .. _`Git subtree`: https://www.atlassian.com/git/tutorials/git-subtree
 .. _`Git-externals`: https://github.com/develer-staff/git-externals
+.. _`git-toprepo`: https://github.com/meroton/git-toprepo
+.. _`Git X-modules`: https://subgit.com/gitx
 .. _`Gitman`: https://github.com/jacebrowning/gitman
 .. _`Gitslave`: http://gitslave.sourceforge.net/
 .. _`Google Repo`: https://android.googlesource.com/tools/repo
 .. _`Grit`: https://github.com/rabarberpie/grit
+.. _`josh`: https://github.com/josh-project/josh
 .. _`Kitenet mr`: https://github.com/toddr/kitenet-mr
 .. _`mdlr`: https://github.com/exlinc/mdlr
 .. _`myrepos`: http://myrepos.branchable.com/
 .. _`Quack`: https://github.com/autodesk/quack
 .. _`Quark`: https://github.com/comelz/quark
 .. _`SVN externals`: https://tortoisesvn.net/docs/release/TortoiseSVN_en/tsvn-dug-externals.html
+.. _`subpatch`: https://github.com/lengfeld/subpatch
 .. _`tsrc`: https://github.com/dmerejkowsky/tsrc
 .. _`SoftwareNetwork`: https://github.com/SoftwareNetwork/sw
 .. _`Vcpkg`: https://github.com/Microsoft/vcpkg
