@@ -34,6 +34,9 @@ In our above example this would for instance result in:
            url: http://git.mycompany.local/mycompany/mymodule
            tag: v1.0.0
 
+.. scenario-include:: ../features/freeze-projects.feature
+   :scenario: Git projects are frozen
+
 """
 
 import argparse

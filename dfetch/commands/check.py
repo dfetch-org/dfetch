@@ -5,6 +5,13 @@ the available version. If there are new versions available this will be shown.
 
 .. uml:: /static/uml/check.puml
 
+.. scenario-include:: ../features/check-git-repo.feature
+   :scenario:
+        Git projects have changes
+        A newer tag is available than in manifest
+        Check is done after an update
+        Tag is updated in manifest
+
 Child-manifests
 ~~~~~~~~~~~~~~~
 

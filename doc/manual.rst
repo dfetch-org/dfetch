@@ -67,18 +67,6 @@ Software Bill-of-Materials
 
 .. asciinema:: asciicasts/sbom.cast
 
-Examples
-''''''''
-
-.. details:: **Example**: An fetched project generates an sbom
-
-   .. literalinclude:: ../features/report-sbom.feature
-      :prepend:
-         # -- FILE: features/report-sbom.feature
-      :language: gherkin
-      :start-after: Scenario: An fetched project generates an sbom
-      :dedent:
-
 Update
 ------
 .. argparse::

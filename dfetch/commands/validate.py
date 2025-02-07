@@ -1,6 +1,12 @@
 """Note that you can validate your manifest using :ref:`validate`.
 
 This will parse your :ref:`Manifest` and check if all fields can be parsed.
+
+.. scenario-include:: ../features/validate-manifest.feature
+   :scenario:
+        A valid manifest is provided
+        An invalid manifest is provided
+
 """
 
 import argparse
