@@ -67,6 +67,18 @@ Software Bill-of-Materials
 
 .. asciinema:: asciicasts/sbom.cast
 
+Examples
+''''''''
+
+.. details:: **Example**: An fetched project generates an sbom
+
+   .. literalinclude:: ../features/report-sbom.feature
+      :prepend:
+         # -- FILE: features/report-sbom.feature
+      :language: gherkin
+      :start-after: Scenario: An fetched project generates an sbom
+      :dedent:
+
 Update
 ------
 .. argparse::
@@ -78,6 +90,29 @@ Update
 .. asciinema:: asciicasts/update.cast
 
 .. automodule:: dfetch.commands.update
+
+Examples
+''''''''
+
+.. details:: **Example**: Git projects are specified in the manifest
+
+   .. literalinclude:: ../features/fetch-git-repo.feature
+      :prepend:
+         # -- FILE: features/fetch-git-repo.feature
+      :language: gherkin
+      :start-after: Scenario: Git projects are specified in the manifest
+      :end-before: Scenario:
+      :dedent:
+
+.. details:: **Example**: Tag is updated in manifest
+
+   .. literalinclude:: ../features/fetch-git-repo.feature
+      :prepend:
+         # -- FILE: features/fetch-git-repo.feature
+      :language: gherkin
+      :start-after: Scenario: Tag is updated in manifest
+      :end-before: Scenario:
+      :dedent:
 
 Validate
 --------

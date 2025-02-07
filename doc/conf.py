@@ -32,13 +32,14 @@ from dfetch import __version__
 # ones.
 # extensions = ['sphinx.ext.autodoc', 'sphinx_autodoc_annotation', 'sphinx.ext.viewcode', 'sphinx.ext.napoleon', 'sphinxarg.ext', 'sphinx.ext.autosectionlabel']
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.napoleon",
-    "sphinxarg.ext",
-    "sphinx.ext.autosectionlabel",
     "plantweb.directive",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+    "sphinxarg.ext",
     "sphinxcontrib.asciinema",
+    "sphinxcontrib.details.directive",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
