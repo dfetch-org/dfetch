@@ -3,9 +3,6 @@
 This will parse your :ref:`Manifest` and check if all fields can be parsed.
 
 .. scenario-include:: ../features/validate-manifest.feature
-   :scenario:
-        A valid manifest is provided
-        An invalid manifest is provided
 
 """
 

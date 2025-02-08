@@ -20,10 +20,6 @@ The below statement will generate a patch for ``some-project`` from your manifes
    dfetch diff some-project
 
 .. scenario-include:: ../features/diff-in-git.feature
-   :scenario:
-        A patch file is generated
-        Diff is generated on uncommitted changes
-
 
 Using the generated patch
 =========================

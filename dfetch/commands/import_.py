@@ -16,6 +16,8 @@ Migrating from git submodules
 * Download all your projects using :ref:`dfetch update<update>`.
 * Commit your projects as part of your project.
 
+.. scenario-include:: ../features/import-from-git.feature
+
 Switching branches
 ~~~~~~~~~~~~~~~~~~
 After importing submodules into a manifest in a branch, you might have some difficulties switching branches.
@@ -73,6 +75,8 @@ Migrating from SVN externals
 * Remove all svn externals (see `How do I remove svn::externals <https://stackoverflow.com/questions/1044649/>`_ ).
 * Download all your projects using :ref:`dfetch update<update>`.
 * Commit your projects as part of your project.
+
+.. scenario-include:: ../features/import-from-svn.feature
 
 """
 

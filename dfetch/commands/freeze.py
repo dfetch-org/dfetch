@@ -35,7 +35,6 @@ In our above example this would for instance result in:
            tag: v1.0.0
 
 .. scenario-include:: ../features/freeze-projects.feature
-   :scenario: Git projects are frozen
 
 """
 
