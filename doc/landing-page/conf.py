@@ -98,7 +98,7 @@ html_theme = "alabaster"
 html_css_files = [
     "css/custom.css",
 ]
-
+html_title = "a source-only no-hassle project-dependency aggregator"
 html_logo = "../images/dfetch_logo.png"
 
 # Theme options are theme-specific and customize the look and feel of a theme

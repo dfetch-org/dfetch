@@ -98,6 +98,8 @@ todo_include_todos = False
 #
 html_theme = "alabaster"
 
+html_title = "a source-only no-hassle project-dependency aggregator"
+
 html_css_files = [
     "css/custom.css",
 ]
