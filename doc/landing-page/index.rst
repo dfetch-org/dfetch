@@ -20,7 +20,7 @@
    <meta name="twitter:title" content="Dfetch - a source-only no-hassle project-dependency aggregator">
    <meta name="twitter:description" content="VCS-agnostic tool to simplify using source-only dependencies of multiple repositories.">
    <meta name="twitter:image" content="https://dfetch.rtfd.io/static/dfetch-logo.png">
-   
+
 .. image:: ../images/dfetch_header.png
    :width: 100%
    :align: center
