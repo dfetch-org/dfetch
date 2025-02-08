@@ -21,6 +21,8 @@ When an issues is clicked, you can see the exact location in the manifest where 
 .. image:: images/out-of-date-jenkins.png
     :alt: Cpputest is out-of-date and requires updating.
 
+.. scenario-include:: ../features/check-report-jenkins.feature
+
 Usage
 -----
 

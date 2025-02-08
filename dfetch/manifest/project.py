@@ -76,6 +76,8 @@ If no ``dst:`` is provided, *DFetch* will use the project name as relative path.
 The ``dst:`` must be in the same folder or a folder below the manifest and must be
 unique.
 
+.. scenario-include:: ../features/fetch-checks-destination.feature
+
 Repo-path
 #########
 When working with remotes_ by default *Dfetch* will take the ``url-base`` of the remote
@@ -106,6 +108,8 @@ of an external project. *Dfetch* makes this possible through the ``src:`` attrib
 For instance if you are only interested in the ``src`` folder of ``cpputest`` you can
 limit the checkout to only that folder. *Dfetch* will retain any license file in the
 root of the repository.
+
+.. scenario-include:: ../features/keep-license-in-project.feature
 
 .. code-block:: yaml
 
@@ -138,6 +142,8 @@ The following manifest will only checkout files in folder ``src`` with the ``*.h
           src: src/*.h
           repo-path: cpputest/cpputest
 
+.. scenario-include:: ../features/fetch-file-pattern-git.feature
+
 Ignore
 ######
 In larger projects or mono-repo's it is often desirable to ignore certain files such as Tests
@@ -166,6 +172,7 @@ root of the repository.
           And the ignores will be applied *after* the ``src:`` pattern was applied.
           License files will never be excluded, since you likely shouldn't be doing that.
 
+.. scenario-include:: ../features/fetch-with-ignore-git.feature    
 
 VCS type
 ########
@@ -234,6 +241,8 @@ For more details see the `git-diff`_ or `svn-diff`_ documentation.
 
 .. _`git-diff`: https://git-scm.com/docs/git-diff
 .. _`svn-diff`: http://svnbook.red-bean.com/en/1.7/svn.ref.svn.c.diff.html
+
+.. scenario-include:: ../features/diff-in-git.feature
 
 """
 

@@ -15,6 +15,8 @@ When these projects are fetched (with ``dfetch update``), the manifests are read
 and will be checked to look for further dependencies. If you don't what recommendations, you can prevent *Dfetch*
 checking child-manifests with ``--no-recommendations``.
 
+.. scenario-include:: ../features/updated-project-has-dependencies.feature
+
 """
 
 import argparse
