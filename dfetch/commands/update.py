@@ -6,9 +6,6 @@ It tries to determine what kind of vcs it is: git, svn or something else.
 .. uml:: /static/uml/update.puml
 
 .. scenario-include:: ../features/fetch-git-repo.feature
-   :scenario:
-        Git projects are specified in the manifest
-        Tag is updated in manifest
 
 Child-manifests
 ~~~~~~~~~~~~~~~
