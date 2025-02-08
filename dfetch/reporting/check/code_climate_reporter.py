@@ -28,6 +28,8 @@ In the merge request, gitlab will compare the issues in the current branch with 
 the base branch (e.g. `master`/`main`). This lets you see if any new issue were introduced
 or solved.
 
+.. scenario-include:: ../features/check-report-code-climate.feature
+
 Usage
 -----
 Let *DFetch* perform a check and generate the code-climate json and add the result as artifact in you gitlab-ci runner.

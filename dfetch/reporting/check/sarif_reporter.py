@@ -26,6 +26,8 @@ The information has several severities:
 * ``Note`` : a pinned but out-of-date project. The project is pinned to a specific version,
              but a newer version is available.
 
+.. scenario-include:: ../features/check-report-sarif.feature
+
 Usage
 -----
 

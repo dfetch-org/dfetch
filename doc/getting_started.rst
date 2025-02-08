@@ -137,3 +137,6 @@ details on working with remotes see :ref:`Remotes`.
 
       - name: cpputest
         repo-path: cpputest/cpputest
+
+.. scenario-include:: ../features/journey-basic-usage.feature
+  
