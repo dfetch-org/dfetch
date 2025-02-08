@@ -2,6 +2,25 @@
 
 :sd_hide_title:
 
+.. meta::
+   :description: Dfetch is a VCS-agnostic tool that simplifies dependency management by retrieving
+                 source-only dependencies from various repositories, promoting upstream changes and
+                 allowing local customizations.
+   :keywords: dfetch, dependency management, embedded development, fetch tool, vendoring, multi-repo, dependencies, git, svn, package manager, multi-project, monorepo
+   :author: Dfetch Contributors
+
+.. raw:: html
+
+   <meta property="og:title" content="Dfetch - a source-only no-hassle project-dependency aggregator">
+   <meta property="og:description" content="VCS-agnostic tool to simplify using source-only dependencies of multiple repositories.">
+   <meta property="og:image" content="https://dfetch.rtfd.io/static/dfetch-logo.png">
+   <meta property="og:url" content="https://dfetch.rtfd.io">
+
+   <meta name="twitter:card" content="summary_large_image">
+   <meta name="twitter:title" content="Dfetch - a source-only no-hassle project-dependency aggregator">
+   <meta name="twitter:description" content="VCS-agnostic tool to simplify using source-only dependencies of multiple repositories.">
+   <meta name="twitter:image" content="https://dfetch.rtfd.io/static/dfetch-logo.png">
+   
 .. image:: ../images/dfetch_header.png
    :width: 100%
    :align: center
