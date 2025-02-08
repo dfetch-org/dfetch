@@ -34,7 +34,7 @@ All dependencies are pre-installed and makes it easy to get started.
 .. tip::
 
    You can preview the documentation locally by running, ``python -m http.server``
-   inside the ``doc/_build/html`` directory. Codespaces will automatically suggest to open the forwarded port 
+   inside the ``doc/_build/html`` directory. Codespaces will automatically suggest to open the forwarded port
    to view the changes in your browser.
 
 Running in VSCode

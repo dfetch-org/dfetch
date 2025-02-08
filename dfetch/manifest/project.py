@@ -172,7 +172,7 @@ root of the repository.
           And the ignores will be applied *after* the ``src:`` pattern was applied.
           License files will never be excluded, since you likely shouldn't be doing that.
 
-.. scenario-include:: ../features/fetch-with-ignore-git.feature    
+.. scenario-include:: ../features/fetch-with-ignore-git.feature
 
 VCS type
 ########
