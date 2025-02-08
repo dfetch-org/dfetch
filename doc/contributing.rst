@@ -31,6 +31,12 @@ All dependencies are pre-installed and makes it easy to get started.
 .. |CodespacesLink| image:: https://github.com/codespaces/badge.svg
 .. _CodespacesLink: https://codespaces.new/dfetch-org/dfetch
 
+.. tip::
+
+   You can preview the documentation locally by running, ``python -m http.server``
+   inside the ``doc/_build/html`` directory. Codespaces will automatically suggest to open the forwarded port 
+   to view the changes in your browser.
+
 Running in VSCode
 -----------------
 To debug or run directly from VSCode create the :ref:`virtual environment`.
