@@ -100,6 +100,7 @@ todo_include_todos = False
 html_theme = "alabaster"
 
 html_baseurl = "https://dfetch.readthedocs.io/"
+sitemap_filename = "sitemap-custom.xml"
 
 html_title = "a source-only no-hassle project-dependency aggregator"
 
