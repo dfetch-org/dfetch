@@ -32,14 +32,15 @@ from dfetch import __version__
 # ones.
 # extensions = ['sphinx.ext.autodoc', 'sphinx_autodoc_annotation', 'sphinx.ext.viewcode', 'sphinx.ext.napoleon', 'sphinxarg.ext', 'sphinx.ext.autosectionlabel']
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.napoleon",
-    "sphinxarg.ext",
-    "sphinx.ext.autosectionlabel",
     "plantweb.directive",
-    "sphinxcontrib.asciinema",
     "sphinx_design",
+    "sphinx_sitemap",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+    "sphinxarg.ext",
+    "sphinxcontrib.asciinema",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -100,6 +101,8 @@ html_css_files = [
 ]
 html_title = "a source-only no-hassle project-dependency aggregator"
 html_logo = "../images/dfetch_logo.png"
+html_extra_path = ["robots.txt"]
+html_baseurl = "https://dfetch-org.github.io/"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
