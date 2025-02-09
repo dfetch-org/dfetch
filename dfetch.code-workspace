@@ -9,6 +9,7 @@
 		"[windows]": {
 			"python.defaultInterpreterPath": "${workspaceFolder}/venv/Scripts/python",
 		},
+		"editor.trimAutoWhitespace": true,
 		"editor.codeActionsOnSave": {
 			"source.organizeImports": "explicit"
 		},
