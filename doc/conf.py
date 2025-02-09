@@ -36,7 +36,9 @@ sys.path.insert(0, ext_path)
 # ones.
 # extensions = ['sphinx.ext.autodoc', 'sphinx_autodoc_annotation', 'sphinx.ext.viewcode', 'sphinx.ext.napoleon', 'sphinxarg.ext', 'sphinx.ext.autosectionlabel']
 extensions = [
+    "sphinx_sitemap",
     "plantweb.directive",
+    "scenario_directive",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.napoleon",
@@ -44,7 +46,6 @@ extensions = [
     "sphinxarg.ext",
     "sphinxcontrib.asciinema",
     "sphinxcontrib.details.directive",
-    "scenario_directive",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -97,6 +98,8 @@ todo_include_todos = False
 # a list of builtin themes.
 #
 html_theme = "alabaster"
+
+html_baseurl = "https://dfetch.readthedocs.io/"
 
 html_title = "a source-only no-hassle project-dependency aggregator"
 
