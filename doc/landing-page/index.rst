@@ -8,6 +8,7 @@
                  allowing local customizations.
    :keywords: dfetch, dependency management, embedded development, fetch tool, vendoring, multi-repo, dependencies, git, svn, package manager, multi-project, monorepo
    :author: Dfetch Contributors
+   :google-site-verification: rXUIdonVCg6XtZUDdOd7fJdSNj3bOoJJRqCFn3OVb04
 
 .. raw:: html
 
