@@ -2,9 +2,9 @@
 # For more info see https://dfetch.rtfd.io/en/latest/getting_started.html
 dfetch:
   branch: master
-  hash: 2f5b13734a3ace15c1615cf8c81ade33
-  last_fetch: 07/01/2023, 22:02:31
+  hash: a49df5f5ddba75dca9cb946918277657
+  last_fetch: 09/02/2025, 20:06:22
   patch: ''
   remote_url: https://github.com/paxtonhare/demo-magic.git
-  revision: a938137035b73105d09347a91f9fd5e9722b617a
+  revision: 8f338e9771502f71a77d6c779aed2dae614fdb0d
   tag: ''
