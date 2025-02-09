@@ -103,6 +103,8 @@ html_baseurl = "https://dfetch.readthedocs.io/"
 
 html_title = "a source-only no-hassle project-dependency aggregator"
 
+html_extra_path = ["robots.txt"]
+
 html_css_files = [
     "css/custom.css",
 ]
