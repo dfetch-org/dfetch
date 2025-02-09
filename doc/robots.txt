@@ -1,3 +1,9 @@
 User-agent: *
 
-Sitemap: https://dfetch.readthedocs.io/sitemap.xml
+Disallow: /
+
+Allow: /en/stable
+
+Allow: /en/latest
+
+Sitemap: https://dfetch.readthedocs.io/en/latest/sitemap-custom.xml
