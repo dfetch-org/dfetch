@@ -25,6 +25,7 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 `Git subtree`_              ✔    ✘       ✔        ✔             ✔                   ✔
 `Git-externals`_            ✔    ✘       ✔        ✔             ✔                   ✔
 `git-toprepo`_              ✔    ✘       ✔        ✔             ✔                   ✔
+`git-vendor`_               ✔    ✘       ✔        ✔             ✔                   ✔
 `Git X-modules`_            ✔    ✘       ✔        ✔             ✔                   ✔
 `Gitman`_                   ✔    ✘       ✔        ✔             ✔                   ✔
 `Gitslave`_                 ✔    ✘       ✘        ✔             ✔                   ✔
@@ -42,6 +43,7 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 `SoftwareNetwork`_          ✔    ✘       ✔        ✔         ✘ (C/C++)               ✔
 `Vcpkg`_                    ✔    ✘       ✔        ✔         ✘ (C/C++)               ✘
 `Vcsh`_                     ✔    ✘       ✘        ✔             ✔                   ✔
+`vendorpull`_               ✔    ✘       ✘        ✔             ✔                   ✔
 `West`_                     ✔    ✘       ✔        ✔         ✘ (C/C++)               ✘
 ========================= ===== ===== ========= ======= =================== =======================
 
@@ -58,6 +60,7 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 .. _`Git subtree`: https://www.atlassian.com/git/tutorials/git-subtree
 .. _`Git-externals`: https://github.com/develer-staff/git-externals
 .. _`git-toprepo`: https://github.com/meroton/git-toprepo
+.. _`git-vendor`: https://github.com/brettlangdon/git-vendor
 .. _`Git X-modules`: https://subgit.com/gitx
 .. _`Gitman`: https://github.com/jacebrowning/gitman
 .. _`Gitslave`: http://gitslave.sourceforge.net/
@@ -75,6 +78,7 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 .. _`SoftwareNetwork`: https://github.com/SoftwareNetwork/sw
 .. _`Vcpkg`: https://github.com/Microsoft/vcpkg
 .. _`Vcsh`: https://github.com/RichiH/vcsh
+.. _`vendorpull`: https://github.com/sourcemeta/vendorpull
 .. _`West`: https://docs.zephyrproject.org/latest/guides/west/index.html
 
 .. note:: the list is probably never complete or up-to-date. Anyone is welcome to create an issue_.
