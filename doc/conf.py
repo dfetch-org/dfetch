@@ -101,6 +101,7 @@ html_theme = "alabaster"
 
 html_baseurl = "https://dfetch.readthedocs.io/"
 sitemap_filename = "sitemap-custom.xml"
+sitemap_url_scheme = "{lang}latest/{link}"
 
 html_title = "a source-only no-hassle project-dependency aggregator"
 
