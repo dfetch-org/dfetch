@@ -36,6 +36,7 @@ jobs:
       - run: pylint dfetch                                             # Checks pep8 conformance
       - run: ruff check dfetch                                         # Check using ruff
       - run: mypy --strict dfetch                                      # Check types
+      - run: pyright .                                                 # Check types
       - run: doc8 doc                                                  # Checks documentation
       - run: pydocstyle dfetch                                         # Checks doc strings
       - run: bandit -r dfetch                                          # Checks security issues
