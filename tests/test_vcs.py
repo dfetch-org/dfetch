@@ -15,20 +15,22 @@ from dfetch.project.vcs import VCS
 class ConcreteVCS(VCS):
     _wanted_version: Version
 
-    def _fetch_impl(self):
-        pass
+    def _fetch_impl(self, version: Version) -> Version:
+        return Version()
 
     def _latest_revision_on_branch(self, branch):
         return "latest"
 
     def check(self):
+        return False
+
+    @staticmethod
+    def list_tool_info():
         pass
 
-    def list_tool_info(self):
-        pass
-
-    def revision_is_enough(self):
-        pass
+    @staticmethod
+    def revision_is_enough():
+        return True
 
     def _does_revision_exist(self, revision):
         return True
