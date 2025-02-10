@@ -1,11 +1,11 @@
 """*Dfetch* can create a patch file with your local changes to the external project.
 
-If you've found any issues with the remote project, you can fix these issues inside the
-context of your project. To help the upstream project, you can generate a patch file
-that can be applied by the upstream maintainer. The patch will be generated with the
-version control system of your main project that contains the manifest.
+If you've found any issues with the remote project, you can fix them within the context of your project.
+To help the upstream project, you can generate a patch file
+that can be applied by the upstream maintainer. The patch will be generated using the version control system
+of your main project that contains the manifest.
 
-To generate a patch, *Dfetch* requires two revisions to determine the changes. You can
+To generate a patch, *Dfetch* requires two revisions to identify the changes. You can
 provide these through the ``--revs`` argument.
 
 * If ``--revs`` is not provided the changes are calculated between the last revision
@@ -23,11 +23,11 @@ The below statement will generate a patch for ``some-project`` from your manifes
 
 Using the generated patch
 =========================
-The patch can be used in the manifest see the :ref:`patch` attribute for more information.
+The patch can be used in the manifest; see the :ref:`patch` attribute for more information.
 It can also be sent to the upstream maintainer in case of bug fixes.
 
-The patch generated is a relative patch and should be applied specifying the base directory of the *git repo*.
-See below for the version control specifics. The patch will also contain content of binary files.
+The generated patch is a relative patch and should be by applied specifying the base directory of the *git repo*.
+See below for the version control specifics. The patch will also contain the content of binary files.
 
 .. code-block:: sh
 
@@ -74,8 +74,8 @@ logger = get_logger(__name__)
 class Diff(dfetch.commands.command.Command):
     """Generate a diff of a project.
 
-    Create a patch of a project. The diff will be a relative patch file
-    only of the project's directory.
+    Create a patch of a project. The diff will be a relative patch file of
+    only the project's directory.
     """
 
     @staticmethod

@@ -1,9 +1,9 @@
-"""*Dfetch* can convert your git submodules or svn externals based project to dfetch.
+"""*Dfetch* can convert your Git submodules or SVN externals based project to Dfetch.
 
 Dfetch will look for all submodules or externals in the current project and generate
 a manifest with the current versions of the repository.
 
-After importing you will have to remove the submodules or externals and you can let dfetch
+After importing, you will need to remove the submodules or externals, and then you can let Dfetch
 update by running :ref:`dfetch update <update>`.
 
 Migrating from git submodules
@@ -20,16 +20,16 @@ Migrating from git submodules
 
 Switching branches
 ~~~~~~~~~~~~~~~~~~
-After importing submodules into a manifest in a branch, you might have some difficulties switching branches.
-If one branch has submodules in the place were your *DFetched* project dependencies should be, or other way around.
-Below both situations, assume a branch ``feature/use-dfetch`` with a manifest and ``master`` with the original
+After importing submodules into a manifest within a branch, you might encounter difficulties when switching branches.
+If one branch has submodules located where your *DFetched* project dependencies should be, or vice versa.
+In both situations below, assume a branch ``feature/use-dfetch`` with a manifest and ``master`` with the original
 submodules in their place.
 
 Switching from branch with submodules to branch with manifest
 -------------------------------------------------------------
-When switching from branch with submodules to branch without git will warn that the
+When switching from branch with submodules to one without, git will warn that the
 *Dfetched* project dependencies will overwrite the submodule that is currently in the
-same spot.
+same location.
 
 .. code-block:: console
 
@@ -38,7 +38,7 @@ same spot.
         MySubmodule/somefile.c
         MySubmodule/someotherfile.c
 
-But ``git status`` will show nothing:
+However, ``git status`` will show nothing:
 
 .. code-block:: console
 
