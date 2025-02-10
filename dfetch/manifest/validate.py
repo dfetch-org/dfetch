@@ -22,4 +22,6 @@ def validate(path: str) -> None:
     try:
         validator.validate(raise_exception=True)
     except SchemaError as err:
-        raise RuntimeError(err.msg) from err
+        raise RuntimeError(
+            str(err.msg)  # pyright: ignore[reportAttributeAccessIssue, reportCallIssue]
+        ) from err

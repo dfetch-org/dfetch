@@ -54,9 +54,9 @@ def test_git_import(name, submodules):
 
             if len(submodules) == 0:
                 with pytest.raises(RuntimeError):
-                    import_(argparse.Namespace)
+                    import_(argparse.Namespace())
             else:
-                import_(argparse.Namespace)
+                import_(argparse.Namespace())
 
                 mocked_manifest.assert_called()
 
@@ -115,9 +115,9 @@ def test_svn_import(name, externals):
 
                     if len(externals) == 0:
                         with pytest.raises(RuntimeError):
-                            import_(argparse.Namespace)
+                            import_(argparse.Namespace())
                     else:
-                        import_(argparse.Namespace)
+                        import_(argparse.Namespace())
 
                         mocked_manifest.assert_called()
 

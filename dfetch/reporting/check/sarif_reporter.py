@@ -70,6 +70,11 @@ For more information see the `Github Sarif documentation`_.
 
 """
 
+# Underlying sarif-tools is generated with attr which pyright does not support
+# See https://github.com/microsoft/pyright/issues/146
+# pyright: reportCallIssue=false, reportAttributeAccessIssue=false, reportUnknownVariableType=false
+# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportUnknownParameterType=false
+
 import json
 import os
 from enum import Enum

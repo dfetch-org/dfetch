@@ -1,8 +1,21 @@
 """A generic command."""
 
 import argparse
+import sys
 from abc import ABC, abstractmethod
-from typing import Any, Type, TypeVar, cast  # pylint: disable=unused-import
+from argparse import ArgumentParser  # pylint: disable=unused-import
+from typing import TYPE_CHECKING, Type, TypeVar
+
+if TYPE_CHECKING and sys.version_info >= (3, 10):
+    from typing import TypeAlias
+
+    SubparserActionType: TypeAlias = (
+        "argparse._SubParsersAction[ArgumentParser]"  # pyright: ignore[reportPrivateUsage] #pylint: disable=protected-access
+    )
+else:
+    SubparserActionType = (
+        argparse._SubParsersAction  # pyright: ignore[reportPrivateUsage] #pylint: disable=protected-access
+    )
 
 
 class Command(ABC):
@@ -20,7 +33,7 @@ class Command(ABC):
 
     @staticmethod
     @abstractmethod
-    def create_menu(subparsers: "argparse._SubParsersAction[Any]") -> None:
+    def create_menu(subparsers: SubparserActionType) -> None:
         """Add a sub-parser to the given parser.
 
         Args:
@@ -42,7 +55,7 @@ class Command(ABC):
 
     @staticmethod
     def parser(
-        subparsers: "argparse._SubParsersAction[Any]",
+        subparsers: SubparserActionType,
         command: Type["Command.CHILD_TYPE"],
     ) -> "argparse.ArgumentParser":
         """Generate the parser.
@@ -72,4 +85,4 @@ class Command(ABC):
         )
 
         parser.set_defaults(func=command())
-        return cast(argparse.ArgumentParser, parser)
+        return parser
