@@ -9,8 +9,8 @@ from typing import List, Optional, Sequence, Tuple
 from halo import Halo
 from patch_ng import fromfile
 
-import dfetch.manifest.manifest
 from dfetch.log import get_logger
+from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.abstract_check_reporter import AbstractCheckReporter
 from dfetch.project.metadata import Metadata
@@ -30,7 +30,7 @@ class VCS(ABC):
     NAME = ""
     LICENSE_GLOBS = ["licen[cs]e*", "copying*", "copyright*"]
 
-    def __init__(self, project: dfetch.manifest.project.ProjectEntry) -> None:
+    def __init__(self, project: ProjectEntry) -> None:
         """Create the VCS."""
         self.__project = project
         self.__metadata = Metadata.from_project_entry(self.__project)
@@ -364,7 +364,7 @@ class VCS(ABC):
         """Get the revision of the metadata file."""
 
     @abstractmethod
-    def get_diff(self, old_revision: str, new_revision: Optional[str]) -> str:
+    def get_diff(self, old_revision: str, new_revision: Optional[str]) -> str:  # noqa
         """Get the diff of two revisions."""
 
     @abstractmethod

@@ -4,9 +4,8 @@ import os
 import re
 import shutil
 import tempfile
-from collections import namedtuple
 from pathlib import PurePath
-from typing import Dict, Generator, List, Optional, Sequence, Tuple
+from typing import Dict, Generator, List, NamedTuple, Optional, Sequence, Tuple
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -14,9 +13,17 @@ from dfetch.util.util import in_directory, safe_rmtree
 
 logger = get_logger(__name__)
 
-Submodule = namedtuple(
-    "Submodule", ["name", "toplevel", "path", "sha", "url", "branch", "tag"]
-)
+
+class Submodule(NamedTuple):
+    """Information about a submodule."""
+
+    name: str
+    toplevel: str
+    path: str
+    sha: str
+    url: str
+    branch: str
+    tag: str
 
 
 def get_git_version() -> Tuple[str, str]:
@@ -95,7 +102,7 @@ class GitRemote:
             logger, f"git ls-remote --heads --tags {remote}"
         ).stdout.decode()
 
-        info = {}
+        info: Dict[str, str] = {}
         for line in filter(lambda x: x, result.split("\n")):
             sha, ref = [part.strip() for part in f"{line} ".split("\t", maxsplit=1)]
 
@@ -338,7 +345,7 @@ class GitLocalRepo:
             ],
         )
 
-        submodules = []
+        submodules: List[Submodule] = []
         urls: Dict[str, str] = {}
         for line in result.stdout.decode().split("\n"):
             if line:

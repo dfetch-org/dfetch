@@ -12,6 +12,7 @@ import dfetch.manifest.manifest
 from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.manifest.manifest import (
     Manifest,
+    ManifestDict,
     RequestedProjectNotFoundError,
     find_manifest,
     get_childmanifests,
@@ -49,11 +50,11 @@ manifest:
      url: "http://www.somewhere.com"
 """
 
-DICTIONARY_MANIFEST = {
-    "version": 0,
-    "remotes": [{"name": "my-remote", "url-base": "http://www.myremote.com/"}],
-    "projects": [{"name": "my-project"}],
-}
+DICTIONARY_MANIFEST = ManifestDict(
+    version="0",
+    remotes=[{"name": "my-remote", "url-base": "http://www.myremote.com/"}],
+    projects=[{"name": "my-project"}],
+)
 
 
 def given_manifest_from_text(text: str) -> Manifest:
@@ -65,7 +66,7 @@ def given_manifest_from_text(text: str) -> Manifest:
 def test_can_read_version() -> None:
     """Test that the version can be read."""
     manifest = given_manifest_from_text(BASIC_MANIFEST)
-    assert manifest.version == 0
+    assert manifest.version == "0"
 
 
 def test_no_projects() -> None:
@@ -90,7 +91,7 @@ def test_construct_from_dict() -> None:
     """Test that manifest can be constructed from dictionary."""
 
     manifest = Manifest(DICTIONARY_MANIFEST)
-    assert manifest.version == 0
+    assert manifest.version == "0"
     assert len(manifest.projects) == 1
     assert manifest.projects[0].name == "my-project"
     assert len(manifest._remotes) == 1
@@ -137,14 +138,14 @@ def test_single_manifest_found() -> None:
     ],
 )
 def test_get_childmanifests(name, manifest_paths) -> None:
-    parent = ProjectEntry({"name": "parent"})
+    parent = ProjectEntry({"name": "name"})
 
     with patch("dfetch.manifest.manifest.find_file") as find_file_mock:
-        with patch("dfetch.manifest.validate.validate"):
+        with patch("dfetch.manifest.manifest.validate"):
             with patch("dfetch.manifest.manifest.Manifest"):
                 find_file_mock.return_value = manifest_paths
 
-                found_childmanifests = get_childmanifests([parent])
+                found_childmanifests = get_childmanifests([parent.name])
 
                 assert len(found_childmanifests) == len(manifest_paths)
                 for path, result in zip(manifest_paths, found_childmanifests):

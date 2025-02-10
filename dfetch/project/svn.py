@@ -3,8 +3,7 @@
 import os
 import pathlib
 import re
-from collections import namedtuple
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, NamedTuple, Optional, Tuple
 
 from dfetch.log import get_logger
 from dfetch.manifest.version import Version
@@ -20,9 +19,17 @@ from dfetch.util.util import (
 logger = get_logger(__name__)
 
 
-External = namedtuple(
-    "External", ["name", "toplevel", "path", "revision", "url", "branch", "tag", "src"]
-)
+class External(NamedTuple):
+    """Information about a svn external."""
+
+    name: str
+    toplevel: str
+    path: str
+    revision: str
+    url: str
+    branch: str
+    tag: str
+    src: str
 
 
 class SvnRepo(VCS):
@@ -46,7 +53,7 @@ class SvnRepo(VCS):
 
         repo_root = SvnRepo._get_info_from_target()["Repository Root"]
 
-        externals = []
+        externals: List[External] = []
         path_pattern = r"([^\s^-]+)\s+-"
         for entry in result.stdout.decode().split(os.linesep * 2):
             match: Optional[re.Match[str]] = None

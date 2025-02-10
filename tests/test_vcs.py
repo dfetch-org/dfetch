@@ -16,20 +16,22 @@ from dfetch.project.vcs import VCS
 class ConcreteVCS(VCS):
     _wanted_version: Version
 
-    def _fetch_impl(self):
-        pass
+    def _fetch_impl(self, version: Version) -> Version:
+        return Version()
 
     def _latest_revision_on_branch(self, branch):
         return "latest"
 
     def check(self):
+        return False
+
+    @staticmethod
+    def list_tool_info():
         pass
 
-    def list_tool_info(self):
-        pass
-
-    def revision_is_enough(self):
-        pass
+    @staticmethod
+    def revision_is_enough():
+        return False
 
     def _does_revision_exist(self, revision):
         return True
@@ -158,6 +160,6 @@ def test_ci_enabled(
     if ci_env_value is None:
         monkeypatch.delenv("CI", raising=False)
     else:
-        monkeypatch.setenv("CI", ci_env_value)
+        monkeypatch.setenv("CI", str(ci_env_value))
 
     assert ConcreteVCS._running_in_ci() == expected_result

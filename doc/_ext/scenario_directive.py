@@ -23,7 +23,7 @@ The directive automatically detects Scenario: and Scenario Outline: titles.
 
 import os
 import re
-from typing import Iterable
+from typing import Tuple
 
 from docutils import nodes
 from docutils.parsers.rst import Directive
@@ -39,7 +39,7 @@ class ScenarioIncludeDirective(Directive):
         "scenario": str,
     }
 
-    def list_of_scenarios(self, feature_file_path: str) -> Iterable[str]:
+    def list_of_scenarios(self, feature_file_path: str) -> Tuple[str]:
         """Parse the list of scenarios from the feature file"""
         env = self.state.document.settings.env
         feature_path = os.path.abspath(os.path.join(env.app.srcdir, feature_file_path))
@@ -47,12 +47,12 @@ class ScenarioIncludeDirective(Directive):
             raise self.error(f"Feature file not found: {feature_path}")
 
         with open(feature_path, encoding="utf-8") as f:
-            scenarios = [
+            scenarios = tuple(
                 m[1]
                 for m in re.findall(
                     r"^\s*(Scenario(?: Outline)?):\s*(.+)$", f.read(), re.MULTILINE
                 )
-            ]
+            )
         return scenarios
 
     def run(self):

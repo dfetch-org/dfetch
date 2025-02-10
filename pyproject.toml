@@ -164,4 +164,6 @@ skip = "*.cast,./venv,**/plantuml-c4/**,./example,.mypy_cache,./doc/_build/**,./
 
 [tool.pyright]
 exclude = ["doc/static/uml/generate_diagram.py"]
-strict = ["dfetch"]
+standard = ["dfetch", "features"]
+reportMissingImports = false
+reportMissingModuleSource = false

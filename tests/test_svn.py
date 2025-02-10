@@ -149,7 +149,7 @@ def test_externals(name, externals, expectations):
     "name, cmd_result, expectation",
     [
         ("svn repo", ["Yep!"], True),
-        ("not a svn repo", [SubprocessCommandError("", "", "", -1)], False),
+        ("not a svn repo", [SubprocessCommandError([""], "", "", -1)], False),
         ("no svn", [RuntimeError()], False),
     ],
 )
