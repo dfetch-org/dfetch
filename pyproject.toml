@@ -86,6 +86,7 @@ development = [
     'pylint==3.3.4',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml
     'pre-commit==4.1.0',
+    'ruff==0.9.6',
 ]
 docs = [
     'sphinx==8.2.3',
@@ -156,3 +157,6 @@ show_missing = true
 
 [tool.codespell]
 skip = "*.cast,./venv,**/plantuml-c4/**,./example,.mypy_cache,./doc/_build/**,./build,*.patch,.git,**/generate-casts/demo-magic/**"
+
+[tool.ruff.lint.per-file-ignores]
+"features/steps/*" = ["F811"]
