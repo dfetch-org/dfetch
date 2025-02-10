@@ -1,4 +1,4 @@
-"""*Dfetch* can generate a report that is parseable by Gitlab/Code-climate from the :ref:`check` results.
+"""*Dfetch* can generate a report that is parsable by GitLab/Code Climate from the :ref:`check` results.
 
 Depending on the state of the projects it will create a report with information.
 If all project are up-to-date, nothing will be added to the report.
@@ -24,8 +24,8 @@ And clicking will bring you to the project in the manifest.
 .. image:: images/gitlab-highlighted-manifest.png
     :alt: Gitlab highlights the project in the manifest with the issue.
 
-In the merge request, gitlab will compare the issues in the current branch with that of
-the base branch (e.g. `master`/`main`). This lets you see if any new issue were introduced
+In the merge request, GitLab will compare the issues in the current branch with those of
+the base branch (e.g. ``master``/``main``). This lets you see if any new issue were introduced
 or solved.
 
 .. scenario-include:: ../features/check-report-code-climate.feature

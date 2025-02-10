@@ -1,7 +1,7 @@
 """*Dfetch* can generate a report that is parseable by Jenkins from the :ref:`check` results.
 
-Depending on the state of the projects it will create a report with information.
-If all project are up-to-date, nothing will be added to the report.
+Depending on the state of the projects, it will create a report with relevant information.
+If all projects are up-to-date, nothing will be added to the report.
 
 The information has several severities:
 
@@ -16,7 +16,7 @@ show an overview of the found issues:
 .. image:: images/out-of-date-jenkins2.png
     :alt: Cpputest is out-of-date and requires updating.
 
-When an issues is clicked, you can see the exact location in the manifest where the project is listed.
+When an issue is clicked, you can see the exact location in the manifest where the project is listed.
 
 .. image:: images/out-of-date-jenkins.png
     :alt: Cpputest is out-of-date and requires updating.

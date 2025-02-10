@@ -1,6 +1,6 @@
 """Report issues found during check.
 
-*DFetch* can report its results of checking in a form that is usable for several other tools.
+*DFetch* can report the results of :ref:`check` in a format usable by several other tools.
 See the respective sections for details about using and configuring those reporters.
 
 All reports can contain the following results:

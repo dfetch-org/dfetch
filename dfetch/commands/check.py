@@ -12,8 +12,8 @@ Child-manifests
 
 It is possible that fetched projects have manifests of their own.
 After these projects are fetched (with ``dfetch update``), the manifests are read as well
-and will be checked to look for further dependencies. If you don't what recommendations, you can prevent *Dfetch*
-checking child-manifests with ``--no-recommendations``.
+and will be checked to look for further dependencies. If you don't want recommendations,
+you can prevent *Dfetch* from checking child-manifests with ``--no-recommendations``.
 
 .. scenario-include:: ../features/checked-project-has-dependencies.feature
 
@@ -42,7 +42,7 @@ logger = get_logger(__name__)
 class Check(dfetch.commands.command.Command):
     """Check all projects for updates.
 
-    Check all project to see if there are any new updates.
+    Check all projects to see if there are any new updates.
     """
 
     @staticmethod
