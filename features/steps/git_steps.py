@@ -1,5 +1,6 @@
 """Steps for features tests."""
 
+# pyright: reportRedeclaration=false, reportAttributeAccessIssue=false
 import os
 import pathlib
 import subprocess
