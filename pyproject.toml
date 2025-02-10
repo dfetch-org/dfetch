@@ -160,3 +160,7 @@ skip = "*.cast,./venv,**/plantuml-c4/**,./example,.mypy_cache,./doc/_build/**,./
 
 [tool.ruff.lint.per-file-ignores]
 "features/steps/*" = ["F811"]
+
+[tool.pyright]
+exclude = ["doc/static/uml/generate_diagram.py"]
+strict = ["dfetch"]
