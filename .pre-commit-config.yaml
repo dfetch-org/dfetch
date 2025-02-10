@@ -107,3 +107,9 @@ repos:
         language: python
         args: [check]
         types: [file, python]
+    -   id: pyright
+        name: pyright
+        description: Lint using pyright
+        entry: pyright
+        language: python
+        types: [file, python]
