@@ -45,10 +45,9 @@ class MyEnvBuilder(venv.EnvBuilder):
         intended for the global Python environment
         (same as EnvBuilder's _setup_pip)
         """
-        subprocess.call(  # nosec
+        subprocess.check_call(  # nosec
             (context.env_exe, "-Im", "pip", "install") + args,
             stderr=subprocess.STDOUT,
-            check=True,
         )
 
 

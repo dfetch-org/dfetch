@@ -9,6 +9,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Generator, Iterator, List, Optional, Sequence, Union
 
+from _hashlib import HASH
+
 
 def _remove_readonly(func: Any, path: str, _: Any) -> None:
     if not os.access(path, os.W_OK):
@@ -119,7 +121,7 @@ def hash_directory(path: str, skiplist: Optional[List[str]]) -> str:
     return digest.hexdigest()
 
 
-def hash_file(file_path: str, digest: "hashlib._Hash") -> "hashlib._Hash":
+def hash_file(file_path: str, digest: HASH) -> HASH:
     """Hash the file at path."""
     if os.path.isfile(file_path):
         with open(file_path, "rb") as f_obj:

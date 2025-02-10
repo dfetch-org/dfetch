@@ -108,14 +108,14 @@ class SbomReporter(Reporter):
 
     def dump_to_file(self, outfile: str) -> bool:
         """Dump the SBoM to file."""
-        output_format = (
+        output_format = OutputFormat(
             OutputFormat.XML if outfile.endswith(".xml") else OutputFormat.JSON
         )
         outputter = cast(Json, get_instance(bom=self._bom, output_format=output_format))
 
         parsed = json.loads(outputter.output_as_string())
-        outputter._json_output = json.dumps(  # pylint: disable=protected-access
-            parsed, indent=4
+        outputter._json_output = (  # pylint: disable=protected-access # type: ignore
+            json.dumps(parsed, indent=4)
         )
 
         outputter.output_to_file(outfile, allow_overwrite=True)

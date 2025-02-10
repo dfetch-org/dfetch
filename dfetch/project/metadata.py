@@ -6,7 +6,7 @@ import os
 import yaml
 from typing_extensions import TypedDict
 
-import dfetch.manifest.manifest
+from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 
 DONT_EDIT_WARNING = """\
@@ -52,9 +52,7 @@ class Metadata:
         self._patch: str = str(kwargs.get("patch", ""))
 
     @classmethod
-    def from_project_entry(
-        cls, project: dfetch.manifest.project.ProjectEntry
-    ) -> "Metadata":
+    def from_project_entry(cls, project: ProjectEntry) -> "Metadata":
         """Create a metadata object from a project entry."""
         data: Options = {
             "branch": project.branch,

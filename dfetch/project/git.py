@@ -116,6 +116,6 @@ class GitRepo(VCS):
         )
 
     @lru_cache()
-    def get_default_branch(self) -> str:
+    def get_default_branch(self) -> str:  # type:ignore
         """Get the default branch of this repository."""
         return self._remote_repo.get_default_branch()

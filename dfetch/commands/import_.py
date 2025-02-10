@@ -84,7 +84,6 @@ import argparse
 import os
 import re
 from itertools import combinations
-from typing import Any  # pylint: disable=unused-import
 from typing import List, Sequence, Set, Tuple
 
 import dfetch.commands.command
@@ -107,7 +106,7 @@ class Import(dfetch.commands.command.Command):
     """
 
     @staticmethod
-    def create_menu(subparsers: "argparse._SubParsersAction[Any]") -> None:
+    def create_menu(subparsers: dfetch.commands.command.SubparserActionType) -> None:
         """Add the parser menu for this action."""
         dfetch.commands.command.Command.parser(subparsers, Import)
 
@@ -265,7 +264,7 @@ def _determine_best_remotes(projects_urls: Set[str]) -> Tuple[str, ...]:
     potential_remotes = potential_remotes - useless_potential
 
     # For each permutation of any length, calculate the solution score
-    solutions = []
+    solutions: List[Tuple[int, Tuple[str, ...]]] = []
     for i in range(min(len(potential_remotes), max_remotes)):
         for solution in combinations(potential_remotes, i):
             score = _calculate_solution_score(solution, projects_urls)

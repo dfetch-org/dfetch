@@ -27,11 +27,11 @@ from typing import IO, Any, Dict, List, Optional, Sequence, Tuple, Union
 import yaml
 from typing_extensions import TypedDict
 
-import dfetch.manifest.validate
 from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
+from dfetch.manifest.validate import validate
 from dfetch.util.util import find_file, prefix_runtime_exceptions
 
 logger = get_logger(__name__)
@@ -89,7 +89,7 @@ class ManifestDict(  # pylint: disable=too-many-ancestors
 ):  # When https://www.python.org/dev/peps/pep-0655/ is accepted, only make remotes optional
     """Serialized dict types."""
 
-    version: str
+    version: Union[int, str]
     remotes: Sequence[Union[RemoteDict, Remote]]
     projects: Sequence[Union[ProjectEntryDict, ProjectEntry, Dict[str, str]]]
 
@@ -104,7 +104,7 @@ class Manifest:
 
     def __init__(self, manifest: ManifestDict) -> None:
         """Create the manifest."""
-        self.__version: str = manifest.get("version", self.CURRENT_VERSION)
+        self.__version: str = str(manifest.get("version", self.CURRENT_VERSION))
 
         self._remotes, default_remotes = self._determine_remotes(
             manifest.get("remotes", [])
@@ -116,6 +116,9 @@ class Manifest:
         self._default_remote_name = (
             "" if not default_remotes else default_remotes[0].name
         )
+
+        if "projects" not in manifest:
+            raise KeyError("No projects in manifest!")
         self._projects = self._init_projects(manifest["projects"])
 
     def _init_projects(
@@ -136,6 +139,8 @@ class Manifest:
 
         for project in projects:
             if isinstance(project, dict):
+                if "name" not in project:
+                    raise KeyError("Missing name!")
                 last_project = _projects[project["name"]] = ProjectEntry.from_yaml(
                     project, self._default_remote_name
                 )
@@ -307,11 +312,11 @@ def get_manifest() -> Tuple[Manifest, str]:
     """Get manifest and its path."""
     logger.debug("Looking for manifest")
     manifest_path = find_manifest()
-    dfetch.manifest.validate.validate(manifest_path)
+    validate(manifest_path)
 
     logger.debug(f"Using manifest {manifest_path}")
     return (
-        dfetch.manifest.manifest.Manifest.from_file(manifest_path),
+        Manifest.from_file(manifest_path),
         manifest_path,
     )
 
@@ -321,7 +326,7 @@ def get_childmanifests(skip: Optional[List[str]] = None) -> List[Tuple[Manifest,
     skip = skip or []
     logger.debug("Looking for sub-manifests")
 
-    childmanifests = []
+    childmanifests: List[Tuple[Manifest, str]] = []
     for path in find_file(DEFAULT_MANIFEST_NAME, "."):
         path = os.path.realpath(path)
         if path not in skip:
@@ -329,8 +334,8 @@ def get_childmanifests(skip: Optional[List[str]] = None) -> List[Tuple[Manifest,
             with prefix_runtime_exceptions(
                 pathlib.Path(path).relative_to(os.path.dirname(os.getcwd())).as_posix()
             ):
-                dfetch.manifest.validate.validate(path)
-            childmanifest = dfetch.manifest.manifest.Manifest.from_file(path)
+                validate(path)
+            childmanifest = Manifest.from_file(path)
             childmanifests += [(childmanifest, path)]
 
     return childmanifests
