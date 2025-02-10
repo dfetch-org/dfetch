@@ -32,7 +32,7 @@ def commit_all(msg):
 
 
 def tag(name: str):
-    subprocess.call(["git", "tag", "-a", name, "-m", f"'Some tag'"])
+    subprocess.call(["git", "tag", "-a", name, "-m", "'Some tag'"])
 
 
 @given("a git repo with the following submodules")
