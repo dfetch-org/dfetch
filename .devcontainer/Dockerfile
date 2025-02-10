@@ -18,7 +18,7 @@ ENV PATH="/home/dev/.local/bin:${PATH}"
 
 COPY --chown=dev:dev . .
 
-RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip==24.3.1 \
+RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip==25.0.1 \
     && pip install --no-cache-dir --root-user-action=ignore -e .[development,docs,test,casts] \
     && pre-commit install --install-hooks
 
