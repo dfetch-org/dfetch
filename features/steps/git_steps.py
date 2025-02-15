@@ -1,5 +1,7 @@
 """Steps for features tests."""
 
+# pylint: disable=function-redefined, missing-function-docstring, import-error
+
 import os
 import pathlib
 import subprocess
@@ -20,7 +22,8 @@ def create_repo():
     subprocess.call(["git", "config", "user.name", "John Doe"])
 
     if os.name == "nt":
-        # Creates zombie fsmonitor-daemon process that holds files (see https://github.com/git-for-windows/git/issues/3326)
+        # Creates zombie fsmonitor-daemon process that holds files
+        # (see https://github.com/git-for-windows/git/issues/3326)
         subprocess.call(
             ["git", "config", "--global", "core.usebuiltinfsmonitor", "false"]
         )
@@ -32,7 +35,7 @@ def commit_all(msg):
 
 
 def tag(name: str):
-    subprocess.call(["git", "tag", "-a", name, "-m", f"'Some tag'"])
+    subprocess.call(["git", "tag", "-a", name, "-m", "'Some tag'"])
 
 
 @given("a git repo with the following submodules")

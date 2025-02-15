@@ -1,5 +1,8 @@
 """Steps for features tests."""
 
+# pylint: disable=function-redefined, missing-function-docstring, import-error
+
+
 import os
 import pathlib
 

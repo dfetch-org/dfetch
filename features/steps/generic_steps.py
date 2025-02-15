@@ -1,5 +1,7 @@
 """Steps for features tests."""
 
+# pylint: disable=function-redefined, missing-function-docstring
+
 import difflib
 import json
 import os
@@ -28,14 +30,19 @@ def remote_server_path(context):
 
 def check_file(path, content):
     """Check a file."""
-    with open(path, "r") as file_to_check:
+    with open(path, "r", encoding="UTF-8") as file_to_check:
         check_content(content.splitlines(True), file_to_check.readlines())
+
+
+def check_file_exists(path):
+    """Check a file."""
+    assert os.path.isfile(path), f"Expected {path} to exist, but it didn't!"
 
 
 def check_json(path, content):
     """Check a file."""
 
-    with open(path, "r") as file_to_check:
+    with open(path, "r", encoding="UTF-8") as file_to_check:
         actual_json = json.load(file_to_check)
     expected_json = json.loads(content)
 
@@ -101,13 +108,13 @@ def generate_file(path, content):
     if len(opt_dir) > 1:
         pathlib.Path(opt_dir[0]).mkdir(parents=True, exist_ok=True)
 
-    with open(path, "w") as new_file:
+    with open(path, "w", encoding="UTF-8") as new_file:
         for line in content.splitlines():
             print(line, file=new_file)
 
 
 def extend_file(path, content):
-    with open(path, "a") as existing_file:
+    with open(path, "a", encoding="UTF-8") as existing_file:
         for line in content.splitlines():
             print(line, file=existing_file)
 
@@ -141,7 +148,7 @@ def step_impl(context, name):
 
 
 @given('the metadata file "{metadata_file}" of "{project_path}" is corrupt')
-def step_impl(context, metadata_file, project_path):
+def step_impl(_, metadata_file, project_path):
     generate_file(
         os.path.join(os.getcwd(), project_path, metadata_file), "Corrupt metadata!"
     )
@@ -175,7 +182,7 @@ def step_impl(context, args, path=None):
 
 
 @when('"{path}" in {directory} is changed locally')
-def step_impl(context, directory, path):
+def step_impl(_, directory, path):
     with in_directory(directory):
         extend_file(path, "Some text")
 
@@ -189,13 +196,14 @@ def step_impl(context, name):
 @then("the first line of '{name}' is changed to")
 def step_impl(context, name):
     """Check the first line of the file."""
-    with open(name, "r") as file_to_check:
+    with open(name, "r", encoding="UTF-8") as file_to_check:
         check_content(context.text.strip(), file_to_check.readline().strip())
 
 
 @then("the patch file '{name}' is generated")
-def step_impl(context, name):
+def step_impl(_, name):
     """Check a manifest."""
+    check_file_exists(name)
 
 
 @then("the '{name}' file contains")
