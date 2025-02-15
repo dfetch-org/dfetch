@@ -108,7 +108,7 @@ class SbomReporter(Reporter):
 
     def dump_to_file(self, outfile: str) -> bool:
         """Dump the SBoM to file."""
-        output_format = (
+        output_format = OutputFormat(
             OutputFormat.XML if outfile.endswith(".xml") else OutputFormat.JSON
         )
         outputter = cast(Json, get_instance(bom=self._bom, output_format=output_format))

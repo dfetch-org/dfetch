@@ -1,5 +1,7 @@
 """Steps for features tests."""
 
+# pyright: reportRedeclaration=false, reportAttributeAccessIssue=false
+
 import difflib
 import json
 import os

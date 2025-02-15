@@ -281,6 +281,8 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
 
     def __init__(self, kwargs: ProjectEntryDict) -> None:
         """Create the project entry."""
+        if "name" not in kwargs:
+            raise RuntimeError("Name missing from Project!")
         self._name: str = kwargs["name"]
         self._revision: str = kwargs.get("revision", "")
 
