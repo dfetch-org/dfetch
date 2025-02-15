@@ -5,14 +5,18 @@
 
 import os
 import pathlib
+from typing import Optional
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 
 from features.steps.generic_steps import check_file, generate_file, remote_server_path
 
 
-def generate_manifest(context, name="dfetch.yaml", path=None):
-    manifest = context.text.replace(
+def generate_manifest(
+    context, name="dfetch.yaml", contents: Optional[str] = None, path=None
+):
+    contents = contents or context.text
+    manifest = contents.replace(
         "url: some-remote-server", f"url: file:///{remote_server_path(context)}"
     )
     generate_file(os.path.join(path or os.getcwd(), name), manifest)
@@ -26,7 +30,7 @@ def step_impl(context, name, path=None):
     if path:
         pathlib.Path(path).mkdir(parents=True, exist_ok=True)
 
-    generate_manifest(context, name, path)
+    generate_manifest(context, name, contents=context.text, path=path)
 
 
 @then("the manifest '{name}' is replaced with")
