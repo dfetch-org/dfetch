@@ -1,5 +1,7 @@
 """Steps for features tests."""
 
+# pylint: disable=function-redefined, missing-function-docstring, import-error
+
 import os
 import pathlib
 import subprocess
@@ -7,7 +9,7 @@ import subprocess
 from behave import given  # pylint: disable=no-name-in-module
 
 from dfetch.util.util import in_directory
-from features.steps.generic_steps import extend_file, generate_file
+from features.steps.generic_steps import call_command, extend_file, generate_file
 from features.steps.manifest_steps import generate_manifest
 
 
@@ -43,7 +45,7 @@ def commit_all(msg):
 
 def add_externals(externals):
     """Add the given list of dicts as externals."""
-    with open("externals", "w") as external_list:
+    with open("externals", "w", encoding="UTF-8") as external_list:
         for external in externals:
             revision = f"@{external['revision']}" if external["revision"] else ""
             external_list.write(f"{external['url']}{revision} {external['path']}\n")
@@ -100,11 +102,7 @@ def step_impl(context):
 
     with in_directory(repo_path):
         generate_manifest(context)
-        context.execute_steps(
-            """
-            When I run "dfetch update"
-            """
-        )
+        call_command(context, ["update"])
         add_and_commit("Initial commit")
 
 

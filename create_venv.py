@@ -45,12 +45,11 @@ class MyEnvBuilder(venv.EnvBuilder):
         intended for the global Python environment
         (same as EnvBuilder's _setup_pip)
         """
-        ret = subprocess.call(  # nosec
+        subprocess.call(  # nosec
             (context.env_exe, "-Im", "pip", "install") + args,
             stderr=subprocess.STDOUT,
+            check=True,
         )
-        if ret:
-            raise Exception("pip install command result was not 0 but %d" % ret)
 
 
 if __name__ == "__main__":

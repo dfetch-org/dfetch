@@ -1,3 +1,5 @@
+"""General hooks for behave tests."""
+
 import os
 import tempfile
 
@@ -8,6 +10,7 @@ from dfetch.util.util import safe_rmtree
 
 @fixture
 def tmpdir(context):
+    """Create tempdir during test"""
     # -- HINT: @behave.fixture is similar to @contextlib.contextmanager
     context.orig_cwd = os.getcwd()
     context.tmpdir = tempfile.mkdtemp()
@@ -21,11 +24,13 @@ def tmpdir(context):
     safe_rmtree(context.tmpdir)
 
 
-def before_scenario(context, scenario):
+def before_scenario(context, _):
+    """Hook called before scenario is executed."""
     use_fixture(tmpdir, context)
 
 
 def before_all(context):
+    """Hook called before first test is run."""
     context.config.log_capture = True
     context.config.logging_format = "%(message)s"
 

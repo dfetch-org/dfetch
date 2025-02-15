@@ -1,5 +1,7 @@
 """Steps for features tests."""
 
+# pylint: disable=function-redefined, missing-function-docstring, import-error
+
 import os
 import pathlib
 import subprocess
@@ -7,7 +9,7 @@ import subprocess
 from behave import given  # pylint: disable=no-name-in-module
 
 from dfetch.util.util import in_directory
-from features.steps.generic_steps import extend_file, generate_file
+from features.steps.generic_steps import call_command, extend_file, generate_file
 from features.steps.manifest_steps import generate_manifest
 
 
@@ -20,7 +22,8 @@ def create_repo():
     subprocess.call(["git", "config", "user.name", "John Doe"])
 
     if os.name == "nt":
-        # Creates zombie fsmonitor-daemon process that holds files (see https://github.com/git-for-windows/git/issues/3326)
+        # Creates zombie fsmonitor-daemon process that holds files
+        # (see https://github.com/git-for-windows/git/issues/3326)
         subprocess.call(
             ["git", "config", "--global", "core.usebuiltinfsmonitor", "false"]
         )
@@ -32,7 +35,7 @@ def commit_all(msg):
 
 
 def tag(name: str):
-    subprocess.call(["git", "tag", "-a", name, "-m", f"'Some tag'"])
+    subprocess.call(["git", "tag", "-a", name, "-m", "'Some tag'"])
 
 
 @given("a git repo with the following submodules")
@@ -93,30 +96,34 @@ def step_impl(context, name):
 
 @given('MyProject with dependency "SomeProject.git" that must be updated')
 def step_impl(context):
+
+    manifest = """
+manifest:
+    version: 0.0
+    projects:
+        - name: SomeProject
+          url: some-remote-server/SomeProject.git
+          tag: v1
+"""
+
+    generate_manifest(
+        context,
+        "dfetch.yaml",
+        contents=manifest,
+        path="MyProject",
+    )
     context.execute_steps(
-        '''
-        Given the manifest 'dfetch.yaml' in MyProject
-            """
-            manifest:
-                version: 0.0
-                projects:
-                    - name: SomeProject
-                      url: some-remote-server/SomeProject.git
-                      tag: v1
-            """
-        And a git repository "SomeProject.git"
+        """
+        Given a git repository "SomeProject.git"
         And all projects are updated in MyProject
         And a new tag "v2" is added to git-repository "SomeProject.git"
-        When the manifest 'dfetch.yaml' in MyProject is changed to
-            """
-            manifest:
-                version: 0.0
-                projects:
-                    - name: SomeProject
-                      url: some-remote-server/SomeProject.git
-                      tag: v2
-            """
-        '''
+        """
+    )
+    generate_manifest(
+        context,
+        "dfetch.yaml",
+        contents=manifest.replace("v1", "v2"),
+        path="MyProject",
     )
 
 
@@ -126,11 +133,7 @@ def step_impl(context):
     with in_directory("MyProject"):
         create_repo()
         generate_manifest(context)
-        context.execute_steps(
-            """
-            When I run "dfetch update"
-            """
-        )
+        call_command(context, ["update"])
         commit_all("Initial commit")
 
 
@@ -149,34 +152,35 @@ def step_impl(context, directory, path):
 
 @given("MyProject with applied patch 'diff.patch'")
 def step_impl(context):
-    context.execute_steps(
-        '''
-        Given the manifest 'dfetch.yaml'
-            """
-            manifest:
-                version: '0.0'
+    manifest = """
+manifest:
+    version: '0.0'
 
-                remotes:
-                - name: github-com-dfetch-org
-                  url-base: https://github.com/dfetch-org/test-repo
+    remotes:
+    - name: github-com-dfetch-org
+      url-base: https://github.com/dfetch-org/test-repo
 
-                projects:
-                - name: ext/test-repo-tag
-                  tag: v2.0
-                  dst: ext/test-repo-tag
-                  patch: diff.patch
-            """
-        And the patch file 'diff.patch'
-            """
-            diff --git a/README.md b/README.md
-            index 32d9fad..62248b7 100644
-            --- a/README.md
-            +++ b/README.md
-            @@ -1,2 +1,2 @@
-             # Test-repo
-            -A test repo for testing dfetch.
-            +A test repo for testing patch.
-            """
-        When I run "dfetch update"
-        '''
+    projects:
+    - name: ext/test-repo-tag
+      tag: v2.0
+      dst: ext/test-repo-tag
+      patch: diff.patch
+"""
+
+    generate_manifest(
+        context,
+        "dfetch.yaml",
+        contents=manifest,
     )
+    patch_file = """
+diff --git a/README.md b/README.md
+index 32d9fad..62248b7 100644
+--- a/README.md
++++ b/README.md
+@@ -1,2 +1,2 @@
+    # Test-repo
+-A test repo for testing dfetch.
++A test repo for testing patch.
+"""
+    generate_file(os.path.join(os.getcwd(), "diff.patch"), patch_file)
+    call_command(context, ["update"])

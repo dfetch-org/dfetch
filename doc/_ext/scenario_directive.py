@@ -97,4 +97,5 @@ class ScenarioIncludeDirective(Directive):
 
 
 def setup(app):
+    """Setup the directive."""
     app.add_directive("scenario-include", ScenarioIncludeDirective)
