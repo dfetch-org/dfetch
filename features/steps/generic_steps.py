@@ -8,7 +8,7 @@ import os
 import pathlib
 import re
 from itertools import zip_longest
-from typing import Iterable, List, Pattern, Tuple
+from typing import Iterable, List, Optional, Pattern, Tuple
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 
@@ -26,6 +26,20 @@ urn_uuid = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 def remote_server_path(context):
     """Get the path to the remote dir."""
     return "/".join(context.remotes_dir_path.split(os.sep))
+
+
+def call_command(context, args: list[str], path: Optional[str] = ".") -> None:
+    context.log_capture.buffer = []
+    with in_directory(path or "."):
+        try:
+            run(args)
+            context.cmd_returncode = 0
+        except DfetchFatalException:
+            context.cmd_returncode = 1
+    # Remove the color code + title
+    context.cmd_output = dfetch_title.sub(
+        "", ansi_escape.sub("", context.log_capture.getvalue())
+    )
 
 
 def check_file(path, content):
@@ -168,17 +182,7 @@ def step_impl(context, path=None):
 @when('I run "dfetch {args}"')
 def step_impl(context, args, path=None):
     """Call a command."""
-    context.log_capture.buffer = []
-    with in_directory(path or "."):
-        try:
-            run(args.split())
-            context.cmd_returncode = 0
-        except DfetchFatalException:
-            context.cmd_returncode = 1
-    # Remove the color code + title
-    context.cmd_output = dfetch_title.sub(
-        "", ansi_escape.sub("", context.log_capture.getvalue())
-    )
+    call_command(context, args.split(), path)
 
 
 @when('"{path}" in {directory} is changed locally')

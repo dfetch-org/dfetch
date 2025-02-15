@@ -9,7 +9,7 @@ import subprocess
 from behave import given  # pylint: disable=no-name-in-module
 
 from dfetch.util.util import in_directory
-from features.steps.generic_steps import extend_file, generate_file
+from features.steps.generic_steps import call_command, extend_file, generate_file
 from features.steps.manifest_steps import generate_manifest
 
 
@@ -102,11 +102,7 @@ def step_impl(context):
 
     with in_directory(repo_path):
         generate_manifest(context)
-        context.execute_steps(
-            """
-            When I run "dfetch update"
-            """
-        )
+        call_command(context, ["update"])
         add_and_commit("Initial commit")
 
 
