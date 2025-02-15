@@ -1,5 +1,7 @@
 """Steps for features tests."""
 
+# pylint: disable=function-redefined, missing-function-docstring, import-error
+
 import os
 import pathlib
 import subprocess
@@ -43,7 +45,7 @@ def commit_all(msg):
 
 def add_externals(externals):
     """Add the given list of dicts as externals."""
-    with open("externals", "w") as external_list:
+    with open("externals", "w", encoding="UTF-8") as external_list:
         for external in externals:
             revision = f"@{external['revision']}" if external["revision"] else ""
             external_list.write(f"{external['url']}{revision} {external['path']}\n")
