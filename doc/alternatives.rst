@@ -20,32 +20,39 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 `CPM.cmake`_                ✔    ✘       ✔        ✔         ✘ (C/C++)             ✘ (CMake)
 `CPPAN`_                    ✔    ✘       ✔        ✔         ✘ (C/C++)               ✔
 `Garden`_                   ✔    ✘       ✘        ✔             ✔                   ✔
-`Giternal`_                 ✔    ✘       ✔        ✔             ✔                   ✔
 `Git submodules`_           ✔    ✘       ✔        ✔             ✔                   ✔
 `Git subtree`_              ✔    ✘       ✔        ✔             ✔                   ✔
+`Git X-modules`_            ✔    ✘       ✔        ✔             ✔                   ✔
 `Git-externals`_            ✔    ✘       ✔        ✔             ✔                   ✔
 `git-toprepo`_              ✔    ✘       ✔        ✔             ✔                   ✔
 `git-vendor`_               ✔    ✘       ✔        ✔             ✔                   ✔
-`Git X-modules`_            ✔    ✘       ✔        ✔             ✔                   ✔
+`Giternal`_                 ✔    ✘       ✔        ✔             ✔                   ✔
 `Gitman`_                   ✔    ✘       ✔        ✔             ✔                   ✔
 `Gitslave`_                 ✔    ✘       ✘        ✔             ✔                   ✔
 `Google Repo`_              ✔    ✘       ✔        ✔             ✔                   ✔
 `Grit`_                     ✔    ✘       ✔        ✔             ✔                   ✔
+`Hemlock`_                  ✔    ✘       ✔        ✔             ✔                   ✔
 `josh`_                     ✔    ✘       ✔        ✔             ✔                   ✔
 `Kitenet mr`_               ✔    ✔       ?         ✔             ✔                   ✔
 `mdlr`_                     ✔    ✘       Beta      ✔             ✔                   ✔
 `myrepos`_                  ✔    ✘       ✘        ✔             ✔                   ✔
+`OpenTitan-vendor.py`_      ✔    ✘       ✘        ✔             ✔                   ✔
 `Quack`_                    ✔    ✘       ✘        ✔             ✔                   ✔
 `Quark`_                    ✔    ✔       ✔        ✔             ✔                   ✔
-`SVN Externals`_            ✘    ✔       ✔        ✔             ✔                   ✔
-`subpatch`_                 ✔    ✘       ✔        ✔             ✔                   ✔
-`tsrc`_                     ✔    ✘       ✔        ✔             ✔                   ✔
 `SoftwareNetwork`_          ✔    ✘       ✔        ✔         ✘ (C/C++)               ✔
+`subpatch`_                 ✔    ✘       ✔        ✔             ✔                   ✔
+`SVN Externals`_            ✘    ✔       ✔        ✔             ✔                   ✔
+`tsrc`_                     ✔    ✘       ✔        ✔             ✔                   ✔
 `Vcpkg`_                    ✔    ✘       ✔        ✔         ✘ (C/C++)               ✘
 `Vcsh`_                     ✔    ✘       ✘        ✔             ✔                   ✔
+`vendor-go`_                ✔    ✘       ✔        ✔             ✔                   ✔
 `vendorpull`_               ✔    ✘       ✘        ✔             ✔                   ✔
+`verde`_                    ✔    ✘       ✔        ✔             ✔                   ✔
+`vndr`_                     ✔    ✘       ✔        ✔             ✔                   ✔
 `West`_                     ✔    ✘       ✔        ✔         ✘ (C/C++)               ✘
 ========================= ===== ===== ========= ======= =================== =======================
+
+.. _`Dfetch`: https://github.com/dfetch-org/dfetch
 
 .. _`Braid`: https://github.com/cristibalan/braid
 .. _`CGet`: https://github.com/pfultz2/cget
@@ -53,32 +60,36 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 .. _`Combo-layer`: https://wiki.yoctoproject.org/wiki/Combo-layer
 .. _`CPM.cmake`: https://github.com/cpm-cmake/CPM.cmake
 .. _`CPPAN`: https://github.com/cppan/cppan
-.. _`Dfetch`: https://github.com/dfetch-org/dfetch
 .. _`Garden`: https://github.com/davvid/garden
-.. _`Giternal`: https://github.com/patmaddox/giternal
 .. _`Git submodules`: https://git-scm.com/book/en/v2/Git-Tools-Submodules
 .. _`Git subtree`: https://www.atlassian.com/git/tutorials/git-subtree
+.. _`Git X-modules`: https://subgit.com/gitx
 .. _`Git-externals`: https://github.com/develer-staff/git-externals
 .. _`git-toprepo`: https://github.com/meroton/git-toprepo
 .. _`git-vendor`: https://github.com/brettlangdon/git-vendor
-.. _`Git X-modules`: https://subgit.com/gitx
+.. _`Giternal`: https://github.com/patmaddox/giternal
 .. _`Gitman`: https://github.com/jacebrowning/gitman
 .. _`Gitslave`: http://gitslave.sourceforge.net/
 .. _`Google Repo`: https://android.googlesource.com/tools/repo
 .. _`Grit`: https://github.com/rabarberpie/grit
+.. _`Hemlock`: https://github.com/MadL1me/hemlock
 .. _`josh`: https://github.com/josh-project/josh
 .. _`Kitenet mr`: https://github.com/toddr/kitenet-mr
 .. _`mdlr`: https://github.com/exlinc/mdlr
 .. _`myrepos`: http://myrepos.branchable.com/
+.. _`OpenTitan-vendor.py`: https://github.com/lowRISC/opentitan/blob/master/util/vendor.py
 .. _`Quack`: https://github.com/autodesk/quack
 .. _`Quark`: https://github.com/comelz/quark
-.. _`SVN externals`: https://tortoisesvn.net/docs/release/TortoiseSVN_en/tsvn-dug-externals.html
-.. _`subpatch`: https://github.com/lengfeld/subpatch
-.. _`tsrc`: https://github.com/dmerejkowsky/tsrc
 .. _`SoftwareNetwork`: https://github.com/SoftwareNetwork/sw
+.. _`subpatch`: https://github.com/lengfeld/subpatch
+.. _`SVN externals`: https://tortoisesvn.net/docs/release/TortoiseSVN_en/tsvn-dug-externals.html
+.. _`tsrc`: https://github.com/dmerejkowsky/tsrc
 .. _`Vcpkg`: https://github.com/Microsoft/vcpkg
 .. _`Vcsh`: https://github.com/RichiH/vcsh
+.. _`vendor-go` : https://github.com/alevinval/vendor-go
 .. _`vendorpull`: https://github.com/sourcemeta/vendorpull
+.. _`verde` : https://github.com/aramtech/verde
+.. _`vndr` : https://github.com/LK4D4/vndr
 .. _`West`: https://docs.zephyrproject.org/latest/guides/west/index.html
 
 .. note:: the list is probably never complete or up-to-date. Anyone is welcome to create an issue_.
