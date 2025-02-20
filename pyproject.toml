@@ -47,8 +47,12 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
+Homepage = "https://dfetch-org.github.io/"
 Documentation = "https://dfetch.readthedocs.io/"
 Repository = "https://github.com/dfetch-org/dfetch"
+Issues = "https://github.com/dfetch-org/dfetch/issues"
+Changelog = "https://github.com/dfetch-org/dfetch/blob/main/CHANGELOG.rst"
+
 
 [project.optional-dependencies]
 development = [
