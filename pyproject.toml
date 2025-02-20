@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "dfetch"
 authors = [{name = "Ben Spoor", email = "dfetch@spoor.cc"}]
 description = "Dependency fetcher"
-readme = "README.md"
+readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.7"
 keywords = ["dfetch", "vendoring", "dependencies"]
 license = {text = "MIT"}
