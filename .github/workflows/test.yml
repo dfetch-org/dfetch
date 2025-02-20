@@ -42,6 +42,7 @@ jobs:
       - run: pytest --cov=dfetch  tests                                # Run tests
       - run: coverage run --source=dfetch --append -m behave features  # Run features tests
       - run: coverage xml -o coverage.xml                              # Create XML report
+      - run: pyroma --directory --min=10 .                             # Check pyproject
 
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@master
