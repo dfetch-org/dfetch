@@ -19,10 +19,13 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 `Combo-layer`_              ✔    ✘       ✔        ✔         ✘ (C/C++)             ✘ (CMake)
 `CPM.cmake`_                ✔    ✘       ✔        ✔         ✘ (C/C++)             ✘ (CMake)
 `CPPAN`_                    ✔    ✘       ✔        ✔         ✘ (C/C++)               ✔
+`degasolv`_                 ✔    ✘       ✔        ✔             ✔                   ✔
 `Garden`_                   ✔    ✘       ✘        ✔             ✔                   ✔
+`gil`_                      ✔    ✘       ✔        ✔             ✔                   ✔
 `Git submodules`_           ✔    ✘       ✔        ✔             ✔                   ✔
 `Git subtree`_              ✔    ✘       ✔        ✔             ✔                   ✔
 `Git X-modules`_            ✔    ✘       ✔        ✔             ✔                   ✔
+`git-aggregator`_           ✔    ✘       ✔        ✔             ✔                   ✔
 `Git-externals`_            ✔    ✘       ✔        ✔             ✔                   ✔
 `git-toprepo`_              ✔    ✘       ✔        ✔             ✔                   ✔
 `git-vendor`_               ✔    ✘       ✔        ✔             ✔                   ✔
@@ -37,14 +40,18 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 `mdlr`_                     ✔    ✘       Beta      ✔             ✔                   ✔
 `myrepos`_                  ✔    ✘       ✘        ✔             ✔                   ✔
 `OpenTitan-vendor.py`_      ✔    ✘       ✘        ✔             ✔                   ✔
+`pasta`_                    ✔    ✘       ✔        ✔             ✔                   ✔
+`peru`_                     ✔    ✘       ✔        ✔             ✔                   ✔
 `Quack`_                    ✔    ✘       ✘        ✔             ✔                   ✔
 `Quark`_                    ✔    ✔       ✔        ✔             ✔                   ✔
 `SoftwareNetwork`_          ✔    ✘       ✔        ✔         ✘ (C/C++)               ✔
 `subpatch`_                 ✔    ✘       ✔        ✔             ✔                   ✔
 `SVN Externals`_            ✘    ✔       ✔        ✔             ✔                   ✔
+`svn_xternals`_             ✘    ✔       ✔        ✔             ✔                   ✔
 `tsrc`_                     ✔    ✘       ✔        ✔             ✔                   ✔
 `Vcpkg`_                    ✔    ✘       ✔        ✔         ✘ (C/C++)               ✘
 `Vcsh`_                     ✔    ✘       ✘        ✔             ✔                   ✔
+`vdm`_                      ✔    ✘       ✔        ✔             ✔                   ✔
 `vendor-go`_                ✔    ✘       ✔        ✔             ✔                   ✔
 `vendorpull`_               ✔    ✘       ✘        ✔             ✔                   ✔
 `verde`_                    ✔    ✘       ✔        ✔             ✔                   ✔
@@ -60,10 +67,13 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 .. _`Combo-layer`: https://wiki.yoctoproject.org/wiki/Combo-layer
 .. _`CPM.cmake`: https://github.com/cpm-cmake/CPM.cmake
 .. _`CPPAN`: https://github.com/cppan/cppan
+.. _`degasolv`: https://github.com/djha-skin/degasolv
 .. _`Garden`: https://github.com/davvid/garden
+.. _`gil`: https://github.com/chronoxor/gil
 .. _`Git submodules`: https://git-scm.com/book/en/v2/Git-Tools-Submodules
 .. _`Git subtree`: https://www.atlassian.com/git/tutorials/git-subtree
 .. _`Git X-modules`: https://subgit.com/gitx
+.. _`git-aggregator`: https://github.com/acsone/git-aggregator
 .. _`Git-externals`: https://github.com/develer-staff/git-externals
 .. _`git-toprepo`: https://github.com/meroton/git-toprepo
 .. _`git-vendor`: https://github.com/brettlangdon/git-vendor
@@ -78,14 +88,18 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 .. _`mdlr`: https://github.com/exlinc/mdlr
 .. _`myrepos`: http://myrepos.branchable.com/
 .. _`OpenTitan-vendor.py`: https://github.com/lowRISC/opentitan/blob/master/util/vendor.py
+.. _`pasta`: https://github.com/audiotool/pasta
+.. _`peru`: https://github.com/buildinspace/peru
 .. _`Quack`: https://github.com/autodesk/quack
 .. _`Quark`: https://github.com/comelz/quark
 .. _`SoftwareNetwork`: https://github.com/SoftwareNetwork/sw
 .. _`subpatch`: https://github.com/lengfeld/subpatch
 .. _`SVN externals`: https://tortoisesvn.net/docs/release/TortoiseSVN_en/tsvn-dug-externals.html
+.. _`svn_xternals`: https://github.com/fviard/svn_xternals
 .. _`tsrc`: https://github.com/dmerejkowsky/tsrc
 .. _`Vcpkg`: https://github.com/Microsoft/vcpkg
 .. _`Vcsh`: https://github.com/RichiH/vcsh
+.. _`vdm`: https://github.com/opensourcecorp/vdm
 .. _`vendor-go` : https://github.com/alevinval/vendor-go
 .. _`vendorpull`: https://github.com/sourcemeta/vendorpull
 .. _`verde` : https://github.com/aramtech/verde
