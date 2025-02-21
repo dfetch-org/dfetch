@@ -238,7 +238,7 @@ class GitLocalRepo:
             ignore_base = ""
         else:
             src_parts = src.split("/")
-            ignore_base = src if not "*" in src_parts[-1] else "/".join(src_parts[:-1])
+            ignore_base = src if "*" not in src_parts[-1] else "/".join(src_parts[:-1])
 
             ignore_base = (
                 ignore_base if ignore_base.endswith("/") else f"{ignore_base}/"

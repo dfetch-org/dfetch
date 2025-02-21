@@ -15,10 +15,12 @@ RUN useradd -m dev && chown -R dev:dev /workspaces/dfetch
 USER dev
 
 ENV PATH="/home/dev/.local/bin:${PATH}"
+ENV PYTHONPATH="/home/dev/.local/lib/python3.12"
+ENV PYTHONUSERBASE="/home/dev/.local"
 
 COPY --chown=dev:dev . .
 
-RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip==24.3.1 \
+RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip==25.0 \
     && pip install --no-cache-dir --root-user-action=ignore -e .[development,docs,test,casts] \
     && pre-commit install --install-hooks
 

@@ -100,3 +100,16 @@ repos:
         entry: codespell
         language: python
         types: [text]
+    -   id: ruff
+        name: ruff
+        description: Lint using ruff
+        entry: ruff
+        language: python
+        args: [check]
+        types: [file, python]
+    -   id: pyright
+        name: pyright
+        description: Lint using pyright
+        entry: pyright
+        language: python
+        types: [file, python]
