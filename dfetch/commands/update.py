@@ -21,6 +21,7 @@ checking child-manifests with ``--no-recommendations``.
 
 import argparse
 import os
+from pathlib import Path
 from typing import Any  # pylint: disable=unused-import
 from typing import List
 
@@ -141,12 +142,23 @@ class Update(dfetch.commands.command.Command):
         real_path: str,
     ) -> None:
         """Check if project will try to write to the same destination."""
-        common_prefixes = [
-            os.path.commonprefix((real_path, dst))
+        wanted_dest = Path(real_path)
+
+        common_paths = [
+            dst
             for dst in destinations
-            if dst != real_path
+            if wanted_dest in Path(dst).parents
+            or Path(dst) in wanted_dest.parents
+            or wanted_dest == Path(dst)
         ]
-        if destinations.count(real_path) > 1 or real_path in common_prefixes:
+
+        duplicates = common_paths.count(real_path)
+        try:
+            common_paths.remove(real_path)
+        except ValueError:
+            pass
+
+        if duplicates > 1 or common_paths:
             logger.print_warning_line(
                 project.name,
                 f'Skipping due to overlapping destination: "{project.destination}"',

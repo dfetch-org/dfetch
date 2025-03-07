@@ -118,3 +118,24 @@ def test_check_overlapping_destinations(name, real_path, destinations):
         Update._check_overlapping_destination(
             ProjectEntry.from_yaml({"name": "a"}), destinations, real_path
         )
+
+
+@pytest.mark.parametrize(
+    "name, real_path, destinations",
+    [
+        (
+            "sub-folder",
+            "/somewhere/sub",
+            ["/somewhere/sub", "/somewhere/sub1", "/somewhere/sub2"],
+        ),
+        (
+            "sub-folders",
+            "/somewhere/sub1",
+            ["/somewhere/sub1", "/somewhere/sub/sub1", "/somewhere/sub2"],
+        ),
+    ],
+)
+def test_check_non_overlapping_destinations(name, real_path, destinations):
+    Update._check_overlapping_destination(
+        ProjectEntry.from_yaml({"name": "a"}), destinations, real_path
+    )
