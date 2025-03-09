@@ -2,6 +2,7 @@ Release 0.10.0 (unreleased)
 ===================================
 
 * Support python 3.13
+* Fix too strict overlapping path check (#684)
 
 Release 0.9.1 (released 2024-12-31)
 ===================================
