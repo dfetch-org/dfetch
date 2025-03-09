@@ -270,7 +270,7 @@ ProjectEntryDict = TypedDict(
         "repo-path": str,
         "vcs": str,
         "ignore": Sequence[str],
-        "default_remote": Optional[Remote],
+        "default_remote": str,
     },
     total=False,
 )
@@ -285,7 +285,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._revision: str = kwargs.get("revision", "")
 
         self._remote: str = kwargs.get("remote", "")
-        self._remote_obj: Optional[Remote] = kwargs.get("default_remote", None)
+        self._remote_obj: Optional[Remote] = None
         self._src: str = kwargs.get("src", "")  # noqa
         self._dst: str = kwargs.get("dst", self._name)
         self._url: str = kwargs.get("url", "")
@@ -296,11 +296,14 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._vcs: str = kwargs.get("vcs", "")
         self._ignore: Sequence[str] = kwargs.get("ignore", [])
 
+        if not self._remote and not self._url:
+            self._remote = kwargs.get("default_remote", "")
+
     @classmethod
     def from_yaml(
         cls,
         yamldata: Union[Dict[str, str], ProjectEntryDict],
-        default_remote: Optional[Remote] = None,
+        default_remote: str = "",
     ) -> "ProjectEntry":
         """Create a Project Entry from yaml data.
 
@@ -317,15 +320,9 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         return cls(kwargs)
 
     @classmethod
-    def copy(
-        cls, other: "ProjectEntry", default_remote: Optional[Remote] = None
-    ) -> "ProjectEntry":
+    def copy(cls, other: "ProjectEntry") -> "ProjectEntry":
         """Create a Project Entry copy from a Project Entry."""
-        # pylint: disable=protected-access
-        the_copy = copy.copy(other)
-        if not the_copy._remote_obj:
-            the_copy._remote_obj = default_remote
-        return the_copy
+        return copy.copy(other)
 
     def set_remote(self, remote: Remote) -> None:
         """Set the remote."""
