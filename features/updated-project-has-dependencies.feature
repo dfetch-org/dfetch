@@ -23,10 +23,17 @@ Feature: Updated project has dependencies
             """
             manifest:
                 version: 0.0
+                remotes:
+                    - name: github-com-dfetch-org
+                      url-base: https://github.com/dfetch-org/test-repo
+
                 projects:
                     - name: SomeOtherProject
                       dst: SomeOtherProject
                       url: some-remote-server/SomeOtherProject.git
+                      tag: v1
+
+                    - name: ext/test-repo-tag-v1
                       tag: v1
             """
         And a git repository "SomeProjectWithoutChild.git"
@@ -41,6 +48,9 @@ Feature: Updated project has dependencies
 
             -   name: SomeOtherProject
                 url: some-remote-server/SomeOtherProject.git
+                tag: v1
+            -   name: ext/test-repo-tag-v1
+                url: https://github.com/dfetch-org/test-repo
                 tag: v1
 
               SomeProjectWithoutChild: Fetched v1
