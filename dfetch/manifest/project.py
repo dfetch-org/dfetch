@@ -426,6 +426,10 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         recommendation = self.copy(self)
         recommendation._dst = ""  # pylint: disable=protected-access
         recommendation._patch = ""  # pylint: disable=protected-access
+        recommendation._url = self.remote_url  # pylint: disable=protected-access
+        recommendation._remote = ""  # pylint: disable=protected-access
+        recommendation._remote_obj = None  # pylint: disable=protected-access
+        recommendation._repo_path = ""  # pylint: disable=protected-access
         return recommendation
 
     def as_yaml(self) -> Dict[str, str]:

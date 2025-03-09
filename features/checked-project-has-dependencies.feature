@@ -48,9 +48,16 @@ Feature: Check for dependencies in projects
             """
             manifest:
                 version: 0.0
+                remotes:
+                    - name: github-com-dfetch-org
+                      url-base: https://github.com/dfetch-org/test-repo
+
                 projects:
                     - name: SomeOtherProject
                       url: some-remote-server/SomeOtherProject.git
+                      tag: v1
+
+                    - name: ext/test-repo-tag-v1
                       tag: v1
             """
         And a git repository "SomeOtherProject.git"
@@ -67,6 +74,9 @@ Feature: Check for dependencies in projects
 
             -   name: SomeOtherProject
                 url: some-remote-server/SomeOtherProject.git
+                tag: v1
+            -   name: ext/test-repo-tag-v1
+                url: https://github.com/dfetch-org/test-repo
                 tag: v1
             """
 
