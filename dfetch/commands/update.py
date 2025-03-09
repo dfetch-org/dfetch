@@ -142,23 +142,20 @@ class Update(dfetch.commands.command.Command):
         real_path: str,
     ) -> None:
         """Check if project will try to write to the same destination."""
+        if real_path in destinations:
+            destinations.remove(real_path)
+
         wanted_dest = Path(real_path)
 
-        common_paths = [
-            dst
-            for dst in destinations
-            if wanted_dest in Path(dst).parents
-            or Path(dst) in wanted_dest.parents
-            or wanted_dest == Path(dst)
+        overlapping_paths = [
+            dest
+            for dest in destinations
+            if wanted_dest in Path(dest).parents
+            or Path(dest) in wanted_dest.parents
+            or wanted_dest == Path(dest)
         ]
 
-        duplicates = common_paths.count(real_path)
-        try:
-            common_paths.remove(real_path)
-        except ValueError:
-            pass
-
-        if duplicates > 1 or common_paths:
+        if overlapping_paths:
             logger.print_warning_line(
                 project.name,
                 f'Skipping due to overlapping destination: "{project.destination}"',
