@@ -9,10 +9,18 @@ Feature: List dependencies
             manifest:
               version: '0.0'
 
+              remotes:
+                - name: github-com-dfetch-org
+                  url-base: https://github.com/dfetch-org/test-repo
+
               projects:
                 - name: ext/test-repo-tag
                   url: https://github.com/dfetch-org/test-repo
                   branch: main
+
+                - name: ext/test-rev-and-branch
+                  tag: v1
+                  dst: ext/test-rev-and-branch
 
             """
         And all projects are updated
@@ -27,6 +35,15 @@ Feature: List dependencies
                   tag             : <none>
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+                  patch           : <none>
+                  license         : MIT License
+              project             : ext/test-rev-and-branch
+                  remote          : github-com-dfetch-org
+                  remote url      : https://github.com/dfetch-org/test-repo
+                  branch          : master
+                  tag             : v1
+                  last fetch      : 02/07/2021, 20:25:56
+                  revision        : <none>
                   patch           : <none>
                   license         : MIT License
             """
@@ -69,7 +86,7 @@ Feature: List dependencies
             """
             Dfetch (0.9.1)
               project             : ext/test-repo-tag
-                  remote          : <none>
+                  remote          : github-com-dfetch-org
                   remote url      : https://github.com/dfetch-org/test-repo
                   branch          : master
                   tag             : v2.0

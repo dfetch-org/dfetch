@@ -113,7 +113,9 @@ class Manifest:
         if not default_remotes:
             default_remotes = list(self._remotes.values())[0:1]
 
-        self._default_remote = None if not default_remotes else default_remotes[0]
+        self._default_remote_name = (
+            "" if not default_remotes else default_remotes[0].name
+        )
         self._projects = self._init_projects(manifest["projects"])
 
     def _init_projects(
@@ -131,15 +133,14 @@ class Manifest:
             Dict[str, ProjectEntry]: Dictionary with key: Name of project, Value: ProjectEntry
         """
         _projects: Dict[str, ProjectEntry] = {}
+
         for project in projects:
             if isinstance(project, dict):
                 last_project = _projects[project["name"]] = ProjectEntry.from_yaml(
-                    project, self._default_remote
+                    project, self._default_remote_name
                 )
             elif isinstance(project, ProjectEntry):
-                last_project = _projects[project.name] = ProjectEntry.copy(
-                    project, self._default_remote
-                )
+                last_project = _projects[project.name] = ProjectEntry.copy(project)
             else:
                 raise RuntimeError(f"{project} has unknown type")
 
