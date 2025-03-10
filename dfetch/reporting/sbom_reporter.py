@@ -114,8 +114,10 @@ class SbomReporter(Reporter):
         outputter = cast(Json, get_instance(bom=self._bom, output_format=output_format))
 
         parsed = json.loads(outputter.output_as_string())
-        outputter._json_output = json.dumps(  # pylint: disable=protected-access
-            parsed, indent=4
+        outputter._json_output = (
+            json.dumps(  # pylint: disable=protected-access # type: ignore
+                parsed, indent=4
+            )
         )
 
         outputter.output_to_file(outfile, allow_overwrite=True)

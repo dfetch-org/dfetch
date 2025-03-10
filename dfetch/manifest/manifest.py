@@ -144,7 +144,7 @@ class Manifest:
                 last_project = _projects[project["name"]] = ProjectEntry.from_yaml(
                     project, self._default_remote_name
                 )
-            elif isinstance(project, ProjectEntry):
+            elif isinstance(project, ProjectEntry):  # type: ignore
                 last_project = _projects[project.name] = ProjectEntry.copy(project)
             else:
                 raise RuntimeError(f"{project} has unknown type")
@@ -169,7 +169,7 @@ class Manifest:
         for remote in remotes_from_manifest:
             if isinstance(remote, dict):
                 last_remote = remotes[remote["name"]] = Remote.from_yaml(remote)
-            elif isinstance(remote, Remote):
+            elif isinstance(remote, Remote):  # type: ignore
                 last_remote = remotes[remote.name] = Remote.copy(remote)
             else:
                 raise RuntimeError(f"{remote} has unknown type")
