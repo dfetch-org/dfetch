@@ -2,6 +2,7 @@
 
 import os
 import pathlib
+from functools import lru_cache
 from typing import List, Optional
 
 from dfetch.log import get_logger
@@ -17,7 +18,6 @@ logger = get_logger(__name__)
 class GitRepo(VCS):
     """A git repository."""
 
-    DEFAULT_BRANCH = "master"
     NAME = "git"
 
     def __init__(self, project: ProjectEntry):
@@ -77,7 +77,7 @@ class GitRepo(VCS):
             f"/{name.upper()}" for name in self.LICENSE_GLOBS
         ]
 
-        self._local_repo.checkout_version(
+        fetched_sha = self._local_repo.checkout_version(
             remote=self.remote,
             version=rev_or_branch_or_tag,
             src=self.source,
@@ -87,7 +87,7 @@ class GitRepo(VCS):
 
         safe_rmtree(os.path.join(self.local_path, self._local_repo.METADATA_DIR))
 
-        return self._determine_fetched_version(version)
+        return self._determine_fetched_version(version, fetched_sha)
 
     def _determine_what_to_fetch(self, version: Version) -> str:
         """Based on asked version, target to fetch."""
@@ -97,13 +97,25 @@ class GitRepo(VCS):
                 " use complete revision or a branch (or tags instead)"
             )
 
-        return version.revision or version.tag or version.branch or self.DEFAULT_BRANCH
+        return (
+            version.revision
+            or version.tag
+            or version.branch
+            or self._remote_repo.get_default_branch()
+        )
 
-    def _determine_fetched_version(self, version: Version) -> Version:
-        """Based on asked version, determine info of fetched version."""
-        branch = version.branch or self.DEFAULT_BRANCH
-        revision = version.revision
-        if not version.tag and not version.revision:
-            revision = self._remote_repo.last_sha_on_branch(branch)
+    def _determine_fetched_version(self, version: Version, fetched_sha: str) -> Version:
+        """Based on asked & fetched version, determine info of fetched version."""
+        branch = version.branch or self.get_default_branch()
+        if version.tag:
+            return Version(tag=version.tag, branch=branch)
 
-        return Version(tag=version.tag, revision=revision, branch=branch)
+        return Version(
+            branch=branch,
+            revision=version.revision or fetched_sha,
+        )
+
+    @lru_cache()
+    def get_default_branch(self) -> str:
+        """Get the default branch of this repository."""
+        return self._remote_repo.get_default_branch()

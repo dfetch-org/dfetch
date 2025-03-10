@@ -28,7 +28,6 @@ class VCS(ABC):
     """
 
     NAME = ""
-    DEFAULT_BRANCH = ""
     LICENSE_GLOBS = ["licen[cs]e*", "copying*", "copyright*"]
 
     def __init__(self, project: dfetch.manifest.project.ProjectEntry) -> None:
@@ -52,7 +51,7 @@ class VCS(ABC):
 
         wanted_branch, on_disk_branch = "", ""
         if not (self.wanted_version.revision and self.revision_is_enough()):
-            wanted_branch = self.wanted_version.branch or self.DEFAULT_BRANCH
+            wanted_branch = self.wanted_version.branch or self.get_default_branch()
             on_disk_branch = on_disk.branch
 
         wanted_revision = (
@@ -313,7 +312,7 @@ class VCS(ABC):
         if self.wanted_version.branch == " ":
             branch = ""
         else:
-            branch = self.wanted_version.branch or self.DEFAULT_BRANCH
+            branch = self.wanted_version.branch or self.get_default_branch()
 
         if (
             not self.wanted_version.branch
@@ -357,6 +356,10 @@ class VCS(ABC):
     @abstractmethod
     def get_diff(self, old_revision: str, new_revision: Optional[str]) -> str:
         """Get the diff of two revisions."""
+
+    @abstractmethod
+    def get_default_branch(self) -> str:
+        """Get the default branch of this repository."""
 
     @staticmethod
     def is_license_file(filename: str) -> bool:

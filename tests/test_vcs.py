@@ -49,6 +49,9 @@ class ConcreteVCS(VCS):
     def get_diff(self, old_revision, new_revision):
         return ""
 
+    def get_default_branch(self):
+        return ""
+
 
 @pytest.mark.parametrize(
     "name, given_on_disk, given_wanted, expect_wanted, expect_have",

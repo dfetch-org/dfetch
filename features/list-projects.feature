@@ -40,7 +40,7 @@ Feature: List dependencies
               project             : ext/test-rev-and-branch
                   remote          : github-com-dfetch-org
                   remote url      : https://github.com/dfetch-org/test-repo
-                  branch          : master
+                  branch          : main
                   tag             : v1
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : <none>
@@ -88,7 +88,7 @@ Feature: List dependencies
               project             : ext/test-repo-tag
                   remote          : github-com-dfetch-org
                   remote url      : https://github.com/dfetch-org/test-repo
-                  branch          : master
+                  branch          : main
                   tag             : v2.0
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : <none>
