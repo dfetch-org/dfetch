@@ -356,3 +356,7 @@ class SvnRepo(VCS):
             cmd += f":{new_revision}"
 
         return "\n".join(run_on_cmdline(logger, cmd).stdout.decode().splitlines())
+
+    def get_default_branch(self) -> str:
+        """Get the default branch of this repository."""
+        return self.DEFAULT_BRANCH

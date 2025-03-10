@@ -69,6 +69,26 @@ class GitRemote:
             if reference.startswith("refs/tags/")
         ]
 
+    def get_default_branch(self) -> str:
+        """Try to get the default branch or fallback to master."""
+        try:
+            result = run_on_cmdline(
+                logger, f"git ls-remote --symref {self._remote} HEAD"
+            ).stdout.decode()
+        except SubprocessCommandError:
+            logger.debug(
+                f"Failed determining default branch of {self._remote}, falling back to 'master'"
+            )
+            return "master"
+
+        for match in re.finditer(r"ref:\s+refs/heads/(.+)\s+HEAD", result):
+            return str(match.group(1))
+
+        logger.debug(
+            f"Didn't find a HEAD branch in {self._remote}, falling back to 'master'"
+        )
+        return "master"
+
     @staticmethod
     def _ls_remote(remote: str) -> Dict[str, str]:
         result = run_on_cmdline(
@@ -169,7 +189,7 @@ class GitLocalRepo:
         src: Optional[str] = None,
         must_keeps: Optional[List[str]] = None,
         ignore: Optional[Sequence[str]] = None,
-    ) -> None:
+    ) -> str:
         """Checkout a specific version from a given remote.
 
         Args:
@@ -202,8 +222,14 @@ class GitLocalRepo:
             run_on_cmdline(logger, f"git fetch --depth 1 origin {version}")
             run_on_cmdline(logger, "git reset --hard FETCH_HEAD")
 
+            current_sha = (
+                run_on_cmdline(logger, "git rev-parse HEAD").stdout.decode().strip()
+            )
+
             if src:
                 self.move_src_folder_up(remote, src)
+
+            return str(current_sha)
 
     def move_src_folder_up(self, remote: str, src: str) -> None:
         """Move the files from the src folder into the root of the project.
