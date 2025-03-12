@@ -29,7 +29,7 @@ Feature: Check for dependencies in projects
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.9.1)
+            Dfetch (0.10.0)
               SomeProject         : wanted (v1), available (v1)
             """
 
@@ -65,7 +65,7 @@ Feature: Check for dependencies in projects
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.9.1)
+            Dfetch (0.10.0)
             Multiple manifests found, using dfetch.yaml
               SomeProject         : up-to-date (v1)
 
@@ -108,7 +108,7 @@ Feature: Check for dependencies in projects
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.9.1)
+            Dfetch (0.10.0)
             Multiple manifests found, using dfetch.yaml
               SomeProject         : up-to-date (v1)
               SomeOtherProject    : up-to-date (v1)
