@@ -95,10 +95,10 @@ Alternatively in VSCode run the ``Create Docs`` task from the command palette.
 Releasing
 ---------
 
-- Update ``CHANGELOG.rst`` with release date.
 - Bump version number in ``dfetch/__init__.py``.
-- Find/replace ``Dfetch(x.x.x)`` with the new version number ``Dfetch (y.y.y)``.
+- Run ``./script/release.py``.
 - Double check any feature scenarios for a version number.
+- Run all unit / feature tests.
 - Re-generate asciicasts using VSCode task (linux/mac).
 - Commit all release changes.
 - Create annotated tag and push it:
@@ -117,5 +117,5 @@ Releasing
 
 .. code-block:: rst
 
-    Release 0.0.3 (In development)
-    ===================================
+    Release 0.0.3 (unreleased)
+    ====================================
