@@ -20,6 +20,8 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 `CPM.cmake`_                ✔    ✘       ✔        ✔         ✘ (C/C++)             ✘ (CMake)
 `CPPAN`_                    ✔    ✘       ✔        ✔         ✘ (C/C++)               ✔
 `degasolv`_                 ✔    ✘       ✔        ✔             ✔                   ✔
+`depman`_                   ✔    ✘       ✔        ✔             ✔                   ✔
+`depman bitrise`_           ✔    ✘       ✘        ✔             ✔                   ✔
 `Garden`_                   ✔    ✘       ✘        ✔             ✔                   ✔
 `gil`_                      ✔    ✘       ✔        ✔             ✔                   ✔
 `Git submodules`_           ✔    ✘       ✔        ✔             ✔                   ✔
@@ -68,6 +70,8 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 .. _`CPM.cmake`: https://github.com/cpm-cmake/CPM.cmake
 .. _`CPPAN`: https://github.com/cppan/cppan
 .. _`degasolv`: https://github.com/djha-skin/degasolv
+.. _`depman`: https://github.com/depman-org/depman
+.. _`depman bitrise`: https://github.com/bitrise-io/depman
 .. _`Garden`: https://github.com/davvid/garden
 .. _`gil`: https://github.com/chronoxor/gil
 .. _`Git submodules`: https://git-scm.com/book/en/v2/Git-Tools-Submodules
