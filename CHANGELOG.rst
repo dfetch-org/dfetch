@@ -1,5 +1,5 @@
-Release 0.10.0 (unreleased)
-===================================
+Release 0.10.0 (released 2025-03-12)
+====================================
 
 * Support python 3.13
 * Fix too strict overlapping path check (#684)
