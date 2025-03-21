@@ -35,6 +35,14 @@ class VCS(ABC):
         self.__project = project
         self.__metadata = Metadata.from_project_entry(self.__project)
 
+        self._show_animations = not self._running_in_ci()
+
+    @staticmethod
+    def _running_in_ci() -> bool:
+        """Are we running in CI."""
+        ci_env_var = os.getenv("CI", "")
+        return bool(ci_env_var) and ci_env_var[0].lower() in ("t", "1", "y")
+
     def check_wanted_with_local(self) -> Tuple[Optional[Version], Optional[Version]]:
         """Given the project entry in the manifest, get the relevant version from disk.
 
@@ -109,6 +117,7 @@ class VCS(ABC):
             text=f"Fetching {self.__project.name} {to_fetch}",
             spinner="dots",
             text_color="green",
+            enabled=self._show_animations,
         ):
             actually_fetched = self._fetch_impl(to_fetch)
         self._log_project(f"Fetched {actually_fetched}")
@@ -148,6 +157,7 @@ class VCS(ABC):
             text=f"Checking {self.__project.name}",
             spinner="dots",
             text_color="green",
+            enabled=self._show_animations,
         ):
             latest_version = self._check_for_newer_version()
 

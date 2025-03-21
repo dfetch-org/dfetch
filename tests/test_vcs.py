@@ -3,7 +3,8 @@
 # mypy: ignore-errors
 # flake8: noqa
 
-from unittest.mock import MagicMock, Mock, patch
+from typing import Optional
+from unittest.mock import patch
 
 import pytest
 
@@ -95,7 +96,11 @@ class ConcreteVCS(VCS):
     ],
 )
 def test_check_wanted_with_local(
-    name, given_on_disk, given_wanted, expect_wanted, expect_have
+    name: str,
+    given_on_disk: Version | None,
+    given_wanted: Version,
+    expect_wanted: Version,
+    expect_have: Version | None,
 ):
     with patch("dfetch.project.vcs.os.path.exists") as mocked_path_exists:
         with patch("dfetch.project.vcs.Metadata.from_file") as mocked_metadata:
@@ -120,7 +125,9 @@ def test_check_wanted_with_local(
         ("same-hash", "1234", "1234", False),
     ],
 )
-def test_are_there_local_changes(name, hash_in_metadata, current_hash, expectation):
+def test_are_there_local_changes(
+    name: str, hash_in_metadata: str, current_hash: str, expectation: bool
+):
     with patch("dfetch.project.vcs.hash_directory") as mocked_hash_directory:
         with patch("dfetch.project.vcs.VCS._on_disk_hash") as mocked_on_disk_hash:
             vcs = ConcreteVCS(ProjectEntry({"name": "proj1"}))
@@ -129,3 +136,28 @@ def test_are_there_local_changes(name, hash_in_metadata, current_hash, expectati
             mocked_hash_directory.return_value = current_hash
 
             assert expectation == vcs._are_there_local_changes()
+
+
+@pytest.mark.parametrize(
+    "ci_env_value, expected_result",
+    [
+        ("true", True),
+        ("1", True),
+        ("True", True),
+        ("yes", True),
+        ("YES", True),
+        ("false", False),
+        (None, False),
+        (0, False),
+        ("other", False),
+    ],
+)
+def test_ci_enabled(
+    monkeypatch: pytest.MonkeyPatch, ci_env_value: Optional[str], expected_result: bool
+):
+    if ci_env_value is None:
+        monkeypatch.delenv("CI", raising=False)
+    else:
+        monkeypatch.setenv("CI", ci_env_value)
+
+    assert ConcreteVCS._running_in_ci() == expected_result
