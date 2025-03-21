@@ -21,7 +21,7 @@ you can prevent *Dfetch* from checking child-manifests with ``--no-recommendatio
 
 import argparse
 import os
-from typing import Any, List  # pylint: disable=unused-import
+from typing import List
 
 import dfetch.commands.command
 import dfetch.manifest.manifest
@@ -46,7 +46,7 @@ class Check(dfetch.commands.command.Command):
     """
 
     @staticmethod
-    def create_menu(subparsers: "argparse._SubParsersAction[Any]") -> None:
+    def create_menu(subparsers: dfetch.commands.command.SubparserActionType) -> None:
         """Add the parser menu for this action."""
         parser = dfetch.commands.command.Command.parser(subparsers, Check)
         parser.add_argument(

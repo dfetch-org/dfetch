@@ -70,6 +70,11 @@ For more information see the `Github Sarif documentation`_.
 
 """
 
+# Underlying sarif-tools is generated with attr which pyright does not support
+# See https://github.com/microsoft/pyright/issues/146
+# pyright: reportCallIssue=false, reportAttributeAccessIssue=false, reportUnknownVariableType=false
+# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportUnknownParameterType=false
+
 import json
 import os
 from enum import Enum
@@ -154,7 +159,7 @@ class SarifReporter(CheckReporter):
             )
         ]
         self._run.results = []
-        self._run.newline_sequences = None
+        self._run.newline_sequences = []
 
     @staticmethod
     def _severity_to_level(severity: IssueSeverity) -> SarifResultLevel:

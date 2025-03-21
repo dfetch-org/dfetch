@@ -2,7 +2,6 @@
 
 import argparse
 import platform
-from typing import Any  # pylint: disable=unused-import
 
 import dfetch.commands.command
 from dfetch.log import get_logger
@@ -18,7 +17,7 @@ class Environment(dfetch.commands.command.Command):
     """
 
     @staticmethod
-    def create_menu(subparsers: "argparse._SubParsersAction[Any]") -> None:
+    def create_menu(subparsers: dfetch.commands.command.SubparserActionType) -> None:
         """Add the parser menu for this action."""
         dfetch.commands.command.Command.parser(subparsers, Environment)
 

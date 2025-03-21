@@ -41,7 +41,6 @@ In our above example this would for instance result in:
 import argparse
 import os
 import shutil
-from typing import Any  # pylint: disable=unused-import
 from typing import List
 
 import dfetch.commands.command
@@ -63,7 +62,7 @@ class Freeze(dfetch.commands.command.Command):
     """
 
     @staticmethod
-    def create_menu(subparsers: "argparse._SubParsersAction[Any]") -> None:
+    def create_menu(subparsers: dfetch.commands.command.SubparserActionType) -> None:
         """Add the parser menu for this action."""
         dfetch.commands.command.Command.parser(subparsers, Freeze)
 
