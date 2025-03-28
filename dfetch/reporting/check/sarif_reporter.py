@@ -154,7 +154,6 @@ class SarifReporter(CheckReporter):
             )
         ]
         self._run.results = []
-        self._run.newline_sequences = None
 
     @staticmethod
     def _severity_to_level(severity: IssueSeverity) -> SarifResultLevel:
