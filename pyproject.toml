@@ -87,7 +87,7 @@ development = [
     'pyright==1.1.399',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml
     'pre-commit==4.2.0',
-    'ruff==0.11.5',
+    'ruff==0.11.6',
 ]
 docs = [
     'sphinx==8.2.3',
