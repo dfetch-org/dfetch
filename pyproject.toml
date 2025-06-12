@@ -98,7 +98,7 @@ docs = [
     'sphinxcontrib-details-directive==0.1.0',
     'sphinx-sitemap==2.6.0',
 ]
-test = ['pytest==8.4.0', 'pytest-cov==6.1.1', 'behave==1.2.6']
+test = ['pytest==8.4.0', 'pytest-cov==6.2.1', 'behave==1.2.6']
 casts = ['asciinema==2.4.0']
 
 
