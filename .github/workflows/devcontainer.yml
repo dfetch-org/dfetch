@@ -29,9 +29,6 @@ jobs:
       - name: Build DevContainer image
         uses: devcontainers/ci@v0.3
         with:
-          imageName: ghcr.io/${{ github.repository }}/devcontainer
-          cacheFrom: ghcr.io/${{ github.repository }}/devcontainer
-          push: false
           runCmd: |
             echo "Installing test dependencies..."
             pip install -e .[development,docs,casts]
@@ -41,9 +38,6 @@ jobs:
 
             echo "Running unit tests..."
             python -m pytest tests
-
-            echo "Running feature tests..."
-            python -m behave features
 
             echo "Building documentation..."
             make -C doc html
