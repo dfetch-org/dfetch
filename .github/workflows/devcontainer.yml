@@ -1,0 +1,50 @@
+name: DevContainer
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  devcontainer:
+    name: DevContainer Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: devcontainer-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            devcontainer-${{ runner.os }}-
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build DevContainer image
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: ghcr.io/${{ github.repository }}/devcontainer
+          cacheFrom: ghcr.io/${{ github.repository }}/devcontainer
+          push: false
+          runCmd: |
+            echo "Installing test dependencies..."
+            pip install -e .[development,docs,casts]
+
+            echo "Running pre-commit checks..."
+            pre-commit run --all-files
+
+            echo "Running unit tests..."
+            python -m pytest tests
+
+            echo "Running feature tests..."
+            python -m behave features
+
+            echo "Building documentation..."
+            make -C doc html
+            make -C doc/landing-page html
