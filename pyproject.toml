@@ -128,6 +128,7 @@ ignore = "W503"
 files = "dfetch"
 ignore_missing_imports = true
 strict = true
+warn_unused_ignores = false
 
 [tool.doc8]
 ignore-path = "doc/_build,doc/static/uml/styles/plantuml-c4"
