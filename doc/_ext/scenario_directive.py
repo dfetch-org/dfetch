@@ -27,6 +27,7 @@ from typing import Tuple
 
 from docutils import nodes
 from docutils.parsers.rst import Directive
+from docutils.statemachine import ViewList
 
 
 class ScenarioIncludeDirective(Directive):
@@ -87,8 +88,12 @@ class ScenarioIncludeDirective(Directive):
         :start-after: Scenario: {scenario_title}
         {end_before}
 """
+            viewlist = ViewList()
+            for i, line in enumerate(directive_rst.splitlines()):
+                viewlist.append(line, source=f"<{self.name} directive>", offset=i)
+
             self.state.nested_parse(
-                self.state_machine.input_lines.__class__(directive_rst.splitlines()),
+                viewlist,
                 self.content_offset,
                 container,
             )
