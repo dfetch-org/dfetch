@@ -1,0 +1,72 @@
+name: Standalone binaries
+
+on:
+  push:
+    tags:
+      - '*'  # Only run for version tags (e.g., v1.0.0)
+    branches:
+      - 'spoorcc/issue701'
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]  # Build for all platforms
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install PyOxidizer
+        run: cargo install pyoxidizer
+
+      - name: Build Optimized Binary
+        run: pyoxidizer build \
+             --var=policy.strip_all_shared_libraries=true \
+             --var=policy.optimize_bytecode=true \
+             --var=dist.embed_python_stdlib=true \
+             --var=dist.fully_static=true
+
+      - name: Compress Binary with UPX
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" || "$RUNNER_OS" == "macOS" ]]; then
+            sudo apt-get install -y upx
+          elif [[ "$RUNNER_OS" == "Windows" ]]; then
+            choco install upx
+          fi
+          upx --best --lzma build/dist/*/dfetch*
+
+      # - name: Sign Windows Binary
+      #   if: matrix.os == 'windows-latest'
+      #   shell: pwsh
+      #   run: |
+      #     echo "${{ secrets.WINDOWS_CERT }}" | base64 -d > dfetch.pfx
+      #     & "C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe" sign /f dfetch.pfx /p "${{ secrets.WINDOWS_CERT_PASSWORD }}" /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 build/dist/windows/dfetch.exe
+
+      # - name: Sign macOS Binary
+      #   if: matrix.os == 'macos-latest'
+      #   run: |
+      #     echo "${{ secrets.APPLE_CERT }}" | base64 --decode > apple-cert.p12
+      #     security import apple-cert.p12 -P "${{ secrets.APPLE_CERT_PASSWORD }}" -A
+      #     codesign --deep --force --verbose --sign "Developer ID Application" build/dist/macos/dfetch
+
+      # - name: Sign Linux Binary
+      #   if: matrix.os == 'ubuntu-latest'
+      #   run: |
+      #     echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+      #     gpg --batch --yes --detach-sign --armor --passphrase "${{ secrets.GPG_PASSPHRASE }}" --pinentry-mode loopback build/dist/linux/dfetch
+
+      - name: Rename Binary for Release
+        run: |
+          mv build/dist release
+
+      - name: Upload Built Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: dfetch-${{ matrix.os }}
+          path: release/
