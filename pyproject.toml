@@ -82,7 +82,7 @@ development = [
     #'flake8==5.0.4', # version 6.x.x requires python >= 3.8.1 (but 3.7 support window is until 2023-06-27)
     'bandit==1.8.5',
     'vulture==2.14',
-    'pyroma==4.2',
+    'pyroma==4.3.1',
     'isort==6.0.1',
     'pylint==3.3.7',
     'pyright==1.1.402',
