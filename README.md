@@ -37,11 +37,29 @@ See [alternatives](https://dfetch.readthedocs.io/en/latest/alternatives.html) fo
 ## Install
 
 ### Stable
+
 ```bash
 pip install dfetch
 ```
 
 ### latest version
+
 ```bash
 pip install https://github.com/dfetch-org/dfetch/archive/main.zip
+```
+
+## Github Action
+
+You can use DFetch in your Github Actions workflow to check your dependencies.
+The results will be uploaded to Github. Add the following to your workflow file:
+
+```yaml
+jobs:
+  dfetch-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Dfetch Check
+        uses: dfetch-org/dfetch@main
+        with:
+          working-directory: '.' # optional, defaults to project root
 ```

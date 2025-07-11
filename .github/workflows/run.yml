@@ -31,7 +31,7 @@ jobs:
       - run: dfetch update
       - run: dfetch update
       - name: Dfetch SARIF Check
-        uses: ./.github/actions/dfetch-action
+        uses: .
         with:
           working-directory: '.'
 
@@ -87,7 +87,7 @@ jobs:
       - run: dfetch update
       - run: dfetch update
       - name: Dfetch SARIF Check
-        uses: ./.github/actions/dfetch-action
+        uses: .
         with:
           working-directory: '.'
 

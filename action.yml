@@ -1,0 +1,38 @@
+name: 'Dfetch Check'
+description: 'Run dfetch check and upload SARIF results.'
+author: 'dfetch-org'
+branding:
+  icon: 'check-circle'
+  color: 'blue'
+
+inputs:
+  working-directory:
+    description: 'Directory to run dfetch in (default: project root)'
+    required: false
+    default: '.'
+
+outputs:
+  sarif-path:
+    description: 'Path to the generated SARIF file.'
+    value: sarif.json
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    - name: Install dfetch
+      run: pip install .
+      shell: bash
+    - name: Run dfetch check (SARIF)
+      run: dfetch check --sarif sarif.json
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: sarif.json
