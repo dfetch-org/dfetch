@@ -383,6 +383,19 @@ class Manifest:
             possibles=[project.name for project in all_projects],
         )
 
+    def remove(self, project_name: str) -> None:
+        """Remove a project from the manifest."""
+        if project_name not in self._projects:
+            possibles = [project.name for project in self._projects.values()]
+            raise RequestedProjectNotFoundError([project_name], possibles)
+
+        del self._projects[project_name]
+
+        for index, project in enumerate(self._doc["manifest"]["projects"]):
+            if project["name"].data == project_name:
+                del self._doc["manifest"]["projects"][index]
+                break
+
     @property
     def remotes(self) -> Sequence[Remote]:
         """Get a list of Remotes from the manifest."""
