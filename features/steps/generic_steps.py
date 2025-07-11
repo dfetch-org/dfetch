@@ -276,3 +276,9 @@ def step_impl(context, path):
     assert expected_dir == actual_dir, os.linesep.join(
         ["", "Expected:", expected_dir, "", "Actual:", actual_dir]
     )
+
+
+@then("the directory '{path' should be removed from disk")
+def step_impl(_, path):
+    """Check if a directory is removed."""
+    assert not os.path.exists(path), f"Directory {path} still exists!"

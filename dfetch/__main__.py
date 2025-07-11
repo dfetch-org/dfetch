@@ -13,6 +13,7 @@ import dfetch.commands.environment
 import dfetch.commands.freeze
 import dfetch.commands.import_
 import dfetch.commands.init
+import dfetch.commands.remove
 import dfetch.commands.report
 import dfetch.commands.update
 import dfetch.commands.validate
@@ -43,6 +44,7 @@ def create_parser() -> argparse.ArgumentParser:
     dfetch.commands.freeze.Freeze.create_menu(subparsers)
     dfetch.commands.import_.Import.create_menu(subparsers)
     dfetch.commands.init.Init.create_menu(subparsers)
+    dfetch.commands.remove.Remove.create_menu(subparsers)
     dfetch.commands.report.Report.create_menu(subparsers)
     dfetch.commands.update.Update.create_menu(subparsers)
     dfetch.commands.validate.Validate.create_menu(subparsers)
