@@ -18,6 +18,8 @@
 #           working-directory: '.' # optional, defaults to project root
 # ```
 #
+# This action can be used as a step in any workflow, including those with other actions or jobs.
+#
 # ## Inputs
 # - `working-directory`: Directory to run dfetch in (default: project root)
 #
@@ -47,6 +49,8 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
