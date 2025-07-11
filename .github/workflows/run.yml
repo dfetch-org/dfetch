@@ -30,11 +30,10 @@ jobs:
       - run: dfetch check
       - run: dfetch update
       - run: dfetch update
-      - run: dfetch check --sarif sarif.json
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Dfetch SARIF Check
+        uses: ./github/actions/dfetch-action
         with:
-          sarif_file: sarif.json
+          working-directory: '.'
 
       - name: Run example
         working-directory: ./example

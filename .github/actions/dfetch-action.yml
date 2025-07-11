@@ -15,12 +15,10 @@
 #       - name: Run Dfetch SARIF Check
 #         uses: dfetch-org/dfetch/.github/actions/dfetch-action@main
 #         with:
-#           dfetch-install: '.'
 #           working-directory: '.' # optional, defaults to project root
 # ```
 #
 # ## Inputs
-# - `dfetch-install`: pip install argument for dfetch (default: . for local)
 # - `working-directory`: Directory to run dfetch in (default: project root)
 #
 # ## Outputs
@@ -36,10 +34,6 @@ branding:
   color: 'blue'
 
 inputs:
-  dfetch-install:
-    description: 'pip install argument for dfetch (default: . for local)'
-    required: false
-    default: '.'
   working-directory:
     description: 'Directory to run dfetch in (default: project root)'
     required: false
@@ -58,7 +52,7 @@ runs:
       with:
         python-version: '3.13'
     - name: Install dfetch
-      run: pip install ${{ inputs.dfetch-install }}
+      run: pip install .
       shell: bash
     - name: Run dfetch check (SARIF)
       run: dfetch check --sarif sarif.json
