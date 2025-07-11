@@ -54,6 +54,20 @@ Add
 
 .. seealso:: :doc:`../howto/adding-a-project` — walks through adding a new dependency from start to finish.
 
+Remove
+------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: remove
+
+.. asciinema:: ../asciicasts/remove.cast
+
+.. automodule:: dfetch.commands.remove
+
+.. seealso:: :doc:`../howto/remove-a-project` — how to remove projects from your manifest.
+
 Check
 -----
 .. argparse::

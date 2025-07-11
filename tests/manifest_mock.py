@@ -19,7 +19,22 @@ def mock_manifest(projects, path: str = "/some/path") -> MagicMock:
         project_mocks += [mock_project]
 
     mocked_manifest = MagicMock(spec=Manifest, projects=project_mocks, path=path)
-    mocked_manifest.selected_projects.return_value = project_mocks
+
+    def mock_selected_projects(names):
+        if not names:
+            return project_mocks
+        filtered = [p for p in project_mocks if p.name in names]
+        if len(filtered) != len(names):
+            from dfetch.manifest.manifest import RequestedProjectNotFoundError
+
+            unfound = [
+                name for name in names if not any(p.name == name for p in project_mocks)
+            ]
+            possibles = [p.name for p in project_mocks]
+            raise RequestedProjectNotFoundError(unfound, possibles)
+        return filtered
+
+    mocked_manifest.selected_projects.side_effect = mock_selected_projects
 
     mocked_manifest.check_name_uniqueness.side_effect = lambda name: (
         Manifest.check_name_uniqueness(mocked_manifest, name)

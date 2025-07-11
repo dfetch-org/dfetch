@@ -389,6 +389,24 @@ def test_update_removes_stale_revision_when_pinned_by_tag() -> None:
     assert "branch:" not in result
 
 
+def test_remove_last_project_updates_manifest_with_empty_list() -> None:
+    """Manifest.remove should preserve the manifest with an empty projects list."""
+    text = (
+        "manifest:\n"
+        "  version: '0.0'\n"
+        "\n"
+        "  projects:\n"
+        "    - name: myproject\n"
+        "      url: https://example.com/myproject\n"
+    )
+
+    manifest = Manifest.from_yaml(text)
+    manifest.remove("myproject")
+
+    assert manifest.version == "0.0"
+    assert not manifest.projects
+
+
 # ---------------------------------------------------------------------------
 # Version field: always serialised as a quoted string
 # ---------------------------------------------------------------------------

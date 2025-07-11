@@ -51,6 +51,7 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    howto/migration
    howto/adding-a-project
    howto/updating-projects
+   howto/remove-a-project
    howto/patching
    howto/check-ci
    howto/sbom
