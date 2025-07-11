@@ -1,10 +1,11 @@
-
 # Dfetch SARIF Check Action
 # =========================
 #
 # This action installs dfetch, runs `dfetch check --sarif`, and uploads the SARIF file for code scanning.
 #
 # ## Usage Example
+#
+# > **Note:** You must use `actions/checkout@v4` before this action to ensure your repository is available.
 #
 # ```yaml
 # jobs:
