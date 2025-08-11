@@ -90,4 +90,3 @@ jobs:
         uses: ./
         with:
           working-directory: '.'
-
