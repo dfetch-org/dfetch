@@ -62,7 +62,7 @@ def step_impl(context, tagname, name):
         tag(tagname)
 
 
-@given('a git-repository "{name}" with the manifest')
+@given('a git-repository "{name}" with the manifest:')
 @given('a git repository "{name}"')
 def step_impl(context, name):
     remote_path = os.path.join(context.remotes_dir, name)
