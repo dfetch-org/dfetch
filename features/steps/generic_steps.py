@@ -12,6 +12,7 @@ from itertools import zip_longest
 from typing import Iterable, List, Optional, Pattern, Tuple
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
+from behave.runner import Context
 
 from dfetch.__main__ import DfetchFatalException, run
 from dfetch.util.util import in_directory
@@ -29,8 +30,8 @@ def remote_server_path(context):
     return "/".join(context.remotes_dir_path.split(os.sep))
 
 
-def call_command(context, args: list[str], path: Optional[str] = ".") -> None:
-    context.log_capture.buffer = []
+def call_command(context: Context, args: list[str], path: Optional[str] = ".") -> None:
+    length_at_start = len(context.captured.output)
     with in_directory(path or "."):
         try:
             run(args)
@@ -39,7 +40,7 @@ def call_command(context, args: list[str], path: Optional[str] = ".") -> None:
             context.cmd_returncode = 1
     # Remove the color code + title
     context.cmd_output = dfetch_title.sub(
-        "", ansi_escape.sub("", context.log_capture.getvalue())
+        "", ansi_escape.sub("", context.captured.output[length_at_start:].strip("\n"))
     )
 
 
