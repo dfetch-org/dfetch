@@ -1,6 +1,6 @@
 """Steps for features tests."""
 
-# pyright: reportRedeclaration=false, reportAttributeAccessIssue=false
+# pyright: reportRedeclaration=false, reportAttributeAccessIssue=false, reportCallIssue=false
 # pylint: disable=function-redefined, missing-function-docstring
 
 import difflib
