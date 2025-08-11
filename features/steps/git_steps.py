@@ -1,6 +1,6 @@
 """Steps for features tests."""
 
-# pylint: disable=function-redefined, missing-function-docstring, import-error
+# pylint: disable=function-redefined, missing-function-docstring, import-error, not-callable
 # pyright: reportRedeclaration=false, reportAttributeAccessIssue=false, reportCallIssue=false
 
 import os

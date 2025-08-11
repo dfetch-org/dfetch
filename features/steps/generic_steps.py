@@ -1,7 +1,7 @@
 """Steps for features tests."""
 
+# pylint: disable=function-redefined, missing-function-docstring, not-callable
 # pyright: reportRedeclaration=false, reportAttributeAccessIssue=false, reportCallIssue=false
-# pylint: disable=function-redefined, missing-function-docstring
 
 import difflib
 import json
