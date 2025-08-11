@@ -268,7 +268,7 @@ def step_impl(context):
         assert os.listdir(project["path"]), f"{project} is just an empty directory!"
 
 
-@then("'{path}' looks like")
+@then("'{path}' looks like:")
 def step_impl(context, path):
     expected_dir = context.text.strip()
     actual_dir = list_dir(path).strip()
