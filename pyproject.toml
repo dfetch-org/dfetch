@@ -48,7 +48,7 @@ dependencies = [
     "colorama==0.4.6",
     "typing-extensions==4.7.1; python_version <= '3.7.0'",
     "typing-extensions==4.13.2; python_version <= '3.8.0'",
-    "typing-extensions==4.14.1; python_version > '3.8.0'",
+    "typing-extensions==4.15.0; python_version > '3.8.0'",
     "sarif-om==1.0.4",
     "semver==3.0.4",
     "patch-ng==1.18.1",
