@@ -16,8 +16,7 @@ See https://cyclonedx.org/use-cases/ for more details.
 """
 
 import json
-import re
-from typing import List, cast
+from typing import cast
 
 from cyclonedx.model import (
     ExternalReference,
@@ -31,9 +30,8 @@ from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.output import get_instance
 from cyclonedx.output.json import Json
 from cyclonedx.schema import OutputFormat
-from packageurl import PackageURL
 
-import dfetch.util.util
+import dfetch.util.purl
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
 
@@ -41,8 +39,6 @@ from dfetch.reporting.reporter import Reporter
 class SbomReporter(Reporter):
     """Reporter for generating SBoM's."""
 
-    url_splitter = re.compile(r"([^\/)]+)")
-    github_url = re.compile(r"github.com\/(?P<group>.+)\/(?P<repo>[^\s\.]+)[\.]?")
     dfetch_tool = Tool(vendor="dfetch-org", name="dfetch", version=dfetch.__version__)
 
     name = "SBoM"
@@ -56,55 +52,30 @@ class SbomReporter(Reporter):
         self, project: ProjectEntry, license_name: str, version: str
     ) -> None:
         """Add a project to the report."""
-        match = self.github_url.search(project.remote_url)
-        if match:
-            component = Component(
-                name=project.name,
-                version=version,
-                type=ComponentType.LIBRARY,
-                purl=PackageURL(
-                    type="github",
-                    name=match.group("repo"),
-                    version=version,
-                    namespace=match.group("group"),
-                    subpath=project.source or None,
-                ),
-            )
-        else:
-            parts = self._split_url(project.remote_url)
-            component = Component(
-                name=project.name,
-                version=version,
-                type=ComponentType.LIBRARY,
-                purl=PackageURL(
-                    type="generic",
-                    version=version,
-                    qualifiers=f"download_url={project.remote_url}",
-                    namespace="/".join(parts),
-                    subpath=project.source or None,
-                    name=project.name,
-                ),
-                group="/".join(parts),
-            )
+        purl = dfetch.util.purl.remote_url_to_purl(
+            project.remote_url, version=version, subpath=project.source or None
+        )
+
+        component = Component(
+            name=project.name,
+            version=version,
+            type=ComponentType.LIBRARY,
+            purl=purl,
+        )
+
+        if purl.type not in ["github", "bitbucket"]:
+            component.group = purl.namespace
+
             component.external_references.add(
                 ExternalReference(
                     type=ExternalReferenceType.VCS,
-                    url=XsUri(project.remote_url),
+                    url=XsUri(purl.qualifiers.get("vcs_url", "")),
                 )
             )
 
         if license_name:
             component.licenses.add(LicenseChoice(expression=license_name))
         self._bom.components.add(component)
-
-    @staticmethod
-    def _split_url(url: str) -> List[str]:
-        """Split the url in elements."""
-        return [
-            part.group()
-            for part in SbomReporter.url_splitter.finditer(url)
-            if not part.group().endswith(":")  # Skip protocol specifiers
-        ]
 
     def dump_to_file(self, outfile: str) -> bool:
         """Dump the SBoM to file."""
