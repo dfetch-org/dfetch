@@ -27,6 +27,9 @@ BITBUCKET_REGEX = re.compile(
     re.IGNORECASE,
 )
 
+# These domains have no specific Purl type, but adding the domain to the purl doesn't add any value
+EXCLUDED_DOMAINS = ["gitlab", "gitea", "gitee"]
+
 
 def _handle_github(
     remote_url: str,
@@ -106,7 +109,7 @@ def _handle_ssh(
         domain = NO_FETCH_EXTRACT(match.group("host")).domain
 
         parts: list[str] = []
-        if domain not in ["gitlab", "gitea", "gitee"]:
+        if domain not in EXCLUDED_DOMAINS:
             parts.append(domain)
 
         path = match.group("path")
@@ -135,7 +138,7 @@ def _handle_generic(
     domain = NO_FETCH_EXTRACT(remote_url).domain
 
     parts: list[str] = []
-    if domain not in ["gitlab", "gitea", "gitee"]:
+    if domain not in EXCLUDED_DOMAINS:
         parts.append(domain)
 
     if path:
