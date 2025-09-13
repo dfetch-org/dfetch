@@ -2,6 +2,7 @@ Release 0.11.0 (unreleased)
 ====================================
 
 * Don't show animation when running in CI (#702)
+* Improve logic for creating Purls in SBoM (#780)
 
 Release 0.10.0 (released 2025-03-12)
 ====================================
