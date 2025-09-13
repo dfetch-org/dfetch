@@ -30,6 +30,9 @@ BITBUCKET_REGEX = re.compile(
 # These domains have no specific Purl type, but adding the domain to the purl doesn't add any value
 EXCLUDED_DOMAINS = ["gitlab", "gitea", "gitee"]
 
+# Name given to a package or group if it is not extractable from the URL
+DEFAULT_NAME = "unknown"
+
 
 def _handle_github(
     remote_url: str,
@@ -83,7 +86,7 @@ def _handle_svn(
         parts: list[str] = [domain]
         if path:
             parts.extend(path.split("/"))
-        name = parts[-1] if parts else "unknown"
+        name = parts[-1] if parts else DEFAULT_NAME
         namespace = "/".join(parts[:-1])
 
         return PackageURL(
@@ -115,7 +118,7 @@ def _handle_ssh(
         path = match.group("path")
         if path:
             parts.extend(path.replace(".git", "").split("/"))
-        name = parts[-1] if parts else "unknown"
+        name = parts[-1] if parts else DEFAULT_NAME
         namespace = "/".join(parts[:-1])
         return PackageURL(
             type="generic",
@@ -143,7 +146,7 @@ def _handle_generic(
 
     if path:
         parts.extend(path.replace(".git", "").split("/"))
-    name = parts[-1] if parts else "unknown"
+    name = parts[-1] if parts else DEFAULT_NAME
     namespace = "/".join(parts[:-1])
     return PackageURL(
         type="generic",
