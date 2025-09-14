@@ -66,12 +66,14 @@ class SbomReporter(Reporter):
         if purl.type not in ["github", "bitbucket"]:
             component.group = purl.namespace
 
-            component.external_references.add(
-                ExternalReference(
-                    type=ExternalReferenceType.VCS,
-                    url=XsUri(purl.qualifiers.get("vcs_url", "")),
+            vcs_url = purl.qualifiers.get("vcs_url", "")
+            if vcs_url:
+                component.external_references.add(
+                    ExternalReference(
+                        type=ExternalReferenceType.VCS,
+                        url=XsUri(vcs_url),
+                    )
                 )
-            )
 
         if license_name:
             component.licenses.add(LicenseChoice(expression=license_name))
