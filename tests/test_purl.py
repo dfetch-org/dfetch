@@ -83,12 +83,32 @@ from dfetch.util.purl import remote_url_to_purl
             "pkg:generic/unknown/namespace/name?vcs_url=git%40unknown.org:namespace/name.git",
         ),
         (
+            "ssh://git@git.mycompany.eu/org/repo",
+            "pkg:generic/mycompany/org/repo?vcs_url=ssh://git%40git.mycompany.eu/org/repo",
+        ),
+        (
+            "svn://svn.mycompany.local/org/repo",
+            "pkg:generic/mycompany/org/repo?vcs_url=svn://svn.mycompany.local/org/repo",
+        ),
+        (
+            "svn://svn.mycompany.local/svn/org/repo",
+            "pkg:generic/mycompany/org/repo?vcs_url=svn://svn.mycompany.local/svn/org/repo",
+        ),
+        (
+            "svn://svn.code.sf.net/p/tortoisesvn/code",
+            "pkg:generic/tortoisesvn/code?vcs_url=svn://svn.code.sf.net/p/tortoisesvn/code",
+        ),
+        (
             "https://vcs.example.com/org/repo",
             "pkg:generic/example/org/repo?vcs_url=https://vcs.example.com/org/repo",
         ),
         (
             "https://vcs.example.co.uk/org/repo",
             "pkg:generic/example/org/repo?vcs_url=https://vcs.example.co.uk/org/repo",
+        ),
+        (
+            "git://git.git.savannah.gnu.org/automake.git",
+            "pkg:generic/automake?vcs_url=git://git.git.savannah.gnu.org/automake.git",
         ),
     ],
 )
