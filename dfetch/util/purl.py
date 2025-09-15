@@ -10,9 +10,15 @@ from urllib.parse import urlparse
 from packageurl import PackageURL
 from tldextract import TLDExtract
 
-NO_FETCH_EXTRACT = TLDExtract(suffix_list_urls=())
+NO_FETCH_EXTRACT = TLDExtract(suffix_list_urls=(), extra_suffixes=("local",))
+
+# Matches SSH-style Git URLs like:
+#   git@gitlab.com:org/repo.git
+#   git+ssh://git@github.com/org/repo
+#   ssh://git@git.mycompany.eu/org/repo
+#
 SSH_REGEX = re.compile(
-    r"^(?:git@|git\+ssh://git@)(?P<host>[^/:]+)[:/](?P<path>.+?)(?:\.git)?$",
+    r"^(?:git@|git\+ssh://git@|ssh://)(?P<host>[^/:]+)[:/](?P<path>.+?)(?:\.git)?$",
     re.IGNORECASE,
 )
 
@@ -27,13 +33,13 @@ BITBUCKET_REGEX = re.compile(
 )
 
 # These domains have no specific Purl type, but adding the domain to the purl doesn't add any value
-EXCLUDED_DOMAINS = ["gitlab", "gitea", "gitee"]
+EXCLUDED_DOMAINS = ["gitlab", "gitea", "gitee", "sf", "gnu"]
 
 # Name given to a package or group if it is not extractable from the URL
 DEFAULT_NAME = "unknown"
 
 
-def _name_and_namespace_from_domain_and_path(domain: str, path: str) -> Tuple[str, str]:
+def _namespace_and_name_from_domain_and_path(domain: str, path: str) -> Tuple[str, str]:
     """Split the full path to a name and namespace."""
     domain = NO_FETCH_EXTRACT(domain).domain
     parts: List[str] = [domain] if domain not in EXCLUDED_DOMAINS else []
@@ -43,7 +49,7 @@ def _name_and_namespace_from_domain_and_path(domain: str, path: str) -> Tuple[st
     name = parts[-1] if parts else DEFAULT_NAME
     namespace = "/".join(parts[:-1])
 
-    return name, namespace
+    return namespace, name
 
 
 def remote_url_to_purl(
@@ -78,17 +84,22 @@ def remote_url_to_purl(
     path = parsed.path.lstrip("/")
 
     if "svn" in parsed.scheme or "svn." in parsed.netloc:
-        name, namespace = _name_and_namespace_from_domain_and_path(parsed.netloc, path)
+        namespace, name = _namespace_and_name_from_domain_and_path(parsed.netloc, path)
+
+        if namespace.startswith("p/"):
+            namespace = namespace[len("p/") :]
+
+        namespace = namespace.replace("/svn/", "/")
 
     else:
         match = SSH_REGEX.match(remote_url)
         if match:
-            name, namespace = _name_and_namespace_from_domain_and_path(
+            namespace, name = _namespace_and_name_from_domain_and_path(
                 match.group("host"),
                 match.group("path"),
             )
         else:
-            name, namespace = _name_and_namespace_from_domain_and_path(
+            namespace, name = _namespace_and_name_from_domain_and_path(
                 remote_url, path.replace(".git", "")
             )
 
