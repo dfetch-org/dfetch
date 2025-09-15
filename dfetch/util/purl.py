@@ -85,11 +85,7 @@ def remote_url_to_purl(
 
     if "svn" in parsed.scheme or "svn." in parsed.netloc:
         namespace, name = _namespace_and_name_from_domain_and_path(parsed.netloc, path)
-
-        if namespace.startswith("p/"):
-            namespace = namespace[len("p/") :]
-
-        namespace = namespace.replace("/svn/", "/")
+        namespace = namespace.replace("/svn/", "/").removeprefix("p/")
 
     else:
         match = SSH_REGEX.match(remote_url)
