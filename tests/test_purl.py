@@ -1,3 +1,5 @@
+"""Test the PURL creation."""
+
 import pytest
 
 from dfetch.util.purl import remote_url_to_purl
