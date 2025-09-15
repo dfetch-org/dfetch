@@ -19,8 +19,9 @@ manifest:
   - name: tortoise-svn-branch-rev
     dst: Tests/tortoise-svn-branch-rev/
     remote: sourceforge
-    branch: 1.10.x/src
+    branch: 1.10.x
     revision: '28553'
+    src: src
     vcs: svn
     repo-path: tortoisesvn/code
 
