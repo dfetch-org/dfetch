@@ -50,7 +50,7 @@ from dfetch.util.purl import remote_url_to_purl
         ),
         (
             "git@gitlab.com:group/project.git",
-            "pkg:generic/group/project?vcs_url=git%40gitlab.com:group/project.git",
+            "pkg:generic/group/project?vcs_url=ssh://git%40gitlab.com/group/project.git",
         ),
         (
             "git+ssh://gitlab.com/group/project.git",
@@ -72,7 +72,7 @@ from dfetch.util.purl import remote_url_to_purl
         ),
         (
             "git@vcs.example.com:org/repo.git",
-            "pkg:generic/example/org/repo?vcs_url=git%40vcs.example.com:org/repo.git",
+            "pkg:generic/example/org/repo?vcs_url=ssh://git%40vcs.example.com/org/repo.git",
         ),
         (
             "https://unknown.org/namespace/name.git",
@@ -80,11 +80,15 @@ from dfetch.util.purl import remote_url_to_purl
         ),
         (
             "git@unknown.org:namespace/name.git",
-            "pkg:generic/unknown/namespace/name?vcs_url=git%40unknown.org:namespace/name.git",
+            "pkg:generic/unknown/namespace/name?vcs_url=ssh://git%40unknown.org/namespace/name.git",
         ),
         (
             "ssh://git@git.mycompany.eu/org/repo",
             "pkg:generic/mycompany/org/repo?vcs_url=ssh://git%40git.mycompany.eu/org/repo",
+        ),
+        (
+            "ssh://git@git.mycompany.eu/mycompany/group/repo",
+            "pkg:generic/mycompany/mycompany/group/repo?vcs_url=ssh://git%40git.mycompany.eu/mycompany/group/repo",
         ),
         (
             "svn://svn.mycompany.local/org/repo",

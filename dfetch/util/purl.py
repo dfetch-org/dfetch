@@ -52,14 +52,9 @@ def _namespace_and_name_from_domain_and_path(domain: str, path: str) -> Tuple[st
     return namespace, name
 
 
-def remote_url_to_purl(
+def _known_purl_types(
     remote_url: str, version: Optional[str] = None, subpath: Optional[str] = None
-) -> PackageURL:
-    """Convert a remote URL to a valid PackageURL object.
-
-    Supports GitHub, Bitbucket, SVN, SSH paths.
-    Optionally specify version and subpath.
-    """
+) -> Optional[PackageURL]:
     match = GITHUB_REGEX.match(remote_url)
     if match:
         return PackageURL(
@@ -79,6 +74,20 @@ def remote_url_to_purl(
             version=version,
             subpath=subpath,
         )
+    return None
+
+
+def remote_url_to_purl(
+    remote_url: str, version: Optional[str] = None, subpath: Optional[str] = None
+) -> PackageURL:
+    """Convert a remote URL to a valid PackageURL object.
+
+    Supports GitHub, Bitbucket, SVN, SSH paths.
+    Optionally specify version and subpath.
+    """
+    purl = _known_purl_types(remote_url, version, subpath)
+    if purl:
+        return purl
 
     parsed = urlparse(remote_url)
     path = parsed.path.lstrip("/")
@@ -94,6 +103,9 @@ def remote_url_to_purl(
                 match.group("host"),
                 match.group("path"),
             )
+
+            if not parsed.scheme:
+                remote_url = f"ssh://{parsed.path.replace(':', '/')}"
         else:
             namespace, name = _namespace_and_name_from_domain_and_path(
                 remote_url, path.replace(".git", "")
