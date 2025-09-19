@@ -63,11 +63,25 @@ class SbomReporter(Reporter):
             purl=purl,
         )
 
-        if purl.type not in ["github", "bitbucket"]:
+        if purl.type == "github":
+            component.external_references.add(
+                ExternalReference(
+                    type=ExternalReferenceType.VCS,
+                    url=XsUri(f"https://github.com/{purl.namespace}/{purl.name}"),
+                )
+            )
+        elif purl.type == "bitbucket":
+            component.external_references.add(
+                ExternalReference(
+                    type=ExternalReferenceType.VCS,
+                    url=XsUri(f"https://bitbucket.org/{purl.namespace}/{purl.name}"),
+                )
+            )
+        else:
             component.group = purl.namespace
 
             vcs_url = purl.qualifiers.get("vcs_url", "")
-            if vcs_url:
+            if vcs_url and "ssh://" not in vcs_url:
                 component.external_references.add(
                     ExternalReference(
                         type=ExternalReferenceType.VCS,
