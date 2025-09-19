@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/devcontainers/python:1-3.12-bullseye
 # pv is required for asciicasts
 RUN apt-get update && apt-get install --no-install-recommends -y \
     pv=1.6.6-1+b1 \
-    subversion=1.14.1-3+deb11u1 && \
+    subversion=1.14.1-3+deb11u2 && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspaces/dfetch
@@ -20,7 +20,7 @@ ENV PYTHONUSERBASE="/home/dev/.local"
 
 COPY --chown=dev:dev . .
 
-RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip==25.0.1 \
+RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip==25.1.1 \
     && pip install --no-cache-dir --root-user-action=ignore -e .[development,docs,test,casts] \
     && pre-commit install --install-hooks
 

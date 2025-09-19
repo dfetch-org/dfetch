@@ -1,7 +1,7 @@
 """Steps for features tests."""
 
-# pylint: disable=function-redefined, missing-function-docstring, import-error
-# pyright: reportRedeclaration=false, reportAttributeAccessIssue=false
+# pylint: disable=function-redefined, missing-function-docstring, import-error, not-callable
+# pyright: reportRedeclaration=false, reportAttributeAccessIssue=false, reportCallIssue=false
 
 import os
 import pathlib
@@ -40,7 +40,7 @@ def step_impl(context, name):
     check_file(name, context.text)
 
 
-@given("the manifest '{name}' with the projects")
+@given("the manifest '{name}' with the projects:")
 def step_impl(context, name):
     projects = "\n".join(f"      - name: {row['name']}" for row in context.table)
     manifest = f"""manifest:

@@ -1,7 +1,7 @@
 """Steps for features tests."""
 
-# pyright: reportRedeclaration=false, reportAttributeAccessIssue=false
-# pylint: disable=function-redefined, missing-function-docstring
+# pylint: disable=function-redefined, missing-function-docstring, not-callable
+# pyright: reportRedeclaration=false, reportAttributeAccessIssue=false, reportCallIssue=false
 
 import difflib
 import json
@@ -12,6 +12,7 @@ from itertools import zip_longest
 from typing import Iterable, List, Optional, Pattern, Tuple
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
+from behave.runner import Context
 
 from dfetch.__main__ import DfetchFatalException, run
 from dfetch.util.util import in_directory
@@ -29,8 +30,8 @@ def remote_server_path(context):
     return "/".join(context.remotes_dir_path.split(os.sep))
 
 
-def call_command(context, args: list[str], path: Optional[str] = ".") -> None:
-    context.log_capture.buffer = []
+def call_command(context: Context, args: list[str], path: Optional[str] = ".") -> None:
+    length_at_start = len(context.captured.output)
     with in_directory(path or "."):
         try:
             run(args)
@@ -39,7 +40,7 @@ def call_command(context, args: list[str], path: Optional[str] = ".") -> None:
             context.cmd_returncode = 1
     # Remove the color code + title
     context.cmd_output = dfetch_title.sub(
-        "", ansi_escape.sub("", context.log_capture.getvalue())
+        "", ansi_escape.sub("", context.captured.output[length_at_start:].strip("\n"))
     )
 
 
@@ -268,7 +269,7 @@ def step_impl(context):
         assert os.listdir(project["path"]), f"{project} is just an empty directory!"
 
 
-@then("'{path}' looks like")
+@then("'{path}' looks like:")
 def step_impl(context, path):
     expected_dir = context.text.strip()
     actual_dir = list_dir(path).strip()

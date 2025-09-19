@@ -1,8 +1,8 @@
 Feature: Keep license in project
 
-    A lot of people in the world do a lot of hard work to create software
+    Lots of people in the world do a lot of hard work to create software
     to use freely. They only ask to keep the license with their code.
-    When fetching only a part of a repository with the 'src:' tag, the risk
+    If fetching only a part of a repository with the 'src:' tag, the risk
     is you forget the license file.
 
     Scenario: License is preserved in git repo sparse checkout and cannot be ignored

@@ -1,7 +1,7 @@
 """Steps for features tests."""
 
-# pylint: disable=function-redefined, missing-function-docstring, import-error
-# pyright: reportRedeclaration=false, reportAttributeAccessIssue=false
+# pylint: disable=function-redefined, missing-function-docstring, import-error, not-callable
+# pyright: reportRedeclaration=false, reportAttributeAccessIssue=false, reportCallIssue=false
 
 import os
 import pathlib
@@ -62,7 +62,7 @@ def step_impl(context, tagname, name):
         tag(tagname)
 
 
-@given('a git-repository "{name}" with the manifest')
+@given('a git-repository "{name}" with the manifest:')
 @given('a git repository "{name}"')
 def step_impl(context, name):
     remote_path = os.path.join(context.remotes_dir, name)
