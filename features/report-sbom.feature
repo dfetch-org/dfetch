@@ -91,6 +91,12 @@ Feature: Create an CycloneDX sbom
                         "bom-ref": "a3aff0d8-2f40-4482-bded-577466c0bde9",
                         "name": "cpputest",
                         "version": "v3.4",
+                        "externalReferences": [
+                            {
+                                "type": "vcs",
+                                "url": "https://github.com/cpputest/cpputest"
+                            }
+                        ],
                         "licenses": [
                             {
                                 "expression": "BSD 3-Clause \"New\" or \"Revised\" License"
