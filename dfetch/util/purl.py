@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 from packageurl import PackageURL
 from tldextract import TLDExtract
 
+# Although tldextract can fetch the latest suffix list, we don't want that here
 NO_FETCH_EXTRACT = TLDExtract(suffix_list_urls=(), extra_suffixes=("local",))
 
 # Matches SSH-style Git URLs like:
@@ -94,7 +95,9 @@ def remote_url_to_purl(
 
     if "svn" in parsed.scheme or "svn." in parsed.netloc:
         namespace, name = _namespace_and_name_from_domain_and_path(parsed.netloc, path)
-        namespace = namespace.replace("/svn/", "/").removeprefix("p/")
+        if namespace.startswith("p/"):
+            namespace = namespace[len("p/") :]
+        namespace = namespace.replace("/svn/", "/")
 
     else:
         match = SSH_REGEX.match(remote_url)

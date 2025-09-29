@@ -113,10 +113,9 @@ def check_content(
             text=actual,
         )
 
-        assert actual.strip() == expected.strip(), "\n".join(
-            f"Line {line_nr}: Actual >>{actual.strip()}<< != Expected >>{expected.strip()}<<",
-            "ACTUAL:",
-            *actual_content,
+        assert actual.strip() == expected.strip(), (
+            f"Line {line_nr}: Actual >>{actual.strip()}<< != Expected >>{expected.strip()}<<\n"
+            f"ACTUAL:\n{''.join(actual_content)}"
         )
 
 
