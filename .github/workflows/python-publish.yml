@@ -10,6 +10,9 @@ on:
   # Allows to run this workflow manually
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
 

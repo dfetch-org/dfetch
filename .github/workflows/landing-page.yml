@@ -6,6 +6,9 @@ on:
       - main
       - feature/simplify-landing-page
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
