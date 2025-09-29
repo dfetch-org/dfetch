@@ -14,6 +14,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dfetch)
 [![PyPI](https://img.shields.io/pypi/v/dfetch)](https://pypi.org/project/dfetch/)
 [![Contribute with Codespaces](https://img.shields.io/static/v1?label=Codespaces&message=Open&color=blue)](https://codespaces.new/dfetch-org/dfetch)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11245/badge)](https://www.bestpractices.dev/projects/11245)
 
 
 **DFetch can manage dependencies**
