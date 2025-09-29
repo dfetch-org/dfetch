@@ -81,6 +81,7 @@ class SbomReporter(Reporter):
             component.group = purl.namespace
 
             vcs_url = purl.qualifiers.get("vcs_url", "")
+            # ExternalReferenceType.VCS does not support ssh:// urls
             if vcs_url and "ssh://" not in vcs_url:
                 component.external_references.add(
                     ExternalReference(
