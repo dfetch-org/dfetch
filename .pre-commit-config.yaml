@@ -113,3 +113,7 @@ repos:
         entry: pyright
         language: python
         types: [file, python]
+-   repo: https://github.com/gitleaks/gitleaks
+    rev: v8.16.3
+    hooks:
+    -   id: gitleaks
