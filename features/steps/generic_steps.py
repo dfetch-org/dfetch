@@ -23,6 +23,7 @@ timestamp = re.compile(r"\d+\/\d+\/\d+, \d+:\d+:\d+")
 git_hash = re.compile(r"(\s?)[a-f0-9]{40}(\s?)")
 iso_timestamp = re.compile(r'"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}\+\d{2}:\d{2}')
 urn_uuid = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+svn_error = re.compile(r"svn: E\d{6}: .+")
 
 
 def remote_server_path(context):
@@ -236,6 +237,7 @@ def step_impl(context):
             (git_hash, r"\1[commit hash]\2"),
             (timestamp, "[timestamp]"),
             (dfetch_title, ""),
+            (svn_error, "svn: EXXXXXX: <some error text>"),
         ],
         text=context.text,
     )
@@ -249,6 +251,7 @@ def step_impl(context):
                 re.compile(f"file:///{remote_server_path(context)}"),
                 "some-remote-server",
             ),
+            (svn_error, "svn: EXXXXXX: <some error text>"),
         ],
         text=context.cmd_output,
     )
