@@ -111,6 +111,10 @@ include = ["dfetch", "dfetch.*"]
 [tool.setuptools.package-data]
 dfetch = ["resources/*.yaml"]
 
+[tool.setuptools_scm]
+version_scheme = "guess-next-dev"
+local_scheme = "node-and-timestamp"
+
 [tool.isort]
 profile = "black"
 
