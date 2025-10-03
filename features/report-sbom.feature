@@ -8,7 +8,7 @@ Feature: Create an CycloneDX sbom
     The generated SBOM can be used as input for other tools to monitor dependencies.
     The tools track vulnerabilities or can enforce a license policy within an organization.
 
-    Scenario: An fetched project generates an sbom
+    Scenario: An fetched project generates a json sbom
         Given the manifest 'dfetch.yaml'
             """
             manifest:
@@ -25,19 +25,19 @@ Feature: Create an CycloneDX sbom
         When I run "dfetch report -t sbom"
         Then the 'report.json' file contains
             """
-            {
-                "$schema": "http://cyclonedx.org/schema/bom-1.4.schema.json",
+               {
+                "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
                 "bomFormat": "CycloneDX",
-                "specVersion": "1.4",
-                "serialNumber": "urn:uuid:e989dc42-a199-4fe4-87f1-2b7f7a5f48cf",
+                "specVersion": "1.6",
+                "serialNumber": "urn:uuid:3ce78767-c202-4beb-935e-67f539cf3a58",
                 "version": 1,
                 "dependencies": [
                     {
-                        "ref": "a3aff0d8-2f40-4482-bded-577466c0bde9"
+                        "ref": "BomRef.7805091949677974.3172811758515278"
                     }
                 ],
                 "metadata": {
-                    "timestamp": "2023-03-25T19:15:03.697694+00:00",
+                    "timestamp": "2025-10-03T20:56:03.645362+00:00",
                     "tools": [
                         {
                             "vendor": "dfetch-org",
@@ -47,14 +47,14 @@ Feature: Create an CycloneDX sbom
                         {
                             "vendor": "CycloneDX",
                             "name": "cyclonedx-python-lib",
-                            "version": "5.0.1",
+                            "version": "7.1.0",
                             "externalReferences": [
                                 {
                                     "url": "https://pypi.org/project/cyclonedx-python-lib/",
                                     "type": "distribution"
                                 },
                                 {
-                                    "url": "https://cyclonedx.org",
+                                    "url": "https://github.com/CycloneDX/cyclonedx-python-lib/#readme",
                                     "type": "website"
                                 },
                                 {
@@ -70,7 +70,7 @@ Feature: Create an CycloneDX sbom
                                     "type": "release-notes"
                                 },
                                 {
-                                    "url": "https://cyclonedx.github.io/cyclonedx-python-lib/",
+                                    "url": "https://cyclonedx-python-library.readthedocs.io/",
                                     "type": "documentation"
                                 },
                                 {
@@ -88,7 +88,7 @@ Feature: Create an CycloneDX sbom
                 "components": [
                     {
                         "type": "library",
-                        "bom-ref": "a3aff0d8-2f40-4482-bded-577466c0bde9",
+                        "bom-ref": "BomRef.7805091949677974.3172811758515278",
                         "name": "cpputest",
                         "version": "v3.4",
                         "externalReferences": [
