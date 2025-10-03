@@ -23,6 +23,7 @@ timestamp = re.compile(r"\d+\/\d+\/\d+, \d+:\d+:\d+")
 git_hash = re.compile(r"(\s?)[a-f0-9]{40}(\s?)")
 iso_timestamp = re.compile(r'"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}\+\d{2}:\d{2}')
 urn_uuid = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+bom_ref = re.compile(r"BomRef\.[0-9]{16}\.[0-9]{16}")
 svn_error = re.compile(r"svn: E\d{6}: .+")
 
 
@@ -101,6 +102,7 @@ def check_content(
                 (git_hash, r"\1[commit hash]\2"),
                 (iso_timestamp, "[timestamp]"),
                 (urn_uuid, "[urn-uuid]"),
+                (bom_ref, "[bom-ref]"),
             ],
             text=expected,
         )
@@ -110,6 +112,7 @@ def check_content(
                 (git_hash, r"\1[commit hash]\2"),
                 (iso_timestamp, "[timestamp]"),
                 (urn_uuid, "[urn-uuid]"),
+                (bom_ref, "[bom-ref]"),
             ],
             text=actual,
         )

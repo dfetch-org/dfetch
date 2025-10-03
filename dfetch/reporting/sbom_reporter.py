@@ -15,16 +15,12 @@ See https://cyclonedx.org/use-cases/ for more details.
         An fetched project generates an sbom
 """
 
-import json
-from typing import cast
-
 from cyclonedx.model import ExternalReference, ExternalReferenceType, Tool, XsUri
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.model.license import LicenseExpression
-from cyclonedx.output import get_instance
-from cyclonedx.output.json import Json
-from cyclonedx.schema import OutputFormat
+from cyclonedx.output import make_outputter
+from cyclonedx.schema import OutputFormat, SchemaVersion
 
 import dfetch.util.purl
 from dfetch.manifest.project import ProjectEntry
@@ -94,13 +90,12 @@ class SbomReporter(Reporter):
         output_format = OutputFormat(
             OutputFormat.XML if outfile.endswith(".xml") else OutputFormat.JSON
         )
-        outputter = cast(Json, get_instance(bom=self._bom, output_format=output_format))
-
-        parsed = json.loads(outputter.output_as_string())
-        outputter._json_output = (  # pylint: disable=protected-access # type: ignore
-            json.dumps(parsed, indent=4)
+        outputter = make_outputter(
+            bom=self._bom,
+            output_format=output_format,
+            schema_version=SchemaVersion.V1_6,
         )
 
-        outputter.output_to_file(outfile, allow_overwrite=True)
+        outputter.output_to_file(outfile, allow_overwrite=True, indent=4)
 
         return True

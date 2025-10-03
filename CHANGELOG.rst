@@ -5,6 +5,7 @@ Release 0.11.0 (unreleased)
 * Don't show animation when running in CI (#702)
 * Improve logic for creating Purls in SBoM (#780)
 * Add External VCS reference to SBoM if possible (#780)
+* Use CycloneDX schema version 1.6 (#542)
 * Add security policy (#784)
 * Add provenance / release attestation to pypi package (#784)
 
