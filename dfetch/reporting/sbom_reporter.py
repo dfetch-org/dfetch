@@ -15,10 +15,12 @@ See https://cyclonedx.org/use-cases/ for more details.
         An fetched project generates an sbom
 """
 
-from cyclonedx.model import ExternalReference, ExternalReferenceType, Tool, XsUri
+from cyclonedx.builder.this import this_component as cdx_lib_component
+from cyclonedx.model import ExternalReference, ExternalReferenceType, XsUri
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.model.license import LicenseExpression
+from cyclonedx.model.tool import Tool
 from cyclonedx.output import make_outputter
 from cyclonedx.schema import OutputFormat, SchemaVersion
 
@@ -37,7 +39,8 @@ class SbomReporter(Reporter):
     def __init__(self) -> None:
         """Start the report."""
         self._bom = Bom()
-        self._bom.metadata.tools.add(self.dfetch_tool)
+        self._bom.metadata.tools.tools.add(self.dfetch_tool)
+        self._bom.metadata.tools.components.add(cdx_lib_component())
 
     def add_project(
         self, project: ProjectEntry, license_name: str, version: str
