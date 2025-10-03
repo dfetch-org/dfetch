@@ -70,8 +70,8 @@ jobs:
 
     - name: Test install from TestPyPI
       run: |
-        pip install --index-url https://test.pypi.org/simple/ dfetch --extra-index-url https://pypi.org/simple
-        python -c "import dfetch; print(dfetch.__version__)"
+        pip install --index-url https://test.pypi.org/simple/ dfetch --user
+        dfetch --help
 
   deploy:
     if: github.event_name == 'release'
