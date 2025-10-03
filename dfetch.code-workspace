@@ -116,6 +116,27 @@
 				}
 			},
 			{
+				"label": "Serve Docs",
+				"type": "shell",
+				"command": "python",
+				"args": [
+					"-m",
+					"http.server"
+				],
+				"options": {
+					"cwd": "${workspaceFolder}/doc/_build/html"
+				},
+				"group": {
+					"kind": "none",
+					"isDefault": false
+				},
+				"presentation": {
+					"reveal": "always",
+					"panel": "shared"
+				},
+				"problemMatcher": []
+			},
+			{
 				"label": "Check quality (pre-commit)",
 				"type": "shell",
 				"command": "pre-commit",
