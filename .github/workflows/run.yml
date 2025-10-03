@@ -14,6 +14,9 @@ jobs:
 
   test-cygwin:
     runs-on: windows-latest
+    permissions:
+      contents: read
+      security-events: write
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -60,6 +63,9 @@ jobs:
         platform: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
     runs-on: ${{ matrix.platform }}
+    permissions:
+      contents: read
+      security-events: write
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
