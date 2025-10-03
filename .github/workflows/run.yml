@@ -43,6 +43,7 @@ jobs:
       - run: dfetch check
       - run: dfetch update
       - run: dfetch update
+      - run: dfetch report -t sbom
       - name: Dfetch SARIF Check
         uses: ./
         with:
@@ -109,6 +110,8 @@ jobs:
       - run: dfetch check
       - run: dfetch update
       - run: dfetch update
+      - run: dfetch report -t sbom
+
       - name: Dfetch SARIF Check
         uses: ./
         with:
