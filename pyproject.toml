@@ -7,7 +7,7 @@ name = "dfetch"
 authors = [{ name = "Ben Spoor", email = "dfetch@spoor.cc" }]
 description = "Dependency fetcher"
 readme = { file = "README.md", content-type = "text/markdown" }
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 keywords = [
     "dfetch",
     "dependency management",
@@ -29,8 +29,6 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -46,15 +44,11 @@ dependencies = [
     "pykwalify==1.8.0",
     "halo==0.0.31",
     "colorama==0.4.6",
-    "typing-extensions==4.7.1; python_version <= '3.7.0'",
-    "typing-extensions==4.13.2; python_version <= '3.8.0'",
-    "typing-extensions==4.15.0; python_version > '3.8.0'",
-    "tldextract==5.1.2; python_version <= '3.8.0'",
-    "tldextract==5.3.0; python_version > '3.8.0'",
+    "typing-extensions==4.15.0",
+    "tldextract==5.3.0",
     "sarif-om==1.0.4",
     "semver==3.0.4",
     "patch-ng==1.18.1",
-    "importlib-resources==5.4.0; python_version <= '3.7.0'",
     "cyclonedx-python-lib==4.2.2",
     "infer-license==0.1.0; python_version <= '3.10.0'",
     "infer-license==0.2.0; python_version > '3.10.0'",

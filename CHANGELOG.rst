@@ -1,6 +1,7 @@
 Release 0.11.0 (unreleased)
 ====================================
 
+* Drop python 3.7, 3.8 support (#801)
 * Don't show animation when running in CI (#702)
 * Improve logic for creating Purls in SBoM (#780)
 * Add External VCS reference to SBoM if possible (#780)

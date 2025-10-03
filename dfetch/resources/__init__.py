@@ -1,10 +1,6 @@
 """Resources needed when dfetch is distributed."""
 
-try:
-    import importlib.resources as importlib_resources
-except ModuleNotFoundError:
-    import importlib_resources  # type:ignore
-
+import importlib.resources as importlib_resources
 import sys
 from pathlib import Path
 from typing import ContextManager
