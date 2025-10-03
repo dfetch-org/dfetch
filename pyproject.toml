@@ -101,9 +101,6 @@ casts = ['asciinema==2.4.0']
 [project.scripts]
 dfetch = "dfetch.__main__:main"
 
-[tool.setuptools.dynamic]
-version = { attr = "dfetch.__version__" }
-
 [tool.setuptools.packages.find]
 include = ["dfetch", "dfetch.*"]
 
