@@ -108,8 +108,8 @@ include = ["dfetch", "dfetch.*"]
 dfetch = ["resources/*.yaml"]
 
 [tool.setuptools_scm]
+local_scheme = "no-local-version"
 version_scheme = "guess-next-dev"
-local_scheme = "node-and-timestamp"
 
 [tool.isort]
 profile = "black"
