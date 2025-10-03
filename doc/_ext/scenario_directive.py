@@ -27,7 +27,7 @@ from typing import Tuple
 
 from docutils import nodes
 from docutils.parsers.rst import Directive
-from docutils.statemachine import ViewList
+from docutils.statemachine import StringList
 
 
 class ScenarioIncludeDirective(Directive):
@@ -88,7 +88,7 @@ class ScenarioIncludeDirective(Directive):
         :start-after: Scenario: {scenario_title}
         {end_before}
 """
-            viewlist = ViewList()
+            viewlist = StringList()
             for i, line in enumerate(directive_rst.splitlines()):
                 viewlist.append(line, source=f"<{self.name} directive>", offset=i)
 
