@@ -70,7 +70,7 @@ jobs:
 
     - name: Test install from TestPyPI
       run: |
-        pip install --index-url https://test.pypi.org/simple/ dfetch --user
+        pip install --index-url https://test.pypi.org/simple/ dfetch --extra-index-url https://pypi.org/simple --user
         dfetch --help
 
   deploy:
