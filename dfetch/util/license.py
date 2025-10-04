@@ -1,7 +1,7 @@
 """*Dfetch* uses *Infer-License* to guess licenses from files."""
 
-import os
 from dataclasses import dataclass
+from os import PathLike
 from typing import Optional, Union
 
 import infer_license
@@ -13,7 +13,7 @@ class License:
     """Class to hold license information."""
 
     name: str  # SPDX Full name
-    shortname: str  # SPDX Identifier
+    spdx_id: str  # SPDX Identifier
     trove_classifier: Optional[str]
     probability: float
 
@@ -24,14 +24,14 @@ class License:
         """Create License from an InferredLicense."""
         return License(
             name=inferred_license.name,
-            shortname=inferred_license.shortname,
+            spdx_id=inferred_license.shortname,
             trove_classifier=inferred_license.trove_classifier,
             probability=probability,
         )
 
 
 def guess_license_in_file(
-    filename: Union[str, "os.PathLike[str]"],
+    filename: Union[str, PathLike[str]],
 ) -> Optional[License]:
     """Guess license from file."""
     try:
