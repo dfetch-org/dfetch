@@ -218,7 +218,7 @@
 	"extensions": {
 		"recommendations": [
 			"alexkrechik.cucumberautocomplete",
-			"bungcip.better-toml",
+			"tamasfe.even-better-toml",
 			"jebbs.plantuml",
 			"lextudio.restructuredtext",
 			"ms-python.black-formatter",
