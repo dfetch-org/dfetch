@@ -15,14 +15,23 @@ See https://cyclonedx.org/use-cases/ for more details.
         An fetched project generates an sbom
 """
 
+from decimal import Decimal
 from typing import List
 
 from cyclonedx.builder.this import this_component as cdx_lib_component
 from cyclonedx.model import ExternalReference, ExternalReferenceType, XsUri
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
-from cyclonedx.model.license import LicenseExpression
-from cyclonedx.model.tool import Tool
+from cyclonedx.model.component_evidence import (
+    AnalysisTechnique,
+    ComponentEvidence,
+    Identity,
+    IdentityField,
+    Method,
+    Occurrence,
+)
+from cyclonedx.model.contact import OrganizationalEntity
+from cyclonedx.model.license import DisjunctiveLicense as CycloneDxLicense
 from cyclonedx.output import make_outputter
 from cyclonedx.schema import OutputFormat, SchemaVersion
 
@@ -40,14 +49,57 @@ from dfetch.util.license import License
 class SbomReporter(Reporter):
     """Reporter for generating SBoM's."""
 
-    dfetch_tool = Tool(vendor="dfetch-org", name="dfetch", version=dfetch.__version__)
+    dfetch_tool = Component(
+        type=ComponentType.APPLICATION,
+        supplier=OrganizationalEntity(name="dfetch-org"),
+        name="dfetch",
+        version=dfetch.__version__,
+        bom_ref=f"dfetch-{dfetch.__version__}",
+        licenses=[CycloneDxLicense(name="MIT License", id="MIT")],
+        external_references=[
+            ExternalReference(
+                type=ExternalReferenceType.VCS,
+                url=XsUri("https://github.com/dfetch-org/dfetch"),
+            ),
+            ExternalReference(
+                type=ExternalReferenceType.BUILD_SYSTEM,
+                url=XsUri("https://github.com/dfetch-org/dfetch/actions"),
+            ),
+            ExternalReference(
+                type=ExternalReferenceType.ISSUE_TRACKER,
+                url=XsUri("https://github.com/dfetch-org/dfetch/issues"),
+            ),
+            ExternalReference(
+                type=ExternalReferenceType.DISTRIBUTION,
+                url=XsUri("https://pypi.org/project/dfetch/"),
+            ),
+            ExternalReference(
+                type=ExternalReferenceType.DOCUMENTATION,
+                url=XsUri("https://dfetch.readthedocs.io/"),
+            ),
+            ExternalReference(
+                type=ExternalReferenceType.LICENSE,
+                url=XsUri("https://github.com/dfetch-org/dfetch/blob/main/LICENSE"),
+            ),
+            ExternalReference(
+                type=ExternalReferenceType.RELEASE_NOTES,
+                url=XsUri(
+                    "https://github.com/dfetch-org/dfetch/blob/main/CHANGELOG.rst"
+                ),
+            ),
+            ExternalReference(
+                type=ExternalReferenceType.WEBSITE,
+                url=XsUri("https://dfetch-org.github.io/"),
+            ),
+        ],
+    )
 
     name = "SBoM"
 
     def __init__(self) -> None:
         """Start the report."""
         self._bom = Bom()
-        self._bom.metadata.tools.tools.add(self.dfetch_tool)
+        self._bom.metadata.tools.components.add(self.dfetch_tool)
         self._bom.metadata.tools.components.add(cdx_lib_component())
 
     def add_project(
@@ -66,6 +118,47 @@ class SbomReporter(Reporter):
             version=version,
             type=ComponentType.LIBRARY,
             purl=purl,
+            evidence=ComponentEvidence(
+                occurrences=[Occurrence(location="dfetch.yaml")],
+                identity=[
+                    Identity(
+                        field=IdentityField.NAME,
+                        tools=[self.dfetch_tool.bom_ref],
+                        methods=[
+                            Method(
+                                technique=AnalysisTechnique.MANIFEST_ANALYSIS,
+                                confidence=Decimal.from_float(0.4),
+                                value="Name as used for project in dfetch.yaml",
+                            )
+                        ],
+                        concluded_value=project.name,
+                    ),
+                    Identity(
+                        field=IdentityField.VERSION,
+                        tools=[self.dfetch_tool.bom_ref],
+                        methods=[
+                            Method(
+                                technique=AnalysisTechnique.MANIFEST_ANALYSIS,
+                                confidence=Decimal.from_float(0.4),
+                                value="Version as used for project in dfetch.yaml",
+                            )
+                        ],
+                        concluded_value=version,
+                    ),
+                    Identity(
+                        field=IdentityField.PURL,
+                        tools=[self.dfetch_tool.bom_ref],
+                        methods=[
+                            Method(
+                                technique=AnalysisTechnique.MANIFEST_ANALYSIS,
+                                confidence=Decimal.from_float(0.4),
+                                value="Determined from the VCS url as used for project in dfetch.yaml",
+                            )
+                        ],
+                        concluded_value=purl.to_string(),
+                    ),
+                ],
+            ),
         )
 
         if purl.type == "github":
@@ -96,7 +189,12 @@ class SbomReporter(Reporter):
                 )
 
         for lic in licenses:
-            component.licenses.add(LicenseExpression(lic.name))
+            cdx_license = CycloneDxLicense(name=lic.name, id=lic.spdx_id)
+
+            component.licenses.add(cdx_license)
+            if component.evidence:
+                component.evidence.licenses.add(cdx_license.bom_ref)
+
         self._bom.components.add(component)
 
     def dump_to_file(self, outfile: str) -> bool:
