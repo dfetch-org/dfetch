@@ -28,6 +28,11 @@ import dfetch.util.purl
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
 
+# PyRight is pedantic with decorators see https://github.com/madpah/serializable/issues/8
+# It might be fixable with https://github.com/microsoft/pyright/discussions/4426, would prefer
+# upstream fix, for now suppress, mypy will keep us safe.
+# pyright: reportCallIssue=false, reportAttributeAccessIssue=false
+
 
 class SbomReporter(Reporter):
     """Reporter for generating SBoM's."""
