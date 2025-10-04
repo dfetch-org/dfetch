@@ -4,10 +4,13 @@ Depending on the state of the projects it will show as much information
 from the manifest or the metadata (``.dfetch_data.yaml``).
 """
 
+from typing import List
+
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.metadata import Metadata
 from dfetch.reporting.reporter import Reporter
+from dfetch.util.license import License
 
 logger = get_logger(__name__)
 
@@ -18,7 +21,10 @@ class StdoutReporter(Reporter):
     name = "stdout"
 
     def add_project(
-        self, project: ProjectEntry, license_name: str, version: str
+        self,
+        project: ProjectEntry,
+        licenses: List[License],
+        version: str,
     ) -> None:
         """Add a project to the report."""
         del version
@@ -32,7 +38,9 @@ class StdoutReporter(Reporter):
             logger.print_info_field("    last fetch", str(metadata.last_fetch))
             logger.print_info_field("    revision", metadata.revision)
             logger.print_info_field("    patch", metadata.patch)
-            logger.print_info_field("    license", license_name)
+            logger.print_info_field(
+                "    licenses", ",".join(license.name for license in licenses)
+            )
 
         except FileNotFoundError:
             logger.print_info_field("    last fetch", "never")
