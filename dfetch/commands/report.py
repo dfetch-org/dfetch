@@ -6,7 +6,7 @@ There are several report types that *DFetch* can generate.
 import argparse
 import glob
 import os
-from typing import List, Tuple
+from typing import List
 
 import dfetch.commands.command
 import dfetch.manifest.manifest
@@ -16,7 +16,7 @@ from dfetch.manifest.project import ProjectEntry
 from dfetch.project.metadata import Metadata
 from dfetch.project.vcs import VCS
 from dfetch.reporting import REPORTERS, ReportTypes
-from dfetch.util.license import guess_license_in_file
+from dfetch.util.license import License, guess_license_in_file
 
 logger = get_logger(__name__)
 
@@ -71,14 +71,14 @@ class Report(dfetch.commands.command.Command):
                 determined_licenses = self._determine_licenses(project)
                 version = self._determine_version(project)
                 reporter.add_project(
-                    project=project, license_names=determined_licenses, version=version
+                    project=project, licenses=determined_licenses, version=version
                 )
 
             if reporter.dump_to_file(args.outfile):
                 logger.info(f"Generated {reporter.name} report: {args.outfile}")
 
     @staticmethod
-    def _determine_licenses(project: ProjectEntry) -> List[Tuple[str, float]]:
+    def _determine_licenses(project: ProjectEntry) -> List[License]:
         """Try to determine license of fetched project."""
         if not os.path.exists(project.destination):
             logger.print_warning_line(
@@ -91,10 +91,13 @@ class Report(dfetch.commands.command.Command):
 
             for license_file in filter(VCS.is_license_file, glob.glob("*")):
                 logger.debug(f"Found license file {license_file} for {project.name}")
-                guessed_license, probability = guess_license_in_file(license_file)
+                guessed_license = guess_license_in_file(license_file)
 
-                if guessed_license:
-                    license_files.append((str(guessed_license.name), probability))
+                if (
+                    guessed_license
+                    and guessed_license.probability > LICENSE_PROBABILITY_THRESHOLD
+                ):
+                    license_files.append(guessed_license)
                 else:
                     logger.print_warning_line(
                         project.name, f"Could not determine license in {license_file}"
