@@ -15,6 +15,8 @@ See https://cyclonedx.org/use-cases/ for more details.
         An fetched project generates an sbom
 """
 
+from typing import List, Tuple
+
 from cyclonedx.builder.this import this_component as cdx_lib_component
 from cyclonedx.model import ExternalReference, ExternalReferenceType, XsUri
 from cyclonedx.model.bom import Bom
@@ -48,7 +50,10 @@ class SbomReporter(Reporter):
         self._bom.metadata.tools.components.add(cdx_lib_component())
 
     def add_project(
-        self, project: ProjectEntry, license_name: str, version: str
+        self,
+        project: ProjectEntry,
+        license_names: List[Tuple[str, float]],
+        version: str,
     ) -> None:
         """Add a project to the report."""
         purl = dfetch.util.purl.remote_url_to_purl(
@@ -89,8 +94,8 @@ class SbomReporter(Reporter):
                     )
                 )
 
-        if license_name:
-            component.licenses.add(LicenseExpression(license_name))
+        for name, _ in license_names:
+            component.licenses.add(LicenseExpression(name))
         self._bom.components.add(component)
 
     def dump_to_file(self, outfile: str) -> bool:

@@ -1,6 +1,7 @@
 """Abstract reporting interface."""
 
 from abc import ABC, abstractmethod
+from typing import List, Tuple
 
 from dfetch.manifest.project import ProjectEntry
 
@@ -12,7 +13,10 @@ class Reporter(ABC):
 
     @abstractmethod
     def add_project(
-        self, project: ProjectEntry, license_name: str, version: str
+        self,
+        project: ProjectEntry,
+        license_names: List[Tuple[str, float]],
+        version: str,
     ) -> None:
         """Add a project to the report."""
 
