@@ -15,7 +15,7 @@ See https://cyclonedx.org/use-cases/ for more details.
         An fetched project generates an sbom
 """
 
-from typing import List, Tuple
+from typing import List
 
 from cyclonedx.builder.this import this_component as cdx_lib_component
 from cyclonedx.model import ExternalReference, ExternalReferenceType, XsUri
@@ -29,6 +29,7 @@ from cyclonedx.schema import OutputFormat, SchemaVersion
 import dfetch.util.purl
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
+from dfetch.util.license import License
 
 # PyRight is pedantic with decorators see https://github.com/madpah/serializable/issues/8
 # It might be fixable with https://github.com/microsoft/pyright/discussions/4426, would prefer
@@ -52,7 +53,7 @@ class SbomReporter(Reporter):
     def add_project(
         self,
         project: ProjectEntry,
-        license_names: List[Tuple[str, float]],
+        licenses: List[License],
         version: str,
     ) -> None:
         """Add a project to the report."""
@@ -94,8 +95,8 @@ class SbomReporter(Reporter):
                     )
                 )
 
-        for name, _ in license_names:
-            component.licenses.add(LicenseExpression(name))
+        for lic in licenses:
+            component.licenses.add(LicenseExpression(lic.name))
         self._bom.components.add(component)
 
     def dump_to_file(self, outfile: str) -> bool:
