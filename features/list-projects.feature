@@ -36,7 +36,7 @@ Feature: List dependencies
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : e1fda19a57b873eb8e6ae37780594cbb77b70f1a
                   patch           : <none>
-                  license         : MIT License
+                  licenses        : MIT License
               project             : ext/test-rev-and-branch
                   remote          : github-com-dfetch-org
                   remote url      : https://github.com/dfetch-org/test-repo
@@ -45,7 +45,7 @@ Feature: List dependencies
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : <none>
                   patch           : <none>
-                  license         : MIT License
+                  licenses        : MIT License
             """
 
     @remote-svn
@@ -76,7 +76,7 @@ Feature: List dependencies
                   last fetch      : 29/12/2024, 20:09:21
                   revision        : 4007
                   patch           : <none>
-                  license         : <none>
+                  licenses        : <none>
             """
 
     Scenario: Git repo with applied patch
@@ -93,5 +93,5 @@ Feature: List dependencies
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : <none>
                   patch           : diff.patch
-                  license         : MIT License
+                  licenses        : MIT License
             """
