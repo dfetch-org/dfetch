@@ -32,6 +32,7 @@ from cyclonedx.model.component_evidence import (
 )
 from cyclonedx.model.contact import OrganizationalEntity
 from cyclonedx.model.license import DisjunctiveLicense as CycloneDxLicense
+from cyclonedx.model.license import LicenseAcknowledgement
 from cyclonedx.output import make_outputter
 from cyclonedx.schema import OutputFormat, SchemaVersion
 
@@ -55,7 +56,9 @@ class SbomReporter(Reporter):
         name="dfetch",
         version=dfetch.__version__,
         bom_ref=f"dfetch-{dfetch.__version__}",
-        licenses=[CycloneDxLicense(name="MIT License", id="MIT")],
+        licenses=[
+            CycloneDxLicense(id="MIT", acknowledgement=LicenseAcknowledgement.DECLARED)
+        ],
         external_references=[
             ExternalReference(
                 type=ExternalReferenceType.VCS,
@@ -96,8 +99,9 @@ class SbomReporter(Reporter):
 
     name = "SBoM"
 
-    def __init__(self) -> None:
+    def __init__(self, manifest_path: str) -> None:
         """Start the report."""
+        super().__init__(manifest_path)
         self._bom = Bom()
         self._bom.metadata.tools.components.add(self.dfetch_tool)
         self._bom.metadata.tools.components.add(cdx_lib_component())
@@ -113,13 +117,20 @@ class SbomReporter(Reporter):
             project.remote_url, version=version, subpath=project.source or None
         )
 
+        name = project.name if purl.type == "generic" else purl.name
+
+        line_nr, start, _ = self.find_name_in_manifest(project.name)
+
         component = Component(
-            name=project.name,
+            name=name,
             version=version,
+            bom_ref=f"{project.name}-{version}",
             type=ComponentType.LIBRARY,
             purl=purl,
             evidence=ComponentEvidence(
-                occurrences=[Occurrence(location="dfetch.yaml")],
+                occurrences=[
+                    Occurrence(location=self._manifest_path, line=line_nr, offset=start)
+                ],
                 identity=[
                     Identity(
                         field=IdentityField.NAME,
@@ -131,7 +142,7 @@ class SbomReporter(Reporter):
                                 value="Name as used for project in dfetch.yaml",
                             )
                         ],
-                        concluded_value=project.name,
+                        concluded_value=name,
                     ),
                     Identity(
                         field=IdentityField.VERSION,
@@ -152,7 +163,8 @@ class SbomReporter(Reporter):
                             Method(
                                 technique=AnalysisTechnique.MANIFEST_ANALYSIS,
                                 confidence=Decimal.from_float(0.4),
-                                value="Determined from the VCS url as used for project in dfetch.yaml",
+                                value=f"Determined from {project.remote_url} as used"
+                                f" for the project {project.name} in dfetch.yaml",
                             )
                         ],
                         concluded_value=purl.to_string(),
@@ -189,11 +201,17 @@ class SbomReporter(Reporter):
                 )
 
         for lic in licenses:
-            cdx_license = CycloneDxLicense(name=lic.name, id=lic.spdx_id)
+
+            # License wants either an SPDX id or a name, prefer SPDX id when available
+            cdx_license = (
+                CycloneDxLicense(id=lic.spdx_id)
+                if lic.spdx_id
+                else CycloneDxLicense(name=lic.name)
+            )
 
             component.licenses.add(cdx_license)
             if component.evidence:
-                component.evidence.licenses.add(cdx_license.bom_ref)
+                component.evidence.licenses.add(cdx_license)
 
         self._bom.components.add(component)
 

@@ -64,9 +64,9 @@ class Report(dfetch.commands.command.Command):
         """Generate the report."""
         manifest, path = dfetch.manifest.manifest.get_manifest()
 
-        reporter = REPORTERS[args.type]()
-
         with dfetch.util.util.in_directory(os.path.dirname(path)):
+            reporter = REPORTERS[args.type](path)
+
             for project in manifest.selected_projects(args.projects):
                 determined_licenses = self._determine_licenses(project)
                 version = self._determine_version(project)
