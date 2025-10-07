@@ -14,8 +14,8 @@ class License:
 
     name: str  # SPDX Full name
     spdx_id: str  # SPDX Identifier
-    trove_classifier: Optional[str]
-    probability: float
+    trove_classifier: Optional[str]  # Python package classifier
+    probability: float  # Confidence level of the license inference
 
     @staticmethod
     def from_inferred(
@@ -33,14 +33,30 @@ class License:
 def guess_license_in_file(
     filename: Union[str, PathLike[str]],
 ) -> Optional[License]:
-    """Guess license from file."""
+    """Attempt to identify the license of a given file.
+
+    Args:
+        filename (Union[str, os.PathLike[str]]): Path to the file to analyze
+
+    Returns:
+        Optional[License]: The most probable license if found, None if no license could be detected
+    """
     try:
-        with open(filename, encoding="utf-8") as f:
-            license_text = f.read()
-    except UnicodeDecodeError:
-        with open(filename, encoding="latin-1") as f:
-            license_text = f.read()
+        with open(filename, "rb") as f:
+            file_bytes = f.read()
+        try:
+            license_text = file_bytes.decode("utf-8")
+        except UnicodeDecodeError:
+            license_text = file_bytes.decode("latin-1")
+    except (FileNotFoundError, PermissionError, IsADirectoryError):
+        # Return None for file access issues
+        return None
+    except OSError:
+        # Handle other OS-level file errors
+        return None
 
-    probable_license = infer_license.api.probabilities(license_text)
+    probable_licenses = infer_license.api.probabilities(license_text)
 
-    return None if not probable_license else License.from_inferred(*probable_license[0])
+    return (
+        None if not probable_licenses else License.from_inferred(*probable_licenses[0])
+    )

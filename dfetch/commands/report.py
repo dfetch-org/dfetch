@@ -20,6 +20,7 @@ from dfetch.util.license import License, guess_license_in_file
 
 logger = get_logger(__name__)
 
+# Minimum confidence to accept a license guess
 LICENSE_PROBABILITY_THRESHOLD = 0.80
 
 
