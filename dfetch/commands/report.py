@@ -63,10 +63,10 @@ class Report(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Generate the report."""
-        manifest, path = dfetch.manifest.manifest.get_manifest()
+        manifest = dfetch.manifest.manifest.get_manifest()
 
-        with dfetch.util.util.in_directory(os.path.dirname(path)):
-            reporter = REPORTERS[args.type](path)
+        with dfetch.util.util.in_directory(os.path.dirname(manifest.path)):
+            reporter = REPORTERS[args.type](manifest)
 
             for project in manifest.selected_projects(args.projects):
                 determined_licenses = self._determine_licenses(project)

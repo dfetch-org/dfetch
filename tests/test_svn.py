@@ -141,7 +141,9 @@ def test_externals(name, externals, expectations):
                 cwd_mock.return_value = CWD
                 parsed_externals = SvnRepo.externals()
 
-                for actual, expected in zip(parsed_externals, expectations):
+                for actual, expected in zip(
+                    parsed_externals, expectations, strict=True
+                ):
                     assert actual == expected
 
 

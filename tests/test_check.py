@@ -36,10 +36,7 @@ def test_check(name, projects):
                 with patch("os.path.exists"):
                     with patch("dfetch.commands.check.in_directory"):
                         with patch("dfetch.commands.check.CheckStdoutReporter"):
-                            mocked_get_manifest.return_value = (
-                                mock_manifest(projects),
-                                "/",
-                            )
+                            mocked_get_manifest.return_value = mock_manifest(projects)
                             mocked_get_childmanifests.return_value = []
 
                             check(DEFAULT_ARGS)

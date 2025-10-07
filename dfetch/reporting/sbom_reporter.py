@@ -37,6 +37,7 @@ from cyclonedx.output import make_outputter
 from cyclonedx.schema import OutputFormat, SchemaVersion
 
 import dfetch.util.purl
+from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
 from dfetch.util.license import License
@@ -99,9 +100,9 @@ class SbomReporter(Reporter):
 
     name = "SBoM"
 
-    def __init__(self, manifest_path: str) -> None:
+    def __init__(self, manifest: Manifest) -> None:
         """Start the report."""
-        super().__init__(manifest_path)
+        super().__init__(manifest)
         self._bom = Bom()
         self._bom.metadata.tools.components.add(self.dfetch_tool)
         self._bom.metadata.tools.components.add(cdx_lib_component())
@@ -119,7 +120,7 @@ class SbomReporter(Reporter):
 
         name = project.name if purl.type == "generic" else purl.name
 
-        line_nr, start, _ = self.find_name_in_manifest(project.name)
+        line_nr, start, _ = self._manifest.find_name_in_manifest(project.name)
 
         component = Component(
             name=name,
@@ -129,7 +130,7 @@ class SbomReporter(Reporter):
             purl=purl,
             evidence=ComponentEvidence(
                 occurrences=[
-                    Occurrence(location=self._manifest_path, line=line_nr, offset=start)
+                    Occurrence(location=self._manifest.path, line=line_nr, offset=start)
                 ],
                 identity=[
                     Identity(

@@ -12,18 +12,14 @@ from dfetch.manifest.project import ProjectEntry
 logger = get_logger(__name__)
 
 
-def check_child_manifests(manifest: Manifest, project: ProjectEntry, path: str) -> None:
+def check_child_manifests(manifest: Manifest, project: ProjectEntry) -> None:
     """Check for child manifests within a project.
 
     Args:
         manifest (dfetch.manifest.manifest.Manifest): The parent manifest with projects.
         project (ProjectEntry): The parent project.
-        path (str): The path of the parent manifest.
     """
-    for (
-        childmanifest,
-        childmanifest_path,
-    ) in get_childmanifests(skip=[path]):
+    for childmanifest in get_childmanifests(skip=[manifest.path]):
         recommendations: List[ProjectEntry] = []
         for childproject in childmanifest.projects:
             if childproject.remote_url not in [
@@ -32,10 +28,10 @@ def check_child_manifests(manifest: Manifest, project: ProjectEntry, path: str) 
                 recommendations.append(childproject.as_recommendation())
 
         if recommendations:
-            childmanifest_path = os.path.relpath(
-                childmanifest_path, start=os.path.dirname(path)
+            childmanifest_relpath = os.path.relpath(
+                childmanifest.path, start=os.path.dirname(manifest.path)
             ).replace("\\", "/")
-            _make_recommendation(project, recommendations, childmanifest_path)
+            _make_recommendation(project, recommendations, childmanifest_relpath)
 
 
 def _make_recommendation(

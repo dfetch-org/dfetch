@@ -142,14 +142,17 @@ def test_get_childmanifests(name, manifest_paths) -> None:
 
     with patch("dfetch.manifest.manifest.find_file") as find_file_mock:
         with patch("dfetch.manifest.manifest.validate"):
-            with patch("dfetch.manifest.manifest.Manifest"):
+            with patch("dfetch.manifest.manifest.Manifest") as manifest_mock:
                 find_file_mock.return_value = manifest_paths
 
                 found_childmanifests = get_childmanifests([parent.name])
 
                 assert len(found_childmanifests) == len(manifest_paths)
-                for path, result in zip(manifest_paths, found_childmanifests):
-                    assert os.path.realpath(path) == result[1]
+
+                for path, call in zip(
+                    manifest_paths, manifest_mock.from_file.call_args_list, strict=True
+                ):
+                    assert os.path.realpath(path) == call[0][0]
 
 
 def test_suggestion_found() -> None:

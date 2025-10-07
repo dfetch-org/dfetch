@@ -6,7 +6,7 @@ from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 
 
-def mock_manifest(projects):
+def mock_manifest(projects, path: str = "/some/path") -> MagicMock:
     """Create a manifest mock."""
 
     project_mocks = []
@@ -17,6 +17,6 @@ def mock_manifest(projects):
         mock_project.destination = "some_dest"
         project_mocks += [mock_project]
 
-    mocked_manifest = MagicMock(spec=Manifest, projects=project_mocks)
+    mocked_manifest = MagicMock(spec=Manifest, projects=project_mocks, path=path)
     mocked_manifest.selected_projects.return_value = project_mocks
     return mocked_manifest

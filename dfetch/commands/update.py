@@ -69,13 +69,13 @@ class Update(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the update."""
-        manifest, path = dfetch.manifest.manifest.get_manifest()
+        manifest = dfetch.manifest.manifest.get_manifest()
 
         exceptions: List[str] = []
         destinations: List[str] = [
             os.path.realpath(project.destination) for project in manifest.projects
         ]
-        with in_directory(os.path.dirname(path)):
+        with in_directory(os.path.dirname(manifest.path)):
             for project in manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     self._check_destination(project, destinations)
@@ -85,7 +85,7 @@ class Update(dfetch.commands.command.Command):
                         project.destination
                     ):
                         with in_directory(project.destination):
-                            check_child_manifests(manifest, project, path)
+                            check_child_manifests(manifest, project)
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))

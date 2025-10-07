@@ -22,6 +22,7 @@ import difflib
 import io
 import os
 import pathlib
+import re
 from typing import IO, Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import yaml
@@ -102,9 +103,16 @@ class Manifest:
 
     CURRENT_VERSION = "0.0"
 
-    def __init__(self, manifest: ManifestDict) -> None:
+    def __init__(
+        self,
+        manifest: ManifestDict,
+        text: Optional[str] = None,
+        path: Optional[Union[str, os.PathLike[str]]] = None,
+    ) -> None:
         """Create the manifest."""
         self.__version: str = str(manifest.get("version", self.CURRENT_VERSION))
+        self.__text: str = str(text)
+        self.__path: str = str(path)
 
         self._remotes, default_remotes = self._determine_remotes(
             manifest.get("remotes", [])
@@ -180,7 +188,10 @@ class Manifest:
         return (remotes, default_remotes)
 
     @staticmethod
-    def from_yaml(text: Union[io.TextIOWrapper, str, IO[str]]) -> "Manifest":
+    def from_yaml(
+        text: Union[io.TextIOWrapper, str, IO[str]],
+        path: Optional[Union[str, os.PathLike[str]]] = None,
+    ) -> "Manifest":
         """Create a manifest from a file like object."""
         loaded_yaml = Manifest._load_yaml(text)
 
@@ -192,7 +203,11 @@ class Manifest:
         if not manifest:
             raise RuntimeError("Missing manifest root element!")
 
-        return Manifest(manifest)
+        if isinstance(text, (io.TextIOWrapper, IO)):
+            text.seek(0)
+            text = text.read()
+
+        return Manifest(manifest, text=text, path=path)
 
     @staticmethod
     def _load_yaml(text: Union[io.TextIOWrapper, str, IO[str]]) -> Any:
@@ -217,7 +232,12 @@ class Manifest:
             FileNotFoundError: Given path was not a file.
         """
         with open(path, "r", encoding="utf-8") as opened_file:
-            return Manifest.from_yaml(opened_file)
+            return Manifest.from_yaml(opened_file, path)
+
+    @property
+    def path(self) -> str:
+        """Path to the manifest file."""
+        return self.__path
 
     @property
     def version(self) -> str:
@@ -293,6 +313,25 @@ class Manifest:
                 self._as_dict(), manifest_file, Dumper=ManifestDumper, sort_keys=False
             )
 
+    def find_name_in_manifest(self, name: str) -> Tuple[int, int, int]:
+        """Find the location of a project name in the manifest."""
+        if not self.__text:
+            raise FileNotFoundError("No manifest text available")
+
+        for line_nr, line in enumerate(self.__text.splitlines(), start=1):
+            match = re.search(rf"^\s+-\s*name:\s*(?P<name>{name})\s*$", line)
+
+            if match:
+                return (
+                    line_nr,
+                    int(match.start("name")) + 1,
+                    int(match.end("name")),
+                )
+        raise RuntimeError(
+            "An entry from the manifest was provided,"
+            " that doesn't exist in the manifest!"
+        )
+
 
 def find_manifest() -> str:
     """Find a manifest."""
@@ -308,25 +347,22 @@ def find_manifest() -> str:
     return os.path.realpath(paths[0])
 
 
-def get_manifest() -> Tuple[Manifest, str]:
+def get_manifest() -> Manifest:
     """Get manifest and its path."""
     logger.debug("Looking for manifest")
     manifest_path = find_manifest()
     validate(manifest_path)
 
     logger.debug(f"Using manifest {manifest_path}")
-    return (
-        Manifest.from_file(manifest_path),
-        manifest_path,
-    )
+    return Manifest.from_file(manifest_path)
 
 
-def get_childmanifests(skip: Optional[List[str]] = None) -> List[Tuple[Manifest, str]]:
+def get_childmanifests(skip: Optional[List[str]] = None) -> List[Manifest]:
     """Get manifest and its path."""
     skip = skip or []
     logger.debug("Looking for sub-manifests")
 
-    childmanifests: List[Tuple[Manifest, str]] = []
+    childmanifests: List[Manifest] = []
     for path in find_file(DEFAULT_MANIFEST_NAME, "."):
         path = os.path.realpath(path)
         if path not in skip:
@@ -335,8 +371,7 @@ def get_childmanifests(skip: Optional[List[str]] = None) -> List[Tuple[Manifest,
                 pathlib.Path(path).relative_to(os.path.dirname(os.getcwd())).as_posix()
             ):
                 validate(path)
-            childmanifest = Manifest.from_file(path)
-            childmanifests += [(childmanifest, path)]
+            childmanifests += [Manifest.from_file(path)]
 
     return childmanifests
 
