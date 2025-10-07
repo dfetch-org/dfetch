@@ -4,7 +4,7 @@
 # flake8: noqa
 
 import argparse
-from unittest.mock import patch
+from unittest.mock import mock_open, patch
 
 import pytest
 
@@ -30,7 +30,7 @@ def test_report(name, projects):
 
     with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
         with patch("dfetch.log.DLogger.print_info_line") as mocked_print_info_line:
-            mocked_get_manifest.return_value = (mock_manifest(projects), "/")
+            mocked_get_manifest.return_value = mock_manifest(projects)
 
             report(DEFAULT_ARGS)
 

@@ -61,6 +61,7 @@ from enum import Enum
 from typing import Any, Dict, List
 
 from dfetch.log import get_logger
+from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.check.reporter import CheckReporter, Issue, IssueSeverity
 
@@ -82,14 +83,14 @@ class CodeClimateReporter(CheckReporter):
 
     name = "code-climate"
 
-    def __init__(self, manifest_path: str, report_path: str) -> None:
+    def __init__(self, manifest: Manifest, report_path: str) -> None:
         """Create the code climate reporter.
 
         Args:
-            manifest_path (str): Path to the manifest.
+            manifest (Manifest): The manifest.
             report_path (str): Output path of the report.
         """
-        super().__init__(manifest_path)
+        super().__init__(manifest)
 
         self._report_path = report_path
 
@@ -111,7 +112,7 @@ class CodeClimateReporter(CheckReporter):
             project (ProjectEntry): Project with the issue
             issue (Issue): The issue to add to the report
         """
-        line, col_start, col_end = self.find_name_in_manifest(project.name)
+        line, col_start, col_end = self._manifest.find_name_in_manifest(project.name)
 
         self._report += [
             {
@@ -123,7 +124,7 @@ class CodeClimateReporter(CheckReporter):
                 ).hexdigest(),
                 "severity": self._determine_severity(issue.severity).value,
                 "location": {
-                    "path": os.path.relpath(self._manifest_path),
+                    "path": os.path.relpath(self._manifest.path),
                     "positions": {
                         "begin": {"line": line, "column": col_start},
                         "end": {"line": line, "column": col_end},

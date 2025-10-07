@@ -70,12 +70,12 @@ class Freeze(dfetch.commands.command.Command):
         """Perform the freeze."""
         del args  # unused
 
-        manifest, path = get_manifest()
+        manifest = get_manifest()
 
         exceptions: List[str] = []
         projects: List[ProjectEntry] = []
 
-        with in_directory(os.path.dirname(path)):
+        with in_directory(os.path.dirname(manifest.path)):
             for project in manifest.projects:
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     on_disk_version = dfetch.project.make(project).on_disk_version()

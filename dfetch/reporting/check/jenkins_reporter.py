@@ -55,6 +55,7 @@ import os
 from typing import Any, Dict
 
 from dfetch.log import get_logger
+from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.check.reporter import CheckReporter, Issue
 
@@ -66,14 +67,14 @@ class JenkinsReporter(CheckReporter):
 
     name = "jenkins"
 
-    def __init__(self, manifest_path: str, report_path: str) -> None:
+    def __init__(self, manifest: Manifest, report_path: str) -> None:
         """Create the jenkins reporter.
 
         Args:
-            manifest_path (str): Path to the manifest.
+            manifest (Manifest): The manifest.
             report_path (str): Output path of the report.
         """
-        super().__init__(manifest_path)
+        super().__init__(manifest)
 
         self._report_path = report_path
 
@@ -89,10 +90,10 @@ class JenkinsReporter(CheckReporter):
             project (ProjectEntry): Project with the issue
             issue (Issue): The issue to add to the report
         """
-        line, col_start, col_end = self.find_name_in_manifest(project.name)
+        line, col_start, col_end = self._manifest.find_name_in_manifest(project.name)
         self._report["issues"] += [
             {
-                "fileName": os.path.relpath(self._manifest_path),
+                "fileName": os.path.relpath(self._manifest.path),
                 "severity": str(issue.severity.value),
                 "message": f"{project.name} : {issue.message}",
                 "description": issue.description,

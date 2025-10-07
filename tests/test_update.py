@@ -36,15 +36,12 @@ def test_update(name, projects):
                 with patch("os.path.exists"):
                     with patch("dfetch.commands.update.in_directory"):
                         with patch("dfetch.commands.update.Update._check_destination"):
-                            mocked_get_manifest.return_value = (
-                                mock_manifest(projects),
-                                "/",
-                            )
+                            mocked_get_manifest.return_value = mock_manifest(projects)
                             mocked_get_childmanifests.return_value = []
 
                             update(DEFAULT_ARGS)
 
-                            for project in projects:
+                            for _ in projects:
                                 mocked_make.return_value.update.assert_called()
 
 
@@ -52,10 +49,8 @@ def test_forced_update():
     update = Update()
 
     with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
-        mocked_get_manifest.return_value = (
-            mock_manifest([{"name": "some_project"}]),
-            "/",
-        )
+        mocked_get_manifest.return_value = mock_manifest([{"name": "some_project"}])
+
         with patch(
             "dfetch.manifest.manifest.get_childmanifests"
         ) as mocked_get_childmanifests:
@@ -87,7 +82,15 @@ def test_create_menu():
         ["-N", "--no-recommendations"],
     ]
 
-    for action, expected_options in zip(subparsers.choices["update"]._actions, options):
+    for action, expected_options in zip(
+        [
+            action
+            for action in subparsers.choices["update"]._actions
+            if action.option_strings
+        ],
+        options,
+        strict=True,
+    ):
         assert action.option_strings == expected_options
 
 

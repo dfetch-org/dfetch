@@ -29,6 +29,7 @@ import dfetch.manifest.validate
 import dfetch.project
 from dfetch.commands.common import check_child_manifests
 from dfetch.log import get_logger
+from dfetch.manifest.manifest import Manifest
 from dfetch.reporting.check.code_climate_reporter import CodeClimateReporter
 from dfetch.reporting.check.jenkins_reporter import JenkinsReporter
 from dfetch.reporting.check.reporter import CheckReporter
@@ -83,10 +84,10 @@ class Check(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
-        manifest, path = dfetch.manifest.manifest.get_manifest()
-        reporters = self._get_reporters(args, path)
+        manifest = dfetch.manifest.manifest.get_manifest()
+        reporters = self._get_reporters(args, manifest)
 
-        with in_directory(os.path.dirname(path)):
+        with in_directory(os.path.dirname(manifest.path)):
             exceptions: List[str] = []
             for project in manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
@@ -94,7 +95,7 @@ class Check(dfetch.commands.command.Command):
 
                 if not args.no_recommendations and os.path.isdir(project.destination):
                     with in_directory(project.destination):
-                        check_child_manifests(manifest, project, path)
+                        check_child_manifests(manifest, project)
 
             for reporter in reporters:
                 reporter.dump_to_file()
@@ -103,21 +104,23 @@ class Check(dfetch.commands.command.Command):
             raise RuntimeError("\n".join(exceptions))
 
     @staticmethod
-    def _get_reporters(args: argparse.Namespace, path: str) -> List[CheckReporter]:
+    def _get_reporters(
+        args: argparse.Namespace, manifest: Manifest
+    ) -> List[CheckReporter]:
         """Get all reporters.
 
         Args:
             args (argparse.Namespace): Arguments given to the command line
-            path (str): Path to the manifest
+            manifest (Manifest): The manifest
 
         Returns:
             List[CheckReporter]: List of reporters that each provide a unique report
         """
-        reporters: List[CheckReporter] = [CheckStdoutReporter(path)]
+        reporters: List[CheckReporter] = [CheckStdoutReporter(manifest)]
         if args.jenkins_json:
-            reporters += [JenkinsReporter(path, args.jenkins_json)]
+            reporters += [JenkinsReporter(manifest, args.jenkins_json)]
         if args.sarif:
-            reporters += [SarifReporter(path, args.sarif)]
+            reporters += [SarifReporter(manifest, args.sarif)]
         if args.code_climate:
-            reporters += [CodeClimateReporter(path, args.code_climate)]
+            reporters += [CodeClimateReporter(manifest, args.code_climate)]
         return reporters

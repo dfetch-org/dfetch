@@ -100,10 +100,10 @@ class Diff(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the diff."""
-        manifest, path = dfetch.manifest.manifest.get_manifest()
+        manifest = dfetch.manifest.manifest.get_manifest()
         revs = [r for r in args.revs.strip(":").split(":", maxsplit=1) if r]
 
-        with in_directory(os.path.dirname(path)):
+        with in_directory(os.path.dirname(manifest.path)):
             exceptions: List[str] = []
             projects = manifest.selected_projects(args.projects)
             if not projects:
@@ -113,10 +113,10 @@ class Diff(dfetch.commands.command.Command):
             for project in projects:
                 patch_name = f"{project.name}.patch"
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    repo = _get_repo(path, project)
+                    repo = _get_repo(manifest.path, project)
                     patch = _diff_from_repo(repo, project, revs)
 
-                    _dump_patch(path, revs, project, patch_name, patch)
+                    _dump_patch(manifest.path, revs, project, patch_name, patch)
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))

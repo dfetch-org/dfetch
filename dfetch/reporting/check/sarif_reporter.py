@@ -98,6 +98,7 @@ from sarif_om import (
 )
 
 from dfetch.log import get_logger
+from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.check.reporter import CheckReporter, Issue, IssueSeverity
 
@@ -123,14 +124,14 @@ class SarifReporter(CheckReporter):
         "master/Documents/CommitteeSpecifications/2.1.0/sarif-schema-2.1.0.json"
     )
 
-    def __init__(self, manifest_path: str, report_path: str) -> None:
+    def __init__(self, manifest: Manifest, report_path: str) -> None:
         """Create the sarif reporter.
 
         Args:
-            manifest_path (str): Path to the manifest.
+            manifest (Manifest): The manifest.
             report_path (str): Output path of the report.
         """
-        super().__init__(manifest_path)
+        super().__init__(manifest)
 
         self._report_path = report_path
 
@@ -154,7 +155,7 @@ class SarifReporter(CheckReporter):
         )
         self._run.artifacts = [
             Artifact(
-                location=ArtifactLocation(uri=os.path.relpath(self._manifest_path)),
+                location=ArtifactLocation(uri=os.path.relpath(self._manifest.path)),
                 source_language="yaml",
             )
         ]
@@ -176,7 +177,7 @@ class SarifReporter(CheckReporter):
             project (ProjectEntry): Project with the issue
             issue (Issue): The issue to add
         """
-        line, col_start, col_end = self.find_name_in_manifest(project.name)
+        line, col_start, col_end = self._manifest.find_name_in_manifest(project.name)
 
         result = Result(
             message=Message(text=f"{project.name} : {issue.message}"),
@@ -186,7 +187,7 @@ class SarifReporter(CheckReporter):
                 Location(
                     physical_location=PhysicalLocation(
                         artifact_location=ArtifactLocation(
-                            uri=os.path.relpath(self._manifest_path), index=0
+                            uri=os.path.relpath(self._manifest.path), index=0
                         ),
                         region=Region(
                             start_line=line,
