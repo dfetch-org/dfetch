@@ -46,7 +46,7 @@ pip install dfetch
 ### latest version
 
 ```bash
-pip install https://github.com/dfetch-org/dfetch/archive/main.zip
+pip install git+https://github.com/dfetch-org/dfetch.git#egg=dfetch
 ```
 
 ## Github Action
