@@ -150,7 +150,8 @@ def test_get_childmanifests(name, manifest_paths) -> None:
                 assert len(found_childmanifests) == len(manifest_paths)
 
                 for path, call in zip(
-                    manifest_paths, manifest_mock.from_file.call_args_list, strict=True
+                    manifest_paths,
+                    manifest_mock.from_file.call_args_list,  # , strict=True
                 ):
                     assert os.path.realpath(path) == call[0][0]
 

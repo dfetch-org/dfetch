@@ -165,3 +165,4 @@ exclude = ["doc/static/uml/generate_diagram.py"]
 standard = ["dfetch", "features"]
 reportMissingImports = false
 reportMissingModuleSource = false
+pythonVersion = "3.9"

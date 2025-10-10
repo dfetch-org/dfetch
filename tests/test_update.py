@@ -89,7 +89,7 @@ def test_create_menu():
             if action.option_strings
         ],
         options,
-        strict=True,
+        # strict=True,
     ):
         assert action.option_strings == expected_options
 
