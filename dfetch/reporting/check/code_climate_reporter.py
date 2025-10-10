@@ -112,7 +112,7 @@ class CodeClimateReporter(CheckReporter):
             project (ProjectEntry): Project with the issue
             issue (Issue): The issue to add to the report
         """
-        line, col_start, col_end = self._manifest.find_name_in_manifest(project.name)
+        location = self._manifest.find_name_in_manifest(project.name)
 
         self._report += [
             {
@@ -126,8 +126,11 @@ class CodeClimateReporter(CheckReporter):
                 "location": {
                     "path": os.path.relpath(self._manifest.path),
                     "positions": {
-                        "begin": {"line": line, "column": col_start},
-                        "end": {"line": line, "column": col_end},
+                        "begin": {
+                            "line": location.line_number,
+                            "column": location.start,
+                        },
+                        "end": {"line": location.line_number, "column": location.end},
                     },
                 },
             }

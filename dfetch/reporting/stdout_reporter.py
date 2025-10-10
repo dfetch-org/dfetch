@@ -7,6 +7,7 @@ from the manifest or the metadata (``.dfetch_data.yaml``).
 from typing import List
 
 from dfetch.log import get_logger
+from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.metadata import Metadata
 from dfetch.reporting.reporter import Reporter
@@ -19,6 +20,10 @@ class StdoutReporter(Reporter):
     """Reporter for generating report on stdout."""
 
     name = "stdout"
+
+    def __init__(self, manifest: Manifest) -> None:
+        """Initialize the reporter."""
+        del manifest
 
     def add_project(
         self,

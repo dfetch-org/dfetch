@@ -177,7 +177,7 @@ class SarifReporter(CheckReporter):
             project (ProjectEntry): Project with the issue
             issue (Issue): The issue to add
         """
-        line, col_start, col_end = self._manifest.find_name_in_manifest(project.name)
+        location = self._manifest.find_name_in_manifest(project.name)
 
         result = Result(
             message=Message(text=f"{project.name} : {issue.message}"),
@@ -190,10 +190,10 @@ class SarifReporter(CheckReporter):
                             uri=os.path.relpath(self._manifest.path), index=0
                         ),
                         region=Region(
-                            start_line=line,
-                            start_column=col_start,
-                            end_line=line,
-                            end_column=col_end + 1,
+                            start_line=location.line_number,
+                            start_column=location.start,
+                            end_line=location.line_number,
+                            end_column=location.end + 1,
                         ),
                     )
                 )

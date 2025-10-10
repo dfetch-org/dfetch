@@ -102,7 +102,7 @@ class SbomReporter(Reporter):
 
     def __init__(self, manifest: Manifest) -> None:
         """Start the report."""
-        super().__init__(manifest)
+        self._manifest = manifest
         self._bom = Bom()
         self._bom.metadata.tools.components.add(self.dfetch_tool)
         self._bom.metadata.tools.components.add(cdx_lib_component())
@@ -120,7 +120,7 @@ class SbomReporter(Reporter):
 
         name = project.name if purl.type == "generic" else purl.name
 
-        line_nr, start, _ = self._manifest.find_name_in_manifest(project.name)
+        location = self._manifest.find_name_in_manifest(project.name)
 
         component = Component(
             name=name,
@@ -130,7 +130,11 @@ class SbomReporter(Reporter):
             purl=purl,
             evidence=ComponentEvidence(
                 occurrences=[
-                    Occurrence(location=self._manifest.path, line=line_nr, offset=start)
+                    Occurrence(
+                        location=self._manifest.path,
+                        line=location.line_number,
+                        offset=location.start,
+                    )
                 ],
                 identity=[
                     Identity(

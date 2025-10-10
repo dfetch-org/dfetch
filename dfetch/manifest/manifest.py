@@ -23,6 +23,7 @@ import io
 import os
 import pathlib
 import re
+from dataclasses import dataclass
 from typing import IO, Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import yaml
@@ -36,6 +37,15 @@ from dfetch.manifest.validate import validate
 from dfetch.util.util import find_file, prefix_runtime_exceptions
 
 logger = get_logger(__name__)
+
+
+@dataclass
+class ManifestEntryLocation:
+    """Location of an entry in the manifest file."""
+
+    line_number: int
+    start: int
+    end: int
 
 
 class RequestedProjectNotFoundError(RuntimeError):
@@ -111,8 +121,8 @@ class Manifest:
     ) -> None:
         """Create the manifest."""
         self.__version: str = str(manifest.get("version", self.CURRENT_VERSION))
-        self.__text: str = str(text)
-        self.__path: str = str(path)
+        self.__text: str = text if text else ""
+        self.__path: str = str(path) if path else ""
 
         self._remotes, default_remotes = self._determine_remotes(
             manifest.get("remotes", [])
@@ -193,6 +203,9 @@ class Manifest:
         path: Optional[Union[str, os.PathLike[str]]] = None,
     ) -> "Manifest":
         """Create a manifest from a file like object."""
+        if isinstance(text, (io.TextIOWrapper, IO)):
+            text = text.read()
+
         loaded_yaml = Manifest._load_yaml(text)
 
         if not loaded_yaml:
@@ -202,10 +215,6 @@ class Manifest:
 
         if not manifest:
             raise RuntimeError("Missing manifest root element!")
-
-        if isinstance(text, (io.TextIOWrapper, IO)):
-            text.seek(0)
-            text = text.read()
 
         return Manifest(manifest, text=text, path=path)
 
@@ -313,24 +322,29 @@ class Manifest:
                 self._as_dict(), manifest_file, Dumper=ManifestDumper, sort_keys=False
             )
 
-    def find_name_in_manifest(self, name: str) -> Tuple[int, int, int]:
-        """Find the location of a project name in the manifest."""
+    def find_name_in_manifest(self, name: str) -> ManifestEntryLocation:
+        """Find the location of a project name in the manifest.
+
+        Returns:
+            ManifestEntryLocation of the project name in the manifest.
+
+        Raises:
+            FileNotFoundError: If manifest text is not available
+            RuntimeError: If the project name is not found in the manifest
+        """
         if not self.__text:
             raise FileNotFoundError("No manifest text available")
 
         for line_nr, line in enumerate(self.__text.splitlines(), start=1):
-            match = re.search(rf"^\s+-\s*name:\s*(?P<name>{name})\s*$", line)
+            match = re.search(rf"^\s+-\s*name:\s*(?P<name>{re.escape(name)})\s*$", line)
 
             if match:
-                return (
-                    line_nr,
-                    int(match.start("name")) + 1,
-                    int(match.end("name")),
+                return ManifestEntryLocation(
+                    line_number=line_nr,
+                    start=int(match.start("name")) + 1,
+                    end=int(match.end("name")),
                 )
-        raise RuntimeError(
-            "An entry from the manifest was provided,"
-            " that doesn't exist in the manifest!"
-        )
+        raise RuntimeError(f"{name} was not found in the manifest!")
 
 
 def find_manifest() -> str:

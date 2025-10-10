@@ -90,17 +90,17 @@ class JenkinsReporter(CheckReporter):
             project (ProjectEntry): Project with the issue
             issue (Issue): The issue to add to the report
         """
-        line, col_start, col_end = self._manifest.find_name_in_manifest(project.name)
+        location = self._manifest.find_name_in_manifest(project.name)
         self._report["issues"] += [
             {
                 "fileName": os.path.relpath(self._manifest.path),
                 "severity": str(issue.severity.value),
                 "message": f"{project.name} : {issue.message}",
                 "description": issue.description,
-                "lineStart": line,
-                "lineEnd": line,
-                "columnStart": col_start,
-                "columnEnd": col_end,
+                "lineStart": location.line_number,
+                "lineEnd": location.line_number,
+                "columnStart": location.start,
+                "columnEnd": location.end,
             }
         ]
 
