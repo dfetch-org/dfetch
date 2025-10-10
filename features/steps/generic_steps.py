@@ -9,7 +9,7 @@ import os
 import pathlib
 import re
 from itertools import zip_longest
-from typing import Iterable, List, Optional, Pattern, Tuple
+from typing import Iterable, List, Optional, Pattern, Tuple, Union
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 from behave.runner import Context
@@ -57,35 +57,16 @@ def check_file_exists(path):
     assert os.path.isfile(path), f"Expected {path} to exist, but it didn't!"
 
 
-def check_json(path, content):
-    """Check a file."""
+def check_json(path: Union[str, os.PathLike], content: str) -> None:
+    """Check a JSON file."""
 
     with open(path, "r", encoding="UTF-8") as file_to_check:
         actual_json = json.load(file_to_check)
     expected_json = json.loads(content)
 
-    if "bomFormat" in expected_json:
-        sort_sbom(expected_json)
-    if "bomFormat" in actual_json:
-        sort_sbom(actual_json)
-
     check_content(
         json.dumps(expected_json, indent=4, sort_keys=True).splitlines(),
         json.dumps(actual_json, indent=4, sort_keys=True).splitlines(),
-    )
-
-
-def sort_sbom(sbom):
-    """Sort some fields in an sbom."""
-
-    for tool in sbom["metadata"]["tools"]:
-        if "externalReferences" in tool:
-            tool["externalReferences"] = sorted(
-                tool["externalReferences"], key=lambda x: x["type"]
-            )
-
-    sbom["metadata"]["tools"] = sorted(
-        sbom["metadata"]["tools"], key=lambda x: x["name"]
     )
 
 

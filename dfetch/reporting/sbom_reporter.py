@@ -131,7 +131,7 @@ class SbomReporter(Reporter):
             evidence=ComponentEvidence(
                 occurrences=[
                     Occurrence(
-                        location=self._manifest.path,
+                        location=self._manifest.relative_path,
                         line=location.line_number,
                         offset=location.start,
                     )

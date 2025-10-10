@@ -123,6 +123,9 @@ class Manifest:
         self.__version: str = str(manifest.get("version", self.CURRENT_VERSION))
         self.__text: str = text if text else ""
         self.__path: str = str(path) if path else ""
+        self.__relative_path: str = (
+            os.path.relpath(self.__path, os.getcwd()) if self.__path else ""
+        )
 
         self._remotes, default_remotes = self._determine_remotes(
             manifest.get("remotes", [])
@@ -247,6 +250,11 @@ class Manifest:
     def path(self) -> str:
         """Path to the manifest file."""
         return self.__path
+
+    @property
+    def relative_path(self) -> str:
+        """Path to the manifest file relative to the current working directory."""
+        return self.__relative_path
 
     @property
     def version(self) -> str:
