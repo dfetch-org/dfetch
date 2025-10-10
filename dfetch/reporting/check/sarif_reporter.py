@@ -52,7 +52,7 @@ A Sarif report can be added to a github action as such:
 
         steps:
           - name: Dfetch SARIF Check
-            uses: ./
+            uses: dfetch-org/dfetch@main
             with:
               working-directory: '.'
 
