@@ -1,9 +1,8 @@
-@wip
 Feature: Create an CycloneDX sbom
 
     *Dfetch* can generate a software Bill-of-Materials (SBOM).
 
-    An SBOM lists the components and their supply chain relationships. Downstream
+    This SBOM lists the components and their supply chain relationships. Downstream
     users of the software can assess the licenses used and potential risk of dependencies.
 
     The generated SBOM can be used as input for other tools to monitor dependencies.

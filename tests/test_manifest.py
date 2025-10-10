@@ -8,7 +8,6 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-import dfetch.manifest.manifest
 from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.manifest.manifest import (
     Manifest,
@@ -73,7 +72,7 @@ def test_no_projects() -> None:
     """Test that manifest without projects cannot be read."""
 
     with pytest.raises(KeyError):
-        manifest = given_manifest_from_text(MANIFEST_NO_PROJECTS)
+        given_manifest_from_text(MANIFEST_NO_PROJECTS)
 
 
 def test_no_remotes() -> None:
