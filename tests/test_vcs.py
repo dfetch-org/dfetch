@@ -3,7 +3,7 @@
 # mypy: ignore-errors
 # flake8: noqa
 
-from typing import Optional
+from typing import Optional, Union
 from unittest.mock import patch
 
 import pytest
@@ -99,10 +99,10 @@ class ConcreteVCS(VCS):
 )
 def test_check_wanted_with_local(
     name: str,
-    given_on_disk: Version | None,
+    given_on_disk: Union[Version, None],
     given_wanted: Version,
     expect_wanted: Version,
-    expect_have: Version | None,
+    expect_have: Union[Version, None],
 ):
     with patch("dfetch.project.vcs.os.path.exists") as mocked_path_exists:
         with patch("dfetch.project.vcs.Metadata.from_file") as mocked_metadata:

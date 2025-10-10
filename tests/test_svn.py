@@ -142,7 +142,7 @@ def test_externals(name, externals, expectations):
                 parsed_externals = SvnRepo.externals()
 
                 for actual, expected in zip(
-                    parsed_externals, expectations, strict=True
+                    parsed_externals, expectations  # , strict=True
                 ):
                     assert actual == expected
 
