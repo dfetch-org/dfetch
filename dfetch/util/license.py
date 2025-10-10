@@ -7,8 +7,8 @@ from typing import Optional, Union
 import infer_license
 from infer_license.types import License as InferredLicense
 
-# Limit the max size of alicense file to parse
-MAX_LICENSE_FILE_SIZE = 1024 * 1024
+# Limit license file size to below number of bytes to prevent memory issues with large files
+MAX_LICENSE_FILE_SIZE = 1024 * 1024  # 1 MB
 
 
 @dataclass
@@ -50,6 +50,9 @@ def guess_license_in_file(
 ) -> Optional[License]:
     """Attempt to identify the license of a given file.
 
+    Tries UTF-8 encoding first, falling back to Latin-1 for legacy license files.
+    If the file cannot be read or no license is detected, returns None.
+
     Args:
         filename (Union[str, os.PathLike[str]]): Path to the file to analyze
 
@@ -63,11 +66,7 @@ def guess_license_in_file(
             license_text = file_bytes.decode("utf-8")
         except UnicodeDecodeError:
             license_text = file_bytes.decode("latin-1")
-    except (FileNotFoundError, PermissionError, IsADirectoryError):
-        # Return None for file access issues
-        return None
-    except OSError:
-        # Handle other OS-level file errors
+    except (FileNotFoundError, PermissionError, IsADirectoryError, OSError):
         return None
 
     probable_licenses = infer_license.api.probabilities(license_text)
