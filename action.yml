@@ -26,10 +26,10 @@ runs:
       with:
         python-version: '3.13'
 
-    # Install dfetch if NOT running inside the dfetch repo
+    # Install dfetch from main if NOT running on a branch in the dfetch repo
     - name: Install dfetch from GitHub
-      if: ${{ github.repository != 'dfetch-org/dfetch' }}
-      run: pip install git+https://github.com/dfetch-org/dfetch.git#egg=dfetch
+      if: ${{ github.repository != 'dfetch-org/dfetch' || github.ref_name == 'main' }}
+      run: pip install git+https://github.com/dfetch-org/dfetch.git@main#egg=dfetch
       shell: bash
 
     # Install dfetch locally if running inside the dfetch repo
