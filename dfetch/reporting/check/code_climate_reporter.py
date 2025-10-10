@@ -32,7 +32,7 @@ or solved.
 
 Usage
 -----
-Let *DFetch* perform a check and generate the code-climate json and add the result as artifact in you gitlab-ci runner.
+Let *DFetch* perform a check and generate the code-climate json and add the result as artifact in your gitlab-ci runner.
 See `gitlab code quality reports`_ for more information.
 
 .. code-block:: yaml
