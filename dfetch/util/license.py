@@ -7,21 +7,36 @@ from typing import Optional, Union
 import infer_license
 from infer_license.types import License as InferredLicense
 
+# Limit the max size of alicense file to parse
+MAX_LICENSE_FILE_SIZE = 1024 * 1024
+
 
 @dataclass
 class License:
-    """Class to hold license information."""
+    """Represents a software license with its SPDX identifiers and detection confidence.
 
-    name: str  # SPDX Full name
-    spdx_id: str  # SPDX Identifier
-    trove_classifier: Optional[str]  # Python package classifier
-    probability: float  # Confidence level of the license inference
+    This class encapsulates license information detected by the infer-license library,
+    providing standardized identifiers and confidence level of the detection.
+    """
+
+    name: str  #: SPDX Full name
+    spdx_id: str  #: SPDX Identifier
+    trove_classifier: Optional[str]  #: Python package classifier
+    probability: float  #: Confidence level of the license inference
 
     @staticmethod
     def from_inferred(
         inferred_license: InferredLicense, probability: float
     ) -> "License":
-        """Create License from an InferredLicense."""
+        """Convert an infer-license License object to our internal License representation.
+
+        Args:
+            inferred_license: The license object from infer-license library
+            probability: The confidence score (0-1) of the license detection
+
+        Returns:
+            License: A new License instance with the inferred information
+        """
         return License(
             name=inferred_license.name,
             spdx_id=inferred_license.shortname,
@@ -43,7 +58,7 @@ def guess_license_in_file(
     """
     try:
         with open(filename, "rb") as f:
-            file_bytes = f.read()
+            file_bytes = f.read(MAX_LICENSE_FILE_SIZE)
         try:
             license_text = file_bytes.decode("utf-8")
         except UnicodeDecodeError:
