@@ -12,6 +12,7 @@ Release 0.11.0 (unreleased)
 * Support multiple licenses per project (#788)
 * Add evidence to sbom report (#788)
 * Let action work outside of dfetch repo (#816)
+* Handle SVN tags with special characters (#811)
 
 Release 0.10.0 (released 2025-03-12)
 ====================================

@@ -3,6 +3,7 @@
 import os
 import pathlib
 import re
+import urllib.parse
 from typing import Dict, List, NamedTuple, Optional, Tuple
 
 from dfetch.log import get_logger
@@ -203,6 +204,8 @@ class SvnRepo(VCS):
                 if branch != self.DEFAULT_BRANCH
                 else self.DEFAULT_BRANCH
             )
+
+        branch_path = urllib.parse.quote(branch_path)
 
         revision = version.revision or self._get_revision(branch_path)
 
