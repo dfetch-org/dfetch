@@ -4,7 +4,7 @@
 # flake8: noqa
 
 import argparse
-from unittest.mock import mock_open, patch
+from unittest.mock import patch
 
 import pytest
 
