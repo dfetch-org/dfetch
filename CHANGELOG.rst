@@ -9,6 +9,7 @@ Release 0.11.0 (unreleased)
 * Add security policy (#784)
 * Add provenance / release attestation to pypi package (#784)
 * Support multiple licenses per project (#788)
+* Add evidence to sbom report (#788)
 
 Release 0.10.0 (released 2025-03-12)
 ====================================
