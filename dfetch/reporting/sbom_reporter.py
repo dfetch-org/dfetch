@@ -13,6 +13,59 @@ See https://cyclonedx.org/use-cases/ for more details.
 .. scenario-include:: ../features/report-sbom.feature
    :scenario:
         An fetched project generates an sbom
+
+Gitlab
+------
+Let *DFetch* generate a SBoM and add the result as artifact in your gitlab-ci runner.
+See `gitlab dependency scanning`_ for more information.
+
+.. code-block:: yaml
+
+    dfetch:
+      image: "python:3.13"
+      script:
+      - pip install dfetch
+      - dfetch report -t sbom -o dfetch.cdx.json
+      artifacts:
+        reports:
+          cyclonedx:
+            - dfetch.cdx.json
+
+.. _`gitlab dependency scanning`:
+     https://docs.gitlab.com/user/application_security/dependency_scanning/dependency_scanning_sbom/#cyclonedx-software-bill-of-materials
+
+Github
+------
+
+A SBoM report can be generated in a github action as such:
+
+.. code-block:: yaml
+
+    jobs:
+      SBOM-generation:
+
+        runs-on: ubuntu-latest
+
+        steps:
+        - uses: actions/checkout@v5
+        - uses: actions/setup-python@v6
+          with:
+            python-version: '3.13'
+        - name: Install dfetch from GitHub
+          run: pip install git+https://github.com/dfetch-org/dfetch.git@main#egg=dfetch
+          shell: bash
+        - name: Generate SBOM with dfetch
+          run: dfetch report -t sbom -o dfetch.cdx.json
+          shell: bash
+        - uses: actions/upload-artifact@v4
+          with:
+            name: sbom
+            path: dfetch.cdx.json
+
+For more information see the `Github dependency submission`_.
+
+.. _`Github dependency submission`:
+     https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/using-the-dependency-submission-api
 """
 
 from decimal import Decimal
