@@ -58,6 +58,9 @@ The results will be uploaded to Github. Add the following to your workflow file:
 jobs:
   dfetch-check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Run Dfetch Check
         uses: dfetch-org/dfetch@main
