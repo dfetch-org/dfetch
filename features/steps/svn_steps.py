@@ -61,7 +61,6 @@ def add_externals(externals):
         ["svn", "propset", "svn:externals", "-F", external_list.name, "."]
     )
     commit_all("Added externals")
-    subprocess.check_call(["svn", "update"])
 
 
 @given("a svn repo with the following externals")
