@@ -74,3 +74,32 @@ Feature: Fetching dependencies from a svn repository
                     SomeFile.txt
                 dfetch.yaml
             """
+
+    Scenario: SVN repository with a tags can be fetched
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: SomeProject
+                      url: some-remote-server/SomeProject
+                      tag: 'v1.2.3'
+
+                    - name: SomeOtherProject
+                      url: some-remote-server/SomeOtherProject
+                      tag: 'v 1&;{6}'
+            """
+        And a svn-server "SomeProject" with the tag "v1.2.3"
+        And a svn-server "SomeOtherProject" with the tag "v 1&;{6}"
+        When I run "dfetch update"
+        Then 'MyProject' looks like:
+            """
+            MyProject/
+                SomeOtherProject/
+                    .dfetch_data.yaml
+                    README.md
+                SomeProject/
+                    .dfetch_data.yaml
+                    README.md
+                dfetch.yaml
+            """

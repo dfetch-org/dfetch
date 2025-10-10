@@ -21,10 +21,10 @@ def create_svn_server_and_repo(context, name="svn-server"):
     repo_path = name
 
     pathlib.Path(server_path).mkdir(parents=True, exist_ok=True)
-    subprocess.call(["svnadmin", "create", "--fs-type", "fsfs", server_path])
+    subprocess.check_call(["svnadmin", "create", "--fs-type", "fsfs", server_path])
 
     current_path = "/".join(os.getcwd().split(os.path.sep) + [server_path])
-    subprocess.call(["svn", "checkout", f"file:///{current_path}", repo_path])
+    subprocess.check_call(["svn", "checkout", f"file:///{current_path}", repo_path])
 
     return repo_path
 
@@ -36,12 +36,18 @@ def create_stdlayout():
 
 
 def add_and_commit(msg):
-    subprocess.call(["svn", "add", "--force", "."])
-    subprocess.call(["svn", "ci", "-m", f'"{msg}"'])
+    subprocess.check_call(["svn", "add", "--force", "."])
+    subprocess.check_call(["svn", "ci", "-m", f'"{msg}"'])
 
 
 def commit_all(msg):
-    subprocess.call(["svn", "commit", "--depth", "empty", ".", "-m", f'"{msg}"'])
+    subprocess.check_call(["svn", "commit", "--depth", "empty", ".", "-m", f'"{msg}"'])
+
+
+def create_tag(tag_name):
+    """Create a tag from trunk."""
+    subprocess.check_call(["svn", "copy", "trunk", f"tags/{tag_name}"])
+    subprocess.check_call(["svn", "ci", "-m", f'"Created tag {tag_name}"'])
 
 
 def add_externals(externals):
@@ -51,9 +57,11 @@ def add_externals(externals):
             revision = f"@{external['revision']}" if external["revision"] else ""
             external_list.write(f"{external['url']}{revision} {external['path']}\n")
 
-    subprocess.call(["svn", "propset", "svn:externals", "-F", external_list.name, "."])
+    subprocess.check_call(
+        ["svn", "propset", "svn:externals", "-F", external_list.name, "."]
+    )
     commit_all("Added externals")
-    subprocess.call(["svn", "update"])
+    subprocess.check_call(["svn", "update"])
 
 
 @given("a svn repo with the following externals")
@@ -65,7 +73,8 @@ def step_impl(context):
 
 @given('a svn-server "{name}"')
 @given('a svn-server "{name}" with the files')
-def step_impl(context, name):
+@given('a svn-server "{name}" with the tag "{tag_name}"')
+def step_impl(context, name, tag_name=None):
     repo_path = create_svn_server_and_repo(context, name)
 
     files = context.table or [{"path": "README.md"}]
@@ -76,6 +85,8 @@ def step_impl(context, name):
             for file in files:
                 generate_file(file["path"], "some content")
         add_and_commit("Added files")
+        if tag_name:
+            create_tag(tag_name)
 
 
 @given('a non-standard svn-server "{name}" with the files')
