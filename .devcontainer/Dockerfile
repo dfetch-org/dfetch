@@ -3,7 +3,9 @@ FROM mcr.microsoft.com/devcontainers/python:3.13-bullseye@sha256:e6d1214434cb015
 # Install dependencies
 # pv is required for asciicasts
 RUN apt-get update && apt-get install --no-install-recommends -y \
+    ccache=4.2-1 \
     pv=1.6.6-1+b1 \
+    patchelf=0.12-1 \
     subversion=1.14.1-3+deb11u2 && \
     rm -rf /var/lib/apt/lists/*
 
@@ -21,7 +23,7 @@ ENV PYTHONUSERBASE="/home/dev/.local"
 COPY --chown=dev:dev . .
 
 RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip==25.2 \
-    && pip install --no-cache-dir --root-user-action=ignore -e .[development,docs,test,casts] \
+    && pip install --no-cache-dir --root-user-action=ignore -e .[development,docs,test,casts,build] \
     && pre-commit install --install-hooks
 
 # Set bash as the default shell
