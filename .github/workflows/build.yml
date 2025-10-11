@@ -15,7 +15,7 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [ubuntu-latest] #, macos-latest, windows-latest]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     permissions:
       contents: read
@@ -49,6 +49,7 @@ jobs:
       #     svn --version  # Verify installation
 
       - name: ccache
+        if: matrix.platform == 'ubuntu-latest'
         uses: hendrikmuhs/ccache-action@30ae3502c7f2d3200209bf2f90eccef2357896cf # v1.2
         with:
           key: ${{ github.job }}-${{ matrix.platform }}
@@ -84,7 +85,7 @@ jobs:
         name: binary-distribution
         path: .
 
-    - run: ln -sf $(ls dfetch-*) dfetch
+    - run: ln -sf $(ls dfetch-*-x86_64) dfetch
     - run: chmod +x dfetch
     - run: ls -la .
     - run: ./dfetch init
