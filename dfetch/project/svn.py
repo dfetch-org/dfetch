@@ -173,7 +173,11 @@ class SvnRepo(VCS):
     @staticmethod
     def list_tool_info() -> None:
         """Print out version information."""
-        result = run_on_cmdline(logger, "svn --version")
+        try:
+            result = run_on_cmdline(logger, "svn --version")
+        except RuntimeError:
+            VCS._log_tool("svn", "<not found in PATH>")
+            return
 
         first_line = result.stdout.decode().split("\n")[0]
         tool, version = first_line.replace(",", "").split("version", maxsplit=1)
