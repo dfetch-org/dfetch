@@ -186,4 +186,5 @@ output-filename-macos = "dfetch"
 
 # windows-icon-from-ico = "static/favicon.ico"
 # windows-company-name = "dfetch-org"
-show-progress = true
+# Enable below for debugging
+# show-progress = true
