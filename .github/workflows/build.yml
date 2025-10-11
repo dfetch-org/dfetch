@@ -52,14 +52,16 @@ jobs:
         uses: hendrikmuhs/ccache-action@30ae3502c7f2d3200209bf2f90eccef2357896cf # v1.2
         with:
           key: ${{ github.job }}-${{ matrix.platform }}
-          create-symlink: true
           verbose: 1
+          create-symlink: true
 
       - name: Create binary
+        env:
+          CCACHE_BASEDIR: ${{ github.workspace }}
+          CCACHE_NOHASHDIR: true
+          NUITKA_CACHE_DIR_CCACHE: $HOME/.ccache
+          NUITKA_CCACHE_BINARY: /usr/bin/ccache
         run: |
-          echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE" >> $GITHUB_ENV
-          echo "NUITKA_CCACHE_BINARY=/usr/bin/ccache" >> $GITHUB_ENV
-          echo "NUITKA_CACHE_DIR_CCACHE=$HOME/.ccache" >> $GITHUB_ENV
           pip install .[build]
           python script/build.py
 
