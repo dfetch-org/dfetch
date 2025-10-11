@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """This script builds the dfetch executable using Nuitka."""
-import subprocess
+import subprocess  # nosec
 import sys
 import tomllib as toml
 from typing import Union
@@ -12,8 +12,13 @@ def parse_option(
     option_name: str, option_value: Union[bool, str, list, dict]
 ) -> list[str]:
     """
-    Convert a config value to CLI args for Nuitka.
-    Handles booleans, strings, lists, and nested dicts.
+    Convert a config value to Nuitka CLI arguments.
+
+    Handles booleans (--flag), strings (--flag=value), lists (multiple --flag=value),
+    and nested dicts (--flag=key1=val1=key2=val2).
+
+    Returns:
+    list[str]: Nuitka CLI arguments in the format ['--flag', '--key=value']
     """
     args = []
     cli_key = f"--{option_name.replace('_','-')}"
@@ -37,8 +42,8 @@ def parse_option(
 
 
 # Load pyproject.toml
-with open("pyproject.toml", "r", encoding="UTF-8") as pyproject_file:
-    pyproject = toml.loads(pyproject_file.read())
+with open("pyproject.toml", "rb") as pyproject_file:
+    pyproject = toml.load(pyproject_file)
 nuitka_opts = pyproject.get("tool", {}).get("nuitka", {})
 
 
@@ -49,8 +54,13 @@ elif sys.platform.startswith("linux"):
 elif sys.platform.startswith("darwin"):
     nuitka_opts["output-filename"] = nuitka_opts["output-filename-macos"]
 
-for key in ["output-filename-win", "output-filename-linux", "output-filename-macos"]:
-    nuitka_opts.pop(key, None)
+
+nuitka_opts = {
+    k: v
+    for k, v in nuitka_opts.items()
+    if k
+    not in {"output-filename-win", "output-filename-linux", "output-filename-macos"}
+}
 
 command = [sys.executable, "-m", "nuitka"]
 for key, value in nuitka_opts.items():
@@ -59,4 +69,4 @@ for key, value in nuitka_opts.items():
 command.append("dfetch")
 
 print(command)
-subprocess.check_call(command)
+subprocess.check_call(command)  # nosec
