@@ -173,7 +173,7 @@ pythonVersion = "3.9"
 
 [tool.nuitka]
 mode = "onefile" # Switch this between standalone and onefile as needed
-jobs = "2"
+jobs = "4"
 # Enable below for debugging
 # show-progress = true
 assume-yes-for-downloads = true
@@ -181,7 +181,7 @@ assume-yes-for-downloads = true
 include-package-data="dfetch,infer_license"
 include-module="infer_license.licenses"
 
-python-flag = ["-OO"]
+# python-flag = ["-OO"] # Cannot optimize (yet) commands rely on __doc__ being present
 
 output-dir = "build"
 output-filename-win = "dfetch-{VERSION}.exe"
