@@ -66,7 +66,7 @@ jobs:
           path: build/dfetch-*
 
   test-binary:
-    name: Run some commands with binary
+    name: Run binary
     needs:
     - build
     runs-on: ubuntu-latest
@@ -76,8 +76,9 @@ jobs:
       uses: actions/download-artifact@v5
       with:
         name: binary-distribution
-        path: build/dfetch-*
+        path: .
 
+    - run: tree .
     - run: build/dfetch-* environment
     - run: build/dfetch-* validate
     - run: build/dfetch-* check
