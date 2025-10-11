@@ -73,20 +73,21 @@ jobs:
         path: .
 
     - run: ln -sf $(ls dfetch-*) dfetch
+    - run: chmod +x dfetch
     - run: ls -la .
-    - run: dfetch init
-    - run: dfetch environment
-    - run: dfetch validate
-    - run: dfetch check
-    - run: dfetch update
-    - run: dfetch update
-    - run: dfetch report -t sbom
+    - run: ./dfetch init
+    - run: ./dfetch environment
+    - run: ./dfetch validate
+    - run: ./dfetch check
+    - run: ./dfetch update
+    - run: ./dfetch update
+    - run: ./dfetch report -t sbom
 
     - name: Run example
       working-directory: ./example
       env:
         CI: 'false'
       run: |
-          dfetch update
-          dfetch update
-          dfetch report
+          ./dfetch update
+          ./dfetch update
+          ./dfetch report
