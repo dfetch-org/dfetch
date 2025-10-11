@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """This script builds the dfetch executable using Nuitka."""
-import os
 import subprocess
 import sys
 import tomllib as toml
 from typing import Union
+
+from dfetch import __version__
 
 
 def parse_option(
@@ -21,7 +22,7 @@ def parse_option(
         if option_value:
             args.append(cli_key)
     elif isinstance(option_value, str):
-        args.append(f"{cli_key}={option_value}")
+        args.append(f"{cli_key}={option_value}".replace("{VERSION}", __version__))
     elif isinstance(option_value, list):
         for v in option_value:
             if isinstance(v, dict):
@@ -55,7 +56,7 @@ command = [sys.executable, "-m", "nuitka"]
 for key, value in nuitka_opts.items():
     command.extend(parse_option(key, value))
 
-command.append(os.path.join("dfetch", "__main__.py"))
+command.append("dfetch")
 
 print(command)
 subprocess.check_call(command)
