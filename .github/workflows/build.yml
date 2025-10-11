@@ -38,7 +38,7 @@ jobs:
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y patchelf=0.12-1 ccache=4.2-1
+          sudo apt-get install -y patchelf ccache
 
       # - name: Install Subversion (SVN)
       #   if: matrix.platform == 'macos-latest'
