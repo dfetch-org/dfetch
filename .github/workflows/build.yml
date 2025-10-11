@@ -53,6 +53,7 @@ jobs:
         with:
           key: ${{ github.job }}-${{ matrix.platform }}
           create-symlink: true
+          verbose: 1
 
       - name: Create binary
         run: |
