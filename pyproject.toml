@@ -170,3 +170,20 @@ standard = ["dfetch", "features"]
 reportMissingImports = false
 reportMissingModuleSource = false
 pythonVersion = "3.9"
+
+[tool.nuitka]
+mode = "standalone" # Switch this between standalone and onefile as needed
+jobs = "4"
+assume-yes-for-downloads = true
+
+# Include data files (local path = target path in standalone)
+include-data-dir = [{ source = "dfetch/resources", destination = "resources" }]
+
+output-dir = "build"
+output-filename-win = "dfetch.exe"
+output-filename-linux = "dfetch"
+output-filename-macos = "dfetch"
+
+# windows-icon-from-ico = "static/favicon.ico"
+# windows-company-name = "dfetch-org"
+show-progress = true
