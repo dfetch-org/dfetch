@@ -13,6 +13,7 @@ Release 0.11.0 (unreleased)
 * Add evidence to sbom report (#788)
 * Let action work outside of dfetch repo (#816)
 * Handle SVN tags with special characters (#811)
+* Don't return non-zero exit code if tool not found during environment (#701)
 
 Release 0.10.0 (released 2025-03-12)
 ====================================

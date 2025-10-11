@@ -97,7 +97,10 @@ docs = [
 ]
 test = ['pytest==8.4.2', 'pytest-cov==7.0.0', 'behave==1.3.3']
 casts = ['asciinema==2.4.0']
-
+build = [
+    'nuitka==2.7.16',
+    "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml]
+]
 
 [project.scripts]
 dfetch = "dfetch.__main__:main"
@@ -167,3 +170,23 @@ standard = ["dfetch", "features"]
 reportMissingImports = false
 reportMissingModuleSource = false
 pythonVersion = "3.9"
+
+[tool.nuitka]
+mode = "onefile" # Switch this between standalone and onefile as needed
+jobs = "4"
+# Enable below for debugging
+# show-progress = true
+assume-yes-for-downloads = true
+
+include-package-data="dfetch,infer_license"
+include-module="infer_license.licenses"
+
+# python-flag = ["-OO"] # Cannot optimize (yet) commands rely on __doc__ being present
+
+output-dir = "build"
+output-filename-win = "dfetch-{VERSION}.exe"
+output-filename-linux = "dfetch-{VERSION}-x86_64"
+output-filename-macos = "dfetch-{VERSION}-osx"
+
+# windows-icon-from-ico = "static/favicon.ico"
+# windows-company-name = "dfetch-org"

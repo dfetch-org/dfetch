@@ -344,7 +344,9 @@ class Manifest:
             raise FileNotFoundError("No manifest text available")
 
         for line_nr, line in enumerate(self.__text.splitlines(), start=1):
-            match = re.search(rf"^\s+-\s*name:\s*(?P<name>{re.escape(name)})\s*$", line)
+            match = re.search(
+                rf"^\s+-\s*name:\s*(?P<name>{re.escape(name)})\s*#?.*$", line
+            )
 
             if match:
                 return ManifestEntryLocation(
