@@ -12,6 +12,7 @@ from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.manifest.manifest import (
     Manifest,
     ManifestDict,
+    ManifestEntryLocation,
     RequestedProjectNotFoundError,
     find_manifest,
     get_childmanifests,
@@ -177,3 +178,43 @@ def test_single_suggestion_not_found() -> None:
     exception = RequestedProjectNotFoundError(["irst", "1234"], ["first", "other"])
 
     assert ["first"] == exception._guess_project(["irst", "1234"])
+
+
+@pytest.mark.parametrize(
+    "name, manifest, project_name, result",
+    [
+        (
+            "match",
+            " - name: foo",
+            "foo",
+            ManifestEntryLocation(line_number=1, start=10, end=12),
+        ),
+        (
+            "no match",
+            " - name: foo",
+            "baz",
+            RuntimeError,
+        ),
+        (
+            "with comment",
+            " - name: foo # some comment",
+            "foo",
+            ManifestEntryLocation(line_number=1, start=10, end=12),
+        ),
+        (
+            "no spaces",
+            " -name:foo #some comment",
+            "foo",
+            ManifestEntryLocation(line_number=1, start=8, end=10),
+        ),
+    ],
+)
+def test_get_manifest_location(name, manifest, project_name, result) -> None:
+
+    manifest = Manifest(DICTIONARY_MANIFEST, text=manifest)
+
+    if result == RuntimeError:
+        with pytest.raises(RuntimeError):
+            manifest.find_name_in_manifest(project_name)
+    else:
+        assert manifest.find_name_in_manifest(project_name) == result
