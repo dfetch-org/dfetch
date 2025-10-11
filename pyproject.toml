@@ -172,19 +172,21 @@ reportMissingModuleSource = false
 pythonVersion = "3.9"
 
 [tool.nuitka]
-mode = "standalone" # Switch this between standalone and onefile as needed
+mode = "onefile" # Switch this between standalone and onefile as needed
 jobs = "4"
+# Enable below for debugging
+# show-progress = true
 assume-yes-for-downloads = true
 
-# Include data files (local path = target path in standalone)
-include-data-dir = [{ source = "dfetch/resources", destination = "resources" }]
+include-package-data="dfetch,infer_license"
+include-module="infer_license.licenses"
+
+# python-flag = ["-OO"]
 
 output-dir = "build"
-output-filename-win = "dfetch.exe"
-output-filename-linux = "dfetch"
-output-filename-macos = "dfetch"
+output-filename-win = "dfetch-{VERSION}.exe"
+output-filename-linux = "dfetch-{VERSION}-x86_64"
+output-filename-macos = "dfetch-{VERSION}-osx"
 
 # windows-icon-from-ico = "static/favicon.ico"
 # windows-company-name = "dfetch-org"
-# Enable below for debugging
-# show-progress = true
