@@ -62,9 +62,11 @@ class GitRepo(VCS):
     @staticmethod
     def list_tool_info() -> None:
         """Print out version information."""
-        tool, version = get_git_version()
-
-        VCS._log_tool(tool, version)
+        try:
+            tool, version = get_git_version()
+            VCS._log_tool(tool, version)
+        except RuntimeError:
+            VCS._log_tool("git", "<not found in PATH>")
 
     def _fetch_impl(self, version: Version) -> Version:
         """Get the revision of the remote and place it at the local path."""
