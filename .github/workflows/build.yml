@@ -65,18 +65,31 @@ jobs:
           name: binary-distribution
           path: build/dfetch
 
-      - run: build/dfetch environment
-      - run: build/dfetch validate
-      - run: build/dfetch check
-      - run: build/dfetch update
-      - run: build/dfetch update
-      - run: build/dfetch report -t sbom
+  test-binary:
+    name: Run some commands with binary
+    needs:
+    - build
+    runs-on: ubuntu-latest
 
-      - name: Run example
-        working-directory: ./example
-        env:
-          CI: 'false'
-        run: |
-            build/dfetch update
-            build/dfetch update
-            build/dfetch report
+    steps:
+    - name: Download the binary artifact
+      uses: actions/download-artifact@v5
+      with:
+        name: binary-distribution
+        path: build/dfetch
+
+    - run: build/dfetch environment
+    - run: build/dfetch validate
+    - run: build/dfetch check
+    - run: build/dfetch update
+    - run: build/dfetch update
+    - run: build/dfetch report -t sbom
+
+    - name: Run example
+      working-directory: ./example
+      env:
+        CI: 'false'
+      run: |
+          build/dfetch update
+          build/dfetch update
+          build/dfetch report
