@@ -34,12 +34,6 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Install patchelf (patchelf)
-        if: matrix.platform == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y patchelf ccache
-
       # - name: Install Subversion (SVN)
       #   if: matrix.platform == 'macos-latest'
       #   run: |
