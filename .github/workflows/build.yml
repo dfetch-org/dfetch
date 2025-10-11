@@ -73,18 +73,19 @@ jobs:
         path: .
 
     - run: tree .
-    - run: build/dfetch-* environment
-    - run: build/dfetch-* validate
-    - run: build/dfetch-* check
-    - run: build/dfetch-* update
-    - run: build/dfetch-* update
-    - run: build/dfetch-* report -t sbom
+    - run: dfetch-* init
+    - run: dfetch-* environment
+    - run: dfetch-* validate
+    - run: dfetch-* check
+    - run: dfetch-* update
+    - run: dfetch-* update
+    - run: dfetch-* report -t sbom
 
     - name: Run example
       working-directory: ./example
       env:
         CI: 'false'
       run: |
-          build/dfetch-* update
-          build/dfetch-* update
-          build/dfetch-* report
+          dfetch-* update
+          dfetch-* update
+          dfetch-* report
