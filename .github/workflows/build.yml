@@ -69,7 +69,7 @@ jobs:
       - name: Store the distribution packages
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: binary-distribution
+          name: binary-distribution-${{ matrix.platform }}
           path: build/dfetch-*
 
   test-binary:
@@ -82,7 +82,7 @@ jobs:
     - name: Download the binary artifact
       uses: actions/download-artifact@4a24838f3d5601fd639834081e118c2995d51e1c # v5
       with:
-        name: binary-distribution
+        name: binary-distribution-ubuntu-latest
         path: .
 
     - run: ln -sf $(ls dfetch-*-x86_64) dfetch
