@@ -175,7 +175,10 @@ class SvnRepo(VCS):
         """Print out version information."""
         try:
             result = run_on_cmdline(logger, "svn --version")
-        except RuntimeError:
+        except RuntimeError as exc:
+            logger.debug(
+                f"Something went wrong trying to get the version of svn: {exc}"
+            )
             VCS._log_tool("svn", "<not found in PATH>")
             return
 
