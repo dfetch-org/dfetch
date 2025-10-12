@@ -173,7 +173,7 @@ pythonVersion = "3.9"
 
 [tool.nuitka]
 mode = "onefile" # Switch this between standalone and onefile as needed
-jobs = "4"
+# jobs = "4" # Can be used to reduce memory usage, in case of compilation issues
 # Enable below for debugging
 # show-progress = true
 assume-yes-for-downloads = true
