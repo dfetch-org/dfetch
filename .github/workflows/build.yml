@@ -73,21 +73,47 @@ jobs:
           path: build/dfetch-*
 
   test-binary:
-    name: Run binary
+    name: test binary
     needs:
     - build
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
 
     steps:
     - name: Download the binary artifact
       uses: actions/download-artifact@4a24838f3d5601fd639834081e118c2995d51e1c # v5
       with:
-        name: binary-distribution-ubuntu-latest
+        name: binary-distribution-${{ matrix.platform }}
         path: .
 
-    - run: ln -sf $(ls dfetch-*-x86_64) dfetch
-    - run: chmod +x dfetch
-    - run: ls -la .
+    - name: Prepare binary
+      if: matrix.platform == 'ubuntu-latest'
+      run: |
+        binary=$(ls dfetch-*-x86_64)
+        ln -sf "$binary" dfetch
+        chmod +x dfetch
+        ls -la .
+      shell: bash
+
+    - name: Prepare binary
+      if: matrix.platform == 'macos-latest'
+      run: |
+        binary=$(ls dfetch-*-osx)
+        ln -sf "$binary" dfetch
+        chmod +x dfetch
+        ls -la .
+      shell: bash
+
+    - name: Prepare binary on Windows
+      if: matrix.platform == 'windows-latest'
+      run: |
+        $binary = Get-ChildItem dfetch-*-x86_64.exe | Select-Object -First 1
+        Copy-Item $binary -Destination dfetch.exe -Force
+        Get-ChildItem
+      shell: pwsh
+
     - run: ./dfetch init
     - run: ./dfetch environment
     - run: ./dfetch validate
