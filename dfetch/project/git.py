@@ -65,7 +65,10 @@ class GitRepo(VCS):
         try:
             tool, version = get_git_version()
             VCS._log_tool(tool, version)
-        except RuntimeError:
+        except RuntimeError as exc:
+            logger.debug(
+                f"Something went wrong trying to get the version of git: {exc}"
+            )
             VCS._log_tool("git", "<not found in PATH>")
 
     def _fetch_impl(self, version: Version) -> Version:
