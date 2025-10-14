@@ -3,7 +3,7 @@
 dfetch:
   branch: master
   hash: 7ff48178ffcab6713155878a34566aea
-  last_fetch: 14/10/2025, 20:28:53
+  last_fetch: 14/10/2025, 21:25:52
   patch: ''
   remote_url: https://github.com/divi255/sphinxcontrib.asciinema.git
   revision: 28fddf798f8d9e387919e17c3d91d3f4f41b9bd6
