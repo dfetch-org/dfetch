@@ -35,6 +35,8 @@
 			"editor.defaultFormatter": "ms-python.black-formatter",
 			"editor.formatOnSave": true,
 		},
+		"editor.renderWhitespace": "all",
+		"files.trimTrailingWhitespace": true,
 	},
 	"launch": {
 		"version": "0.2.0",
