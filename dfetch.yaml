@@ -15,3 +15,8 @@ manifest:
     repo-path: plantuml-stdlib/C4-PlantUML.git
     dst: doc/static/uml/styles/plantuml-c4
     src: '*.puml'
+
+  - name: sphinxcontrib.asciinema
+    repo-path: divi255/sphinxcontrib.asciinema.git
+    dst: doc/_ext/sphinxcontrib.asciinema
+    src: sphinxcontrib/asciinema
