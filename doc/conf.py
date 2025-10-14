@@ -44,7 +44,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinxarg.ext",
-    "sphinxcontrib.asciinema",
+    "sphinxcontrib_asciinema",
     "sphinxcontrib.details.directive",
 ]
 

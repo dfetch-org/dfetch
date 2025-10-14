@@ -18,5 +18,5 @@ manifest:
 
   - name: sphinxcontrib.asciinema
     repo-path: divi255/sphinxcontrib.asciinema.git
-    dst: doc/_ext/sphinxcontrib.asciinema
+    dst: doc/_ext/sphinxcontrib_asciinema
     src: sphinxcontrib/asciinema
