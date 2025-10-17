@@ -53,6 +53,7 @@ jobs:
       - run: coverage run --source=dfetch --append -m behave features  # Run features tests
       - run: coverage xml -o coverage.xml                              # Create XML report
       - run: pyroma --directory --min=10 .                             # Check pyproject
+      - run: find dfetch -name "*.py" | xargs pyupgrade --py39-plus    # Check syntax
 
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@a38818475bb21847788496e9f0fddaa4e84955ba # master
