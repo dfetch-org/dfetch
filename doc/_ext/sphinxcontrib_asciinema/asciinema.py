@@ -27,7 +27,7 @@ def visit_html(self, node):
         "autoplay": "autoPlay",
         "idle-time-limit": "idleTimeLimit",
         "terminalfontsize": "terminalFontSize",
-        "terminallineheigth": "terminalLineHeigth",
+        "terminallineheight": "terminalLineHeight",
         "terminalfontfamily": "terminalFontFamily",
     }
 
