@@ -3,6 +3,7 @@
 import fnmatch
 import hashlib
 import os
+import re
 import shutil
 import stat
 from contextlib import contextmanager
@@ -104,6 +105,21 @@ def find_file(name: str, path: str = ".") -> List[str]:
     ]
 
 
+def recursive_listdir(directory):
+    """List all entries in the current directory."""
+    entries = os.listdir(directory)
+
+    for entry in entries:
+        full_path = os.path.join(directory, entry)
+
+        if os.path.isdir(full_path):
+            # If the entry is a directory, recurse into it
+            yield from recursive_listdir(full_path)
+        else:
+            # If the entry is a file, yield its path
+            yield full_path
+
+
 def hash_directory(path: str, skiplist: Optional[List[str]]) -> str:
     """Hash a directory with all its files."""
     digest = hashlib.md5()  # nosec
@@ -128,6 +144,25 @@ def hash_file(file_path: str, digest: HASH) -> HASH:
             buf = f_obj.read(1024 * 1024)
             while buf:
                 digest.update(buf)
+                buf = f_obj.read(1024 * 1024)
+
+    return digest
+
+
+def hash_file_normalized(file_path: str) -> "hashlib._Hash":
+    """
+    hash a file's contents, ignoring line feed differences (line ending normalization)
+    """
+    digest = hashlib.sha1(usedforsecurity=False)
+
+    if os.path.isfile(file_path):
+        normalize_re = re.compile(b"\r\n|\r")
+
+        with open(file_path, "rb") as f_obj:
+            buf = f_obj.read(1024 * 1024)
+            while buf:
+                normalized_buf = normalize_re.sub(b"\n", buf)
+                digest.update(normalized_buf)  # nosec
                 buf = f_obj.read(1024 * 1024)
 
     return digest

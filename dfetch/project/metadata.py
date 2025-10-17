@@ -2,6 +2,8 @@
 
 import datetime
 import os
+from dataclasses import dataclass
+from typing import Iterable, Optional
 
 import yaml
 from typing_extensions import TypedDict
@@ -15,6 +17,29 @@ DONT_EDIT_WARNING = """\
 """
 
 
+@dataclass
+class FileInfo:
+    """Information about a single fetched file."""
+
+    path: str
+    hash: str
+    permissions: str  # octal
+
+    def __repr__(self) -> str:
+        return f"{self.path.replace("|", r"\|")}|{self.hash}|{self.permissions}"
+
+    @staticmethod
+    def from_list(data: Iterable[str]) -> Iterable["FileInfo"]:
+        """Create a list of FileInfo's from a string"""
+        parsed = []
+        for entry in data:
+            path, hash_digest, permissions = (
+                entry.split("|", maxsplit=3) + ["", "", ""]
+            )[:3]
+            parsed.append(FileInfo(path, hash_digest, permissions.zfill(3)))
+        return parsed
+
+
 class Options(TypedDict):  # pylint: disable=too-many-ancestors
     """Argument types for Metadata class construction."""
 
@@ -26,6 +51,7 @@ class Options(TypedDict):  # pylint: disable=too-many-ancestors
     destination: str
     hash: str
     patch: str
+    files: Optional[Iterable[FileInfo]] = None
 
 
 class Metadata:
@@ -50,6 +76,9 @@ class Metadata:
         self._destination: str = str(kwargs.get("destination", ""))
         self._hash: str = str(kwargs.get("hash", ""))
         self._patch: str = str(kwargs.get("patch", ""))
+        self._files: Optional[Iterable[FileInfo]] = FileInfo.from_list(
+            kwargs.get("files", [])
+        )
 
     @classmethod
     def from_project_entry(cls, project: ProjectEntry) -> "Metadata":
@@ -63,6 +92,7 @@ class Metadata:
             "last_fetch": datetime.datetime(2000, 1, 1, 0, 0, 0),
             "hash": "",
             "patch": project.patch,
+            "files": [],
         }
         return cls(data)
 
@@ -73,12 +103,19 @@ class Metadata:
             data: Options = yaml.safe_load(metadata_file)["dfetch"]
             return cls(data)
 
-    def fetched(self, version: Version, hash_: str = "", patch_: str = "") -> None:
+    def fetched(
+        self,
+        version: Version,
+        hash_: str = "",
+        patch_: str = "",
+        files: Optional[Iterable[FileInfo]] = None,
+    ) -> None:
         """Update metadata."""
         self._last_fetch = datetime.datetime.now()
         self._version = version
         self._hash = hash_
         self._patch = patch_
+        self._files = files
 
     @property
     def version(self) -> Version:
@@ -89,6 +126,11 @@ class Metadata:
     def branch(self) -> str:
         """Branch as stored in the metadata."""
         return self._version.branch
+
+    @property
+    def files(self) -> Iterable[FileInfo]:
+        """File info as stored in the metadata."""
+        return self._files
 
     @property
     def tag(self) -> str:
@@ -147,6 +189,7 @@ class Metadata:
                 other._version.revision == self._version.revision,
                 other.hash == self.hash,
                 other.patch == self.patch,
+                other._files == self._files,
             ]
         )
 
@@ -156,14 +199,15 @@ class Metadata:
             "dfetch": {
                 "remote_url": self.remote_url,
                 "branch": self._version.branch,
-                "revision": self._version.revision,
-                "last_fetch": self.last_fetch_string(),
-                "tag": self._version.tag,
                 "hash": self.hash,
+                "last_fetch": self.last_fetch_string(),
                 "patch": self.patch,
+                "revision": self._version.revision,
+                "tag": self._version.tag,
+                "files": [str(info) for info in self._files or []],
             }
         }
 
         with open(self.path, "w+", encoding="utf-8") as metadata_file:
             metadata_file.write(DONT_EDIT_WARNING)
-            yaml.dump(metadata, metadata_file)
+            yaml.dump(metadata, metadata_file, sort_keys=False)
