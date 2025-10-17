@@ -139,6 +139,28 @@
 				"problemMatcher": []
 			},
 			{
+				"label": "Serve Landing page",
+				"type": "shell",
+				"command": "python",
+				"args": [
+					"-m",
+					"http.server",
+					"8080"
+				],
+				"options": {
+					"cwd": "${workspaceFolder}/doc/landing-page/_build/html"
+				},
+				"group": {
+					"kind": "none",
+					"isDefault": false
+				},
+				"presentation": {
+					"reveal": "always",
+					"panel": "shared"
+				},
+				"problemMatcher": []
+			},
+			{
 				"label": "Check quality (pre-commit)",
 				"type": "shell",
 				"command": "pre-commit",
