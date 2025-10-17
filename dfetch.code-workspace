@@ -14,6 +14,7 @@
 			"source.organizeImports": "explicit"
 		},
 		"isort.check": true,
+		"isort.importStrategy": "fromEnvironment",
 		"restructuredtext.linter.run": "onType",
 		"restructuredtext.linter.doc8.extraArgs": [
 			"--config",
@@ -35,6 +36,7 @@
 			"editor.defaultFormatter": "ms-python.black-formatter",
 			"editor.formatOnSave": true,
 		},
+		"black-formatter.importStrategy": "fromEnvironment",
 		"editor.renderWhitespace": "all",
 		"files.trimTrailingWhitespace": true,
 	},

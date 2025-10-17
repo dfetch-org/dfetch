@@ -116,8 +116,18 @@ dfetch = ["resources/*.yaml"]
 local_scheme = "no-local-version"
 version_scheme = "guess-next-dev"
 
+[tool.black]
+exclude = '''
+/(
+  doc/_ext/sphinxcontrib_asciinema
+)/
+'''
+
 [tool.isort]
 profile = "black"
+skip = [
+    "doc/_ext/sphinxcontrib_asciinema",
+]
 
 # See https://github.com/PyCQA/flake8/issues/234 😢
 [tool.flake8]
@@ -143,6 +153,17 @@ max-line-length = 120
 disable = "logging-fstring-interpolation"
 min-similarity-lines = 10
 
+[tool.pylint.MASTER]
+ignore-paths = [
+    "doc/_build/",
+    "doc/_ext/sphinxcontrib_asciinema",
+    "doc/conf.py",
+    "doc/landing-page/_build/",
+    "doc/landing-page/conf.py",
+    "doc/static/uml/",
+    "tests",
+]
+
 [tool.pydocstyle]
 convention = "google"
 
@@ -166,7 +187,7 @@ skip = "*.cast,./venv,**/plantuml-c4/**,./example,.mypy_cache,./doc/_build/**,./
 "features/steps/*" = ["F811"]
 
 [tool.pyright]
-exclude = ["doc/static/uml/generate_diagram.py"]
+exclude = ["doc/static/uml/generate_diagram.py", "./doc/_ext/sphinxcontrib_asciinema/", "./doc/_build"]
 standard = ["dfetch", "features"]
 reportMissingImports = false
 reportMissingModuleSource = false
