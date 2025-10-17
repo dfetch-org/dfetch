@@ -17,20 +17,17 @@ repos:
         entry: isort
         language: system
         types: [file, python]
-        exclude: ^doc/_ext/sphinxcontrib.asciinema/.*$
 
     -   id: black
         name: Black (auto-format)
         entry: black
         language: system
         types: [file, python]
-        exclude: ^doc/_ext/sphinxcontrib.asciinema/.*$
 
     -   id: pylint
         name: pylint
         entry: pylint
         language: system
-        exclude: ^tests/|^doc/static/uml|conf.py|^doc/_ext/sphinxcontrib.asciinema/
         types: [file, python]
 
     # -   id: flake8
@@ -105,8 +102,6 @@ repos:
         entry: codespell
         language: python
         types: [text]
-        exclude: ^doc/_ext/sphinxcontrib.asciinema/.*$
-
     -   id: ruff
         name: ruff
         description: Lint using ruff
@@ -120,7 +115,6 @@ repos:
         entry: pyright
         language: python
         types: [file, python]
-        exclude: ^doc/_ext/sphinxcontrib.asciinema/.*$
     -   id: pyupgrade
         name: pyupgrade
         description: Modernize python
