@@ -17,9 +17,15 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import os
+import sys
+
 from dfetch import __version__
 
 # -- General configuration ------------------------------------------------
+
+ext_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "_ext"))
+sys.path.insert(0, ext_path)
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
@@ -38,7 +44,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinxarg.ext",
-    "sphinxcontrib.asciinema",
+    "sphinxcontrib_asciinema",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
