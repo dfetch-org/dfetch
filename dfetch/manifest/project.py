@@ -247,7 +247,8 @@ For more details see the `git-diff`_ or `svn-diff`_ documentation.
 """
 
 import copy
-from typing import Dict, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Optional, Union
 
 from typing_extensions import TypedDict
 
@@ -304,7 +305,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
     @classmethod
     def from_yaml(
         cls,
-        yamldata: Union[Dict[str, str], ProjectEntryDict],
+        yamldata: Union[dict[str, str], ProjectEntryDict],
         default_remote: str = "",
     ) -> "ProjectEntry":
         """Create a Project Entry from yaml data.
@@ -431,7 +432,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         recommendation._repo_path = ""  # pylint: disable=protected-access
         return recommendation
 
-    def as_yaml(self) -> Dict[str, str]:
+    def as_yaml(self) -> dict[str, str]:
         """Get this project as yaml dictionary."""
         yamldata = {
             "name": self._name,

@@ -4,7 +4,7 @@ import os
 import pathlib
 import re
 import urllib.parse
-from typing import Dict, List, NamedTuple, Optional, Tuple
+from typing import NamedTuple, Optional
 
 from dfetch.log import get_logger
 from dfetch.manifest.version import Version
@@ -40,7 +40,7 @@ class SvnRepo(VCS):
     NAME = "svn"
 
     @staticmethod
-    def externals() -> List[External]:
+    def externals() -> list[External]:
         """Get list of externals."""
         result = run_on_cmdline(
             logger,
@@ -54,7 +54,7 @@ class SvnRepo(VCS):
 
         repo_root = SvnRepo._get_info_from_target()["Repository Root"]
 
-        externals: List[External] = []
+        externals: list[External] = []
         path_pattern = r"([^\s^-]+)\s+-"
         for entry in result.stdout.decode().split(os.linesep * 2):
             match: Optional[re.Match[str]] = None
@@ -91,7 +91,7 @@ class SvnRepo(VCS):
         return externals
 
     @staticmethod
-    def _split_url(url: str, repo_root: str) -> Tuple[str, str, str, str]:
+    def _split_url(url: str, repo_root: str) -> tuple[str, str, str, str]:
         # ../   Relative to the URL of the directory on which the svn:externals property is set
         # ^/    Relative to the root of the repository in which the svn:externals property is versioned
         # //    Relative to the scheme of the URL of the directory on which the svn:externals property is set
@@ -163,7 +163,7 @@ class SvnRepo(VCS):
             "In SVN only a revision is NOT enough, this should not be called!"
         )
 
-    def _list_of_tags(self) -> List[str]:
+    def _list_of_tags(self) -> list[str]:
         """Get list of all available tags."""
         result = run_on_cmdline(logger, f"svn ls --non-interactive {self.remote}/tags")
         return [
@@ -186,7 +186,7 @@ class SvnRepo(VCS):
         tool, version = first_line.replace(",", "").split("version", maxsplit=1)
         VCS._log_tool(tool, version)
 
-    def _determine_what_to_fetch(self, version: Version) -> Tuple[str, str, str]:
+    def _determine_what_to_fetch(self, version: Version) -> tuple[str, str, str]:
         """Based on the given version, determine what to fetch.
 
         Args:
@@ -271,7 +271,7 @@ class SvnRepo(VCS):
         return Version(tag=version.tag, branch=branch, revision=revision)
 
     @staticmethod
-    def _parse_file_pattern(complete_path: str) -> Tuple[str, str]:
+    def _parse_file_pattern(complete_path: str) -> tuple[str, str]:
         if complete_path.count("*") > 1:
             raise RuntimeError("Only single * supported in 'src:'!")
 
@@ -282,7 +282,7 @@ class SvnRepo(VCS):
             glob_filter = "*".join([before_star, after])
         return complete_path, glob_filter
 
-    def _get_info(self, branch: str) -> Dict[str, str]:
+    def _get_info(self, branch: str) -> dict[str, str]:
         return self._get_info_from_target(f"{self.remote}/{branch}")
 
     @staticmethod
@@ -295,7 +295,7 @@ class SvnRepo(VCS):
         )
 
     @staticmethod
-    def _files_in_path(url_path: str) -> List[str]:
+    def _files_in_path(url_path: str) -> list[str]:
         return [
             str(line)
             for line in run_on_cmdline(logger, f"svn list --non-interactive {url_path}")
@@ -304,7 +304,7 @@ class SvnRepo(VCS):
         ]
 
     @staticmethod
-    def _license_files(url_path: str) -> List[str]:
+    def _license_files(url_path: str) -> list[str]:
         return [
             str(license)
             for license in filter(
@@ -313,7 +313,7 @@ class SvnRepo(VCS):
         ]
 
     @staticmethod
-    def _get_info_from_target(target: str = "") -> Dict[str, str]:
+    def _get_info_from_target(target: str = "") -> dict[str, str]:
         try:
             result = run_on_cmdline(
                 logger, f"svn info --non-interactive {target.strip()}"

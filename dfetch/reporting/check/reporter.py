@@ -26,9 +26,9 @@ All reports can contain the following results:
 """
 
 from abc import abstractmethod
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
-from typing import Sequence
 
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry

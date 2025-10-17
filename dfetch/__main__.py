@@ -5,7 +5,7 @@ https://dfetch.rtfd.org
 
 import argparse
 import sys
-from typing import Sequence
+from collections.abc import Sequence
 
 import dfetch.commands.check
 import dfetch.commands.diff

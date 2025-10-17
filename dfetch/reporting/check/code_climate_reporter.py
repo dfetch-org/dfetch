@@ -58,7 +58,7 @@ import hashlib
 import json
 import os
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any
 
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
@@ -94,7 +94,7 @@ class CodeClimateReporter(CheckReporter):
 
         self._report_path = report_path
 
-        self._report: List[Dict[str, Any]] = []
+        self._report: list[dict[str, Any]] = []
 
     @staticmethod
     def _determine_severity(severity: IssueSeverity) -> CodeClimateSeverity:

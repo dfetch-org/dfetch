@@ -2,7 +2,7 @@
 
 import re
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from semver.version import Version
 
@@ -20,7 +20,7 @@ BASEVERSION = re.compile(
 )
 
 
-def coerce(version: str) -> Tuple[str, Optional[Version], str]:
+def coerce(version: str) -> tuple[str, Optional[Version], str]:
     """Convert an incomplete version string into a semver-compatible Version object.
 
     * Tries to detect a "basic" version string (``major.minor.patch``).
@@ -49,7 +49,7 @@ def coerce(version: str) -> Tuple[str, Optional[Version], str]:
     )
 
 
-def latest_tag_from_list(current_tag: str, available_tags: List[str]) -> str:
+def latest_tag_from_list(current_tag: str, available_tags: list[str]) -> str:
     """Based on the given tag string and list of tags, get the latest available."""
     parsed_tags = _create_available_version_dict(available_tags)
 
@@ -67,8 +67,8 @@ def latest_tag_from_list(current_tag: str, available_tags: List[str]) -> str:
 
 
 def _create_available_version_dict(
-    available_tags: List[str],
-) -> Dict[str, List[Tuple[Version, str]]]:
+    available_tags: list[str],
+) -> dict[str, list[tuple[Version, str]]]:
     """Create a dictionary where each key is a prefix with a list of versions.
 
     Args:
@@ -86,7 +86,7 @@ def _create_available_version_dict(
         {'release/': [(Version(major=1, minor=2, patch=3, prerelease=None, build=None), 'release/v1.2.3'),
                       (Version(major=2, minor=0, patch=0, prerelease=None, build=None), 'release/v2.0.0')]}
     """
-    parsed_tags: Dict[str, List[Tuple[Version, str]]] = defaultdict(list)
+    parsed_tags: dict[str, list[tuple[Version, str]]] = defaultdict(list)
     for available_tag in available_tags:
         prefix, version, _ = coerce(available_tag)
         if version:

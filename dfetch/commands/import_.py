@@ -83,8 +83,8 @@ Migrating from SVN externals
 import argparse
 import os
 import re
+from collections.abc import Sequence
 from itertools import combinations
-from typing import List, Sequence, Set, Tuple
 
 import dfetch.commands.command
 from dfetch import DEFAULT_MANIFEST_NAME
@@ -150,7 +150,7 @@ def _import_projects() -> Sequence[ProjectEntry]:
 
 
 def _import_from_svn() -> Sequence[ProjectEntry]:
-    projects: List[ProjectEntry] = []
+    projects: list[ProjectEntry] = []
 
     for external in SvnRepo.externals():
         projects.append(
@@ -172,7 +172,7 @@ def _import_from_svn() -> Sequence[ProjectEntry]:
 
 
 def _import_from_git() -> Sequence[ProjectEntry]:
-    projects: List[ProjectEntry] = []
+    projects: list[ProjectEntry] = []
     toplevel: str = ""
     for submodule in GitLocalRepo.submodules():
         projects.append(
@@ -241,7 +241,7 @@ def _generate_remote_name(remote_url: str) -> str:
     return re.sub(r"[-]{2,}", "-", filtered).strip("-")
 
 
-def _determine_best_remotes(projects_urls: Set[str]) -> Tuple[str, ...]:
+def _determine_best_remotes(projects_urls: set[str]) -> tuple[str, ...]:
     """Determine the smallest amount of remotes, that cover the most urls.
 
     Args:
@@ -254,17 +254,17 @@ def _determine_best_remotes(projects_urls: Set[str]) -> Tuple[str, ...]:
     max_remotes = 5
 
     # Determine all possible remotes
-    potential_remotes: Set[str] = set()
+    potential_remotes: set[str] = set()
     for url in projects_urls:
         potential_remotes.add(url[:max_remote_length].rsplit("/", maxsplit=1)[0])
         potential_remotes.add(url[:max_remote_length].rsplit("/", maxsplit=2)[0])
         potential_remotes.add(url[:max_remote_length].rsplit(":", maxsplit=1)[0])
 
-    useless_potential = set(["http", "https"])
+    useless_potential = {"http", "https"}
     potential_remotes = potential_remotes - useless_potential
 
     # For each permutation of any length, calculate the solution score
-    solutions: List[Tuple[int, Tuple[str, ...]]] = []
+    solutions: list[tuple[int, tuple[str, ...]]] = []
     for i in range(min(len(potential_remotes), max_remotes)):
         for solution in combinations(potential_remotes, i):
             score = _calculate_solution_score(solution, projects_urls)
@@ -275,7 +275,7 @@ def _determine_best_remotes(projects_urls: Set[str]) -> Tuple[str, ...]:
 
 
 def _calculate_solution_score(
-    solution: Tuple[str, ...], projects_urls: Set[str]
+    solution: tuple[str, ...], projects_urls: set[str]
 ) -> int:
     """Calculate a score with the given solution.
 

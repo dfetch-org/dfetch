@@ -69,7 +69,6 @@ For more information see the `Github dependency submission`_.
 """
 
 from decimal import Decimal
-from typing import List
 
 from cyclonedx.builder.this import this_component as cdx_lib_component
 from cyclonedx.model import ExternalReference, ExternalReferenceType, XsUri
@@ -163,7 +162,7 @@ class SbomReporter(Reporter):
     def add_project(
         self,
         project: ProjectEntry,
-        licenses: List[License],
+        licenses: list[License],
         version: str,
     ) -> None:
         """Add a project to the report."""

@@ -52,7 +52,7 @@ For example don't fail when pinned projects are out-of-date.For more information
 
 import json
 import os
-from typing import Any, Dict
+from typing import Any
 
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
@@ -78,7 +78,7 @@ class JenkinsReporter(CheckReporter):
 
         self._report_path = report_path
 
-        self._report: Dict[str, Any] = {
+        self._report: dict[str, Any] = {
             "_class": "io.jenkins.plugins.analysis.core.restapi.ReportApi",
             "issues": [],
         }

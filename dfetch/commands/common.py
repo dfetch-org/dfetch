@@ -1,7 +1,6 @@
 """Module for common command operations."""
 
 import os
-from typing import List
 
 import yaml
 
@@ -20,7 +19,7 @@ def check_child_manifests(manifest: Manifest, project: ProjectEntry) -> None:
         project (ProjectEntry): The parent project.
     """
     for childmanifest in get_childmanifests(skip=[manifest.path]):
-        recommendations: List[ProjectEntry] = []
+        recommendations: list[ProjectEntry] = []
         for childproject in childmanifest.projects:
             if childproject.remote_url not in [
                 project.remote_url for project in manifest.projects
@@ -35,7 +34,7 @@ def check_child_manifests(manifest: Manifest, project: ProjectEntry) -> None:
 
 
 def _make_recommendation(
-    project: ProjectEntry, recommendations: List[ProjectEntry], childmanifest_path: str
+    project: ProjectEntry, recommendations: list[ProjectEntry], childmanifest_path: str
 ) -> None:
     """Make recommendations to the user.
 

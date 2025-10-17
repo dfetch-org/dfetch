@@ -52,7 +52,6 @@ See below for the version control specifics. The patch will also contain the con
 
 import argparse
 import os
-from typing import List
 
 import dfetch.commands.command
 import dfetch.manifest.manifest
@@ -104,7 +103,7 @@ class Diff(dfetch.commands.command.Command):
         revs = [r for r in args.revs.strip(":").split(":", maxsplit=1) if r]
 
         with in_directory(os.path.dirname(manifest.path)):
-            exceptions: List[str] = []
+            exceptions: list[str] = []
             projects = manifest.selected_projects(args.projects)
             if not projects:
                 raise RuntimeError(
@@ -139,7 +138,7 @@ def _get_repo(path: str, project: ProjectEntry) -> VCS:
     )
 
 
-def _diff_from_repo(repo: VCS, project: ProjectEntry, revs: List[str]) -> str:
+def _diff_from_repo(repo: VCS, project: ProjectEntry, revs: list[str]) -> str:
     """Generate a relative diff for a svn repo."""
     if len(revs) > 2:
         raise RuntimeError(f"Too many revisions given! {revs}")
@@ -160,7 +159,7 @@ def _diff_from_repo(repo: VCS, project: ProjectEntry, revs: List[str]) -> str:
 
 
 def _dump_patch(
-    path: str, revs: List[str], project: ProjectEntry, patch_name: str, patch: str
+    path: str, revs: list[str], project: ProjectEntry, patch_name: str, patch: str
 ) -> None:
     """Dump the patch to a file."""
     if patch:

@@ -1,7 +1,6 @@
 """Various reporters for generating reports."""
 
 from enum import Enum
-from typing import Dict, Type
 
 from dfetch.reporting.reporter import Reporter
 from dfetch.reporting.sbom_reporter import SbomReporter
@@ -19,7 +18,7 @@ class ReportTypes(Enum):
         return self.value
 
 
-REPORTERS: Dict[ReportTypes, Type[Reporter]] = {
+REPORTERS: dict[ReportTypes, type[Reporter]] = {
     ReportTypes.STDOUT: StdoutReporter,
     ReportTypes.SBOM: SbomReporter,
 }
