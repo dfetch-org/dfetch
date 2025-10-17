@@ -117,11 +117,7 @@ local_scheme = "no-local-version"
 version_scheme = "guess-next-dev"
 
 [tool.black]
-exclude = '''
-/(
-  doc/_ext/sphinxcontrib_asciinema
-)/
-'''
+extend-exclude = "sphinxcontrib_asciinema"
 
 [tool.isort]
 profile = "black"
