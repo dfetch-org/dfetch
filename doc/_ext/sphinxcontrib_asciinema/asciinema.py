@@ -24,17 +24,23 @@ class Asciinema(nodes.General, nodes.Element):
 
 def visit_html(self, node):
     rst_to_js_option_names: dict[str, str] = {
+        "autoplay": "autoPlay",
+        "idle-time-limit": "idleTimeLimit",
         "terminalfontsize": "terminalFontSize",
         "terminallineheigth": "terminalLineHeigth",
         "terminalfontfamily": "terminalFontFamily",
     }
 
-    options_raw = ['markers']
+    options_raw = ["markers", "loop", "autoPlay", "preload", "pauseOnMarkers", "cols", "rows", "speed"]
 
-    gen = ((rst_option_name, js_option_name)
-           for (rst_option_name,
-                js_option_name) in rst_to_js_option_names.items()
-           if rst_option_name in node["options"])
+    for option, value in node["options"].items():
+        node["options"][option] = ASCIINemaDirective.option_spec[option](value)
+
+    gen = (
+        (rst_option_name, js_option_name)
+        for (rst_option_name, js_option_name) in rst_to_js_option_names.items()
+        if rst_option_name in node["options"]
+    )
     for rst_option_name, js_option_name in gen:
         node["options"][js_option_name] = node["options"].pop(rst_option_name)
 
@@ -70,15 +76,34 @@ def depart(self, node):
     pass
 
 
+def bool_parse(argument):
+    if argument is None:
+        raise ValueError("Boolean option must have a value")
+
+    val = str(argument).strip().lower()
+
+    if val in ("true", "false"):
+        return val
+    raise ValueError("Must be boolean; True or False")
+
+
+def bool_or_positive_int(argument):
+    """Parse the option as boolean or positive integer."""
+    try:
+        return bool_parse(argument)
+    except ValueError:
+        return directives.positive_int(argument)
+
+
 class ASCIINemaDirective(SphinxDirective):
     has_content = True
     final_argument_whitespace = False
     option_spec = {
         "cols": directives.positive_int,
         "rows": directives.positive_int,
-        "autoplay": directives.unchanged,
-        "preload": directives.unchanged,
-        "loop": directives.unchanged,
+        "autoplay": bool_parse,
+        "preload": bool_parse,
+        "loop": bool_or_positive_int,
         "start-at": directives.unchanged,
         "speed": directives.unchanged,
         "idle-time-limit": directives.unchanged,
@@ -87,7 +112,7 @@ class ASCIINemaDirective(SphinxDirective):
         "fit": directives.unchanged,
         "controls": directives.unchanged,
         "markers": directives.unchanged,
-        "pauseOnMarkers": directives.unchanged,
+        "pauseOnMarkers": bool_parse,
         "terminalfontsize": directives.unchanged,
         "terminalfontfamily": directives.unchanged,
         "terminallineheight": directives.unchanged,
@@ -100,11 +125,16 @@ class ASCIINemaDirective(SphinxDirective):
         arg = self.arguments[0]
         options = dict(self.env.config['sphinxcontrib_asciinema_defaults'])
         options.update(self.options)
-        kw = {'options': options}
-        path = options.get('path', '')
-        if path and not path.endswith('/'):
-            path += '/'
-        fname = arg if arg.startswith('./') else path + arg
+
+        if self.option_spec:
+            for option, value in options.items():
+                self.option_spec[option](value)
+
+        kw = {"options": options}
+        path = options.get("path", "")
+        if path and not path.endswith("/"):
+            path += "/"
+        fname = arg if arg.startswith("./") else path + arg
         if self.is_file(fname):
             kw['content'] = self.to_b64(fname)
             kw['type'] = 'local'

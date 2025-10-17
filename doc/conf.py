@@ -208,11 +208,11 @@ texinfo_documents = [
 # Options for asciicasts
 sphinxcontrib_asciinema_defaults = {
     "theme": "monokai",
-    "preload": 1,
-    "terminalFontsize": "15px",
+    "preload": True,
+    "terminalfontsize": "15px",
     "speed": 1.5,
     "loop": True,
-    "autoPlay": True,
+    "autoplay": True,
     "cols": 120,
     "rows": 30,
 }
