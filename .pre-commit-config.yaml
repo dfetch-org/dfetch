@@ -113,6 +113,15 @@ repos:
         entry: pyright
         language: python
         types: [file, python]
+    -   id: pyupgrade
+        name: pyupgrade
+        description: Modernize python
+        entry: pyupgrade
+        language: python
+        files: ^dfetch/
+        args: [--py39-plus]
+        types: [file, python]
+
 -   repo: https://github.com/gitleaks/gitleaks
     rev: v8.16.3
     hooks:
