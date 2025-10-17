@@ -160,7 +160,7 @@ source = ["dfetch"]
 show_missing = true
 
 [tool.codespell]
-skip = "*.cast,./venv,**/plantuml-c4/**,./example,.mypy_cache,./doc/_build/**,./build,*.patch,.git,**/generate-casts/demo-magic/**"
+skip = "*.cast,./venv,**/plantuml-c4/**,./example,.mypy_cache,./doc/_build/**,./doc/_ext/sphinxcontrib_asciinema/**./build,*.patch,.git,**/generate-casts/demo-magic/**"
 
 [tool.ruff.lint.per-file-ignores]
 "features/steps/*" = ["F811"]
