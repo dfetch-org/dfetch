@@ -3,7 +3,7 @@
 import os
 import pathlib
 from functools import lru_cache
-from typing import List, Optional
+from typing import Optional
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
@@ -38,7 +38,7 @@ class GitRepo(VCS):
         """Check if the given revision exists."""
         return self._remote_repo.check_version_exists(revision)
 
-    def _list_of_tags(self) -> List[str]:
+    def _list_of_tags(self) -> list[str]:
         """Get list of all available tags."""
         return [str(tag) for tag in self._remote_repo.list_of_tags()]
 
@@ -120,7 +120,7 @@ class GitRepo(VCS):
             revision=version.revision or fetched_sha,
         )
 
-    @lru_cache()
+    @lru_cache
     def get_default_branch(self) -> str:  # type:ignore
         """Get the default branch of this repository."""
         return self._remote_repo.get_default_branch()

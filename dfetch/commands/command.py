@@ -4,7 +4,7 @@ import argparse
 import sys
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser  # pylint: disable=unused-import
-from typing import TYPE_CHECKING, Type, TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
 if TYPE_CHECKING and sys.version_info >= (3, 10):
     from typing import TypeAlias
@@ -56,7 +56,7 @@ class Command(ABC):
     @staticmethod
     def parser(
         subparsers: SubparserActionType,
-        command: Type["Command.CHILD_TYPE"],
+        command: type["Command.CHILD_TYPE"],
     ) -> "argparse.ArgumentParser":
         """Generate the parser.
 

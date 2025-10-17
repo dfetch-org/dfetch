@@ -41,7 +41,6 @@ In our above example this would for instance result in:
 import argparse
 import os
 import shutil
-from typing import List
 
 import dfetch.commands.command
 import dfetch.manifest.project
@@ -72,8 +71,8 @@ class Freeze(dfetch.commands.command.Command):
 
         manifest = get_manifest()
 
-        exceptions: List[str] = []
-        projects: List[ProjectEntry] = []
+        exceptions: list[str] = []
+        projects: list[ProjectEntry] = []
 
         with in_directory(os.path.dirname(manifest.path)):
             for project in manifest.projects:

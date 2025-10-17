@@ -3,7 +3,7 @@
 import logging
 import os
 import subprocess  # nosec
-from typing import Any, List, Optional, Union  # pylint: disable=unused-import
+from typing import Any, Optional, Union  # pylint: disable=unused-import
 
 
 class SubprocessCommandError(Exception):
@@ -15,7 +15,7 @@ class SubprocessCommandError(Exception):
 
     def __init__(
         self,
-        cmd: Optional[List[str]] = None,
+        cmd: Optional[list[str]] = None,
         stdout: str = "",
         stderr: str = "",
         returncode: int = 0,
@@ -36,7 +36,7 @@ class SubprocessCommandError(Exception):
 
 
 def run_on_cmdline(
-    logger: logging.Logger, cmd: Union[str, List[str]]
+    logger: logging.Logger, cmd: Union[str, list[str]]
 ) -> "subprocess.CompletedProcess[Any]":
     """Run a command and log the output, and raise if something goes wrong."""
     logger.debug(f"Running {cmd}")
@@ -45,9 +45,7 @@ def run_on_cmdline(
         cmd = cmd.split(" ")
 
     try:
-        proc = subprocess.run(  # nosec
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
-        )
+        proc = subprocess.run(cmd, capture_output=True, check=True)  # nosec
     except subprocess.CalledProcessError as exc:
         raise SubprocessCommandError(
             exc.cmd,

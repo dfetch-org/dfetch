@@ -70,7 +70,7 @@ For more information see the `Github Sarif documentation`_.
 import json
 import os
 from enum import Enum
-from typing import Any, Dict
+from typing import Any
 
 import attr
 from sarif_om import (
@@ -209,7 +209,7 @@ class SarifSerializer:
         Args:
             sarif (SarifLog): Log to serialize
         """
-        self._sarif_dict: Dict[str, Any] = {"default": "default"}
+        self._sarif_dict: dict[str, Any] = {"default": "default"}
         self._json = self._walk_sarif(
             attr.asdict(
                 sarif,

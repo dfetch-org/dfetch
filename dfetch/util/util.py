@@ -5,9 +5,10 @@ import hashlib
 import os
 import shutil
 import stat
+from collections.abc import Generator, Iterator, Sequence
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Generator, Iterator, List, Optional, Sequence, Union
+from typing import Any, Optional, Union
 
 from _hashlib import HASH
 
@@ -76,8 +77,8 @@ def in_directory(path: str) -> Generator[str, None, None]:
 
 @contextmanager
 def catch_runtime_exceptions(
-    exc_list: Optional[List[str]] = None,
-) -> Generator[List[str], None, None]:
+    exc_list: Optional[list[str]] = None,
+) -> Generator[list[str], None, None]:
     """Catch all runtime errors and add it to list of strings."""
     exc_list = exc_list or []
     try:
@@ -97,14 +98,14 @@ def prefix_runtime_exceptions(
         raise RuntimeError(f"{prefix}: {exc}") from exc
 
 
-def find_file(name: str, path: str = ".") -> List[str]:
+def find_file(name: str, path: str = ".") -> list[str]:
     """Find all files with a specific name recursively in a directory."""
     return [
         os.path.join(root, name) for root, _, files in os.walk(path) if name in files
     ]
 
 
-def hash_directory(path: str, skiplist: Optional[List[str]]) -> str:
+def hash_directory(path: str, skiplist: Optional[list[str]]) -> str:
     """Hash a directory with all its files."""
     digest = hashlib.md5()  # nosec
     skiplist = skiplist or []

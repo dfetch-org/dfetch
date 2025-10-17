@@ -6,7 +6,6 @@ There are several report types that *DFetch* can generate.
 import argparse
 import glob
 import os
-from typing import List
 
 import dfetch.commands.command
 import dfetch.manifest.manifest
@@ -79,7 +78,7 @@ class Report(dfetch.commands.command.Command):
                 logger.info(f"Generated {reporter.name} report: {args.outfile}")
 
     @staticmethod
-    def _determine_licenses(project: ProjectEntry) -> List[License]:
+    def _determine_licenses(project: ProjectEntry) -> list[License]:
         """Try to determine license of fetched project."""
         if not os.path.exists(project.destination):
             logger.print_warning_line(

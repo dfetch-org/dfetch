@@ -23,8 +23,9 @@ import io
 import os
 import pathlib
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import IO, Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import IO, Any, Optional, Union
 
 import yaml
 from typing_extensions import TypedDict
@@ -102,7 +103,7 @@ class ManifestDict(  # pylint: disable=too-many-ancestors
 
     version: Union[int, str]
     remotes: Sequence[Union[RemoteDict, Remote]]
-    projects: Sequence[Union[ProjectEntryDict, ProjectEntry, Dict[str, str]]]
+    projects: Sequence[Union[ProjectEntryDict, ProjectEntry, dict[str, str]]]
 
 
 class Manifest:
@@ -143,8 +144,8 @@ class Manifest:
         self._projects = self._init_projects(manifest["projects"])
 
     def _init_projects(
-        self, projects: Sequence[Union[ProjectEntryDict, ProjectEntry, Dict[str, str]]]
-    ) -> Dict[str, ProjectEntry]:
+        self, projects: Sequence[Union[ProjectEntryDict, ProjectEntry, dict[str, str]]]
+    ) -> dict[str, ProjectEntry]:
         """Iterate over projects from manifest and initialize ProjectEntries from it.
 
         Args:
@@ -156,7 +157,7 @@ class Manifest:
         Returns:
             Dict[str, ProjectEntry]: Dictionary with key: Name of project, Value: ProjectEntry
         """
-        _projects: Dict[str, ProjectEntry] = {}
+        _projects: dict[str, ProjectEntry] = {}
 
         for project in projects:
             if isinstance(project, dict):
@@ -184,9 +185,9 @@ class Manifest:
     @staticmethod
     def _determine_remotes(
         remotes_from_manifest: Sequence[Union[RemoteDict, Remote]],
-    ) -> Tuple[Dict[str, Remote], List[Remote]]:
-        default_remotes: List[Remote] = []
-        remotes: Dict[str, Remote] = {}
+    ) -> tuple[dict[str, Remote], list[Remote]]:
+        default_remotes: list[Remote] = []
+        remotes: dict[str, Remote] = {}
         for remote in remotes_from_manifest:
             if isinstance(remote, dict):
                 last_remote = remotes[remote["name"]] = Remote.from_yaml(remote)
@@ -243,7 +244,7 @@ class Manifest:
         Raises:
             FileNotFoundError: Given path was not a file.
         """
-        with open(path, "r", encoding="utf-8") as opened_file:
+        with open(path, encoding="utf-8") as opened_file:
             return Manifest.from_yaml(opened_file, path)
 
     @property
@@ -291,7 +292,7 @@ class Manifest:
         """Get string representing this object."""
         return str(self._as_dict())
 
-    def _as_dict(self) -> Dict[str, ManifestDict]:
+    def _as_dict(self) -> dict[str, ManifestDict]:
         """Get this manifest as dict."""
         remotes: Sequence[RemoteDict] = [
             remote.as_yaml() for remote in self._remotes.values()
@@ -300,9 +301,9 @@ class Manifest:
         if len(remotes) == 1:
             remotes[0].pop("default", None)
 
-        projects: List[Dict[str, str]] = []
+        projects: list[dict[str, str]] = []
         for project in self.projects:
-            project_yaml: Dict[str, str] = project.as_yaml()
+            project_yaml: dict[str, str] = project.as_yaml()
             if len(remotes) == 1:
                 project_yaml.pop("remote", None)
             projects.append(project_yaml)
@@ -381,12 +382,12 @@ def get_manifest() -> Manifest:
     return Manifest.from_file(manifest_path)
 
 
-def get_childmanifests(skip: Optional[List[str]] = None) -> List[Manifest]:
+def get_childmanifests(skip: Optional[list[str]] = None) -> list[Manifest]:
     """Get manifest and its path."""
     skip = skip or []
     logger.debug("Looking for sub-manifests")
 
-    childmanifests: List[Manifest] = []
+    childmanifests: list[Manifest] = []
     for path in find_file(DEFAULT_MANIFEST_NAME, "."):
         path = os.path.realpath(path)
         if path not in skip:

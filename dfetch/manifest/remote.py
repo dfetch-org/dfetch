@@ -18,7 +18,7 @@ If multiple remotes are marked as default, the first marked as default is chosen
           url-base: https://github.com/
 """
 
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from typing_extensions import TypedDict
 
@@ -41,7 +41,7 @@ class Remote:
         self._default: bool = bool(kwargs.get("default", False))
 
     @classmethod
-    def from_yaml(cls, yamldata: Union[Dict[str, str], RemoteDict]) -> "Remote":
+    def from_yaml(cls, yamldata: Union[dict[str, str], RemoteDict]) -> "Remote":
         """Create a remote entry in the manifest from yaml data.
 
         Returns:

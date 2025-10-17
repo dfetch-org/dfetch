@@ -4,7 +4,7 @@ Supports: GitHub, Bitbucket, SVN, SSH paths, and more.
 """
 
 import re
-from typing import List, Optional, Tuple
+from typing import Optional
 from urllib.parse import urlparse
 
 from packageurl import PackageURL
@@ -40,10 +40,10 @@ EXCLUDED_DOMAINS = ["gitlab", "gitea", "gitee", "sf", "gnu"]
 DEFAULT_NAME = "unknown"
 
 
-def _namespace_and_name_from_domain_and_path(domain: str, path: str) -> Tuple[str, str]:
+def _namespace_and_name_from_domain_and_path(domain: str, path: str) -> tuple[str, str]:
     """Split the full path to a name and namespace."""
     domain = NO_FETCH_EXTRACT(domain).domain
-    parts: List[str] = [domain] if domain not in EXCLUDED_DOMAINS else []
+    parts: list[str] = [domain] if domain not in EXCLUDED_DOMAINS else []
 
     if path:
         parts.extend(path.split("/"))

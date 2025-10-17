@@ -22,7 +22,6 @@ checking child-manifests with ``--no-recommendations``.
 import argparse
 import os
 from pathlib import Path
-from typing import List
 
 import dfetch.commands.command
 import dfetch.manifest.manifest
@@ -71,8 +70,8 @@ class Update(dfetch.commands.command.Command):
         """Perform the update."""
         manifest = dfetch.manifest.manifest.get_manifest()
 
-        exceptions: List[str] = []
-        destinations: List[str] = [
+        exceptions: list[str] = []
+        destinations: list[str] = [
             os.path.realpath(project.destination) for project in manifest.projects
         ]
         with in_directory(os.path.dirname(manifest.path)):
@@ -92,7 +91,7 @@ class Update(dfetch.commands.command.Command):
 
     @staticmethod
     def _check_destination(
-        project: dfetch.manifest.project.ProjectEntry, destinations: List[str]
+        project: dfetch.manifest.project.ProjectEntry, destinations: list[str]
     ) -> None:
         """Do some sanity checks on the destination path."""
         real_path = os.path.realpath(project.destination)
@@ -137,7 +136,7 @@ class Update(dfetch.commands.command.Command):
     @staticmethod
     def _check_overlapping_destination(
         project: dfetch.manifest.project.ProjectEntry,
-        destinations: List[str],
+        destinations: list[str],
         real_path: str,
     ) -> None:
         """Check if project will try to write to the same destination."""

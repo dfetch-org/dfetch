@@ -21,7 +21,6 @@ you can prevent *Dfetch* from checking child-manifests with ``--no-recommendatio
 
 import argparse
 import os
-from typing import List
 
 import dfetch.commands.command
 import dfetch.manifest.manifest
@@ -88,7 +87,7 @@ class Check(dfetch.commands.command.Command):
         reporters = self._get_reporters(args, manifest)
 
         with in_directory(os.path.dirname(manifest.path)):
-            exceptions: List[str] = []
+            exceptions: list[str] = []
             for project in manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).check_for_update(reporters)
@@ -106,7 +105,7 @@ class Check(dfetch.commands.command.Command):
     @staticmethod
     def _get_reporters(
         args: argparse.Namespace, manifest: Manifest
-    ) -> List[CheckReporter]:
+    ) -> list[CheckReporter]:
         """Get all reporters.
 
         Args:
@@ -116,7 +115,7 @@ class Check(dfetch.commands.command.Command):
         Returns:
             List[CheckReporter]: List of reporters that each provide a unique report
         """
-        reporters: List[CheckReporter] = [CheckStdoutReporter(manifest)]
+        reporters: list[CheckReporter] = [CheckStdoutReporter(manifest)]
         if args.jenkins_json:
             reporters += [JenkinsReporter(manifest, args.jenkins_json)]
         if args.sarif:

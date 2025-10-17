@@ -4,7 +4,8 @@ import fnmatch
 import os
 import pathlib
 from abc import ABC, abstractmethod
-from typing import List, Optional, Sequence, Tuple
+from collections.abc import Sequence
+from typing import Optional
 
 from halo import Halo
 from patch_ng import fromfile
@@ -43,7 +44,7 @@ class VCS(ABC):
         ci_env_var = os.getenv("CI", "")
         return bool(ci_env_var) and ci_env_var[0].lower() in ("t", "1", "y")
 
-    def check_wanted_with_local(self) -> Tuple[Optional[Version], Optional[Version]]:
+    def check_wanted_with_local(self) -> tuple[Optional[Version], Optional[Version]]:
         """Given the project entry in the manifest, get the relevant version from disk.
 
         Returns:
@@ -263,7 +264,7 @@ class VCS(ABC):
         """Check if the given revision exists."""
 
     @abstractmethod
-    def _list_of_tags(self) -> List[str]:
+    def _list_of_tags(self) -> list[str]:
         """Get list of all available tags."""
 
     @staticmethod

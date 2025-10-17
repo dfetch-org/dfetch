@@ -4,8 +4,9 @@ import os
 import re
 import shutil
 import tempfile
+from collections.abc import Generator, Sequence
 from pathlib import PurePath
-from typing import Dict, Generator, List, NamedTuple, Optional, Sequence, Tuple
+from typing import NamedTuple, Optional
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -26,7 +27,7 @@ class Submodule(NamedTuple):
     tag: str
 
 
-def get_git_version() -> Tuple[str, str]:
+def get_git_version() -> tuple[str, str]:
     """Get the name and version of git."""
     result = run_on_cmdline(logger, "git --version")
     tool, version = result.stdout.decode().strip().split("version", maxsplit=1)
@@ -62,11 +63,11 @@ class GitRemote:
         """Get the last sha of a branch."""
         return self._find_sha_of_branch_or_tag(self._ls_remote(self._remote), branch)
 
-    def find_branch_tip_or_tag_from_sha(self, sha: str) -> Tuple[str, str]:
+    def find_branch_tip_or_tag_from_sha(self, sha: str) -> tuple[str, str]:
         """Find branch or tag from sha."""
         return self._find_branch_tip_or_tag_from_sha(self._ls_remote(self._remote), sha)
 
-    def list_of_tags(self) -> List[str]:
+    def list_of_tags(self) -> list[str]:
         """Get list of all available tags."""
         info = self._ls_remote(self._remote)
 
@@ -97,14 +98,14 @@ class GitRemote:
         return "master"
 
     @staticmethod
-    def _ls_remote(remote: str) -> Dict[str, str]:
+    def _ls_remote(remote: str) -> dict[str, str]:
         result = run_on_cmdline(
             logger, f"git ls-remote --heads --tags {remote}"
         ).stdout.decode()
 
-        info: Dict[str, str] = {}
+        info: dict[str, str] = {}
         for line in filter(lambda x: x, result.split("\n")):
-            sha, ref = [part.strip() for part in f"{line} ".split("\t", maxsplit=1)]
+            sha, ref = (part.strip() for part in f"{line} ".split("\t", maxsplit=1))
 
             # Annotated tag commit (more important)
             if ref.endswith("^{}"):
@@ -114,7 +115,7 @@ class GitRemote:
         return info
 
     @staticmethod
-    def _find_sha_of_branch_or_tag(info: Dict[str, str], branch_or_tag: str) -> str:
+    def _find_sha_of_branch_or_tag(info: dict[str, str], branch_or_tag: str) -> str:
         """Find SHA of a branch tip or tag."""
         for reference, sha in info.items():
             if reference in [
@@ -126,8 +127,8 @@ class GitRemote:
 
     @staticmethod
     def _find_branch_tip_or_tag_from_sha(
-        info: Dict[str, str], rev: str
-    ) -> Tuple[str, str]:
+        info: dict[str, str], rev: str
+    ) -> tuple[str, str]:
         """Check all branch tips and tags and see if the sha is one of them."""
         branch, tag = "", ""
         for reference, sha in info.items():
@@ -194,7 +195,7 @@ class GitLocalRepo:
         remote: str,
         version: str,
         src: Optional[str] = None,
-        must_keeps: Optional[List[str]] = None,
+        must_keeps: Optional[list[str]] = None,
         ignore: Optional[Sequence[str]] = None,
     ) -> str:
         """Checkout a specific version from a given remote.
@@ -332,7 +333,7 @@ class GitLocalRepo:
         return str(result.stdout.decode())
 
     @staticmethod
-    def submodules() -> List[Submodule]:
+    def submodules() -> list[Submodule]:
         """Get a list of submodules in the current directory."""
         result = run_on_cmdline(
             logger,
@@ -345,8 +346,8 @@ class GitLocalRepo:
             ],
         )
 
-        submodules: List[Submodule] = []
-        urls: Dict[str, str] = {}
+        submodules: list[Submodule] = []
+        urls: dict[str, str] = {}
         for line in result.stdout.decode().split("\n"):
             if line:
                 name, sm_path, sha, toplevel = line.split(" ")
@@ -381,7 +382,7 @@ class GitLocalRepo:
         return submodules
 
     @staticmethod
-    def _get_submodule_urls(toplevel: str) -> Dict[str, str]:
+    def _get_submodule_urls(toplevel: str) -> dict[str, str]:
         result = run_on_cmdline(
             logger,
             [
@@ -432,7 +433,7 @@ class GitLocalRepo:
                 ["git", "branch", "--contains", sha],
             )
 
-        branches: List[str] = [
+        branches: list[str] = [
             branch.strip()
             for branch in result.stdout.decode().split("*")
             if branch.strip() and "HEAD detached at" not in branch.strip()
