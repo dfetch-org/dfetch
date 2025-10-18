@@ -15,14 +15,14 @@ repos:
     -   id: isort
         name: Sort import
         entry: dfetch
-        args: ['filter', 'isort']
+        args: ['filter','--not-dfetched', 'isort']
         language: system
         types: [file, python]
 
     -   id: black
         name: Black (auto-format)
         entry: dfetch
-        args: ['filter', 'black']
+        args: ['filter', '--not-dfetched', 'black']
         language: system
         types: [file, python]
 
@@ -102,7 +102,7 @@ repos:
         name: codespell
         description: Checks for common misspellings in text files.
         entry: dfetch
-        args: ['filter', 'codespell']
+        args: ['filter', '--not-dfetched','codespell']
         language: python
         # exclude: ^doc/_ext/sphinxcontrib_asciinema/_static/asciinema-player_3.12.1.js
         types: [text]
