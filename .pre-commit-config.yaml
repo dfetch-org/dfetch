@@ -14,17 +14,17 @@ repos:
     hooks:
     -   id: isort
         name: Sort import
-        entry: isort
+        entry: dfetch
+        args: ['filter', 'isort']
         language: system
         types: [file, python]
-        exclude: ^doc/_ext/sphinxcontrib_asciinema
 
     -   id: black
         name: Black (auto-format)
-        entry: black
+        entry: dfetch
+        args: ['filter', 'black']
         language: system
         types: [file, python]
-        exclude: ^doc/_ext/sphinxcontrib_asciinema
 
     -   id: pylint
         name: pylint
@@ -101,9 +101,10 @@ repos:
     -   id: codespell
         name: codespell
         description: Checks for common misspellings in text files.
-        entry: codespell
+        entry: dfetch
+        args: ['filter', 'codespell']
         language: python
-        exclude: ^doc/_ext/sphinxcontrib_asciinema/_static/asciinema-player_3.12.1.js
+        # exclude: ^doc/_ext/sphinxcontrib_asciinema/_static/asciinema-player_3.12.1.js
         types: [text]
     -   id: ruff
         name: ruff
