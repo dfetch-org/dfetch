@@ -139,3 +139,13 @@ Import
 .. asciinema:: asciicasts/import.cast
 
 .. automodule:: dfetch.commands.import_
+
+Filter
+------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: filter
+
+.. automodule:: dfetch.commands.filter
