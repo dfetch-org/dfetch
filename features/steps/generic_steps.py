@@ -25,6 +25,32 @@ iso_timestamp = re.compile(r'"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}\+\d{2}:\
 urn_uuid = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 bom_ref = re.compile(r"BomRef\.[0-9]+\.[0-9]+")
 svn_error = re.compile(r"svn: E\d{6}: .+")
+abs_path = re.compile(r"/some/dir")
+
+
+def make_relative_if_path(
+    some_string: str, base_dir: Union[str, os.PathLike] = "."
+) -> str:
+    """
+    Convert a string to a relative path if it's a path, relative to base_dir.
+    Works even if the path is outside the base_dir.
+
+    Args:
+        some_string (str): String to check.
+        base_dir (str or Path): Base directory for relative path.
+
+    Returns:
+        str: Relative path if s is a path, otherwise original string.
+    """
+    the_path = pathlib.Path(some_string)
+
+    if not the_path.is_absolute():
+        return some_string
+
+    try:
+        return os.path.relpath(str(the_path), base_dir)
+    except ValueError:
+        return some_string
 
 
 def remote_server_path(context):
@@ -84,6 +110,7 @@ def check_content(
                 (iso_timestamp, "[timestamp]"),
                 (urn_uuid, "[urn-uuid]"),
                 (bom_ref, "[bom-ref]"),
+                (abs_path, "."),
             ],
             text=expected,
         )
@@ -97,6 +124,8 @@ def check_content(
             ],
             text=actual,
         )
+
+        actual = make_relative_if_path(actual)
 
         assert actual.strip() == expected.strip(), (
             f"Line {line_nr}: Actual >>{actual.strip()}<< != Expected >>{expected.strip()}<<\n"
@@ -199,6 +228,7 @@ def step_impl(context, path=None):
 @when('I run "dfetch {args}"')
 def step_impl(context, args, path=None):
     """Call a command."""
+    context.cmd_output = ""
     call_command(context, args.split(), path)
 
 
