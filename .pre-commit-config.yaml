@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
     -   id: trailing-whitespace
         exclude: ^doc/static/uml/styles/plantuml-c4/
@@ -125,6 +125,6 @@ repos:
         types: [file, python]
 
 -   repo: https://github.com/gitleaks/gitleaks
-    rev: v8.16.3
+    rev: v8.28.0
     hooks:
     -   id: gitleaks
