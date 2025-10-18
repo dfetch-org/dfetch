@@ -29,7 +29,9 @@ class DfetchFatalException(Exception):
 def create_parser() -> argparse.ArgumentParser:
     """Create the main argument parser."""
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawTextHelpFormatter, epilog=__doc__
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=__doc__,
+        exit_on_error=False,
     )
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Increase verbosity"
@@ -57,8 +59,15 @@ def _help(args: argparse.Namespace) -> None:
 
 def run(argv: Sequence[str]) -> None:
     """Start dfetch."""
-    logger.print_title()
-    args = create_parser().parse_args(argv)
+    parser = create_parser()
+    try:
+        args = parser.parse_args(argv)
+    except argparse.ArgumentError as exc:
+        logger.print_title()
+        parser.error(exc.message)
+
+    if args.verbose or not getattr(args.func, "SILENT", False):
+        logger.print_title()
 
     if args.verbose:
         dfetch.log.increase_verbosity()
