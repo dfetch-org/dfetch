@@ -17,6 +17,7 @@ repos:
         entry: isort
         language: system
         types: [file, python]
+        exclude: ^doc/_ext/sphinxcontrib_asciinema
 
     -   id: black
         name: Black (auto-format)
