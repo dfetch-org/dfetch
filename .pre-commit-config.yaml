@@ -103,6 +103,7 @@ repos:
         description: Checks for common misspellings in text files.
         entry: codespell
         language: python
+        exclude: ^doc/_ext/sphinxcontrib_asciinema/_static/asciinema-player_3.12.1.js
         types: [text]
     -   id: ruff
         name: ruff
