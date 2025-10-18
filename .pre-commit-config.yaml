@@ -24,6 +24,7 @@ repos:
         entry: black
         language: system
         types: [file, python]
+        exclude: ^doc/_ext/sphinxcontrib_asciinema
 
     -   id: pylint
         name: pylint
