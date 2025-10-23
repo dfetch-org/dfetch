@@ -49,7 +49,7 @@ dependencies = [
     "sarif-om==1.0.4",
     "semver==3.0.4",
     "patch-ng==1.19.0",
-    "cyclonedx-python-lib==11.2.0",
+    "cyclonedx-python-lib==11.4.0",
     "infer-license==0.1.0; python_version <= '3.10.0'",
     "infer-license==0.2.0; python_version > '3.10.0'",
     'setuptools; python_version >= "3.12"',                  # contains 'pkg_resources' for infer-license
