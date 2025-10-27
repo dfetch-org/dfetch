@@ -35,7 +35,7 @@ jobs:
           python-version: '3.13'
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@dfffa42bcd2c0a1984bbb3385deec93444da212d # v1.2
+        uses: hendrikmuhs/ccache-action@97635eac5f893a37d7025e081038e3629f185c26 # v1.2
         with:
           key: ${{ github.job }}-${{ matrix.platform }}
           verbose: 1
