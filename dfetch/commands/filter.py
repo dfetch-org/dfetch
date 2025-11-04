@@ -2,6 +2,9 @@
 
 It can either accept no input to list all files. A list of files can be piped in (such as through ``find``)
 or it can be used as a wrapper around a certain tool to block or allow files under control by dfetch.
+
+.. scenario-include:: ../features/filter-projects.feature
+
 """
 
 import argparse

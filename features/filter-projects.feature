@@ -19,7 +19,7 @@ Feature: Filtering file paths before executing a tool
                     url: some-remote-server/SomeProject.git
             """
 
-    Scenario: Tool receives only managed files
+    Scenario: Tool shows all files under dfetch control
         When I run "dfetch filter"
         Then the output shows
             """
