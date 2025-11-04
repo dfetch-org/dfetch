@@ -115,6 +115,19 @@ Freeze
 
 .. automodule:: dfetch.commands.freeze
 
+
+Filter
+------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: filter
+
+.. asciinema:: asciicasts/filter.cast
+
+.. automodule:: dfetch.commands.filter
+
 Environment
 -----------
 .. argparse::
