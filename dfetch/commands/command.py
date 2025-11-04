@@ -32,6 +32,17 @@ class Command(ABC):
     CHILD_TYPE = TypeVar("CHILD_TYPE", bound="Command")  # noqa
 
     @staticmethod
+    def silent() -> bool:
+        """Whether the command is silent.
+
+        If a command is silent the title will not be printed when the command is run.
+
+        Returns:
+            bool: True if the command is silent, False otherwise.
+        """
+        return False
+
+    @staticmethod
     @abstractmethod
     def create_menu(subparsers: SubparserActionType) -> None:
         """Add a sub-parser to the given parser.

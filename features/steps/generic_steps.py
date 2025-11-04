@@ -3,11 +3,14 @@
 # pylint: disable=function-redefined, missing-function-docstring, not-callable
 # pyright: reportRedeclaration=false, reportAttributeAccessIssue=false, reportCallIssue=false
 
+import contextlib
 import difflib
 import json
 import os
 import pathlib
 import re
+import sys
+from io import StringIO
 from itertools import zip_longest
 from typing import Iterable, List, Optional, Pattern, Tuple, Union
 
@@ -28,29 +31,29 @@ svn_error = re.compile(r"svn: E\d{6}: .+")
 abs_path = re.compile(r"/some/dir")
 
 
-def make_relative_if_path(
-    some_string: str, base_dir: Union[str, os.PathLike] = "."
-) -> str:
-    """
-    Convert a string to a relative path if it's a path, relative to base_dir.
-    Works even if the path is outside the base_dir.
+@contextlib.contextmanager
+def tee_stdout():
+    """Contextmanager duplicating stdout."""
+    original_stdout = sys.stdout
+    buffer = StringIO()
 
-    Args:
-        some_string (str): String to check.
-        base_dir (str or Path): Base directory for relative path.
+    class Tee:
+        """Tee class for stdout."""
 
-    Returns:
-        str: Relative path if s is a path, otherwise original string.
-    """
-    the_path = pathlib.Path(some_string)
+        def write(self, data):
+            original_stdout.write(data)
+            buffer.write(data)
+            original_stdout.flush()
 
-    if not the_path.is_absolute():
-        return some_string
+        def flush(self):
+            original_stdout.flush()
+            buffer.flush()
 
+    sys.stdout = Tee()
     try:
-        return os.path.relpath(str(the_path), base_dir)
-    except ValueError:
-        return some_string
+        yield buffer
+    finally:
+        sys.stdout = original_stdout
 
 
 def remote_server_path(context):
@@ -61,15 +64,18 @@ def remote_server_path(context):
 def call_command(context: Context, args: list[str], path: Optional[str] = ".") -> None:
     length_at_start = len(context.captured.output)
     with in_directory(path or "."):
-        try:
-            run(args)
-            context.cmd_returncode = 0
-        except DfetchFatalException:
-            context.cmd_returncode = 1
+        with tee_stdout() as captured_stdout:
+            try:
+                run(args)
+                context.cmd_returncode = 0
+            except DfetchFatalException:
+                context.cmd_returncode = 1
     # Remove the color code + title
     context.cmd_output = dfetch_title.sub(
         "", ansi_escape.sub("", context.captured.output[length_at_start:].strip("\n"))
     )
+    captured_stdout.seek(0)
+    context.cmd_stdout = captured_stdout.read()
 
 
 def check_file(path, content):
@@ -110,7 +116,6 @@ def check_content(
                 (iso_timestamp, "[timestamp]"),
                 (urn_uuid, "[urn-uuid]"),
                 (bom_ref, "[bom-ref]"),
-                (abs_path, "."),
             ],
             text=expected,
         )
@@ -124,8 +129,6 @@ def check_content(
             ],
             text=actual,
         )
-
-        actual = make_relative_if_path(actual)
 
         assert actual.strip() == expected.strip(), (
             f"Line {line_nr}: Actual >>{actual.strip()}<< != Expected >>{expected.strip()}<<\n"
@@ -228,7 +231,6 @@ def step_impl(context, path=None):
 @when('I run "dfetch {args}"')
 def step_impl(context, args, path=None):
     """Call a command."""
-    context.cmd_output = ""
     call_command(context, args.split(), path)
 
 
@@ -285,6 +287,7 @@ def step_impl(context):
             (timestamp, "[timestamp]"),
             (dfetch_title, ""),
             (svn_error, "svn: EXXXXXX: <some error text>"),
+            (abs_path, ""),
         ],
         text=context.text,
     )
@@ -299,8 +302,9 @@ def step_impl(context):
                 "some-remote-server",
             ),
             (svn_error, "svn: EXXXXXX: <some error text>"),
+            (re.compile(re.escape(os.getcwd())), ""),
         ],
-        text=context.cmd_output,
+        text=context.cmd_stdout or context.cmd_output,
     )
 
     diff = difflib.ndiff(actual_text.splitlines(), expected_text.splitlines())

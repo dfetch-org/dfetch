@@ -38,7 +38,10 @@ class Filter(dfetch.commands.command.Command):
     Based on the provided arguments filter files, and call the given arguments or print them out if no command given.
     """
 
-    SILENT = True
+    @staticmethod
+    def silent() -> bool:
+        """If the command is silent the title will not be printed when the command is run."""
+        return True
 
     @staticmethod
     def create_menu(subparsers: dfetch.commands.command.SubparserActionType) -> None:

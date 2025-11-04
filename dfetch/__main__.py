@@ -68,7 +68,7 @@ def run(argv: Sequence[str]) -> None:
         logger.print_title()
         parser.error(exc.message)
 
-    if args.verbose or not getattr(args.func, "SILENT", False):
+    if args.verbose or not args.func.silent():
         logger.print_title()
 
     if args.verbose:
