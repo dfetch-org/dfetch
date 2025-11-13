@@ -10,6 +10,7 @@ from collections.abc import Sequence
 import dfetch.commands.check
 import dfetch.commands.diff
 import dfetch.commands.environment
+import dfetch.commands.filter
 import dfetch.commands.freeze
 import dfetch.commands.import_
 import dfetch.commands.init
@@ -29,7 +30,9 @@ class DfetchFatalException(Exception):
 def create_parser() -> argparse.ArgumentParser:
     """Create the main argument parser."""
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawTextHelpFormatter, epilog=__doc__
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=__doc__,
+        exit_on_error=False,
     )
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Increase verbosity"
@@ -40,6 +43,7 @@ def create_parser() -> argparse.ArgumentParser:
     dfetch.commands.check.Check.create_menu(subparsers)
     dfetch.commands.diff.Diff.create_menu(subparsers)
     dfetch.commands.environment.Environment.create_menu(subparsers)
+    dfetch.commands.filter.Filter.create_menu(subparsers)
     dfetch.commands.freeze.Freeze.create_menu(subparsers)
     dfetch.commands.import_.Import.create_menu(subparsers)
     dfetch.commands.init.Init.create_menu(subparsers)
@@ -57,8 +61,15 @@ def _help(args: argparse.Namespace) -> None:
 
 def run(argv: Sequence[str]) -> None:
     """Start dfetch."""
-    logger.print_title()
-    args = create_parser().parse_args(argv)
+    parser = create_parser()
+    try:
+        args = parser.parse_args(argv)
+    except argparse.ArgumentError as exc:
+        logger.print_title()
+        parser.error(exc.message)
+
+    if args.verbose or not args.func.silent():
+        logger.print_title()
 
     if args.verbose:
         dfetch.log.increase_verbosity()
