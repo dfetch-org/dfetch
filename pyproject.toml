@@ -99,7 +99,7 @@ docs = [
 test = ['pytest==8.4.2', 'pytest-cov==7.0.0', 'behave==1.3.3']
 casts = ['asciinema==2.4.0']
 build = [
-    'nuitka==2.8.4',
+    'nuitka==2.8.6',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml]
 ]
 
