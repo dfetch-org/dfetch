@@ -69,6 +69,34 @@ def run_on_cmdline(
     return proc
 
 
+def run_on_cmdline_uncaptured(
+    logger: logging.Logger, cmd: Union[str, list[str]]
+) -> "subprocess.CompletedProcess[Any]":
+    """Run a command and log the output, and raise if something goes wrong."""
+    logger.debug(f"Running {cmd}")
+
+    if not isinstance(cmd, list):
+        cmd = cmd.split(" ")
+
+    try:
+        proc = subprocess.run(cmd, capture_output=False, check=True)  # nosec
+    except subprocess.CalledProcessError as exc:
+        raise SubprocessCommandError(
+            exc.cmd,
+            "",
+            "",
+            exc.returncode,
+        ) from exc
+    except FileNotFoundError as exc:
+        cmd = cmd[0]
+        raise RuntimeError(f"{cmd} not available on system, please install") from exc
+
+    if proc.returncode:
+        raise SubprocessCommandError(cmd, "", "", proc.returncode)
+
+    return proc
+
+
 def _log_output(proc: subprocess.CompletedProcess, logger: logging.Logger) -> None:  # type: ignore
     logger.debug(f"Return code: {proc.returncode}")
 
