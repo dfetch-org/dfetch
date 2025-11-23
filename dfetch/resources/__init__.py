@@ -9,7 +9,12 @@ from dfetch import resources  # pylint: disable=import-self
 
 def _resource_path(filename: str) -> ContextManager[Path]:
     """Get the path to the resource."""
-    return importlib_resources.as_file(importlib_resources.files(resources) / filename)
+    return importlib_resources.as_file(
+        importlib_resources.files(
+            "resources" if "__compiled__" in globals() else resources
+        )
+        / filename
+    )
 
 
 def schema_path() -> ContextManager[Path]:

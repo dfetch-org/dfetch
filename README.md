@@ -49,6 +49,15 @@ pip install dfetch
 pip install git+https://github.com/dfetch-org/dfetch.git#egg=dfetch
 ```
 
+### Binary distributions
+
+The [build.yml](https://github.com/dfetch-org/dfetch/actions/workflows/build.yml) produces installers for all major platforms.
+See the artifacts in the run.
+
+- Linux `.deb` & `.rpm`
+- macOS `.pkg`
+- Windows `.msi`
+
 ## Github Action
 
 You can use DFetch in your Github Actions workflow to check your dependencies.

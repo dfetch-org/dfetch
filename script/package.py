@@ -1,0 +1,254 @@
+#!/usr/bin/env python3
+"""This script packages the dfetch build directory into OS-specific installers using fpm & wix."""
+import shutil
+import subprocess  # nosec
+import sys
+import tomllib as toml
+import xml.etree.ElementTree as ET  # nosec (only used for XML generation, not parsing untrusted input)
+from pathlib import Path
+
+from dfetch import __version__
+
+# Configuration loading
+with open("pyproject.toml", "rb") as pyproject_file:
+    pyproject = toml.load(pyproject_file)
+project_info = pyproject.get("project", {})
+
+PACKAGE_NAME = project_info.get("name")
+
+MAINTAINER = project_info.get("authors", [{}])[0].get("name", "")
+DESCRIPTION = project_info.get("description", "")
+URL = project_info.get("urls", {}).get("Homepage", "")
+LICENSE = project_info.get("license", "")
+
+INSTALL_PREFIX = (
+    f"/opt/{PACKAGE_NAME}"  # Where the files will be installed on Linux/macOS
+)
+BUILD_DIR = Path("build", f"{PACKAGE_NAME}.dist")
+OUTPUT_DIR = Path("build", f"{PACKAGE_NAME}-package")
+UPGRADE_CODE = "BDC7DA0D-70C1-4189-BE88-F1BD2DEE3E33"  #: Fixed UUID for WiX installer, must be unique and stable
+
+
+def run_command(command: list[str]) -> None:
+    """Run a system command and handle errors."""
+    resolved_cmd = shutil.which(command[0])
+    if not resolved_cmd:
+        raise FileNotFoundError(f"Command not found: {command[0]}")
+
+    command[0] = resolved_cmd  # On windows .bat files need full path
+
+    print("Running:", " ".join(command))
+    subprocess.check_call(command)  # nosec
+
+
+def package_linux() -> None:
+    """Package the build directory into .deb and .rpm installers."""
+    for target in ("deb", "rpm"):
+        output = f"{OUTPUT_DIR}/{PACKAGE_NAME}_{__version__}.{target}"
+        cmd = [
+            "fpm",
+            "-s",
+            "dir",
+            "-t",
+            target,
+            "-n",
+            PACKAGE_NAME,
+            "-v",
+            __version__,
+            "-C",
+            str(BUILD_DIR),
+            "--prefix",
+            INSTALL_PREFIX,
+            "--description",
+            DESCRIPTION,
+            "--maintainer",
+            MAINTAINER,
+            "--url",
+            URL,
+            "--license",
+            LICENSE,
+            "-p",
+            output,
+            ".",
+        ]
+        run_command(cmd)
+
+
+def package_macos() -> None:
+    """Package the build directory into a .pkg installer for macOS."""
+    cmd = [
+        "fpm",
+        "-s",
+        "dir",
+        "-t",
+        "osxpkg",
+        "-n",
+        PACKAGE_NAME,
+        "-v",
+        __version__,
+        "-C",
+        str(BUILD_DIR),
+        "--prefix",
+        INSTALL_PREFIX,
+        "--description",
+        DESCRIPTION,
+        "--maintainer",
+        MAINTAINER,
+        "--url",
+        URL,
+        "--license",
+        LICENSE,
+        "-p",
+        f"{OUTPUT_DIR}/{PACKAGE_NAME}_{__version__}.pkg",
+        ".",
+    ]
+    run_command(cmd)
+
+
+def check_wix_installed() -> None:
+    """Check if WiX Toolset v4 is installed (candle.exe & light.exe)."""
+    wix = shutil.which("wix.exe")
+    if not wix:
+        print(
+            "Error: WiX Toolset v4 is required but not found.\n"
+            "Please install it from https://wixtoolset.org/releases/\n"
+            "and ensure 'wix.exe' is in your PATH."
+        )
+        sys.exit(1)
+
+
+def generate_wix_xml(build_dir: Path, output_wxs: Path) -> None:
+    """Generate a minimal WiX v4 XML including all files in build_dir."""
+    wix = ET.Element("Wix", xmlns="http://wixtoolset.org/schemas/v4/wxs")
+    package = ET.SubElement(
+        wix,
+        "Package",
+        Name=PACKAGE_NAME,
+        Manufacturer=MAINTAINER,
+        Version=__version__,
+        UpgradeCode=UPGRADE_CODE,
+    )
+
+    ET.SubElement(package, "MediaTemplate", EmbedCab="yes")
+
+    standard_dir = ET.SubElement(
+        package,
+        "StandardDirectory",
+        Id="ProgramFilesFolder",
+    )
+    install_dir = ET.SubElement(
+        standard_dir, "Directory", Id="INSTALLFOLDER", Name=PACKAGE_NAME
+    )
+
+    component = ET.SubElement(
+        install_dir,
+        "Component",
+        Id="MainComponent",
+        Guid="*",
+        Directory="INSTALLFOLDER",
+    )
+
+    ET.SubElement(
+        component,
+        "Environment",
+        Id="AddToPath",
+        Name="PATH",
+        Value="[INSTALLFOLDER]",
+        Action="set",
+        Part="last",
+        System="yes",
+    )
+
+    # Registry key so InstallLocation is discoverable
+    ET.SubElement(
+        component,
+        "RegistryValue",
+        Root="HKLM",
+        Key=f"Software\\{PACKAGE_NAME}",
+        Name="InstallLocation",
+        Value="[INSTALLFOLDER]",
+        Type="string",
+        KeyPath="yes",
+    )
+
+    # Feature
+    feature = ET.SubElement(
+        package,
+        "Feature",
+        Id="MainFeature",
+        Title=PACKAGE_NAME,
+        Level="1",
+    )
+
+    ET.SubElement(
+        feature,
+        "ComponentRef",
+        Id="MainComponent",
+    )
+    ET.SubElement(feature, "Files", Include=str(build_dir.resolve() / "**"))
+
+    ET.SubElement(package, "Property", Id="ARPCOMMENTS", Value=DESCRIPTION)
+
+    tree = ET.ElementTree(wix)
+    tree.write(output_wxs, encoding="utf-8", xml_declaration=True)
+
+
+def generate_wix_proj(output_proj: Path, wix_file: Path) -> None:
+    """Generate a minimal WiX SDK project referencing the .wxs file."""
+    project = ET.Element("Project", Sdk="WixToolset.Sdk/6.0.2")
+
+    item_group = ET.SubElement(project, "ItemGroup")
+    ET.SubElement(item_group, "Wix", Include=str(wix_file))
+
+    tree = ET.ElementTree(project)
+    tree.write(output_proj, encoding="utf-8", xml_declaration=True)
+
+
+def package_windows() -> None:
+    """Package the build directory into a .msi installer for Windows using WiX v4."""
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    wix_file = OUTPUT_DIR / f"{PACKAGE_NAME}.wxs"
+    wix_proj = OUTPUT_DIR / f"{PACKAGE_NAME}.wixproj"
+    msi_file = OUTPUT_DIR / f"{PACKAGE_NAME}_{__version__}.msi"
+
+    generate_wix_xml(BUILD_DIR, wix_file)
+    generate_wix_proj(wix_proj, wix_file)
+
+    check_wix_installed()
+
+    run_command(
+        ["dotnet", "build", str(wix_proj), "-c", "Release", "-o", str(OUTPUT_DIR)]
+    )
+
+    print(f"MSI generated at {msi_file}")
+
+
+def list_files(path: Path) -> None:
+    """List all files in the given path."""
+    for file_path in path.rglob("*"):
+        if file_path.is_file():
+            print(file_path.relative_to(path))
+
+
+def main() -> None:
+    """Main packaging function."""
+    if not BUILD_DIR.exists():
+        print(f"Error: Build directory {BUILD_DIR} does not exist. Run build.py first.")
+        sys.exit(1)
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    list_files(BUILD_DIR)
+
+    if sys.platform.startswith("linux"):
+        package_linux()
+    elif sys.platform.startswith("darwin"):
+        package_macos()
+    elif sys.platform.startswith("win"):
+        package_windows()
+    else:
+        print(f"Unsupported platform: {sys.platform}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
