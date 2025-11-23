@@ -36,16 +36,25 @@ jobs:
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2
+        if: ${{ matrix.platform != 'windows-latest' }}
         with:
           key: ${{ github.job }}-${{ matrix.platform }}
           verbose: 1
-          create-symlink: ${{ matrix.platform != 'windows-latest' }}
+          create-symlink: true
+
+      - name: Setup cache for clcache
+        if: ${{ matrix.platform == 'windows-latest' }}
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ github.workspace }}\.clcache
+          key: ${{ github.job }}-${{ matrix.platform }}
 
       - name: Create binary
         env:
           CCACHE_BASEDIR: ${{ github.workspace }}
           CCACHE_NOHASHDIR: true
-          NUITKA_CACHE_DIR_CCACHE: $HOME/.ccache
+          NUITKA_CACHE_DIR_CCACHE: ${{ github.workspace }}/.ccache
+          NUITKA_CACHE_DIR_CLCACHE: ${{ github.workspace }}\.clcache
           NUITKA_CCACHE_BINARY: /usr/bin/ccache
         run: |
           pip install .[build]
