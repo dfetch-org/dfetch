@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dfetch"
 authors = [{ name = "Ben Spoor", email = "dfetch@spoor.cc" }]
-description = "Dependency fetcher"
+description = "A vendoring tool for fetching and managing external dependencies."
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.9"
 keywords = [
@@ -190,21 +190,22 @@ reportMissingModuleSource = false
 pythonVersion = "3.9"
 
 [tool.nuitka]
-mode = "onefile" # Switch this between standalone and onefile as needed
+mode = "standalone"
 # jobs = "4" # Can be used to reduce memory usage, in case of compilation issues
 # Enable below for debugging
 # show-progress = true
 assume-yes-for-downloads = true
 
-include-package-data="dfetch,infer_license"
+include-data-dir="dfetch/resources=resources"
+include-package-data="infer_license"
 include-module="infer_license.licenses"
 
 # python-flag = ["-OO"] # Cannot optimize (yet) commands rely on __doc__ being present
 
 output-dir = "build"
-output-filename-win = "dfetch-{VERSION}.exe"
-output-filename-linux = "dfetch-{VERSION}-x86_64"
-output-filename-macos = "dfetch-{VERSION}-osx"
+output-filename-win = "dfetch.exe"
+output-filename-linux = "dfetch"
+output-filename-macos = "dfetch"
 
 # windows-icon-from-ico = "static/favicon.ico"
 # windows-company-name = "dfetch-org"

@@ -34,6 +34,28 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: Set up Ruby
+        if: ${{ matrix.platform != 'windows-latest' }}
+        uses: ruby/setup-ruby@d354de180d0c9e813cfddfcbdc079945d4be589b  #v1.275.0
+        with:
+          ruby-version: 2.7 # See also devcontainer
+
+      - name: Install fpm
+        if: ${{ matrix.platform != 'windows-latest' }}
+        run: |
+          gem install --no-document fpm --version 1.17.0
+          fpm --version
+
+      - name: Add msbuild to PATH
+        if: ${{ matrix.platform == 'windows-latest' }}
+        uses: microsoft/setup-msbuild@767f00a3f09872d96a0cb9fcd5e6a4ff33311330 # v2
+      - name: Install WiX
+        if: ${{ matrix.platform == 'windows-latest' }}
+        run: |
+          dotnet tool install --global wix --version 6.0.2
+          echo "$env:USERPROFILE\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          wix --version
+
       - name: ccache
         uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2
         if: ${{ matrix.platform != 'windows-latest' }}
@@ -59,12 +81,17 @@ jobs:
         run: |
           pip install .[build]
           python script/build.py
+          python script/package.py
 
       - name: Store the distribution packages
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: binary-distribution-${{ matrix.platform }}
-          path: build/dfetch-*
+          path: |
+              build/dfetch-package/*.deb
+              build/dfetch-package/*.rpm
+              build/dfetch-package/*.pkg
+              build/dfetch-package/*.msi
 
   test-binary:
     name: test binary
@@ -82,36 +109,38 @@ jobs:
         name: binary-distribution-${{ matrix.platform }}
         path: .
 
-    - name: Prepare binary
+    - name: Install binary
       if: matrix.platform == 'ubuntu-latest'
       run: |
-        binary=$(ls dfetch-*-x86_64)
-        ln -sf "$binary" dfetch
-        chmod +x dfetch
-        ls -la .
+        sudo dpkg -i dfetch*.deb
+        sudo dpkg -L dfetch
+        echo "/opt/dfetch" >> $GITHUB_PATH
       shell: bash
 
-    - name: Prepare binary
+    - name: Install binary
       if: matrix.platform == 'macos-latest'
       run: |
-        binary=$(ls dfetch-*-osx)
-        ln -sf "$binary" dfetch
-        chmod +x dfetch
-        ls -la .
+        sudo installer -pkg dfetch*.pkg -target / -verboseR
+        find /opt/dfetch -type f
+        echo "/opt/dfetch/opt/dfetch" >> $GITHUB_PATH
       shell: bash
 
-    - name: Prepare binary on Windows
+    - name: Install binary
       if: matrix.platform == 'windows-latest'
       run: |
-        $binary = Get-ChildItem dfetch-*.exe | Select-Object -First 1
-        Copy-Item $binary -Destination dfetch.exe -Force
-        Get-ChildItem
+        $file = "dfetch.msi"
+        $log = "install.log"
+        $procMain = Start-Process "msiexec" "/i `"$file`" /qn /l*! `"$log`"" -NoNewWindow -PassThru
+        $procLog = Start-Process "powershell" "Get-Content -Path `"$log`" -Wait" -NoNewWindow -PassThru
+        $procMain.WaitForExit()
+        $procLog.Kill()
+        echo "C:\Program Files (x86)\dfetch" >> $env:GITHUB_PATH
       shell: pwsh
 
-    - run: ./dfetch init
-    - run: ./dfetch environment
-    - run: ./dfetch validate
-    - run: ./dfetch check
-    - run: ./dfetch update
-    - run: ./dfetch update
-    - run: ./dfetch report -t sbom
+    - run: dfetch init
+    - run: dfetch environment
+    - run: dfetch validate
+    - run: dfetch check
+    - run: dfetch update
+    - run: dfetch update
+    - run: dfetch report -t sbom
