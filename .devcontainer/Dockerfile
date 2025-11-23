@@ -9,6 +9,19 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     subversion=1.14.1-3+deb11u2 && \
     rm -rf /var/lib/apt/lists/*
 
+# Install ruby gem FPM for packaging
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+        ruby=1:2.7+2 \
+        ruby-dev=1:2.7+2 \
+        build-essential \
+        rpm=4.16.1.2+dfsg1-3 \
+        git \
+        curl \
+        ca-certificates && \
+    gem install --no-document fpm && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /workspaces/dfetch
 
 # Add a non-root user (dev)
