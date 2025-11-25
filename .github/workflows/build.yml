@@ -34,6 +34,16 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2   # or any version you need
+
+      - name: Install fpm
+        run: |
+          gem install --no-document fpm
+          fpm --version
+
       - name: ccache
         uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2
         if: ${{ matrix.platform != 'windows-latest' }}
@@ -59,6 +69,7 @@ jobs:
         run: |
           pip install .[build]
           python script/build.py
+          python script/package.py
 
       - name: Store the distribution packages
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
@@ -85,27 +96,27 @@ jobs:
     - name: Prepare binary
       if: matrix.platform == 'ubuntu-latest'
       run: |
+        ls -la .
         binary=$(ls dfetch-*-x86_64)
         ln -sf "$binary" dfetch
         chmod +x dfetch
-        ls -la .
       shell: bash
 
     - name: Prepare binary
       if: matrix.platform == 'macos-latest'
       run: |
+        ls -la .
         binary=$(ls dfetch-*-osx)
         ln -sf "$binary" dfetch
         chmod +x dfetch
-        ls -la .
       shell: bash
 
     - name: Prepare binary on Windows
       if: matrix.platform == 'windows-latest'
       run: |
+        Get-ChildItem
         $binary = Get-ChildItem dfetch-*.exe | Select-Object -First 1
         Copy-Item $binary -Destination dfetch.exe -Force
-        Get-ChildItem
       shell: pwsh
 
     - run: ./dfetch init
