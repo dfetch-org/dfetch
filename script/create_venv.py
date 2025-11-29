@@ -1,10 +1,30 @@
-#!python3.12
+#!/usr/bin/env python3
 """Script to setup a venv."""
 
 import argparse
+import pathlib
 import subprocess  # nosec
+import sys
 import venv
 from typing import Any
+
+PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+
+MIN_VERSION = (3, 9)  # minimum supported; change if needed
+RECOMMENDED_VERSION = (3, 13)  # preferred for development
+
+
+if sys.version_info[:2] < MIN_VERSION:
+    raise RuntimeError(
+        f"⚠ Unsupported Python version {sys.version_info.major}.{sys.version_info.minor}. "
+        f"Please use Python {MIN_VERSION[0]}.{MIN_VERSION[1]} or newer."
+    )
+if sys.version_info[:2] != RECOMMENDED_VERSION:
+    print(
+        f"⚠ Warning: Running with Python {sys.version_info.major}.{sys.version_info.minor}, "
+        f", dfetch is primarily developed with Python {RECOMMENDED_VERSION[0]}.{RECOMMENDED_VERSION[1]}."
+    )
 
 
 class MyEnvBuilder(venv.EnvBuilder):
@@ -34,7 +54,9 @@ class MyEnvBuilder(venv.EnvBuilder):
         print("Upgrading pip")
         self.pip_install(context, "--upgrade", "pip")
         print("Installing package and any extra requirements")
-        self.pip_install(context, "--use-pep517", "-e", f".{self.extra_requirements}")
+        self.pip_install(
+            context, "--use-pep517", "-e", f"{PROJECT_ROOT}{self.extra_requirements}"
+        )
 
     @staticmethod
     def pip_install(context: Any, *args: Any) -> None:
@@ -54,7 +76,7 @@ class MyEnvBuilder(venv.EnvBuilder):
 if __name__ == "__main__":
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
-        "-e", "--extra_requirements", type=str, default="development,test,doc"
+        "-e", "--extra_requirements", type=str, default="development,test,docs"
     )
     ARGS = PARSER.parse_args()
 
@@ -62,4 +84,4 @@ if __name__ == "__main__":
         clear=False,
         with_pip=True,
         extra_requirements=ARGS.extra_requirements,
-    ).create("venv")
+    ).create(str(PROJECT_ROOT / "venv"))
