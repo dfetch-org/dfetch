@@ -7,6 +7,8 @@ import subprocess  # nosec
 import venv
 from typing import Any
 
+PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
+
 
 class MyEnvBuilder(venv.EnvBuilder):
     """Create a virtual environment.
@@ -35,7 +37,9 @@ class MyEnvBuilder(venv.EnvBuilder):
         print("Upgrading pip")
         self.pip_install(context, "--upgrade", "pip")
         print("Installing package and any extra requirements")
-        self.pip_install(context, "--use-pep517", "-e", f".{self.extra_requirements}")
+        self.pip_install(
+            context, "--use-pep517", "-e", f"{PROJECT_ROOT}{self.extra_requirements}"
+        )
 
     @staticmethod
     def pip_install(context: Any, *args: Any) -> None:
@@ -59,10 +63,8 @@ if __name__ == "__main__":
     )
     ARGS = PARSER.parse_args()
 
-    project_root = pathlib.Path(__file__).resolve().parent.parent
-
     MyEnvBuilder(
         clear=False,
         with_pip=True,
         extra_requirements=ARGS.extra_requirements,
-    ).create(str(project_root / "venv"))
+    ).create(str(PROJECT_ROOT / "venv"))
