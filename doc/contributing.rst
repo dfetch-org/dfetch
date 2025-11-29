@@ -10,14 +10,14 @@ After implementing (with tests and documentation) create a PR on Github and let 
 
 Virtual Environment
 -------------------
-Create a virtual environment by double-clicking ``create_venv.py`` or by running the following command.
-This will install all ``development``, ``test`` and ``doc`` dependencies from ``pyproject.toml``, install
+Create a virtual environment by double-clicking ``script/create_venv.py`` or by running the following command.
+This will install all ``development``, ``test`` and ``docs`` dependencies from ``pyproject.toml``, install
 *DFetch* as `editable package <https://pip.pypa.io/en/stable/cli/pip_wheel/?highlight=editable#cmdoption-e>`_
 and install all runtime dependencies from ``pyproject.toml``.
 
 .. code-block:: bash
 
-    python create_venv.py
+    script/create_venv.py
 
 .. important :: *dfetch* is primarily developed with python 3.12
 
