@@ -1,13 +1,30 @@
-#!/usr/bin/env python3.12
+#!/usr/bin/env python3
 """Script to setup a venv."""
 
 import argparse
 import pathlib
 import subprocess  # nosec
+import sys
 import venv
 from typing import Any
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+
+MIN_VERSION = (3, 9)  # minimum supported; change if needed
+RECOMMENDED_VERSION = (3, 13)  # preferred for development
+
+
+if sys.version_info[:2] < MIN_VERSION:
+    raise RuntimeError(
+        f"⚠ Unsupported Python version {sys.version_info.major}.{sys.version_info.minor}. "
+        f"Please use Python {MIN_VERSION[0]}.{MIN_VERSION[1]} or newer."
+    )
+if sys.version_info[:2] != RECOMMENDED_VERSION:
+    print(
+        f"⚠ Warning: Running with Python {sys.version_info.major}.{sys.version_info.minor}, "
+        f", dfetch is primarily developed with Python {RECOMMENDED_VERSION[0]}.{RECOMMENDED_VERSION[1]}."
+    )
 
 
 class MyEnvBuilder(venv.EnvBuilder):
