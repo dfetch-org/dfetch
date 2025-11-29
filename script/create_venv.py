@@ -1,7 +1,8 @@
-#!python3.12
+#!/usr/bin/env python3.12
 """Script to setup a venv."""
 
 import argparse
+import pathlib
 import subprocess  # nosec
 import venv
 from typing import Any
@@ -54,12 +55,14 @@ class MyEnvBuilder(venv.EnvBuilder):
 if __name__ == "__main__":
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
-        "-e", "--extra_requirements", type=str, default="development,test,doc"
+        "-e", "--extra_requirements", type=str, default="development,test,docs"
     )
     ARGS = PARSER.parse_args()
+
+    project_root = pathlib.Path(__file__).resolve().parent.parent
 
     MyEnvBuilder(
         clear=False,
         with_pip=True,
         extra_requirements=ARGS.extra_requirements,
-    ).create("venv")
+    ).create(str(project_root / "venv"))
