@@ -49,7 +49,7 @@ To avoid any discussion about formatting `black <https://github.com/psf/black>`_
 Next to that `isort <https://github.com/PyCQA/isort>`_ is used for sorting the imports.
 And `doc8 <https://github.com/pycqa/doc8>`_ is used as rst linter.
 
-Run `check_quality.bat` (or GitHub will run it for you). Alternatively when using VSCode run the `Check Quality` task from the command palette.
+Run ``script/check_quality.bat`` (or GitHub will run it for you). Alternatively when using VSCode run the `Check Quality` task from the command palette.
 
 Testing
 -------
@@ -88,7 +88,7 @@ and add run the ``Feature tests (wip)`` debug configuration in VSCode.
 
 Creating documentation
 ----------------------
-Run ``create_docs.bat`` and open ``index.html`` in ``doc/_build/html`` to read it.
+Run ``script/create_docs.bat`` and open ``index.html`` in ``doc/_build/html`` to read it.
 See `This example <https://pythonhosted.org/an_example_pypi_project/sphinx.html>`_ for documenting the code.
 Alternatively in VSCode run the ``Create Docs`` task from the command palette.
 
