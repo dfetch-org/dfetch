@@ -17,9 +17,7 @@ RECOMMENDED_VERSION = (3, 13)  # preferred for development
 class MyEnvBuilder(venv.EnvBuilder):
     """Create a virtual environment.
 
-    Conditions for use:
-     + A `requirements.txt` file must exist
-     By default this is relative to the current run path, but this can be specified programmatically.
+    Optionally install extra requirements from pyproject.toml.
     """
 
     def __init__(
