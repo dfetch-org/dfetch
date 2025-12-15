@@ -42,7 +42,7 @@ class MyEnvBuilder(venv.EnvBuilder):
         self.pip_install(context, "--upgrade", "pip")
         print("Installing package and any extra requirements")
         self.pip_install(
-            context, "--use-pep517", "-e", f"{PROJECT_ROOT}{self.extra_requirements}"
+            context, "--use-pep517", "-e", f"{PROJECT_ROOT!s}{self.extra_requirements}"
         )
 
     @staticmethod
