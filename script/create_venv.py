@@ -67,12 +67,14 @@ if __name__ == "__main__":
     )
     ARGS = PARSER.parse_args()
 
-    if sys.version_info[:2] < MIN_VERSION:
+    CURRENT_VERSION = sys.version_info[:2]
+
+    if CURRENT_VERSION < MIN_VERSION:
         raise RuntimeError(
             f"⚠ Unsupported Python version {sys.version_info.major}.{sys.version_info.minor}. "
             f"Please use Python {MIN_VERSION[0]}.{MIN_VERSION[1]} or newer."
         )
-    if sys.version_info[:2] != RECOMMENDED_VERSION:
+    if CURRENT_VERSION != RECOMMENDED_VERSION:
         print(
             f"⚠ Warning: Running with Python {sys.version_info.major}.{sys.version_info.minor}, "
             f"dfetch is primarily developed with Python {RECOMMENDED_VERSION[0]}.{RECOMMENDED_VERSION[1]}."
