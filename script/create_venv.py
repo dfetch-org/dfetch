@@ -23,7 +23,7 @@ if sys.version_info[:2] < MIN_VERSION:
 if sys.version_info[:2] != RECOMMENDED_VERSION:
     print(
         f"⚠ Warning: Running with Python {sys.version_info.major}.{sys.version_info.minor}, "
-        f", dfetch is primarily developed with Python {RECOMMENDED_VERSION[0]}.{RECOMMENDED_VERSION[1]}."
+        f"dfetch is primarily developed with Python {RECOMMENDED_VERSION[0]}.{RECOMMENDED_VERSION[1]}."
     )
 
 
