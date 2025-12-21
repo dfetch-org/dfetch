@@ -46,7 +46,14 @@ See below for the version control specifics. The patch will also contain the con
    for files in the directory ``Core/MyModule/MySubmodule/`` and your current working directory is ``Core/MyModule/``.
    The correct command would be:
 
-   ``git apply --verbose --directory='Core/MyModule/MySubModule` MySubmodule.patch``
+   ``git apply --verbose --directory='Core/MyModule/MySubModule' MySubmodule.patch``
+
+Updating the patch
+======================
+If you have further changes to a project with a patch, you can update the patch by first reversing the patch, using the
+``--apply`` and ''--directory`` arguments as shown above. To reverse the patch you also require the ``-R``. This will
+return the project to the state before the patch was applied. If you commit this base project, then re-apply the patch
+ and any additional changes, you can generate a new patch with the latest state.
 
 """
 
