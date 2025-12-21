@@ -24,33 +24,30 @@ class Asciinema(nodes.General, nodes.Element):
 
 def visit_html(self, node):
     rst_to_js_option_names: dict[str, str] = {
-        "autoplay": "autoPlay",
-        "idle-time-limit": "idleTimeLimit",
         "terminalfontsize": "terminalFontSize",
-        "terminallineheight": "terminalLineHeight",
+        "terminallineheigth": "terminalLineHeigth",
         "terminalfontfamily": "terminalFontFamily",
+        "audiourl": "audioUrl",
     }
 
-    options_raw = ["markers", "loop", "autoPlay", "preload", "pauseOnMarkers", "cols", "rows", "speed"]
+    options_raw = ['markers']
 
-    for option, value in node["options"].items():
-        node["options"][option] = ASCIINemaDirective.option_spec[option](value)
-
-    gen = (
-        (rst_option_name, js_option_name)
-        for (rst_option_name, js_option_name) in rst_to_js_option_names.items()
-        if rst_option_name in node["options"]
-    )
+    gen = ((rst_option_name, js_option_name)
+           for (rst_option_name,
+                js_option_name) in rst_to_js_option_names.items()
+           if rst_option_name in node["options"])
     for rst_option_name, js_option_name in gen:
         node["options"][js_option_name] = node["options"].pop(rst_option_name)
 
     if node['type'] == 'local':
         template = """<div id="asciicast-{id}"></div>
             <script>
-                AsciinemaPlayer.create(
-                    "data:text/plain;base64,{src}",
-                    document.getElementById('asciicast-{id}'),
-                    {{{options} }});
+                document.addEventListener("DOMContentLoaded", function() {{
+                    AsciinemaPlayer.create(
+                        "data:text/plain;base64,{src}",
+                        document.getElementById('asciicast-{id}'),
+                        {{{options} }});
+                }});
             </script>"""
         option_template = '{}: "{}", '
         option_template_raw = '{}: {}, '
@@ -76,34 +73,15 @@ def depart(self, node):
     pass
 
 
-def bool_parse(argument):
-    if argument is None:
-        raise ValueError("Boolean option must have a value")
-
-    val = str(argument).strip().lower()
-
-    if val in ("true", "false"):
-        return val
-    raise ValueError("Must be boolean; True or False")
-
-
-def bool_or_positive_int(argument):
-    """Parse the option as boolean or positive integer."""
-    try:
-        return bool_parse(argument)
-    except ValueError:
-        return directives.positive_int(argument)
-
-
 class ASCIINemaDirective(SphinxDirective):
     has_content = True
     final_argument_whitespace = False
     option_spec = {
         "cols": directives.positive_int,
         "rows": directives.positive_int,
-        "autoplay": bool_parse,
-        "preload": bool_parse,
-        "loop": bool_or_positive_int,
+        "autoplay": directives.unchanged,
+        "preload": directives.unchanged,
+        "loop": directives.unchanged,
         "start-at": directives.unchanged,
         "speed": directives.unchanged,
         "idle-time-limit": directives.unchanged,
@@ -112,11 +90,12 @@ class ASCIINemaDirective(SphinxDirective):
         "fit": directives.unchanged,
         "controls": directives.unchanged,
         "markers": directives.unchanged,
-        "pauseOnMarkers": bool_parse,
+        "pauseOnMarkers": directives.unchanged,
         "terminalfontsize": directives.unchanged,
         "terminalfontfamily": directives.unchanged,
         "terminallineheight": directives.unchanged,
         "path": directives.unchanged,
+        "audiourl": directives.unchanged,
     }
     required_arguments = 1
     optional_arguments = len(option_spec)
@@ -125,16 +104,11 @@ class ASCIINemaDirective(SphinxDirective):
         arg = self.arguments[0]
         options = dict(self.env.config['sphinxcontrib_asciinema_defaults'])
         options.update(self.options)
-
-        if self.option_spec:
-            for option, value in options.items():
-                self.option_spec[option](value)
-
-        kw = {"options": options}
-        path = options.get("path", "")
-        if path and not path.endswith("/"):
-            path += "/"
-        fname = arg if arg.startswith("./") else path + arg
+        kw = {'options': options}
+        path = options.get('path', '')
+        if path and not path.endswith('/'):
+            path += '/'
+        fname = arg if arg.startswith('./') else path + arg
         if self.is_file(fname):
             kw['content'] = self.to_b64(fname)
             kw['type'] = 'local'
