@@ -27,7 +27,7 @@ def visit_html(self, node):
         "autoplay": "autoPlay",
         "idle-time-limit": "idleTimeLimit",
         "terminalfontsize": "terminalFontSize",
-        "terminallineheigth": "terminalLineHeigth",
+        "terminallineheight": "terminalLineHeight",
         "terminalfontfamily": "terminalFontFamily",
         "audiourl": "audioUrl",
     }
@@ -92,6 +92,7 @@ def depart(self, node):
 
 
 def bool_parse(argument):
+    """Parse the option as boolean."""
     if argument is None:
         raise ValueError("Boolean option must have a value")
 
@@ -141,11 +142,6 @@ class ASCIINemaDirective(SphinxDirective):
         arg = self.arguments[0]
         options = dict(self.env.config["sphinxcontrib_asciinema_defaults"])
         options.update(self.options)
-
-        if self.option_spec:
-            for option, value in options.items():
-                self.option_spec[option](value)
-
         kw = {"options": options}
         path = options.get("path", "")
         if path and not path.endswith("/"):
