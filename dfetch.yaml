@@ -20,3 +20,4 @@ manifest:
     repo-path: divi255/sphinxcontrib.asciinema.git
     dst: doc/_ext/sphinxcontrib_asciinema
     src: sphinxcontrib/asciinema
+    patch: doc/_ext/sphinxcontrib_asciinema.patch
