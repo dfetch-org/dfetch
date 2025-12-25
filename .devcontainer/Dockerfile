@@ -1,23 +1,23 @@
-FROM mcr.microsoft.com/devcontainers/python:3.13-bullseye@sha256:735ecc489de65d36b6ac4e8e5e37287cb30711bac0dd292770bf5347228c438e
+FROM mcr.microsoft.com/devcontainers/python:3.13-trixie@sha256:c3a082525f51bb81e3d952d5ec12c2bed3525179a45ef3a09d48993ebc871133
 
 # Install dependencies
 # pv is required for asciicasts
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    ccache=4.2-1 \
-    pv=1.6.6-1+b1 \
-    patchelf=0.12-1 \
-    subversion=1.14.1-3+deb11u2 && \
+    ccache=4.11.2-2 \
+    pv=1.9.31-1 \
+    patchelf=0.18.0-1.4 \
+    subversion=1.14.5-3 && \
     rm -rf /var/lib/apt/lists/*
 
 # Install ruby gem FPM for packaging
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    ruby=1:2.7+2 \
-    ruby-dev=1:2.7+2 \
-    build-essential=12.9 \
-    rpm=4.16.1.2+dfsg1-3 \
-    git=1:2.30.2-1+deb11u5 \
-    curl=7.74.0-1.3+deb11u15 \
-    ca-certificates=20210119 && \
+    ruby=1:3.3+b1 \
+    ruby-dev=1:3.3+b1 \
+    build-essential=12.12 \
+    rpm=4.20.1+dfsg-3 \
+    git=1:2.47.3-0+deb13u1 \
+    curl=8.14.1-2+deb13u2 \
+    ca-certificates=20250419 && \
     gem install --no-document fpm --version 1.17.0 && \
     rm -rf /var/lib/apt/lists/*
 
