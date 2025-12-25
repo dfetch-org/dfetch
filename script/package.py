@@ -88,6 +88,7 @@ def package_macos() -> None:
         __version__,
         "-C",
         str(BUILD_DIR),
+        # https://github.com/jordansissel/fpm/issues/1996 This prefix results in /opt/dfetch/opt/dfetch
         "--prefix",
         INSTALL_PREFIX,
         "--description",

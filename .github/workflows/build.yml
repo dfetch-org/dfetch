@@ -121,7 +121,6 @@ jobs:
       if: matrix.platform == 'macos-latest'
       run: |
         sudo installer -pkg dfetch*.pkg -target / -verboseR
-        find /opt/dfetch -type f
         echo "/opt/dfetch/opt/dfetch" >> $GITHUB_PATH
       shell: bash
 
