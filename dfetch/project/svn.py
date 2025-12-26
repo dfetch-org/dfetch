@@ -4,6 +4,7 @@ import os
 import pathlib
 import re
 import urllib.parse
+from collections.abc import Sequence
 from typing import NamedTuple, Optional
 
 from dfetch.log import get_logger
@@ -16,6 +17,7 @@ from dfetch.util.util import (
     in_directory,
     safe_rm,
 )
+from dfetch.vcs.patch import filter_patch
 
 logger = get_logger(__name__)
 
@@ -246,7 +248,7 @@ class SvnRepo(VCS):
         SvnRepo._export(complete_path, rev_arg, self.local_path)
 
         if file_pattern:
-            for file in find_non_matching_files(self.local_path, file_pattern):
+            for file in find_non_matching_files(self.local_path, (file_pattern,)):
                 os.remove(file)
             if not os.listdir(self.local_path):
                 logger.warning(
@@ -366,13 +368,18 @@ class SvnRepo(VCS):
         """Get the current revision of the repo."""
         return self._get_last_changed_revision(self.local_path)
 
-    def get_diff(self, old_revision: str, new_revision: Optional[str]) -> str:
+    def get_diff(
+        self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
+    ) -> str:
         """Get the diff between two revisions."""
-        cmd = f"svn diff {self.local_path} -r {old_revision}"
+        cmd = ["svn", "diff", "--non-interactive", ".", "-r", old_revision]
         if new_revision:
-            cmd += f":{new_revision}"
+            cmd[-1] += f":{new_revision}"
 
-        return "\n".join(run_on_cmdline(logger, cmd).stdout.decode().splitlines())
+        with in_directory(self.local_path):
+            patch_text = run_on_cmdline(logger, cmd).stdout
+
+        return filter_patch(patch_text, ignore)
 
     def get_default_branch(self) -> str:
         """Get the default branch of this repository."""
