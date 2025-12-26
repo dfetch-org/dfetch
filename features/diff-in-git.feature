@@ -21,7 +21,7 @@ Feature: Diff in git
             An important sentence for the README!
             """
         When I run "dfetch diff SomeProject"
-        Then the patch file 'MyProject/SomeProject.patch' is generated with
+        Then the patch file 'MyProject/SomeProject.patch' is generated
             """
             diff --git a/README.md b/README.md
             index 1e65bd6..faa3b21 100644
@@ -40,7 +40,7 @@ Feature: Diff in git
             """
         And "SomeProject/IGNORE_ME.tmp" in MyProject is created
         When I run "dfetch diff SomeProject"
-        Then the patch file 'MyProject/SomeProject.patch' is generated with
+        Then the patch file 'MyProject/SomeProject.patch' is generated
             """
             diff --git a/NEWFILE.md b/NEWFILE.md
             new file mode 100644
@@ -65,7 +65,7 @@ Feature: Diff in git
             An important sentence for the README!
             """
         When I run "dfetch diff SomeProject"
-        Then the patch file 'MyProject/SomeProject.patch' is generated with
+        Then the patch file 'MyProject/SomeProject.patch' is generated
             """
             diff --git a/README.md b/README.md
             index 1e65bd6..faa3b21 100644
