@@ -17,7 +17,11 @@ from dfetch.util.util import (
     in_directory,
     safe_rm,
 )
-from dfetch.vcs.patch import filter_patch
+from dfetch.vcs.patch import (
+    combine_patches,
+    create_svn_patch_for_new_file,
+    filter_patch,
+)
 
 logger = get_logger(__name__)
 
@@ -372,15 +376,57 @@ class SvnRepo(VCS):
         self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
     ) -> str:
         """Get the diff between two revisions."""
-        cmd = ["svn", "diff", "--non-interactive", ".", "-r", old_revision]
+        cmd = [
+            "svn",
+            "diff",
+            "--non-interactive",
+            "--ignore-properties",
+            ".",
+            "-r",
+            old_revision,
+        ]
         if new_revision:
             cmd[-1] += f":{new_revision}"
 
         with in_directory(self.local_path):
             patch_text = run_on_cmdline(logger, cmd).stdout
 
-        return filter_patch(patch_text, ignore)
+        filtered = filter_patch(patch_text, ignore)
+
+        if new_revision:
+            return filtered
+
+        patches: list[bytes] = [filtered.encode("utf-8")] if filtered else []
+        with in_directory(self.local_path):
+            for file_path in self._untracked_files(".", ignore):
+                patch = create_svn_patch_for_new_file(file_path)
+                if patch:
+                    patches.append(patch.encode("utf-8"))
+
+        return combine_patches(patches)
 
     def get_default_branch(self) -> str:
         """Get the default branch of this repository."""
         return self.DEFAULT_BRANCH
+
+    @staticmethod
+    def _untracked_files(path: str, ignore: Sequence[str]) -> list[str]:
+        """Get list of untracked files in the working copy."""
+        result = (
+            run_on_cmdline(
+                logger,
+                ["svn", "status", path],
+            )
+            .stdout.decode()
+            .splitlines()
+        )
+
+        files = []
+        for line in result:
+            if line.startswith("?"):
+                files.append(line[1:].strip())
+                for pattern in ignore:
+                    if pathlib.Path(line[1:].strip()).match(pattern):
+                        files.pop()
+                        break
+        return files

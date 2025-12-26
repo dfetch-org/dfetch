@@ -5,12 +5,13 @@ import re
 import shutil
 import tempfile
 from collections.abc import Generator, Sequence
-from pathlib import PurePath
+from pathlib import Path, PurePath
 from typing import NamedTuple, Optional
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import in_directory, safe_rmtree
+from dfetch.vcs.patch import create_git_patch_for_new_file
 
 logger = get_logger(__name__)
 
@@ -315,7 +316,10 @@ class GitLocalRepo:
         return decoded_result
 
     def create_diff(
-        self, old_hash: str, new_hash: Optional[str], ignore: Sequence[str]
+        self,
+        old_hash: Optional[str],
+        new_hash: Optional[str],
+        ignore: Optional[Sequence[str]] = None,
     ) -> str:
         """Generate a relative diff patch."""
         with in_directory(self._path):
@@ -326,18 +330,44 @@ class GitLocalRepo:
                 "--binary",  # Add binary content
                 "--no-ext-diff",  # Don't allow external diff tools
                 "--no-color",
-                old_hash,
             ]
-            if new_hash:
-                cmd.append(new_hash)
+            if old_hash:
+                cmd.append(old_hash)
+                if new_hash:
+                    cmd.append(new_hash)
 
             if ignore:
                 cmd.extend(["--", "."])
+                ignore = ignore or []
                 for ignore_path in ignore:
                     cmd.append(f":(exclude){ignore_path}")
             result = run_on_cmdline(logger, cmd)
 
         return str(result.stdout.decode())
+
+    def untracked_files_patch(self, ignore: Optional[Sequence[str]] = None) -> str:
+        """Create a diff for untracked files."""
+        with in_directory(self._path):
+            untracked_files = (
+                run_on_cmdline(
+                    logger, ["git", "ls-files", "--others", "--exclude-standard"]
+                )
+                .stdout.decode()
+                .splitlines()
+            )
+
+            if ignore:
+                untracked_files = [
+                    file_path
+                    for file_path in untracked_files
+                    if not any(Path(file_path).match(pattern) for pattern in ignore)
+                ]
+
+            if untracked_files:
+                return "\n".join(
+                    [create_git_patch_for_new_file(file) for file in untracked_files]
+                )
+            return ""
 
     @staticmethod
     def submodules() -> list[Submodule]:

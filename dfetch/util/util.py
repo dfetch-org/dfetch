@@ -107,7 +107,7 @@ def find_file(name: str, path: str = ".") -> list[str]:
 
 def hash_directory(path: str, skiplist: Optional[list[str]]) -> str:
     """Hash a directory with all its files."""
-    digest = hashlib.md5()  # nosec
+    digest = hashlib.md5(usedforsecurity=False)
     skiplist = skiplist or []
 
     for root, _, files in os.walk(path):
@@ -116,7 +116,9 @@ def hash_directory(path: str, skiplist: Optional[list[str]]) -> str:
                 file_path = os.path.join(root, name)
 
                 # Hash the path and add to the digest to account for empty files/directories
-                digest.update(hashlib.md5(name.encode()).digest())  # nosec
+                digest.update(
+                    hashlib.md5(name.encode(), usedforsecurity=False).digest()
+                )
                 digest = hash_file(file_path, digest)
 
     return digest.hexdigest()
