@@ -198,6 +198,12 @@ def step_impl(_, name):
     check_file_exists(name)
 
 
+@then("the patch file '{name}' is generated with")
+def step_impl(context, name):
+    """Check a manifest."""
+    check_file(name, context.text)
+
+
 @then("the '{name}' file contains")
 def step_impl(context, name):
     if name.endswith(".json"):

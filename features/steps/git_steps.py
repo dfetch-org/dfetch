@@ -151,6 +151,13 @@ def step_impl(context, directory, path):
         commit_all("A change")
 
 
+@given('"{path}" in {directory} is created and committed with')
+def step_impl(context, directory, path):
+    with in_directory(directory):
+        generate_file(path, context.text)
+        commit_all("A change")
+
+
 @given("MyProject with applied patch 'diff.patch'")
 def step_impl(context):
     manifest = """

@@ -21,7 +21,7 @@ Feature: Diff in git
             An important sentence for the README!
             """
         When I run "dfetch diff SomeProject"
-        Then the patch file 'MyProject/SomeProject.patch' is generated
+        Then the patch file 'MyProject/SomeProject.patch' is generated with
             """
             diff --git a/README.md b/README.md
             index 1e65bd6..faa3b21 100644
@@ -30,6 +30,23 @@ Feature: Diff in git
             @@ -1 +1,2 @@
             Generated file for SomeProject.git
             +An important sentence for the README!
+            """
+
+    Scenario: New files are part of the patch
+        Given "SomeProject/NEWFILE.md" in MyProject is created and committed with
+            """
+            A completely new untracked file.
+            """
+        When I run "dfetch diff SomeProject"
+        Then the patch file 'MyProject/SomeProject.patch' is generated with
+            """
+            diff --git a/NEWFILE.md b/NEWFILE.md
+            new file mode 100644
+            index 0000000..9a3c71c
+            --- /dev/null
+            +++ b/NEWFILE.md
+            @@ -0,0 +1 @@
+            +A completely new untracked file.
             """
 
     Scenario: No change is present
@@ -46,7 +63,7 @@ Feature: Diff in git
             An important sentence for the README!
             """
         When I run "dfetch diff SomeProject"
-        Then the patch file 'MyProject/SomeProject.patch' is generated
+        Then the patch file 'MyProject/SomeProject.patch' is generated with
             """
             diff --git a/README.md b/README.md
             index 1e65bd6..faa3b21 100644
