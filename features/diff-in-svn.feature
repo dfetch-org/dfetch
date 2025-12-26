@@ -41,7 +41,7 @@ Feature: Diff in svn
             """
         And "SomeProject/IGNORE_ME.tmp" in MySvnProject is created
         When I run "dfetch diff SomeProject" in MySvnProject
-        Then the patch file 'MySvnProject/SomeProject.patch' is generated with
+        Then the patch file 'MySvnProject/SomeProject.patch' is generated
             """
             Index: SomeProject/NEWFILE.md
             ===================================================================
