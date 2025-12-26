@@ -162,6 +162,13 @@ def step_impl(_, metadata_file, project_path):
     )
 
 
+@given('the metadata file "{metadata_file}" of "{project_path}" is changed')
+def step_impl(_, metadata_file, project_path):
+    extend_file(
+        os.path.join(os.getcwd(), project_path, metadata_file), "# Some comment"
+    )
+
+
 @given("all projects are updated in {path}")
 @given("all projects are updated")
 def step_impl(context, path=None):

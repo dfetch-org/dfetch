@@ -75,3 +75,12 @@ Feature: Diff in git
             Generated file for SomeProject.git
             +An important sentence for the README!
             """
+
+    Scenario: Metadata is not part of diff
+        Given the metadata file ".dfetch_data.yaml" of "MyProject/SomeProject" is changed
+        When I run "dfetch diff SomeProject"
+        Then the output shows
+        """
+        Dfetch (0.10.0)
+          SomeProject         : No diffs found since 59efb91396fd369eb113b43382783294dc8ed6d2
+        """

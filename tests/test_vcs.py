@@ -49,7 +49,7 @@ class ConcreteVCS(VCS):
     def metadata_revision(self):
         return "1"
 
-    def get_diff(self, old_revision, new_revision):
+    def get_diff(self, old_revision, new_revision, ignore):
         return ""
 
     def get_default_branch(self):

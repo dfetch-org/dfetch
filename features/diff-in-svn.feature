@@ -21,14 +21,14 @@ Feature: Diff in svn
             """
             An important sentence for the README!
             """
-        When I run "dfetch diff SomeProject" in MySvnProject
+        When I run "dfetch -v diff SomeProject" in MySvnProject
         Then the patch file 'MySvnProject/SomeProject.patch' is generated
             """
-            Index: SomeProject/README.md
+            Index: README.md
             ===================================================================
-            --- SomeProject/README.md	(revision 1)
-            +++ SomeProject/README.md	(working copy)
-            @@ -1 +1,2 @@
+            --- README.md
+            +++ README.md
+            @@ -1,1 +1,2 @@
              some content
             +An important sentence for the README!
             """
@@ -43,11 +43,11 @@ Feature: Diff in svn
         When I run "dfetch diff SomeProject" in MySvnProject
         Then the patch file 'MySvnProject/SomeProject.patch' is generated
             """
-            Index: SomeProject/NEWFILE.md
+            Index: NEWFILE.md
             ===================================================================
-            --- SomeProject/NEWFILE.md	(nonexistent)
-            +++ SomeProject/NEWFILE.md	(revision 2)
-            @@ -0,0 +1 @@
+            --- NEWFILE.md
+            +++ NEWFILE.md
+            @@ -0,0 +1,1 @@
             +A completely new untracked file.
             """
 
@@ -67,11 +67,20 @@ Feature: Diff in svn
         When I run "dfetch diff SomeProject" in MySvnProject
         Then the patch file 'MySvnProject/SomeProject.patch' is generated
             """
-            Index: SomeProject/README.md
+            Index: README.md
             ===================================================================
-            --- SomeProject/README.md	(revision 1)
-            +++ SomeProject/README.md	(working copy)
-            @@ -1 +1,2 @@
+            --- README.md
+            +++ README.md
+            @@ -1,1 +1,2 @@
              some content
             +An important sentence for the README!
             """
+
+    Scenario: Metadata is not part of diff
+        Given the metadata file ".dfetch_data.yaml" of "MySvnProject/SomeProject" is changed
+        When I run "dfetch diff SomeProject"
+        Then the output shows
+        """
+        Dfetch (0.10.0)
+          SomeProject         : No diffs found since 1
+        """

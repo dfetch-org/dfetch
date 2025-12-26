@@ -15,6 +15,8 @@ Release 0.11.0 (unreleased)
 * Handle SVN tags with special characters (#811)
 * Don't return non-zero exit code if tool not found during environment (#701)
 * Create standalone binaries for Linux, Mac & Windows (#705)
+* Don't make metadata file part of diff (#267)
+* Fix unneeded project prefix in SVN diffs (#886)
 
 Release 0.10.0 (released 2025-03-12)
 ====================================
