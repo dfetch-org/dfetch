@@ -21,7 +21,7 @@ Feature: Diff in svn
             """
             An important sentence for the README!
             """
-        When I run "dfetch -v diff SomeProject" in MySvnProject
+        When I run "dfetch diff SomeProject" in MySvnProject
         Then the patch file 'MySvnProject/SomeProject.patch' is generated
             """
             Index: README.md
@@ -34,11 +34,12 @@ Feature: Diff in svn
             """
 
     Scenario: New files are part of the patch
-        Given files as '*.tmp' are ignored in 'SomeProject' in svn
+        Given files as '*.tmp' are ignored in 'MySvnProject/SomeProject' in svn
         And "SomeProject/NEWFILE.md" in MySvnProject is changed, added and committed with
             """
-            A completely new untracked file.
+            A completely new tracked file.
             """
+        And "SomeProject/NEW_UNCOMMITTED_FILE.md" in MySvnProject is created
         And "SomeProject/IGNORE_ME.tmp" in MySvnProject is created
         When I run "dfetch diff SomeProject" in MySvnProject
         Then the patch file 'MySvnProject/SomeProject.patch' is generated
@@ -48,7 +49,13 @@ Feature: Diff in svn
             --- NEWFILE.md
             +++ NEWFILE.md
             @@ -0,0 +1,1 @@
-            +A completely new untracked file.
+            +A completely new tracked file.
+            Index: NEW_UNCOMMITTED_FILE.md
+            ===================================================================
+            --- /dev/null
+            +++ NEW_UNCOMMITTED_FILE.md
+            @@ -0,0 +1,1 @@
+            +Some content
             """
 
     Scenario: No change is present
@@ -78,7 +85,7 @@ Feature: Diff in svn
 
     Scenario: Metadata is not part of diff
         Given the metadata file ".dfetch_data.yaml" of "MySvnProject/SomeProject" is changed
-        When I run "dfetch diff SomeProject"
+        When I run "dfetch diff SomeProject" in MySvnProject
         Then the output shows
         """
         Dfetch (0.10.0)

@@ -123,7 +123,7 @@ def step_impl(context):
 def step_impl(context, directory, path):
     with in_directory(directory):
         extend_file(path, context.text)
-        add_and_commit("A change")
+        add_and_commit(f"Added {path} to {directory}")
 
 
 @given("files as '{pattern}' are ignored in '{directory}' in svn")
