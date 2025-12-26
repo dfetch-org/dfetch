@@ -33,6 +33,22 @@ Feature: Diff in svn
             +An important sentence for the README!
             """
 
+    Scenario: New files are part of the patch
+        Given "SomeProject/NEWFILE.md" in MySvnProject is changed, added and committed with
+            """
+            A completely new untracked file.
+            """
+        When I run "dfetch diff SomeProject" in MySvnProject
+        Then the patch file 'MySvnProject/SomeProject.patch' is generated with
+            """
+            Index: SomeProject/NEWFILE.md
+            ===================================================================
+            --- SomeProject/NEWFILE.md	(nonexistent)
+            +++ SomeProject/NEWFILE.md	(revision 2)
+            @@ -0,0 +1 @@
+            +A completely new untracked file.
+            """
+
     Scenario: No change is present
         When I run "dfetch diff SomeProject" in MySvnProject
         Then the output shows
