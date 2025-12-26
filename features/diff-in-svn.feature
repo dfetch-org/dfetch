@@ -34,10 +34,12 @@ Feature: Diff in svn
             """
 
     Scenario: New files are part of the patch
-        Given "SomeProject/NEWFILE.md" in MySvnProject is changed, added and committed with
+        Given files as '*.tmp' are ignored in 'SomeProject' in svn
+        And "SomeProject/NEWFILE.md" in MySvnProject is changed, added and committed with
             """
             A completely new untracked file.
             """
+        And "SomeProject/IGNORE_ME.tmp" in MySvnProject is created
         When I run "dfetch diff SomeProject" in MySvnProject
         Then the patch file 'MySvnProject/SomeProject.patch' is generated with
             """

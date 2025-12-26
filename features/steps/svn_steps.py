@@ -36,11 +36,13 @@ def create_stdlayout():
 
 
 def add_and_commit(msg):
+    subprocess.check_call(["svn", "update", "."])
     subprocess.check_call(["svn", "add", "--force", "."])
     subprocess.check_call(["svn", "ci", "-m", f'"{msg}"'])
 
 
 def commit_all(msg):
+    subprocess.check_call(["svn", "update", "."])
     subprocess.check_call(["svn", "commit", "--depth", "empty", ".", "-m", f'"{msg}"'])
 
 
@@ -122,3 +124,10 @@ def step_impl(context, directory, path):
     with in_directory(directory):
         extend_file(path, context.text)
         add_and_commit("A change")
+
+
+@given("files as '{pattern}' are ignored in '{directory}' in svn")
+def step_impl(_, pattern, directory):
+    with in_directory(directory):
+        subprocess.check_call(["svn", "propset", "svn:ignore", pattern, "."])
+        commit_all(f"Ignore {pattern} files")
