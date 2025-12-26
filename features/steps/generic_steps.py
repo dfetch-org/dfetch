@@ -199,15 +199,12 @@ def step_impl(context, name):
 
 
 @then("the patch file '{name}' is generated")
-def step_impl(_, name):
-    """Check a manifest."""
-    check_file_exists(name)
-
-
-@then("the patch file '{name}' is generated with")
 def step_impl(context, name):
-    """Check a manifest."""
-    check_file(name, context.text)
+    """Check a patch file."""
+    if context.text:
+        check_file(name, context.text)
+    else:
+        check_file_exists(name)
 
 
 @then("the '{name}' file contains")
