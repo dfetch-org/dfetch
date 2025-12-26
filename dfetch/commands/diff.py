@@ -194,9 +194,10 @@ def _dump_patch(
 ) -> None:
     """Dump the patch to a file."""
     if patch:
+        rev_range = f"from {revs[0]} to {revs[1]}" if revs[1] else f"since {revs[0]}"
         logger.print_info_line(
             project.name,
-            f"Generating patch {patch_name} from {revs[0]} to {revs[1]} in {os.path.dirname(path)}",
+            f"Generating patch {patch_name} {rev_range} in {os.path.dirname(path)}",
         )
         with open(patch_name, "w", encoding="UTF-8") as patch_file:
             patch_file.write(patch)
