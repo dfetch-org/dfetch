@@ -149,6 +149,12 @@ def step_impl(context, name):
     generate_file(os.path.join(os.getcwd(), name), context.text)
 
 
+@given('"{path}" in {directory} is created')
+def step_impl(context, directory, path):
+    with in_directory(directory):
+        generate_file(path, context.text or "Some content")
+
+
 @given('the metadata file "{metadata_file}" of "{project_path}" is corrupt')
 def step_impl(_, metadata_file, project_path):
     generate_file(
