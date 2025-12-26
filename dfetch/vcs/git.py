@@ -314,7 +314,9 @@ class GitLocalRepo:
 
         return decoded_result
 
-    def create_diff(self, old_hash: str, new_hash: Optional[str]) -> str:
+    def create_diff(
+        self, old_hash: str, new_hash: Optional[str], ignore: Sequence[str]
+    ) -> str:
         """Generate a relative diff patch."""
         with in_directory(self._path):
             cmd = [
@@ -328,6 +330,11 @@ class GitLocalRepo:
             ]
             if new_hash:
                 cmd.append(new_hash)
+
+            if ignore:
+                cmd.extend(["--", "."])
+                for ignore_path in ignore:
+                    cmd.append(f":(exclude){ignore_path}")
             result = run_on_cmdline(logger, cmd)
 
         return str(result.stdout.decode())

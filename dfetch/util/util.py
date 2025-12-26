@@ -21,11 +21,11 @@ def _remove_readonly(func: Any, path: str, _: Any) -> None:
         raise  # pylint: disable=misplaced-bare-raise
 
 
-def find_non_matching_files(directory: str, pattern: str) -> Iterator[str]:
-    """Find files NOT matching the given pattern."""
+def find_non_matching_files(directory: str, patterns: Sequence[str]) -> Iterator[str]:
+    """Find files NOT matching the given patterns."""
     for root, _, files in os.walk(directory):
         for basename in files:
-            if not fnmatch.fnmatch(basename, pattern):
+            if not any(fnmatch.fnmatch(basename, pattern) for pattern in patterns):
                 yield os.path.join(root, basename)
 
 
