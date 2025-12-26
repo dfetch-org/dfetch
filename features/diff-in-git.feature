@@ -33,10 +33,12 @@ Feature: Diff in git
             """
 
     Scenario: New files are part of the patch
-        Given "SomeProject/NEWFILE.md" in MyProject is created and committed with
+        Given files as '*.tmp' are ignored in git
+        And "SomeProject/NEWFILE.md" in MyProject is created and committed with
             """
             A completely new untracked file.
             """
+        And "SomeProject/IGNORE_ME.tmp" in MyProject is created
         When I run "dfetch diff SomeProject"
         Then the patch file 'MyProject/SomeProject.patch' is generated with
             """

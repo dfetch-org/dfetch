@@ -138,6 +138,12 @@ def step_impl(context):
         commit_all("Initial commit")
 
 
+@given("files as '{pattern}' are ignored in git")
+def step_impl(_, pattern):
+    generate_file(os.path.join(os.getcwd(), ".gitignore"), pattern)
+    commit_all(f"Ignore {pattern}")
+
+
 @given('"{path}" in {directory} is changed with')
 def step_impl(context, directory, path):
     with in_directory(directory):
