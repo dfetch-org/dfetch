@@ -4,12 +4,13 @@ Feature: Importing externals from an existing svn repository
     as easy as possible, a user should be able to generate a manifest that
     is filled with the externals and their pinned versions.
 
+    @remote-svn
     Scenario: Multiple externals are imported
         Given a svn repo with the following externals
-            | path           | url                                               | revision       |
-            | ext/test-repo1 | https://github.com/dfetch-org/test-repo/trunk     | 1              |
-            | ext/test-repo2 | https://github.com/dfetch-org/test-repo/tags/v2.0 |                |
-            | ext/test-repo3 | https://github.com/dfetch-org/test-repo           |                |
+            | path       | url                                                       | revision       |
+            | ext/cunit1 | https://svn.code.sf.net/p/cunit/code/trunk/Man            | 170            |
+            | ext/cunit2 | https://svn.code.sf.net/p/cunit/code/branches/mingw64/Man | 150            |
+            | ext/cunit3 | https://svn.code.sf.net/p/cunit/code                      |                |
         When I run "dfetch import"
         Then it should generate the manifest 'dfetch.yaml'
             """
@@ -17,23 +18,26 @@ Feature: Importing externals from an existing svn repository
                 version: '0.0'
 
                 remotes:
-                - name: github-com-dfetch-org
-                  url-base: https://github.com/dfetch-org
+                - name: svn-code-sf-net-p-cunit
+                  url-base: https://svn.code.sf.net/p/cunit
 
                 projects:
-                - name: ext/test-repo1
-                  revision: '1'
-                  dst: ./ext/test-repo1
-                  repo-path: test-repo
+                - name: ext/cunit1
+                  revision: '170'
+                  src: Man
+                  dst: ./ext/cunit1
+                  repo-path: code
 
-                - name: ext/test-repo2
-                  dst: ./ext/test-repo2
-                  tag: v2.0
-                  repo-path: test-repo
+                - name: ext/cunit2
+                  revision: '150'
+                  src: Man
+                  dst: ./ext/cunit2
+                  branch: mingw64
+                  repo-path: code
 
-                - name: ext/test-repo3
-                  dst: ./ext/test-repo3
+                - name: ext/cunit3
+                  dst: ./ext/cunit3
                   branch: ' '
-                  repo-path: test-repo
+                  repo-path: code
 
             """
