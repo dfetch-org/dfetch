@@ -57,6 +57,11 @@ def increase_verbosity() -> None:
     coloredlogs.increase_verbosity()
 
 
+def set_level(level: str) -> None:
+    """Set the level of the logger."""
+    coloredlogs.set_level(level)
+
+
 def get_logger(name: str) -> DLogger:
     """Get logger for a module."""
     logging.setLoggerClass(DLogger)
