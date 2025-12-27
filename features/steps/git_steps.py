@@ -7,7 +7,7 @@ import os
 import pathlib
 import subprocess
 
-from behave import given  # pylint: disable=no-name-in-module
+from behave import given, when  # pylint: disable=no-name-in-module
 
 from dfetch.util.util import in_directory
 from features.steps.generic_steps import call_command, extend_file, generate_file
@@ -138,6 +138,15 @@ def step_impl(context):
         commit_all("Initial commit")
 
 
+@given('a local git repo "{directory}" with the manifest')
+def step_impl(context, directory):
+    pathlib.Path(directory).mkdir(parents=True, exist_ok=True)
+    with in_directory(directory):
+        create_repo()
+        generate_manifest(context)
+        commit_all("Initial commit")
+
+
 @given("files as '{pattern}' are ignored in git in {directory}")
 def step_impl(_, pattern, directory):
     with in_directory(directory):
@@ -155,6 +164,12 @@ def step_impl(context, directory, path):
 def step_impl(context, directory, path):
     with in_directory(directory):
         extend_file(path, context.text)
+        commit_all("A change")
+
+
+@when("all files in {directory} are committed")
+def step_impl(_, directory):
+    with in_directory(directory):
         commit_all("A change")
 
 
