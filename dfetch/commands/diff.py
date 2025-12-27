@@ -184,7 +184,9 @@ def _diff_from_repo(repo: VCS, project: ProjectEntry, revs: list[str]) -> str:
     if len(revs) == 1:
         revs.append("")
 
-    return repo.get_diff(*revs)
+    return repo.get_diff(
+        old_revision=revs[0], new_revision=revs[1], ignore=(Metadata.FILENAME,)
+    )
 
 
 def _dump_patch(
