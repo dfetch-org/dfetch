@@ -150,7 +150,8 @@ def step_impl(context, name):
 
 
 @given('"{path}" in {directory} is created')
-def step_impl(context, directory, path):
+@when('"{path}" in {directory} is created')
+def step_impl(context, path, directory="."):
     with in_directory(directory):
         generate_file(path, context.text or "Some content")
 
