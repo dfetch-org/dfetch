@@ -1,6 +1,6 @@
 Feature: Basic patch journey
 
-    The main user journey is for patching is:
+    The main user journey for patching is:
     - Adding a project to a manifest
     - Fetching the new project and committing it.
     - Changing files in the fetched project.
