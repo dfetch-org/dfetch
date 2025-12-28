@@ -338,7 +338,6 @@ class GitLocalRepo:
 
             if ignore:
                 cmd.extend(["--", "."])
-                ignore = ignore or []
                 for ignore_path in ignore:
                     cmd.append(f":(exclude){ignore_path}")
             result = run_on_cmdline(logger, cmd)

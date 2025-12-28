@@ -424,9 +424,9 @@ class SvnRepo(VCS):
         files = []
         for line in result:
             if line.startswith("?"):
-                files.append(line[1:].strip())
-                for pattern in ignore:
-                    if pathlib.Path(line[1:].strip()).match(pattern):
-                        files.pop()
-                        break
+                file_path = line[1:].strip()
+                if not any(
+                    pathlib.Path(file_path).match(pattern) for pattern in ignore
+                ):
+                    files.append(file_path)
         return files
