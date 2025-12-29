@@ -20,7 +20,7 @@ A project name **must** be unique and each manifest must have at least one proje
 
 Revision/Branch/Tag
 ###################
-When no version is provided the latest version of the default branch (e.g. `trunk`, `master`) of
+When no version is provided the latest version of the default branch (e.g. `trunk`, `master`, `main`) of
 a project will be chosen. Since we want more control on what project is retrieved the
 ``revision:``, ``branch:`` and ``tag:`` attributes can help.
 Below manifest will download tag ``v1.13`` of ``mymodule``.
