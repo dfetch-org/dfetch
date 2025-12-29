@@ -35,6 +35,7 @@
    contributing
    changelog
    alternatives
+   examples
    legal
    internal
 
