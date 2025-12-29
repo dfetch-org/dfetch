@@ -162,8 +162,10 @@ version.
 
   dfetch diff
 
-This patch file can now be applied automatically by *Dfetch* in next updates.
-Add it to your manifest as shown below.
+A patch file ``ext-test-repo-tag.patch`` is created in the current folder. You can
+place it anywhere you want, as long as it is reachable when running *Dfetch*.
+For this example we keep it in the current folder. This patch file can now be applied
+automatically by *Dfetch* in next updates. Add it to your manifest as shown below.
 
 .. code-block:: yaml
 
