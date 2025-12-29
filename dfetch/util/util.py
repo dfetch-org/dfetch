@@ -21,11 +21,11 @@ def _remove_readonly(func: Any, path: str, _: Any) -> None:
         raise  # pylint: disable=misplaced-bare-raise
 
 
-def find_non_matching_files(directory: str, pattern: str) -> Iterator[str]:
-    """Find files NOT matching the given pattern."""
+def find_non_matching_files(directory: str, patterns: Sequence[str]) -> Iterator[str]:
+    """Find files NOT matching the given patterns."""
     for root, _, files in os.walk(directory):
         for basename in files:
-            if not fnmatch.fnmatch(basename, pattern):
+            if not any(fnmatch.fnmatch(basename, pattern) for pattern in patterns):
                 yield os.path.join(root, basename)
 
 
@@ -107,7 +107,7 @@ def find_file(name: str, path: str = ".") -> list[str]:
 
 def hash_directory(path: str, skiplist: Optional[list[str]]) -> str:
     """Hash a directory with all its files."""
-    digest = hashlib.md5()  # nosec
+    digest = hashlib.md5(usedforsecurity=False)
     skiplist = skiplist or []
 
     for root, _, files in os.walk(path):
@@ -116,7 +116,9 @@ def hash_directory(path: str, skiplist: Optional[list[str]]) -> str:
                 file_path = os.path.join(root, name)
 
                 # Hash the path and add to the digest to account for empty files/directories
-                digest.update(hashlib.md5(name.encode()).digest())  # nosec
+                digest.update(
+                    hashlib.md5(name.encode(), usedforsecurity=False).digest()
+                )
                 digest = hash_file(file_path, digest)
 
     return digest.hexdigest()

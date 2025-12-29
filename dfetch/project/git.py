@@ -2,6 +2,7 @@
 
 import os
 import pathlib
+from collections.abc import Sequence
 from functools import lru_cache
 from typing import Optional
 
@@ -50,9 +51,27 @@ class GitRepo(VCS):
         """Get the revision of the metadata file."""
         return str(self._local_repo.get_current_hash())
 
-    def get_diff(self, old_revision: str, new_revision: Optional[str]) -> str:
+    def get_diff(
+        self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
+    ) -> str:
         """Get the diff of two revisions."""
-        return str(self._local_repo.create_diff(old_revision, new_revision))
+        diff_since_revision = str(
+            self._local_repo.create_diff(old_revision, new_revision, ignore)
+        )
+
+        if new_revision:
+            return diff_since_revision
+
+        combined_diff = []
+
+        if diff_since_revision:
+            combined_diff += [diff_since_revision]
+
+        untracked_files_patch = str(self._local_repo.untracked_files_patch(ignore))
+        if untracked_files_patch:
+            combined_diff += [untracked_files_patch]
+
+        return "\n".join(combined_diff)
 
     @staticmethod
     def revision_is_enough() -> bool:

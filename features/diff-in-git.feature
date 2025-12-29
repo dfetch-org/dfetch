@@ -32,6 +32,35 @@ Feature: Diff in git
             +An important sentence for the README!
             """
 
+    Scenario: New files are part of the patch
+        Given files as '*.tmp' are ignored in git in MyProject
+        And "SomeProject/NEWFILE.md" in MyProject is created and committed with
+            """
+            A completely new tracked file.
+            """
+        And "SomeProject/NEW_UNCOMMITTED_FILE.md" in MyProject is created
+        And "SomeProject/IGNORE_ME.tmp" in MyProject is created
+        When I run "dfetch diff SomeProject"
+        Then the patch file 'MyProject/SomeProject.patch' is generated
+            """
+            diff --git a/NEWFILE.md b/NEWFILE.md
+            new file mode 100644
+            index 0000000..a2d8605
+            --- /dev/null
+            +++ b/NEWFILE.md
+            @@ -0,0 +1 @@
+            +A completely new tracked file.
+
+            diff --git a/NEW_UNCOMMITTED_FILE.md b/NEW_UNCOMMITTED_FILE.md
+            new file mode 100644
+            index 0000000..0ee3895
+            --- /dev/null
+            +++ NEW_UNCOMMITTED_FILE.md
+            @@ -0,0 +1 @@
+            +Some content
+
+            """
+
     Scenario: No change is present
         When I run "dfetch diff SomeProject"
         Then the output shows
@@ -56,3 +85,12 @@ Feature: Diff in git
             Generated file for SomeProject.git
             +An important sentence for the README!
             """
+
+    Scenario: Metadata is not part of diff
+        Given the metadata file ".dfetch_data.yaml" of "MyProject/SomeProject" is changed
+        When I run "dfetch diff SomeProject"
+        Then the output shows
+        """
+        Dfetch (0.10.0)
+          SomeProject         : No diffs found since 59efb91396fd369eb113b43382783294dc8ed6d2
+        """

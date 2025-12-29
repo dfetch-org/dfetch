@@ -24,13 +24,38 @@ Feature: Diff in svn
         When I run "dfetch diff SomeProject" in MySvnProject
         Then the patch file 'MySvnProject/SomeProject.patch' is generated
             """
-            Index: SomeProject/README.md
+            Index: README.md
             ===================================================================
-            --- SomeProject/README.md	(revision 1)
-            +++ SomeProject/README.md	(working copy)
-            @@ -1 +1,2 @@
+            --- README.md
+            +++ README.md
+            @@ -1,1 +1,2 @@
              some content
             +An important sentence for the README!
+            """
+
+    Scenario: New files are part of the patch
+        Given files as '*.tmp' are ignored in 'MySvnProject/SomeProject' in svn
+        And "SomeProject/NEWFILE.md" in MySvnProject is changed, added and committed with
+            """
+            A completely new tracked file.
+            """
+        And "SomeProject/NEW_UNCOMMITTED_FILE.md" in MySvnProject is created
+        And "SomeProject/IGNORE_ME.tmp" in MySvnProject is created
+        When I run "dfetch diff SomeProject" in MySvnProject
+        Then the patch file 'MySvnProject/SomeProject.patch' is generated
+            """
+            Index: NEWFILE.md
+            ===================================================================
+            --- NEWFILE.md
+            +++ NEWFILE.md
+            @@ -0,0 +1,1 @@
+            +A completely new tracked file.
+            Index: NEW_UNCOMMITTED_FILE.md
+            ===================================================================
+            --- /dev/null
+            +++ NEW_UNCOMMITTED_FILE.md
+            @@ -0,0 +1,1 @@
+            +Some content
             """
 
     Scenario: No change is present
@@ -49,11 +74,20 @@ Feature: Diff in svn
         When I run "dfetch diff SomeProject" in MySvnProject
         Then the patch file 'MySvnProject/SomeProject.patch' is generated
             """
-            Index: SomeProject/README.md
+            Index: README.md
             ===================================================================
-            --- SomeProject/README.md	(revision 1)
-            +++ SomeProject/README.md	(working copy)
-            @@ -1 +1,2 @@
+            --- README.md
+            +++ README.md
+            @@ -1,1 +1,2 @@
              some content
             +An important sentence for the README!
             """
+
+    Scenario: Metadata is not part of diff
+        Given the metadata file ".dfetch_data.yaml" of "MySvnProject/SomeProject" is changed
+        When I run "dfetch diff SomeProject" in MySvnProject
+        Then the output shows
+        """
+        Dfetch (0.10.0)
+          SomeProject         : No diffs found since 1
+        """

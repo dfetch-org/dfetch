@@ -4,6 +4,7 @@ import os
 import pathlib
 import re
 import urllib.parse
+from collections.abc import Sequence
 from typing import NamedTuple, Optional
 
 from dfetch.log import get_logger
@@ -15,6 +16,11 @@ from dfetch.util.util import (
     find_non_matching_files,
     in_directory,
     safe_rm,
+)
+from dfetch.vcs.patch import (
+    combine_patches,
+    create_svn_patch_for_new_file,
+    filter_patch,
 )
 
 logger = get_logger(__name__)
@@ -246,7 +252,7 @@ class SvnRepo(VCS):
         SvnRepo._export(complete_path, rev_arg, self.local_path)
 
         if file_pattern:
-            for file in find_non_matching_files(self.local_path, file_pattern):
+            for file in find_non_matching_files(self.local_path, (file_pattern,)):
                 os.remove(file)
             if not os.listdir(self.local_path):
                 logger.warning(
@@ -366,14 +372,61 @@ class SvnRepo(VCS):
         """Get the current revision of the repo."""
         return self._get_last_changed_revision(self.local_path)
 
-    def get_diff(self, old_revision: str, new_revision: Optional[str]) -> str:
+    def get_diff(
+        self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
+    ) -> str:
         """Get the diff between two revisions."""
-        cmd = f"svn diff {self.local_path} -r {old_revision}"
+        cmd = [
+            "svn",
+            "diff",
+            "--non-interactive",
+            "--ignore-properties",
+            ".",
+            "-r",
+            old_revision,
+        ]
         if new_revision:
-            cmd += f":{new_revision}"
+            cmd[-1] += f":{new_revision}"
 
-        return "\n".join(run_on_cmdline(logger, cmd).stdout.decode().splitlines())
+        with in_directory(self.local_path):
+            patch_text = run_on_cmdline(logger, cmd).stdout
+
+        filtered = filter_patch(patch_text, ignore)
+
+        if new_revision:
+            return filtered
+
+        patches: list[bytes] = [filtered.encode("utf-8")] if filtered else []
+        with in_directory(self.local_path):
+            for file_path in self._untracked_files(".", ignore):
+                patch = create_svn_patch_for_new_file(file_path)
+                if patch:
+                    patches.append(patch.encode("utf-8"))
+
+        return combine_patches(patches)
 
     def get_default_branch(self) -> str:
         """Get the default branch of this repository."""
         return self.DEFAULT_BRANCH
+
+    @staticmethod
+    def _untracked_files(path: str, ignore: Sequence[str]) -> list[str]:
+        """Get list of untracked files in the working copy."""
+        result = (
+            run_on_cmdline(
+                logger,
+                ["svn", "status", path],
+            )
+            .stdout.decode()
+            .splitlines()
+        )
+
+        files = []
+        for line in result:
+            if line.startswith("?"):
+                file_path = line[1:].strip()
+                if not any(
+                    pathlib.Path(file_path).match(pattern) for pattern in ignore
+                ):
+                    files.append(file_path)
+        return files

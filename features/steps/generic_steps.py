@@ -149,10 +149,24 @@ def step_impl(context, name):
     generate_file(os.path.join(os.getcwd(), name), context.text)
 
 
+@given('"{path}" in {directory} is created')
+@when('"{path}" in {directory} is created')
+def step_impl(context, path, directory="."):
+    with in_directory(directory):
+        generate_file(path, context.text or "Some content")
+
+
 @given('the metadata file "{metadata_file}" of "{project_path}" is corrupt')
 def step_impl(_, metadata_file, project_path):
     generate_file(
         os.path.join(os.getcwd(), project_path, metadata_file), "Corrupt metadata!"
+    )
+
+
+@given('the metadata file "{metadata_file}" of "{project_path}" is changed')
+def step_impl(_, metadata_file, project_path):
+    extend_file(
+        os.path.join(os.getcwd(), project_path, metadata_file), "# Some comment"
     )
 
 
@@ -193,9 +207,12 @@ def step_impl(context, name):
 
 
 @then("the patch file '{name}' is generated")
-def step_impl(_, name):
-    """Check a manifest."""
-    check_file_exists(name)
+def step_impl(context, name):
+    """Check a patch file."""
+    if context.text:
+        check_file(name, context.text)
+    else:
+        check_file_exists(name)
 
 
 @then("the '{name}' file contains")

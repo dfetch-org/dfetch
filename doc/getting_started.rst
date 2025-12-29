@@ -139,3 +139,64 @@ details on working with remotes see :ref:`Remotes`.
         repo-path: cpputest/cpputest
 
 .. scenario-include:: ../features/journey-basic-usage.feature
+
+My first patch
+-----------------
+Sometimes you need to patch a dependency to get it working with your project.
+*Dfetch* supports creating and applying patches after fetching the dependency.
+
+Given you have fetched ``dfetch-org/test-repo`` and you need to apply a patch.
+First commit the fetched version to your version control system. This provides
+*Dfetch* a reference point.
+
+.. code-block:: console
+
+  git add ext/test-repo-tag
+  git commit -m "Add test-repo-tag v2.0"
+
+Then you can work on the files inside ``ext/test-repo-tag``, once you are happy
+you can run ``dfetch diff`` to create a patch file with respect to the committed
+version.
+
+.. code-block:: console
+
+  dfetch diff
+
+This patch file can now be applied automatically by *Dfetch* in next updates.
+Add it to your manifest as shown below.
+
+.. code-block:: yaml
+
+  manifest:
+    version: '0.0'
+
+    remotes:
+      - name: github
+        url-base: https://github.com/
+
+    projects:
+      - name: ext/test-repo-tag
+        repo-path: dfetch-org/test-repo
+        patch: ext-test-repo-tag.patch
+
+      - name: cpputest
+        repo-path: cpputest/cpputest
+
+To test the patch, update the project again but with the ``-f`` option to force
+overwriting the local changes. The local changes will be lost but the patch will
+be applied.
+
+.. code-block:: console
+
+  dfetch update -f ext/test-repo-tag
+
+Now all changes can be amended to the last committed version including the patch.
+
+.. code-block:: console
+
+   git add ext/test-repo-tag ext-test-repo-tag.patch
+   git commit --amend -no-edit
+
+For more details on working with patches see :ref:`Diff` and :ref:`Patch`.
+
+.. scenario-include:: ../features/journey-basic-patching.feature
