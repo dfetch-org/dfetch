@@ -93,6 +93,16 @@ pygments_style = "sphinx"
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+# -- Options for autosectionlabel extension -------------------------------
+autosectionlabel_maxdepth = 3
+
+# Suppress warnings about duplicate labels from argparse directive
+nitpicky = True
+nitpick_ignore = [
+    ("ref", "manual.positional-arguments"),
+    ("ref", "manual.named-arguments"),
+]
+
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
