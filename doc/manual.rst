@@ -139,3 +139,14 @@ Import
 .. asciinema:: asciicasts/import.cast
 
 .. automodule:: dfetch.commands.import_
+
+Overview
+--------
+
+Below an overview of all available commands and their usage. For detailed information
+on each command, please refer to the respective sections above.
+
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
