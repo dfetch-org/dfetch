@@ -97,12 +97,7 @@ todo_include_todos = False
 autosectionlabel_maxdepth = 3
 
 # Suppress warnings about duplicate labels from argparse directive
-nitpicky = True
-nitpick_ignore = [
-    ("ref", "manual.positional-arguments"),
-    ("ref", "manual.named-arguments"),
-    ("ref", "manual.child-manifests"),
-]
+suppress_warnings = ["autosectionlabel.*"]
 
 # -- Options for HTML output ----------------------------------------------
 
