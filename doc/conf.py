@@ -46,6 +46,7 @@ extensions = [
     "sphinxarg.ext",
     "sphinxcontrib_asciinema",
     "sphinxcontrib.details.directive",
+    "sphinx-jsonschema",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
