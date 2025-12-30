@@ -95,7 +95,9 @@ Below an overview of all possible fields on the manifest. The bold items are man
                     - git
                     - svn
                 src:
-                  {}
+                  type: string
+                  description: >
+                    Source path within the repository to fetch, see :ref:`Source` for details.
                 ignore:
                   type: array
                   description: Files to ignore. See :ref:`Ignore` for details.
