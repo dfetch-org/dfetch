@@ -158,3 +158,23 @@ Feature: Checking dependencies from a svn repository
             Dfetch (0.10.0)
               cutter-svn-tag      : wanted (non-existent-tag), but not available at the upstream.
             """
+
+    Scenario: Change to ignored files are not reported
+        Given a svn-server "SomeProject" with the tag "v1"
+        And a fetched and committed MySvnProject with the manifest
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: SomeProject
+                      url: some-remote-server/SomeProject
+                      tag: 'v1'
+            """
+        And files as '*.tmp' are ignored in 'MySvnProject/SomeProject' in svn
+        And "SomeProject/IGNORE_ME.tmp" in MySvnProject is created
+        When I run "dfetch check SomeProject"
+        Then the output shows
+            """
+            Dfetch (0.10.0)
+              SomeProject         : up-to-date (v1)
+            """

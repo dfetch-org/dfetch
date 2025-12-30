@@ -90,6 +90,12 @@ def step_impl(context, name, tag_name=None):
             create_tag(tag_name)
 
 
+@given('a new tag "{tag_name}" is added to "{name}"')
+def step_impl(_, tag_name, name):
+    with in_directory(name):
+        create_tag(tag_name)
+
+
 @given('a non-standard svn-server "{name}" with the files')
 def step_impl(context, name):
     repo_path = create_svn_server_and_repo(context, name)

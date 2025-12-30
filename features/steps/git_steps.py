@@ -95,39 +95,6 @@ def step_impl(context, name):
         tag("v1")
 
 
-@given('MyProject with dependency "SomeProject.git" that must be updated')
-def step_impl(context):
-
-    manifest = """
-manifest:
-    version: 0.0
-    projects:
-        - name: SomeProject
-          url: some-remote-server/SomeProject.git
-          tag: v1
-"""
-
-    generate_manifest(
-        context,
-        "dfetch.yaml",
-        contents=manifest,
-        path="MyProject",
-    )
-    context.execute_steps(
-        """
-        Given a git repository "SomeProject.git"
-        And all projects are updated in MyProject
-        And a new tag "v2" is added to git-repository "SomeProject.git"
-        """
-    )
-    generate_manifest(
-        context,
-        "dfetch.yaml",
-        contents=manifest.replace("v1", "v2"),
-        path="MyProject",
-    )
-
-
 @given("a fetched and committed MyProject with the manifest")
 def step_impl(context):
     pathlib.Path("MyProject").mkdir(parents=True, exist_ok=True)

@@ -137,6 +137,25 @@ Feature: Checking dependencies from a git repository
               SomeProject         : up-to-date (master - 90be799b58b10971691715bdc751fbe5237848a0)
             """
 
+    Scenario: Change to ignored files are not reported
+        Given a git repository "SomeProject.git"
+        And a fetched and committed MyProject with the manifest
+            """
+            manifest:
+                version: 0.0
+                projects:
+                  - name: SomeProject
+                    url: some-remote-server/SomeProject.git
+            """
+        And files as '*.tmp' are ignored in git in MyProject
+        And "SomeProject/IGNORE_ME.tmp" in MyProject is created
+        When I run "dfetch check SomeProject"
+        Then the output shows
+            """
+            Dfetch (0.10.0)
+              SomeProject         : up-to-date (master - 90be799b58b10971691715bdc751fbe5237848a0)
+            """
+
     Scenario: A non-existent remote is reported
         Given the manifest 'dfetch.yaml'
             """
