@@ -84,6 +84,7 @@ Below an overview of all possible fields on the manifest. The bold items are man
                   description: Path within the repository to fetch, see :ref:`Repo-path` for details.
                   type: string
                 remote:
+                  description: Name of remote to use as base, see :ref:`Remotes` for details.
                   type: string
                 patch:
                   type: string
