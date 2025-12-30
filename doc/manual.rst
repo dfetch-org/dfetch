@@ -148,3 +148,46 @@ Import
 .. asciinema:: asciicasts/import.cast
 
 .. automodule:: dfetch.commands.import_
+
+Cheatsheet
+----------
+
+A source-only, no-hassle project-dependency aggregator.
+It uses a **manifest file** to describe your project's dependencies and fetches them into your codebase.
+Also called vendoring. More info: <https://dfetch.readthedocs.io/en/latest/getting_started.html>.
+
+- Start a new manifest (`dfetch.yaml`) with placeholder content:
+
+  .. code-block:: console
+
+     dfetch init
+
+- Generate a manifest from existing git submodules or svn externals:
+
+  .. code-block:: console
+
+     dfetch import
+
+- Check for newer versions of dependencies and create a machine parseable report:
+
+  .. code-block:: console
+
+     dfetch check [--jenkins-json] [--sarif] [--code-climate] {{[project]}}
+
+- Download a or all projects from the manifest:
+
+  .. code-block:: console
+
+     dfetch update [-f] {{[project]}}
+
+- Freeze all projects to their current version:
+
+  .. code-block:: console
+
+     dfetch freeze
+
+- Report about the current state of the project(s):
+
+  .. code-block:: console
+
+     dfetch report [-o <filename>] [-t {sbom,list}] {{[project]}}
