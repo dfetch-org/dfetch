@@ -47,6 +47,7 @@ extensions = [
     "sphinxcontrib_asciinema",
     "sphinxcontrib.details.directive",
     "sphinx-jsonschema",
+    "sphinxcontrib.programoutput",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
