@@ -28,7 +28,7 @@ We want self-contained code repositories without any hassle for end-users.
 Dfetch must promote upstreaming changes, but allow for local customizations.
 The problem is described thoroughly [managing external dependencies](https://embeddedartistry.com/blog/2020/06/22/qa-on-managing-external-dependencies/) and sometimes
 is also known as [*vendoring*](https://stackoverflow.com/questions/26217488/what-is-vendoring).
-See [vendoring](https://dfetch.readthedocs.io/en/latest/vendoring.html), for more information about vendoring.
+See [vendoring](https://dfetch.readthedocs.io/en/latest/vendoring.html) for more information about vendoring.
 
 Other tools that do similar things are ``Zephyr's West``, ``CMake ExternalProject`` and other meta tools.
 See [alternatives](https://dfetch.readthedocs.io/en/latest/alternatives.html) for a complete list.

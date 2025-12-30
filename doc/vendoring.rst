@@ -164,6 +164,156 @@ that trade is clearly worthwhile. In others, it introduces more cost than benefi
 Used intentionally and with an understanding of its limitations, vendoring is
 simply one tool among many for managing dependencies.
 
+Best Practices
+--------------
+
+The following practices are drawn from our own usage of *Dfetch* and real-world policies and respected guidelines.
+They *mitigate* vendoring risks; they do not eliminate them.
+
+.. admonition :: Explicit Version Pinning and Provenance
+
+    Every vendored dependency must be pinned to an explicit version, tag, or commit, and its source must be documented.
+
+    **Rationale** Vendored code is often added once and then forgotten. Without automation, vulnerabilities, license issues,
+    and inconsistencies can persist unnoticed long after initial inclusion.
+
+    * pip: `vendor.txt` tracks versions and sources
+    * Go/Kubernetes: `go.mod`, `go.sum`, `vendor/modules.txt`
+    * Cargo: `Cargo.lock` + vendored sources
+    * Guidelines: `OWASP SCVS <https://scvs.owasp.org/scvs/v1-inventory/>`_, OpenSSF, NIST SP 800-161, SLSA
+
+    *Dfetch* addresses this by having a declarative :ref:`manifest` and the option to :ref:`freeze` dependences to make each
+    revision explicit.
+
+.. admonition :: Reproducible and Offline Builds
+
+    Vendoring must enable fully reproducible and offline builds.
+
+    **Rationale** The point of vendoring code is to remove external dependencies, by making sure an offline build succeeds it is
+    proven that builds are not dependent on external sources.
+
+    * Go: committed `vendor/`
+    * Cargo: `.cargo/config.toml` + `cargo vendor`
+    * pip: vendored wheels and pure-Python dependencies
+    * Guidelines: SLSA, OpenSSF
+
+    *Dfetch* doesn't directly address this, this is a policy to follow.
+
+.. admonition :: Trust Upstream After Due Diligence
+
+    Vendored dependencies are not reviewed line-by-line, upstream (unit) tests are not run.
+    Do not auto-format vendored code.
+
+    **Rationale** Reviewing every line of external code is costly and rarely effective. By performing due diligence
+    on upstream sources, you can trust their correctness and security while minimizing maintenance burden.
+
+    Reviewers should verify:
+
+    * Version changes and pinning
+    * Changelogs and release notes for regressions or security issues
+    * License compatibility
+    * CI status and test results of the upstream project
+    * Evidence of active maintenance and community support
+
+    Do not run upstream unit tests locally, apply formatting or style changes, or make cosmetic changes to vendored code.
+
+    This principle is aligned with:
+
+    * OWASP Software Component Verification Standard
+    * Google Open Source Security Guidelines
+    * OpenSSF Best Practices
+
+    *Dfetch* supports this approach via its manifest and metadata file (``.dfetch_data.yaml``), which can be reviewed independently
+    of the vendored code itself.
+
+
+.. admonition :: Separation of Vendor Updates from Product Changes
+
+    Vendored dependency updates must be isolated from functional code changes.
+
+    * Separate PRs or commits
+    * Clear commit messages documenting versions and rationale
+
+    **Rationale** By separation the review noise will be reduced, letting maintainers focus on important changes.
+
+    *Dfetch* doesn't address this directly.
+
+.. admonition :: Minimize Local Modifications
+
+    Vendored code must not be modified directly unless unavoidable.
+
+    If modifications are required:
+
+    * Document patches explicitly
+    * Prefer patch/overlay mechanisms
+    * Upstream changes whenever possible
+    * pip: documented adaptations
+    * Cargo: `[patch]` mechanism
+    * Guidelines: Google OSS, OWASP, OpenSSF
+
+    **Rationale** The vendored dependency may diverge, keeping it the same as upstream makes it easy to keep following
+    upstream updates. Also by upstreaming any changes, more people outside the project can profit from any fixes.
+
+    *Dfetch* addresses this by providing a ``dfetch diff`` (:ref:`Diff`) command and a ``patch`` :ref:`Patch` attribute in the manifest.
+    Next to this there is a CI system to detect local changes using :ref:`Check`.
+
+.. admonition :: Continuous Automation and Security Scanning
+
+    Vendored dependencies must be continuously verified through automation.
+
+    * CI verifies vendor consistency
+    * Dependency and CVE scanning
+    * SBOM generation
+
+    **Rationale** By copy-pasting a dependency, there may maybe silent security degradation since there is no automatic updates.
+
+    *Dfetch* addresses this by providing a ``dfetch check`` (:ref:`Check`) command to see if vendored dependencies are out-of-date and
+    various report formats (including SBoM) to check vulnerabilities.
+
+.. admonition :: Track License and Legal Information
+
+    All vendored dependencies must have their license and legal information explicitly recorded.
+
+    **Rationale** Ensuring license compliance prevents legal issues and maintains compatibility with your project's license.
+
+    * Track license type for each vendored dependency.
+    * Use machine-readable formats where possible (e.g., SPDX identifiers).
+    * Include license documentation alongside vendored code.
+    * Guidelines: OWASP, OpenSSF, Google OSS best practices.
+
+    *Dfetch* addresses this by even when only a subfolder is fetched, retaining the license file.
+
+.. admonition :: Vendor Only What You Need
+
+    Minimize vendored code to what is strictly necessary for your project.
+
+    **Rationale** Vendoring unnecessary code increases maintenance burden, security risk, and potential for patch rot.
+    Include only the specific modules, packages, subfolder or components your project depends on.
+
+    *Dfetch* enables this by allowing to fetch only a subfolder using the ``src:`` attribute.
+
+.. admonition :: Isolate Vendored Dependencies
+
+    Vendored dependencies must be clearly isolated from first-party code.
+
+    **Rationale** Isolation prevents accidental coupling, avoids namespace conflicts, and makes audits, updates, and
+    removals easier. Vendored code should be unmistakably identifiable as third-party code.
+
+    * Place vendored dependencies in a clearly named and well-known directory (e.g. ``vendor/``, ``_vendor/``).
+    * Avoid mixing vendored code with product or library sources.
+    * Use language-supported namespace or module isolation where available.
+    * Prevent accidental imports of vendored internals by first-party code.
+    * Keep vendored code mechanically separable to enable future un-vendoring.
+
+    This principle follows established practices in:
+
+    * Go (``vendor/`` directory)
+    * pip (``pip/_vendor``)
+    * Cargo (``vendor/`` layout)
+    * Google OSS and OpenSSF guidelines
+
+    *Dfetch* enables this by allowing to store the vendored dependency in a folder using the ``dst:`` attribute.
+
 Real-world projects using vendoring
 -----------------------------------
 
