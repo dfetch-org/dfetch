@@ -31,8 +31,7 @@ mapping:
                    "remote": { type: str }
                    "patch": { type: str }
                    "vcs": { type: str, enum: ['git', 'svn'] }
-                   "src":
-                      type: any
+                   "src": { type: str }
                    "ignore":
                         required: False
                         type: seq

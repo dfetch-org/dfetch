@@ -21,7 +21,7 @@ manifest:
     remote: sourceforge
     branch: 1.10.x
     revision: '28553'
-    src: src
+    src: src/*
     vcs: svn
     repo-path: tortoisesvn/code
 
@@ -29,7 +29,7 @@ manifest:
     dst: Tests/tortoise-svn-tag/
     remote: sourceforge
     tag: version-1.13.1
-    src: src
+    src: src/*.txt
     vcs: svn
     repo-path: tortoisesvn/code
 
