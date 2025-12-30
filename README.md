@@ -20,13 +20,13 @@
 **DFetch can manage dependencies**
 
 We make products that can last 15+ years; because of this we want to be able to have all sources available
-to build the entire project from source not being dependent on the existence of the remote resource.
+to build the entire project from source without depending on external resources.
 For this, we needed a dependency manager that was flexible enough to retrieve dependencies as plain text
 from various sources. `svn externals`, `git submodules` and `git subtrees` solve a similar
 problem, but not in a VCS-agnostic way or completely user-friendly way.
 We want self-contained code repositories without any hassle for end-users.
 Dfetch must promote upstreaming changes, but allow for local customizations.
-The problem is described thoroughly [managing external dependencies](https://embeddedartistry.com/blog/2020/06/22/qa-on-managing-external-dependencies/) and sometimes
+The problem is described thoroughly in [managing external dependencies](https://embeddedartistry.com/blog/2020/06/22/qa-on-managing-external-dependencies/) and sometimes
 is also known as [*vendoring*](https://stackoverflow.com/questions/26217488/what-is-vendoring).
 See [vendoring](https://dfetch.readthedocs.io/en/latest/vendoring.html) for more information about vendoring.
 

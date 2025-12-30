@@ -89,7 +89,7 @@ todo_include_todos = False
 autosectionlabel_maxdepth = 3
 
 # Suppress warnings about duplicate labels from argparse directive
-suppress_warnings = ["autosectionlabel.*"]
+suppress_warnings = ["autosectionlabel.manual"]
 
 # -- Options for HTML output ----------------------------------------------
 

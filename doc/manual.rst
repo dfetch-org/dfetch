@@ -149,12 +149,12 @@ Import
 
 .. automodule:: dfetch.commands.import_
 
-Cheatsheet
-----------
+CLI Cheatsheet
+--------------
 
 A source-only, no-hassle project-dependency aggregator.
 It uses a **manifest file** to describe your project's dependencies and fetches them into your codebase.
-Also called vendoring. More info: <https://dfetch.readthedocs.io/en/latest/getting_started.html>.
+Also called vendoring. More info: `<https://dfetch.readthedocs.io/en/latest/getting_started.html>`_.
 
 - Start a new manifest (`dfetch.yaml`) with placeholder content:
 
@@ -168,17 +168,17 @@ Also called vendoring. More info: <https://dfetch.readthedocs.io/en/latest/getti
 
      dfetch import
 
-- Check for newer versions of dependencies and create a machine parseable report:
+- Check for newer versions of dependencies and create a machine parseable report for your CI:
 
   .. code-block:: console
 
-     dfetch check [--jenkins-json] [--sarif] [--code-climate] {{[project]}}
+     dfetch check [--jenkins-json] [--sarif] [--code-climate] [project]
 
-- Download a or all projects from the manifest:
+- Download one or all projects from the manifest:
 
   .. code-block:: console
 
-     dfetch update [-f] {{[project]}}
+     dfetch update [-f] [project]
 
 - Freeze all projects to their current version:
 
@@ -190,4 +190,4 @@ Also called vendoring. More info: <https://dfetch.readthedocs.io/en/latest/getti
 
   .. code-block:: console
 
-     dfetch report [-o <filename>] [-t {sbom,list}] {{[project]}}
+     dfetch report [-o <filename>] [-t {sbom,list}] [project]
