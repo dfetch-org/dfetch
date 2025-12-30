@@ -121,6 +121,16 @@ def extend_file(path, content):
             print(line, file=existing_file)
 
 
+def replace_in_file(path: str, old: str, new: str) -> None:
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    content = content.replace(old, new)
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+
+
 def list_dir(path):
     # Get list of all nodes
     nodes = [os.path.normpath(path).split(os.sep)]
@@ -142,6 +152,11 @@ def list_dir(path):
         prev_node = node
 
     return result
+
+
+@given('"{old}" is replaced with "{new}" in "{path}"')
+def step_impl(_, old: str, new: str, path: str):
+    replace_in_file(path, old, new)
 
 
 @given("the patch file '{name}'")
@@ -187,6 +202,7 @@ def step_impl(context, args, path=None):
     call_command(context, args.split(), path)
 
 
+@given('"{path}" in {directory} is changed locally')
 @when('"{path}" in {directory} is changed locally')
 def step_impl(_, directory, path):
     with in_directory(directory):
