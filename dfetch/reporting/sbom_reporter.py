@@ -12,7 +12,7 @@ See https://cyclonedx.org/use-cases/ for more details.
 
 .. scenario-include:: ../features/report-sbom.feature
    :scenario:
-        An fetched project generates a json sbom
+        A fetched project generates a json sbom
 
 Gitlab
 ------
