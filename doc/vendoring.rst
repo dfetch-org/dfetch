@@ -265,7 +265,7 @@ They *mitigate* vendoring risks; they do not eliminate them.
     * Dependency and CVE scanning
     * SBOM generation
 
-    **Rationale** By copy-pasting a dependency, there may maybe silent security degradation since there is no automatic updates.
+    **Rationale** By copy-pasting a dependency, there maybe silent security degradation since there is no automatic updates.
 
     *Dfetch* addresses this by providing a ``dfetch check`` (:ref:`Check`) command to see if vendored dependencies are out-of-date and
     various report formats (including SBoM) to check vulnerabilities.

@@ -176,9 +176,9 @@ root of the repository.
 
 VCS type
 ########
-*DFetch* does it best to find out what type of version control system (vcs) the remote url is, for
-instance by trying a simple call to the remote repository. But sometimes both is possible, for example,
-in the past GitHub provided an `svn and git interface the same url`_.
+*DFetch* does its best to find out what type of version control system (vcs) the remote url is, for
+instance by trying a simple call to the remote repository. But sometimes both are possible, for example,
+in the past GitHub provided an `svn and git interface at the same url`_.
 
 .. _`svn and git interface at the same url`:
    https://docs.github.com/en/github/importing-your-projects-to-github/support-for-subversion-clients
