@@ -38,7 +38,9 @@ Below an overview of all possible fields on the manifest. The bold items are man
 
           remotes:
             type: array
-            description: List of remote sources. See :ref:`Remotes` for details.
+            description: >
+              List of remote sources. See :ref:`Remotes` for details.
+              Each remote must be unique by its name.
             items:
               type: object
               required:
@@ -47,6 +49,7 @@ Below an overview of all possible fields on the manifest. The bold items are man
               properties:
                 name:
                   type: string
+                  description: A unique name for the remote.
                 url-base:
                   type: string
                 default:
@@ -55,7 +58,9 @@ Below an overview of all possible fields on the manifest. The bold items are man
 
           projects:
             type: array
-            description: List of projects to Dfetch. See :ref:`Projects` for details.
+            description: >
+              List of projects to Dfetch. See :ref:`Projects` for details.
+              Each project must be unique by its name.
             items:
               type: object
               required:
@@ -63,6 +68,7 @@ Below an overview of all possible fields on the manifest. The bold items are man
               properties:
                 name:
                   type: string
+                  description: A unique name for the project.
                 dst:
                   description: Destination path to fetch the project to, see :ref:`Destination` for details.
                   type: string
