@@ -5,7 +5,15 @@ It tries to determine what kind of vcs it is: git, svn or something else.
 
 .. uml:: /static/uml/update.puml
 
-.. scenario-include:: ../features/fetch-git-repo.feature
+.. tabs::
+
+   .. tab:: Git
+
+      .. scenario-include:: ../features/fetch-git-repo.feature
+
+   .. tab:: SVN
+
+      .. scenario-include:: ../features/fetch-svn-repo.feature
 
 Child-manifests
 ~~~~~~~~~~~~~~~

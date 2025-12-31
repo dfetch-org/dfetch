@@ -19,7 +19,15 @@ The below statement will generate a patch for ``some-project`` from your manifes
 
    dfetch diff some-project
 
-.. scenario-include:: ../features/diff-in-git.feature
+.. tabs::
+
+   .. tab:: Git
+
+      .. scenario-include:: ../features/diff-in-git.feature
+
+   .. tab:: SVN
+
+      .. scenario-include:: ../features/diff-in-svn.feature
 
 Using the generated patch
 =========================
@@ -29,13 +37,19 @@ It can also be sent to the upstream maintainer in case of bug fixes.
 The generated patch is a relative patch and should be by applied specifying the base directory of the *git repo*.
 See below for the version control specifics. The patch will also contain the content of binary files.
 
-.. code-block:: sh
+.. tabs::
 
-   # For git repo's
-   git apply --verbose --directory='some-project' some-project.patch
+    .. tab:: Git
 
-   # For svn repo's
-   svn patch some-project.patch
+        .. code-block:: sh
+
+            git apply --verbose --directory='some-project' some-project.patch
+
+    .. tab:: SVN
+
+        .. code-block:: sh
+
+            svn patch some-project.patch
 
 .. warning::
 

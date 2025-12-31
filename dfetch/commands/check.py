@@ -5,7 +5,15 @@ the available version. If there are new versions available this will be shown.
 
 .. uml:: /static/uml/check.puml
 
-.. scenario-include:: ../features/check-git-repo.feature
+.. tabs::
+
+   .. tab:: Git
+
+      .. scenario-include:: ../features/check-git-repo.feature
+
+   .. tab:: SVN
+
+      .. scenario-include:: ../features/check-svn-repo.feature
 
 Child-manifests
 ~~~~~~~~~~~~~~~
