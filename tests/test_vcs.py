@@ -137,7 +137,7 @@ def test_are_there_local_changes(
             mocked_on_disk_hash.return_value = hash_in_metadata
             mocked_hash_directory.return_value = current_hash
 
-            assert expectation == vcs._are_there_local_changes()
+            assert expectation == vcs._are_there_local_changes(files_to_ignore=[])
 
 
 @pytest.mark.parametrize(

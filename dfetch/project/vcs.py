@@ -92,19 +92,24 @@ class VCS(ABC):
         logger.debug(f"{self.__project.name} Current ({current}), Available ({wanted})")
         return wanted
 
-    def update(self, force: bool = False) -> None:
+    def update(
+        self, force: bool = False, files_to_ignore: Optional[Sequence[str]] = None
+    ) -> None:
         """Update this VCS if required.
 
         Args:
             force (bool, optional): Ignore if version is ok or any local changes were done.
                                     Defaults to False.
+            files_to_ignore (Sequence[str], optional): list of files that are ok to overwrite.
         """
         to_fetch = self.update_is_required(force)
 
         if not to_fetch:
             return
 
-        if not force and self._are_there_local_changes():
+        files_to_ignore = files_to_ignore or []
+
+        if not force and self._are_there_local_changes(files_to_ignore):
             self._log_project(
                 "skipped - local changes after last update (use --force to overwrite)"
             )
@@ -151,7 +156,9 @@ class VCS(ABC):
         else:
             raise RuntimeError(f'Applying patch "{self.__project.patch}" failed')
 
-    def check_for_update(self, reporters: Sequence[AbstractCheckReporter]) -> None:
+    def check_for_update(
+        self, reporters: Sequence[AbstractCheckReporter], files_to_ignore: Sequence[str]
+    ) -> None:
         """Check if there is an update available."""
         on_disk_version = self.on_disk_version()
         with Halo(
@@ -177,7 +184,7 @@ class VCS(ABC):
 
             return
 
-        if self._are_there_local_changes():
+        if self._are_there_local_changes(files_to_ignore):
             for reporter in reporters:
                 reporter.local_changes(self.__project)
 
@@ -339,7 +346,7 @@ class VCS(ABC):
         revision = self._latest_revision_on_branch(branch)
         return Version(revision=revision, branch=branch) if revision else None
 
-    def _are_there_local_changes(self) -> bool:
+    def _are_there_local_changes(self, files_to_ignore: Sequence[str]) -> bool:
         """Check if there are local changes.
 
         Returns:
@@ -349,7 +356,8 @@ class VCS(ABC):
         on_disk_hash = self._on_disk_hash()
 
         return bool(on_disk_hash) and on_disk_hash != hash_directory(
-            self.local_path, skiplist=[self.__metadata.FILENAME]
+            self.local_path,
+            skiplist=[self.__metadata.FILENAME] + list(files_to_ignore),
         )
 
     @abstractmethod

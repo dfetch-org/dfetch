@@ -26,7 +26,7 @@ import dfetch.commands.command
 import dfetch.manifest.manifest
 import dfetch.manifest.validate
 import dfetch.project
-from dfetch.commands.common import check_child_manifests
+from dfetch.commands.common import check_child_manifests, files_to_ignore
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.reporting.check.code_climate_reporter import CodeClimateReporter
@@ -90,7 +90,9 @@ class Check(dfetch.commands.command.Command):
             exceptions: list[str] = []
             for project in manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    dfetch.project.make(project).check_for_update(reporters)
+                    dfetch.project.make(project).check_for_update(
+                        reporters, files_to_ignore=files_to_ignore(project.destination)
+                    )
 
                 if not args.no_recommendations and os.path.isdir(project.destination):
                     with in_directory(project.destination):

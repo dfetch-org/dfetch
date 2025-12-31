@@ -344,6 +344,29 @@ class GitLocalRepo:
 
         return str(result.stdout.decode())
 
+    @staticmethod
+    def ignored_files(path: str) -> Sequence[str]:
+        """List of ignored files."""
+        if not Path(path).exists():
+            return []
+
+        with in_directory(path):
+            return list(
+                run_on_cmdline(
+                    logger,
+                    [
+                        "git",
+                        "ls-files",
+                        "--ignored",
+                        "--others",
+                        "--exclude-standard",
+                        ".",
+                    ],
+                )
+                .stdout.decode()
+                .splitlines()
+            )
+
     def untracked_files_patch(self, ignore: Optional[Sequence[str]] = None) -> str:
         """Create a diff for untracked files."""
         with in_directory(self._path):

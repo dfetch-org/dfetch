@@ -65,7 +65,7 @@ def test_forced_update():
 
                             update(args)
                             mocked_make.return_value.update.assert_called_once_with(
-                                force=True
+                                force=True, files_to_ignore=[]
                             )
 
 
