@@ -212,5 +212,5 @@ output-filename-win = "dfetch.exe"
 output-filename-linux = "dfetch"
 output-filename-macos = "dfetch"
 
-# windows-icon-from-ico = "static/favicon.ico"
-# windows-company-name = "dfetch-org"
+windows-icon-from-ico = "doc/images/favicon.ico"
+windows-company-name = "dfetch-org"
