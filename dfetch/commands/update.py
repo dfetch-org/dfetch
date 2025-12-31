@@ -29,7 +29,7 @@ import dfetch.manifest.project
 import dfetch.manifest.validate
 import dfetch.project.git
 import dfetch.project.svn
-from dfetch.commands.common import check_child_manifests
+from dfetch.commands.common import check_child_manifests, files_to_ignore
 from dfetch.log import get_logger
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
@@ -78,7 +78,10 @@ class Update(dfetch.commands.command.Command):
             for project in manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     self._check_destination(project, destinations)
-                    dfetch.project.make(project).update(force=args.force)
+                    dfetch.project.make(project).update(
+                        force=args.force,
+                        files_to_ignore=files_to_ignore(project.destination),
+                    )
 
                     if not args.no_recommendations and os.path.isdir(
                         project.destination

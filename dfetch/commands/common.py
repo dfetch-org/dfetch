@@ -1,12 +1,15 @@
 """Module for common command operations."""
 
 import os
+from collections.abc import Sequence
 
 import yaml
 
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest, get_childmanifests
 from dfetch.manifest.project import ProjectEntry
+from dfetch.project.svn import SvnRepo
+from dfetch.vcs.git import GitLocalRepo
 
 logger = get_logger(__name__)
 
@@ -63,3 +66,14 @@ def _make_recommendation(
     for line in recommendation_json.splitlines():
         logger.warning(line)
     logger.warning("")
+
+
+def files_to_ignore(path: str) -> Sequence[str]:
+    """Return a list of files that can be ignored in a given path."""
+    if GitLocalRepo().is_git():
+        ignore_list = GitLocalRepo.ignored_files(path)
+    elif SvnRepo.check_path():
+        ignore_list = SvnRepo.ignored_files(path)
+    else:
+        ignore_list = []
+    return ignore_list

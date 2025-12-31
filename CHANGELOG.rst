@@ -19,6 +19,7 @@ Release 0.11.0 (unreleased)
 * Fix unneeded project prefix in SVN diffs (#888)
 * Add more tests and documentation for patching (#888)
 * Restrict ``src`` to string only in schema (#889)
+* Don't consider ignored files for determining local changes (#350)
 
 Release 0.10.0 (released 2025-03-12)
 ====================================

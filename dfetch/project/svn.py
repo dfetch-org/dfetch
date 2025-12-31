@@ -430,3 +430,21 @@ class SvnRepo(VCS):
                 ):
                     files.append(file_path)
         return files
+
+    @staticmethod
+    def ignored_files(path: str) -> Sequence[str]:
+        """Get list of ignored files in the working copy."""
+        if not pathlib.Path(path).exists():
+            return []
+
+        with in_directory(path):
+            result = (
+                run_on_cmdline(
+                    logger,
+                    ["svn", "status", "--no-ignore", "."],
+                )
+                .stdout.decode()
+                .splitlines()
+            )
+
+        return [line[1:].strip() for line in result if line.startswith("I")]
