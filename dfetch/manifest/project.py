@@ -142,7 +142,15 @@ The following manifest will only checkout files in folder ``src`` with the ``*.h
           src: src/*.h
           repo-path: cpputest/cpputest
 
-.. scenario-include:: ../features/fetch-file-pattern-git.feature
+.. tabs::
+
+   .. tab:: Git
+
+      .. scenario-include:: ../features/fetch-file-pattern-git.feature
+
+   .. tab:: SVN
+
+      .. scenario-include:: ../features/fetch-file-pattern-svn.feature
 
 Ignore
 ######
@@ -172,7 +180,15 @@ root of the repository.
           And the ignores will be applied *after* the ``src:`` pattern was applied.
           License files will never be excluded, since you likely shouldn't be doing that.
 
-.. scenario-include:: ../features/fetch-with-ignore-git.feature
+.. tabs::
+
+   .. tab:: Git
+
+      .. scenario-include:: ../features/fetch-with-ignore-git.feature
+
+   .. tab:: SVN
+
+      .. scenario-include:: ../features/fetch-with-ignore-svn.feature
 
 VCS type
 ########
@@ -226,23 +242,31 @@ with the ``patch:`` attribute.
           repo-path: cpputest/cpputest
           patch: local_changes.patch
 
-The patch can be generated using the *Dfetch* :ref:`Diff` command.
-Alternately the patch can be generated manually as such. Note that it should be *relative*.
+The patch should be generated using the *Dfetch* :ref:`Diff` command.
+Alternately the patch can be generated manually as such.
+Note that the patch should be *relative* to the projects root.
 
-.. code-block:: sh
+.. tabs::
 
-    # For git repo's
-    git diff --relative=path/to/project HEAD > my_patch.patch
+    .. tab:: Git
 
-    # For svn repo's
-    svn diff -r HEAD path/to/my_project > my_patch.patch
+        .. code-block:: sh
 
-For more details see the `git-diff`_ or `svn-diff`_ documentation.
+            git diff --relative=path/to/project HEAD > my_patch.patch
 
-.. _`git-diff`: https://git-scm.com/docs/git-diff
-.. _`svn-diff`: http://svnbook.red-bean.com/en/1.7/svn.ref.svn.c.diff.html
+        For more details see the `git-diff <https://git-scm.com/docs/git-diff>`_ documentation.
 
-.. scenario-include:: ../features/diff-in-git.feature
+        .. scenario-include:: ../features/diff-in-git.feature
+
+    .. tab:: SVN
+
+        .. code-block:: sh
+
+            svn diff -r HEAD path/to/my_project > my_patch.patch
+
+        For more details see the `svn-diff <http://svnbook.red-bean.com/en/1.7/svn.ref.svn.c.diff.html>`_ documentation.
+
+        .. scenario-include:: ../features/diff-in-svn.feature
 
 """
 
