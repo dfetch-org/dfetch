@@ -199,6 +199,8 @@ mode = "standalone"
 # show-progress = true
 assume-yes-for-downloads = true
 
+lto = "auto" # Use link time optimizations if available and usable
+
 include-data-dir="dfetch/resources=resources"
 include-package-data="infer_license"
 include-module="infer_license.licenses"
