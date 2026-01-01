@@ -129,7 +129,8 @@ jobs:
     - name: Install binary
       if: matrix.platform == 'windows-latest'
       run: |
-        $file = "dfetch.msi"
+        $file = Get-ChildItem dfetch*.msi | Select-Object -First 1
+        if (-not $file) { throw "MSI not found" }
         $log = "install.log"
         $procMain = Start-Process "msiexec" "/i `"$file`" /qn /l*! `"$log`"" -NoNewWindow -PassThru
         $procLog = Start-Process "powershell" "Get-Content -Path `"$log`" -Wait" -NoNewWindow -PassThru
