@@ -80,6 +80,7 @@ jobs:
           NUITKA_CCACHE_BINARY: /usr/bin/ccache
         run: |
           pip install .[build]
+          python script/create_sbom.py
           python script/build.py
           python script/package.py
 
@@ -92,6 +93,7 @@ jobs:
               build/dfetch-package/*.rpm
               build/dfetch-package/*.pkg
               build/dfetch-package/*.msi
+              *.cdx.json
 
   test-binary:
     name: test binary
