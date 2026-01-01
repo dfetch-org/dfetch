@@ -9,6 +9,7 @@ repos:
     -   id: end-of-file-fixer
         exclude: ^doc/static/uml/styles/plantuml-c4/
     -   id: check-yaml
+        args: ["--allow-multiple-documents"]
     -   id: check-added-large-files
 -   repo: local
     hooks:

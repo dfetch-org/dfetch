@@ -1,39 +1,24 @@
 # Schema file (schema.yaml)
-type: map
-mapping:
-  "manifest":
-    type: map
-    required: True
-    mapping:
-      "version": { type: number, required: True}
-      "remotes":
-          required: False
-          type: seq
-          sequence:
-             - type: map
-               mapping:
-                   "name": { type: str, required: True, unique: True}
-                   "url-base": { type: str, required: True}
-                   "default": { type: bool }
-      "projects":
-          required: True
-          type: seq
-          sequence:
-             - type: map
-               mapping:
-                   "name": { type: str, required: True, unique: True}
-                   "dst": { type: str, unique: True }
-                   "branch": { type: str }
-                   "tag": { type: str }
-                   "revision": { type: str }
-                   "url": { type: str }
-                   "repo-path": { type: str }
-                   "remote": { type: str }
-                   "patch": { type: str }
-                   "vcs": { type: str, enum: ['git', 'svn'] }
-                   "src": { type: str }
-                   "ignore":
-                        required: False
-                        type: seq
-                        sequence:
-                          - type: str
+manifest:
+    version: enum('0.0', 0.0)
+    remotes: list(include('remote'), unique_property='name', required=False)
+    projects: list(include('project'), unique_property='name, dst')
+---
+remote:
+    name: str()
+    url-base: str()
+    default: bool(required=False)
+
+project:
+    name: str()
+    dst: str(required=False)
+    branch: str(required=False)
+    tag: str(required=False)
+    revision: str(required=False)
+    url: str(required=False)
+    repo-path: str(required=False)
+    remote: str(required=False)
+    patch: str(required=False)
+    vcs: enum('git', 'svn', required=False)
+    src: str(required=False)
+    ignore: list(str(), required=False)

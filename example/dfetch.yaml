@@ -26,7 +26,7 @@ manifest:
     repo-path: tortoisesvn/code
 
   - name: tortoise-svn-tag
-    dst: Tests/tortoise-svn-tag/
+    dst: Tests/tortoise-svn-branch-rev/
     remote: sourceforge
     tag: version-1.13.1
     src: src/*.txt

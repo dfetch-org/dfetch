@@ -44,6 +44,6 @@ Feature: Validate a manifest
             """
             Dfetch (0.10.0)
             Schema validation failed:
-             - Cannot find required key 'manifest'. Path: ''.
-             - Key 'manifest-wrong' was not defined. Path: ''.
+            - manifest-wrong: Unexpected element
+            - manifest: Required field missing
             """
