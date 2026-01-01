@@ -19,6 +19,9 @@ PACKAGE_NAME = project_info.get("name")
 MAINTAINER = project_info.get("authors", [{}])[0].get("name", "")
 DESCRIPTION = project_info.get("description", "")
 URL = project_info.get("urls", {}).get("Homepage", "")
+DOCS_URL = project_info.get("urls", {}).get("Documentation", "")
+ISSUES_URL = project_info.get("urls", {}).get("Issues", "")
+CHANGELOG_URL = project_info.get("urls", {}).get("Changelog", "")
 LICENSE = project_info.get("license", "")
 
 INSTALL_PREFIX = (
@@ -27,6 +30,12 @@ INSTALL_PREFIX = (
 BUILD_DIR = Path("build", f"{PACKAGE_NAME}.dist")
 OUTPUT_DIR = Path("build", f"{PACKAGE_NAME}-package")
 UPGRADE_CODE = "BDC7DA0D-70C1-4189-BE88-F1BD2DEE3E33"  #: Fixed UUID for WiX installer, must be unique and stable
+
+tools = pyproject.get("tool", {})
+nuitka_info = tools.get("nuitka", {})
+
+WINDOWS_ICO = nuitka_info.get("windows-icon-from-ico", "")
+WINDOWS_ICO_PATH = Path(WINDOWS_ICO).resolve()
 
 
 def run_command(command: list[str]) -> None:
@@ -188,7 +197,19 @@ def generate_wix_xml(build_dir: Path, output_wxs: Path) -> None:
     )
     ET.SubElement(feature, "Files", Include=str(build_dir.resolve() / "**"))
 
+    # Add / Remove programs info (ARP)
+    ET.SubElement(package, "Icon", Id="AppIcon", SourceFile=str(WINDOWS_ICO_PATH))
+    ET.SubElement(package, "Property", Id="ARPPRODUCTICON", Value="AppIcon")
+
     ET.SubElement(package, "Property", Id="ARPCOMMENTS", Value=DESCRIPTION)
+    ET.SubElement(package, "Property", Id="ARPURLINFOABOUT", Value=URL)
+    ET.SubElement(package, "Property", Id="ARPREADME", Value=DOCS_URL)
+    ET.SubElement(package, "Property", Id="ARPHELPLINK", Value=ISSUES_URL)
+    ET.SubElement(package, "Property", Id="ARPURLUPDATEINFO", Value=CHANGELOG_URL)
+
+    # Don't show modify & repair buttons, only remove
+    ET.SubElement(package, "Property", Id="ARPNOMODIFY", Value="1")
+    ET.SubElement(package, "Property", Id="ARPNOREPAIR", Value="1")
 
     tree = ET.ElementTree(wix)
     tree.write(output_wxs, encoding="utf-8", xml_declaration=True)
