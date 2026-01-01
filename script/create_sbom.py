@@ -2,7 +2,7 @@
 """Generate an sbom of the tool."""
 import contextlib
 import logging
-import subprocess
+import subprocess  # nosec
 import sys
 import tempfile
 import venv
@@ -35,8 +35,8 @@ def temporary_venv():
 
 
 with temporary_venv() as python:
-    subprocess.check_call([python, "-m", "pip", "install", DEPS])
-    subprocess.check_call(
+    subprocess.check_call([python, "-m", "pip", "install", DEPS])  # nosec
+    subprocess.check_call(  # nosec
         [python, "-m", "cyclonedx_py", "environment", "-o", str(OUTPUT_FILE)]
     )
 
