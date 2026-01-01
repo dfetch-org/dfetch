@@ -105,6 +105,7 @@ build = [
     'nuitka==2.8.9',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml]
 ]
+sbom = ["cyclonedx-bom==7.2.1"]
 
 [project.scripts]
 dfetch = "dfetch.__main__:main"

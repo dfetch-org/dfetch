@@ -12,3 +12,4 @@ doc/_build
 doc/landing-page/_build
 example/Tests/
 venv*
+*.cdx.json
