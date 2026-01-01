@@ -93,7 +93,7 @@ jobs:
               build/dfetch-package/*.rpm
               build/dfetch-package/*.pkg
               build/dfetch-package/*.msi
-              *.cdx.json
+              build/dfetch-package/*.cdx.json
 
   test-binary:
     name: test binary

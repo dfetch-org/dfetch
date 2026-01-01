@@ -13,7 +13,12 @@ from dfetch import __version__
 logging.basicConfig(level=logging.INFO)
 
 PROJECT_DIR = Path(__file__).parent.parent.resolve()
-OUTPUT_FILE = PROJECT_DIR / f"dfetch-{__version__}.{sys.platform}.cdx.json"
+OUTPUT_FILE = (
+    PROJECT_DIR
+    / "build"
+    / "dfetch-package"
+    / f"dfetch-{__version__}.{sys.platform}.cdx.json"
+)
 
 DEPS = f"{PROJECT_DIR}[sbom]"
 
