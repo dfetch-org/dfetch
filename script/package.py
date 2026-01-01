@@ -35,7 +35,7 @@ tools = pyproject.get("tool", {})
 nuitka_info = tools.get("nuitka", {})
 
 WINDOWS_ICO = nuitka_info.get("windows-icon-from-ico", "")
-WINDOWS_ICO_PATH = Path(WINDOWS_ICO).resolve()
+WINDOWS_ICO_PATH = Path(WINDOWS_ICO).resolve() if WINDOWS_ICO else None
 
 
 def run_command(command: list[str]) -> None:
@@ -198,14 +198,15 @@ def generate_wix_xml(build_dir: Path, output_wxs: Path) -> None:
     ET.SubElement(feature, "Files", Include=str(build_dir.resolve() / "**"))
 
     # Add / Remove programs info (ARP)
-    ET.SubElement(package, "Icon", Id="AppIcon", SourceFile=str(WINDOWS_ICO_PATH))
-    ET.SubElement(package, "Property", Id="ARPPRODUCTICON", Value="AppIcon")
-
     ET.SubElement(package, "Property", Id="ARPCOMMENTS", Value=DESCRIPTION)
     ET.SubElement(package, "Property", Id="ARPURLINFOABOUT", Value=URL)
     ET.SubElement(package, "Property", Id="ARPREADME", Value=DOCS_URL)
     ET.SubElement(package, "Property", Id="ARPHELPLINK", Value=ISSUES_URL)
     ET.SubElement(package, "Property", Id="ARPURLUPDATEINFO", Value=CHANGELOG_URL)
+
+    if WINDOWS_ICO_PATH:
+        ET.SubElement(package, "Icon", Id="AppIcon", SourceFile=str(WINDOWS_ICO_PATH))
+        ET.SubElement(package, "Property", Id="ARPPRODUCTICON", Value="AppIcon")
 
     # Don't show modify & repair buttons, only remove
     ET.SubElement(package, "Property", Id="ARPNOMODIFY", Value="1")
