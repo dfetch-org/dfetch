@@ -40,6 +40,7 @@ def temporary_venv():
 
 
 with temporary_venv() as python:
+    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     subprocess.check_call([python, "-m", "pip", "install", DEPS])  # nosec
     subprocess.check_call(  # nosec
         [python, "-m", "cyclonedx_py", "environment", "-o", str(OUTPUT_FILE)]
