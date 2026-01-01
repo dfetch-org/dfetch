@@ -243,6 +243,8 @@ def package_windows() -> None:
         ["dotnet", "build", str(wix_proj), "-c", "Release", "-o", str(OUTPUT_DIR)]
     )
 
+    shutil.move(OUTPUT_DIR / "dfetch.msi", msi_file)
+
     print(f"MSI generated at {msi_file}")
 
 
