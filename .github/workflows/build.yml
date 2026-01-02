@@ -78,7 +78,7 @@ jobs:
           path: ${{ github.workspace }}\.clcache
           key: ${{ github.job }}-${{ matrix.platform }}
 
-      - name: Create binary
+      - name: Create sbom, binary & package
         env:
           CCACHE_BASEDIR: ${{ github.workspace }}
           CCACHE_NOHASHDIR: true
@@ -102,7 +102,7 @@ jobs:
               build/dfetch-package/*.msi
               build/dfetch-package/*.cdx.json
 
-      - name: Upload artifacts to release
+      - name: Upload installer to release
         if: ${{ inputs.release_id }}
         uses: softprops/action-gh-release@5122b4edc95f85501a71628a57dc180a03ec7588 # v2.5.0
         with:
@@ -118,7 +118,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test-binary:
-    name: test binary
+    name: Test dfetch from installer
     needs:
     - build
     strategy:
@@ -199,6 +199,7 @@ jobs:
         path: dist/
 
   release:
+    name: Upload wheel to release 📦
     runs-on: ubuntu-latest
     if: ${{ inputs.release_id }}
     needs: build-whl
