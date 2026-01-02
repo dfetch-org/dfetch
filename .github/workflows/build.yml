@@ -114,6 +114,7 @@ jobs:
               build/dfetch-package/*.msi
               build/dfetch-package/*.cdx.json
           draft: true
+          preserve_order: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -218,5 +219,6 @@ jobs:
         tag_name: ${{ inputs.release_id }}
         files: dist/*
         draft: true
+        preserve_order: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

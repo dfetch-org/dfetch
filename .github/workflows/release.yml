@@ -49,7 +49,7 @@ jobs:
               echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Update latest tag
-        if: ${{ steps.release_info.outputs.tag }} == 'latest'
+        if: ${{ steps.release_info.outputs.tag == 'latest' }}
         uses: EndBug/latest-tag@52ce15b2695f86a4ce47b72387dee54e47f6356c # v1.6.2
         with:
           ref: latest
@@ -63,8 +63,8 @@ jobs:
         run: |
           python script/create_release_notes.py
 
-      - name: Delete existing release assets
-        if: ${{ steps.release_info.outputs.tag }}
+      - name: Delete existing release
+        if: ${{ steps.release_info.outputs.tag == 'latest' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.release_info.outputs.tag }}
