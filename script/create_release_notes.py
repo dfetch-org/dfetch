@@ -3,7 +3,6 @@
 create_release_notes.py
 
 Extracts the latest section from CHANGELOG.rst.
-If --latest is provided, adds an admonition that it is unreleased.
 """
 
 import argparse
@@ -12,18 +11,14 @@ from pathlib import Path
 
 
 def extract_latest_section(changelog_path: Path) -> str:
-    """
-    Extract the latest release section from a CHANGELOG.rst file.
-    """
+    """Extract the latest release section from a CHANGELOG file."""
+
     content = changelog_path.read_text(encoding="utf-8")
     lines = content.splitlines()
 
-    # Find lines starting with version headings like: 'v1.2.3' or '.. version'
-    # dfetch uses "vX.Y.Z" style headings in CHANGELOG.rst
     version_header_pattern = re.compile(r"^Release \d+\.\d+\.\d+")
 
-    start_idx = None
-    end_idx = None
+    start_idx, end_idx = None, None
 
     for idx, line in enumerate(lines):
         if version_header_pattern.match(line.strip()):
@@ -31,9 +26,8 @@ def extract_latest_section(changelog_path: Path) -> str:
             break
 
     if start_idx is None:
-        raise ValueError("No release section found in CHANGELOG.rst")
+        raise ValueError(f"No release section found in {changelog_path}")
 
-    # Find the next version header to determine the end
     for idx in range(start_idx + 1, len(lines)):
         if version_header_pattern.match(lines[idx].strip()):
             end_idx = idx
@@ -58,10 +52,9 @@ def main():
         print(f"Error: {changelog_path} not found.")
         return
 
-    release_notes = extract_latest_section(changelog_path)
-
-    with open("release_notes.txt", "w", encoding="UTF-8") as notes:
-        print(release_notes, file=notes)
+    Path("release_notes.txt").write_text(
+        extract_latest_section(changelog_path), encoding="UTF-8"
+    )
 
 
 if __name__ == "__main__":
