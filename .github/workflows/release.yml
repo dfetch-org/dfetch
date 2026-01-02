@@ -38,7 +38,7 @@ jobs:
                 BRANCH="${GITHUB_REF#refs/heads/}"
               fi
 
-              if [[ "$BRANCH" == "main" || "$BRANCH" == "automate-release" ]]; then
+              if [[ "$BRANCH" == "main" ]]; then
                 TAG="latest"
               elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
                 TAG="${GITHUB_REF#refs/tags/}"

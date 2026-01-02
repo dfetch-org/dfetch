@@ -32,7 +32,6 @@ jobs:
       release_id: ${{ needs.prep-release.outputs.release_id }}
 
   run:
-    needs: prep-release
     uses: ./.github/workflows/run.yml
     permissions:
       contents: read
