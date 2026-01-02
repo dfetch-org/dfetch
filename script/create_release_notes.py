@@ -59,7 +59,9 @@ def main():
         return
 
     release_notes = extract_latest_section(changelog_path)
-    print(release_notes)
+
+    with open("release_notes.txt", "w", encoding="UTF-8") as notes:
+        print(release_notes, file=notes)
 
 
 if __name__ == "__main__":

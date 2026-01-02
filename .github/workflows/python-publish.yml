@@ -17,6 +17,7 @@ permissions:
 
 jobs:
   build:
+    needs: prepare-release
     name: Build distribution 📦
     runs-on: ubuntu-latest
 

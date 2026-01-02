@@ -13,6 +13,7 @@ permissions:
 jobs:
 
   build:
+    needs: prepare-release
     strategy:
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]
