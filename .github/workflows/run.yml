@@ -35,6 +35,9 @@ jobs:
           echo "C:\Program Files (x86)\Subversion\bin" >> $env:GITHUB_PATH
           svn --version  # Verify installation
 
+      - name: Install Zig (Windows)
+        run: choco install zig -y
+
       - name: Install dfetch
         run: pip install .
 
@@ -101,6 +104,10 @@ jobs:
           $env:PATH = "C:\Program Files (x86)\Subversion\bin;$env:PATH"
           echo "C:\Program Files (x86)\Subversion\bin" >> $env:GITHUB_PATH
           svn --version  # Verify installation
+
+      - name: Install Zig (Windows)
+        if: runner.os == 'Windows'
+        run: choco install zig -y
 
       - name: Install dfetch
         run: pip install .
