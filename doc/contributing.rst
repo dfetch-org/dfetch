@@ -108,10 +108,8 @@ Releasing
     git tag -a '0.5.0' -m "Release version 0.5.0"
     git push --tags
 
-- If all tests ok, create release in the `GitHub webui <https://github.com/dfetch-org/dfetch/releases/new>`_.
-- Make sure all dependencies in ``pyproject.toml`` are pinned.
-- Copy the CHANGELOG entry of the release to github.
-- When the release is created, a new package is automatically pushed to `PyPi <https://pypi.org/project/dfetch/>`_.
+- The ``ci.yml`` job will automatically create a draft release in `GitHub Releases <https://github.com/dfetch-org/dfetch/releases/>`_ with all artifacts.
+- Once the release is published, a new package is automatically pushed to `PyPi <https://pypi.org/project/dfetch/>`_.
 
 - After release, add new header to ``CHANGELOG.rst``:
 
