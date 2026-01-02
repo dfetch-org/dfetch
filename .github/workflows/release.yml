@@ -49,26 +49,40 @@ jobs:
               echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Update latest tag
-        if: github.ref == 'refs/heads/automate-release'
+        if: ${{ steps.release_info.outputs.tag }} == 'latest'
         uses: EndBug/latest-tag@52ce15b2695f86a4ce47b72387dee54e47f6356c # v1.6.2
         with:
           ref: latest
+          description: Last state in main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate release notes
-        if: ${{ steps.release_info.outputs.tag != '' }}
+        if: ${{ steps.release_info.outputs.tag }}
         id: notes
         run: |
           python script/create_release_notes.py
 
+      - name: Delete existing release assets
+        if: ${{ steps.release_info.outputs.tag }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.release_info.outputs.tag }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release delete "$TAG" --yes
+          else
+            echo "No release found for $TAG."
+          fi
+
       - name: Create release
-        if: ${{ steps.release_info.outputs.tag != '' }}
+        if: ${{ steps.release_info.outputs.tag }}
         uses: softprops/action-gh-release@5122b4edc95f85501a71628a57dc180a03ec7588 # v2.5.0
         with:
           tag_name: ${{ steps.release_info.outputs.tag }}
           name: ${{ steps.release_info.outputs.tag }}
           body_path: release_notes.txt
           draft: true
+          files: LICENSE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

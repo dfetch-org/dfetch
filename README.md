@@ -54,8 +54,7 @@ pip install git+https://github.com/dfetch-org/dfetch.git#egg=dfetch
 
 ### Binary distributions
 
-The [build.yml](https://github.com/dfetch-org/dfetch/actions/workflows/build.yml) produces installers for all major platforms.
-See the artifacts in the run.
+Each release on the [releases page](https://github.com/dfetch-org/dfetch/releases) provides installers for all major platforms.
 
 - Linux `.deb` & `.rpm`
 - macOS `.pkg`

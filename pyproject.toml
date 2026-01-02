@@ -104,6 +104,7 @@ casts = ['asciinema==2.4.0']
 build = [
     'nuitka==2.8.9',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml]
+    "setuptools-scm==9.2.2", # For determining version
 ]
 sbom = ["cyclonedx-bom==7.2.1"]
 
