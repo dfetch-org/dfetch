@@ -1,6 +1,10 @@
 Release 0.11.0 (unreleased)
 ====================================
 
+.. note::
+
+    This is the latest unreleased version and may change
+
 * Support python 3.14
 * Drop python 3.7, 3.8 support (#801)
 * Don't show animation when running in CI (#702)
