@@ -32,7 +32,7 @@ jobs:
           svn --version  # Verify installation
 
       - name: Install Zig (Windows)
-        run: choco install zig -y
+        run: choco install zig --version=0.15.2 -y
 
       - name: Install dfetch
         run: pip install .
@@ -103,7 +103,7 @@ jobs:
 
       - name: Install Zig (Windows)
         if: runner.os == 'Windows'
-        run: choco install zig -y
+        run: choco install zig --version=0.15.2 -y
 
       - name: Install dfetch
         run: pip install .
