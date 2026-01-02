@@ -1,12 +1,11 @@
 name: Releases
 
 on:
-  push:
-    branches:
-      - main
-      - automate-release
-    tags:
-      - '*.*.*'
+  workflow_call:
+    outputs:
+      release_id:
+        description: "Tag name to use of release, empty if not needed"
+        value: ${{ jobs.prepare-release.outputs.release_id }}
 
 permissions:
   contents: read
@@ -18,23 +17,36 @@ jobs:
       contents: write
       security-events: write
 
-    steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v5.0.0
+    outputs:
+      release_id: ${{ steps.release_info.outputs.tag }}
 
-      - name: Setup Python
-        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+    steps:
+      - uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v5.0.0
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
           python-version: '3.13'
 
       - name: Determine release info
         id: release_info
         run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/automate-release" ]]; then
-            TAG="latest"
-          else
-            TAG="${GITHUB_REF#refs/tags/}"
-          fi
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+              if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+                BRANCH="${GITHUB_HEAD_REF}"
+              else
+                BRANCH="${GITHUB_REF#refs/heads/}"
+              fi
+
+              if [[ "$BRANCH" == "main" || "$BRANCH" == "automate-release" ]]; then
+                TAG="latest"
+              elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+                TAG="${GITHUB_REF#refs/tags/}"
+              else
+                TAG=""
+              fi
+              echo "tag=$TAG"
+              echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Update latest tag
         if: github.ref == 'refs/heads/automate-release'
@@ -45,11 +57,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate release notes
+        if: ${{ steps.release_info.outputs.tag != '' }}
         id: notes
         run: |
           python script/create_release_notes.py
 
       - name: Create release
+        if: ${{ steps.release_info.outputs.tag != '' }}
         uses: softprops/action-gh-release@5122b4edc95f85501a71628a57dc180a03ec7588 # v2.5.0
         with:
           tag_name: ${{ steps.release_info.outputs.tag }}
