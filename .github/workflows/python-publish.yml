@@ -5,7 +5,7 @@ name: Upload Python Package
 
 on:
   release:
-    types: [published]
+    types: [published] # Once manually verified, draft is released
 
   # No support for reusable workflows (yet): https://github.com/pypi/warehouse/issues/11096
   pull_request:
@@ -92,25 +92,3 @@ jobs:
         path: dist/
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@03f86fee9ac21f854951f5c6e2a02c2a1324aec7 # v1
-
-  release:
-    runs-on: ubuntu-latest
-    if: ${{ inputs.release_id }}
-    needs: build
-    permissions:
-      contents: write
-      security-events: write
-    steps:
-    - name: Download all the dists
-      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v5
-      with:
-        name: python-package-distributions
-        path: dist/
-    - name: Upload artifacts to release
-      uses: softprops/action-gh-release@5122b4edc95f85501a71628a57dc180a03ec7588 # v2.5.0
-      with:
-        tag_name: ${{ inputs.release_id }}
-        files: dist/*
-        draft: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

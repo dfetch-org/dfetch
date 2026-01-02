@@ -7,6 +7,7 @@ Extracts the latest section from CHANGELOG.rst.
 
 import argparse
 import re
+import sys
 from pathlib import Path
 
 
@@ -33,6 +34,7 @@ def extract_latest_section(changelog_path: Path) -> str:
             end_idx = idx
             break
 
+    # If end_idx is None, capture all lines to the end (single release section)
     section_lines = lines[start_idx:end_idx]
     return "\n".join(section_lines).strip()
 
@@ -50,7 +52,7 @@ def main():
     changelog_path = Path(args.changelog)
     if not changelog_path.exists():
         print(f"Error: {changelog_path} not found.")
-        return
+        sys.exit(1)
 
     Path("release_notes.txt").write_text(
         extract_latest_section(changelog_path), encoding="UTF-8"

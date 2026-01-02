@@ -12,6 +12,7 @@ from setuptools_scm import get_version
 from dfetch import __version__ as __digit_only_version__  # Used inside the installers
 
 __version__ = get_version(  # Used to name the installers
+    root=".",
     version_scheme="guess-next-dev",
     local_scheme="no-local-version",
 )
