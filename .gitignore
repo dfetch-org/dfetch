@@ -13,3 +13,4 @@ doc/landing-page/_build
 example/Tests/
 venv*
 *.cdx.json
+release_notes.txt
