@@ -16,26 +16,26 @@ permissions:
   contents: read
 
 jobs:
-  draft-release:
+  prep-release:
     uses: ./.github/workflows/release.yml
     permissions:
       contents: write
       security-events: write
 
-  build-binaries:
-    needs: draft-release
+  build:
+    needs: prep-release
     uses: ./.github/workflows/build.yml
     permissions:
       contents: write
       security-events: write
     with:
-      release_id: ${{ needs.draft-release.outputs.release_id }}
+      release_id: ${{ needs.prep-release.outputs.release_id }}
 
   run:
-    needs: draft-release
+    needs: prep-release
     uses: ./.github/workflows/run.yml
     permissions:
       contents: read
       security-events: write
     with:
-      release_id: ${{ needs.draft-release.outputs.release_id }}
+      release_id: ${{ needs.prep-release.outputs.release_id }}
