@@ -8,19 +8,20 @@ import tempfile
 import venv
 from pathlib import Path
 
-from dfetch import __version__
-
 logging.basicConfig(level=logging.INFO)
 
 PROJECT_DIR = Path(__file__).parent.parent.resolve()
-OUTPUT_FILE = (
-    PROJECT_DIR
-    / "build"
-    / "dfetch-package"
-    / f"dfetch-{__version__}.{sys.platform}.cdx.json"
-)
+
 
 DEPS = f"{PROJECT_DIR}[sbom]"
+
+
+PLATFORM_NAME = "nix"
+
+if sys.platform.startswith("darwin"):
+    PLATFORM_NAME = "osx"
+elif sys.platform.startswith("win"):
+    PLATFORM_NAME = "win"
 
 
 @contextlib.contextmanager
@@ -40,8 +41,29 @@ def temporary_venv():
 
 
 with temporary_venv() as python:
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     subprocess.check_call([python, "-m", "pip", "install", DEPS])  # nosec
+
+    __version__ = (
+        subprocess.run(  # nosec
+            [
+                python,
+                "-c",
+                "from importlib.metadata import version; print(version('dfetch'))",
+            ],
+            check=True,
+            capture_output=True,
+        )
+        .stdout.decode("UTF-8")
+        .strip()
+    )
+
+    OUTPUT_FILE = (
+        PROJECT_DIR
+        / "build"
+        / "dfetch-package"
+        / f"dfetch-{__version__}-{PLATFORM_NAME}.cdx.json"
+    )
+    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     subprocess.check_call(  # nosec
         [python, "-m", "cyclonedx_py", "environment", "-o", str(OUTPUT_FILE)]
     )

@@ -39,13 +39,3 @@ jobs:
       security-events: write
     with:
       release_id: ${{ needs.draft-release.outputs.release_id }}
-
-  python-publish:
-    needs: draft-release
-    uses: ./.github/workflows/python-publish.yml
-    permissions:
-      contents: write
-      security-events: write
-      id-token: write
-    with:
-      release_id: ${{ needs.draft-release.outputs.release_id }}
