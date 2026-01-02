@@ -1,11 +1,11 @@
 name: Run
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened]
+  workflow_call:
+    inputs:
+      release_id:
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -58,7 +58,7 @@ jobs:
             dfetch update
             dfetch report
 
-  test:
+  run:
     strategy:
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]

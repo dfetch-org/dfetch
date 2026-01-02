@@ -1,11 +1,11 @@
 name: Build
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened]
+  workflow_call:
+    inputs:
+      release_id:
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -13,13 +13,12 @@ permissions:
 jobs:
 
   build:
-    needs: prepare-release
     strategy:
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
     permissions:
-      contents: read
+      contents: write
       security-events: write
 
     steps:
@@ -95,6 +94,22 @@ jobs:
               build/dfetch-package/*.pkg
               build/dfetch-package/*.msi
               build/dfetch-package/*.cdx.json
+
+      - name: Upload artifacts to release
+        if: ${{ inputs.release_id }}
+        uses: softprops/action-gh-release@5122b4edc95f85501a71628a57dc180a03ec7588 # v2.5.0
+        with:
+          tag_name: ${{ inputs.release_id }}
+          files: |
+              build/dfetch-package/*.deb
+              build/dfetch-package/*.rpm
+              build/dfetch-package/*.pkg
+              build/dfetch-package/*.msi
+              build/dfetch-package/*.cdx.json
+          overwrite_files: false
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test-binary:
     name: test binary
