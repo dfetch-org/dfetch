@@ -42,6 +42,7 @@ jobs:
       - run: dfetch check
       - run: dfetch update
       - run: dfetch update
+      - run: dfetch filter
       - run: dfetch report -t sbom
       - name: Dfetch SARIF Check
         uses: ./
@@ -55,6 +56,7 @@ jobs:
         run: |
             dfetch update
             dfetch update
+            find . | dfetch filter
             dfetch report
 
   run:

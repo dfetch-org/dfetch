@@ -3,11 +3,14 @@
 # pylint: disable=function-redefined, missing-function-docstring, not-callable
 # pyright: reportRedeclaration=false, reportAttributeAccessIssue=false, reportCallIssue=false
 
+import contextlib
 import difflib
 import json
 import os
 import pathlib
 import re
+import sys
+from io import StringIO
 from itertools import zip_longest
 from typing import Iterable, List, Optional, Pattern, Tuple, Union
 
@@ -25,6 +28,32 @@ iso_timestamp = re.compile(r'"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}\+\d{2}:\
 urn_uuid = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 bom_ref = re.compile(r"BomRef\.[0-9]+\.[0-9]+")
 svn_error = re.compile(r"svn: E\d{6}: .+")
+abs_path = re.compile(r"/some/dir")
+
+
+@contextlib.contextmanager
+def tee_stdout():
+    """Contextmanager duplicating stdout."""
+    original_stdout = sys.stdout
+    buffer = StringIO()
+
+    class Tee:
+        """Tee class for stdout."""
+
+        def write(self, data):
+            original_stdout.write(data)
+            buffer.write(data)
+            original_stdout.flush()
+
+        def flush(self):
+            original_stdout.flush()
+            buffer.flush()
+
+    sys.stdout = Tee()
+    try:
+        yield buffer
+    finally:
+        sys.stdout = original_stdout
 
 
 def remote_server_path(context):
@@ -35,15 +64,18 @@ def remote_server_path(context):
 def call_command(context: Context, args: list[str], path: Optional[str] = ".") -> None:
     length_at_start = len(context.captured.output)
     with in_directory(path or "."):
-        try:
-            run(args)
-            context.cmd_returncode = 0
-        except DfetchFatalException:
-            context.cmd_returncode = 1
+        with tee_stdout() as captured_stdout:
+            try:
+                run(args)
+                context.cmd_returncode = 0
+            except DfetchFatalException:
+                context.cmd_returncode = 1
     # Remove the color code + title
     context.cmd_output = dfetch_title.sub(
         "", ansi_escape.sub("", context.captured.output[length_at_start:].strip("\n"))
     )
+    captured_stdout.seek(0)
+    context.cmd_stdout = captured_stdout.read()
 
 
 def check_file(path, content):
@@ -255,6 +287,7 @@ def step_impl(context):
             (timestamp, "[timestamp]"),
             (dfetch_title, ""),
             (svn_error, "svn: EXXXXXX: <some error text>"),
+            (abs_path, ""),
         ],
         text=context.text,
     )
@@ -269,8 +302,9 @@ def step_impl(context):
                 "some-remote-server",
             ),
             (svn_error, "svn: EXXXXXX: <some error text>"),
+            (re.compile(re.escape(os.getcwd())), ""),
         ],
-        text=context.cmd_output,
+        text=context.cmd_stdout or context.cmd_output,
     )
 
     diff = difflib.ndiff(actual_text.splitlines(), expected_text.splitlines())
