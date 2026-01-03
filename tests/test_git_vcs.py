@@ -24,7 +24,7 @@ from dfetch.vcs.git import GitLocalRepo, GitRemote
 )
 def test_remote_check(name, cmd_result, expectation):
 
-    os.environ["GIT_SSH_COMMAND"] = "ssh"  # prevents addition subprocess call
+    os.environ["GIT_SSH_COMMAND"] = "ssh"  # prevents additional subprocess call
 
     with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
         run_on_cmdline_mock.side_effect = cmd_result
@@ -132,7 +132,7 @@ from dfetch.vcs.git import SubprocessCommandError, _build_git_ssh_command
         ),
         ("no env or git config", None, None, "ssh -o BatchMode=yes"),
         (
-            "env with bachmode",
+            "env with batchmode",
             "ssh -o BatchMode=yes",
             None,
             "ssh -o BatchMode=yes",
