@@ -205,3 +205,22 @@ Feature: Checking dependencies from a git repository
               SomeProjectNonExistentBranch: wanted (i-dont-exist), but not available at the upstream.
               SomeProjectNonExistentRevision: wanted (0123112321234123512361236123712381239123), but not available at the upstream.
             """
+
+    Scenario: Credentials required for remote
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: private-repo
+                  url: https://github.com/dfetch-org/test-repo-private.git
+            """
+        When I run "dfetch check"
+        Then the output shows
+            """
+            Dfetch (0.10.0)
+            >>>git ls-remote --heads --tags https://github.com/dfetch-org/test-repo-private.git<<< returned 128:
+            remote: Write access to repository not granted.
+            fatal: unable to access 'https://github.com/dfetch-org/test-repo-private.git/': The requested URL returned error: 403
+            """
