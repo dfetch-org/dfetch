@@ -134,10 +134,10 @@ class SvnRepo(VCS):
             run_on_cmdline(logger, ["svn", "info", self.remote, "--non-interactive"])
             return True
         except SubprocessCommandError as exc:
-            if exc.stdout.startswith("svn: E170013"):
+            if exc.stderr.startswith("svn: E170013"):
                 raise RuntimeError(
                     f">>>{exc.cmd}<<< failed!\n"
-                    + f"'{self.remote}' is not a valid URL or unreachable:\n{exc.stderr or exc.stdout}"
+                    + f"'{self.remote}' is not a valid URL or unreachable:\n{exc.stdout or exc.stderr}"
                 ) from exc
             return False
         except RuntimeError:
@@ -330,10 +330,10 @@ class SvnRepo(VCS):
                 logger, ["svn", "info", "--non-interactive", target.strip()]
             ).stdout.decode()
         except SubprocessCommandError as exc:
-            if exc.stdout.startswith("svn: E170013"):
+            if exc.stderr.startswith("svn: E170013"):
                 raise RuntimeError(
                     f">>>{exc.cmd}<<< failed!\n"
-                    + f"'{target.strip()}' is not a valid URL or unreachable:\n{exc.stdout}"
+                    + f"'{target.strip()}' is not a valid URL or unreachable:\n{exc.stderr or exc.stdout}"
                 ) from exc
             raise
 

@@ -25,8 +25,8 @@ class SubprocessCommandError(Exception):
         cmd_str: str = " ".join(cmd or [])
         self._message = f">>>{cmd_str}<<< returned {returncode}:{os.linesep}{stderr}"
         self.cmd = cmd_str
-        self.stderr = stdout
-        self.stdout = stderr
+        self.stdout = stdout
+        self.stderr = stderr
         self.returncode = returncode
         super().__init__(self._message)
 

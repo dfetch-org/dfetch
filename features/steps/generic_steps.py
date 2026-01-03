@@ -282,9 +282,8 @@ def check_output(context, line_count=None):
         text=context.cmd_output,
     )
 
-    diff = difflib.ndiff(
-        actual_text.splitlines()[:line_count], expected_text.splitlines()
-    )
+    actual_lines = actual_text.splitlines()[:line_count]
+    diff = difflib.ndiff(actual_lines, expected_text.splitlines())
 
     diffs = [x for x in diff if x[0] in ("+", "-")]
     if diffs:

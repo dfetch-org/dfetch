@@ -46,14 +46,11 @@ def _build_git_ssh_command() -> str:
     if not ssh_cmd:
 
         try:
-            ssh_cmd = (
-                run_on_cmdline(
-                    logger,
-                    ["git", "config", "--get", "core.sshCommand"],
-                )
-                .stdout.decode("utf-8")
-                .strip()
+            result = run_on_cmdline(
+                logger,
+                ["git", "config", "--get", "core.sshCommand"],
             )
+            ssh_cmd = result.stdout.decode().strip()
 
         except SubprocessCommandError:
             ssh_cmd = None
@@ -104,7 +101,7 @@ class GitRemote:
             )
             return True
         except SubprocessCommandError as exc:
-            if exc.returncode == 128 and "Could not resolve host" in exc.stdout:
+            if exc.returncode == 128 and "Could not resolve host" in exc.stderr:
                 raise RuntimeError(
                     f">>>{exc.cmd}<<< failed!\n"
                     + f"'{self._remote}' is not a valid URL or unreachable:\n{exc.stderr or exc.stdout}"
