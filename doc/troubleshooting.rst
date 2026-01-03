@@ -64,5 +64,5 @@ You can report issues by opening a confidential issue via `GitHub Security Advis
 `GitHub's private vulnerability reporting`_ for more info. If you have no contact please contact us through
 the mail listed in the pyproject.toml.
 
-.. _`GitHub Security Advisories`: https://github.com/dfetch/dfetch/security/advisories
+.. _`GitHub Security Advisories`: https://github.com/dfetch-org/dfetch/security/advisories
 .. _`GitHub's private vulnerability reporting`: https://docs.github.com/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)
