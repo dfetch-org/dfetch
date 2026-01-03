@@ -40,6 +40,7 @@ extensions = [
     "sphinx-jsonschema",
     "sphinxcontrib.programoutput",
     "sphinx_tabs.tabs",
+    "sphinx_autoissues",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -91,6 +92,10 @@ autosectionlabel_maxdepth = 3
 
 # Suppress warnings about duplicate labels from argparse directive
 suppress_warnings = ["autosectionlabel.manual"]
+
+# Options for sphinx-autoissues
+issuetracker = "github"
+issuetracker_project = "dfetch-org/dfetch"
 
 # -- Options for HTML output ----------------------------------------------
 
