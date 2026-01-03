@@ -26,6 +26,7 @@ Release 0.11.0 (unreleased)
 * Don't consider ignored files for determining local changes (#350)
 * Avoid waiting for user input in ``git`` & ``svn`` commands (#570)
 * Extend git ssh command to run in BatchMode (#570)
+* Use native line breaks in ``dfetch freeze`` & ``dfetch import`` (#327)
 
 Release 0.10.0 (released 2025-03-12)
 ====================================

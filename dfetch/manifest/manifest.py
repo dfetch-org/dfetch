@@ -328,7 +328,11 @@ class Manifest:
         """Dump metadata file to correct path."""
         with open(path, "w+", encoding="utf-8") as manifest_file:
             yaml.dump(
-                self._as_dict(), manifest_file, Dumper=ManifestDumper, sort_keys=False
+                self._as_dict(),
+                manifest_file,
+                Dumper=ManifestDumper,
+                sort_keys=False,
+                line_break=os.linesep,
             )
 
     def find_name_in_manifest(self, name: str) -> ManifestEntryLocation:
@@ -412,12 +416,12 @@ class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
 
     def write_line_break(self, data: Any = None) -> None:
         """Write a line break."""
-        super().write_line_break(data)  # type: ignore[unused-ignore]
+        super().write_line_break(data)  # type: ignore[unused-ignore, no-untyped-call]
 
         if len(self.indents) == 2 and getattr(self.event, "value", "") != "version":
-            super().write_line_break()  # type: ignore[unused-ignore]
+            super().write_line_break()  # type: ignore[unused-ignore, no-untyped-call]
 
         if len(self.indents) == 3 and self._last_additional_break != 2:
-            super().write_line_break()  # type: ignore[unused-ignore]
+            super().write_line_break()  # type: ignore[unused-ignore, no-untyped-call]
 
         self._last_additional_break = len(self.indents)
