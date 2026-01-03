@@ -68,7 +68,7 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 
 .. _`Braid`: https://github.com/cristibalan/braid
 .. _`CGet`: https://github.com/pfultz2/cget
-.. _`CMAke ExternalProject`: https://cmake.org/cmake/help/latest/module/ExternalProject.html
+.. _`CMake ExternalProject`: https://cmake.org/cmake/help/latest/module/ExternalProject.html
 .. _`Combo-layer`: https://wiki.yoctoproject.org/wiki/Combo-layer
 .. _`CPM.cmake`: https://github.com/cpm-cmake/CPM.cmake
 .. _`CPPAN`: https://github.com/cppan/cppan
