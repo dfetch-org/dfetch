@@ -52,6 +52,7 @@ class SvnRepo(VCS):
             logger,
             [
                 "svn",
+                "--non-interactive",
                 "propget",
                 "svn:externals",
                 "-R",
@@ -130,7 +131,7 @@ class SvnRepo(VCS):
     def check(self) -> bool:
         """Check if is SVN."""
         try:
-            run_on_cmdline(logger, f"svn info {self.remote} --non-interactive")
+            run_on_cmdline(logger, ["svn", "info", self.remote, "--non-interactive"])
             return True
         except SubprocessCommandError as exc:
             if exc.stdout.startswith("svn: E170013"):
@@ -147,7 +148,7 @@ class SvnRepo(VCS):
         """Check if is SVN."""
         try:
             with in_directory(path):
-                run_on_cmdline(logger, "svn info --non-interactive")
+                run_on_cmdline(logger, ["svn", "info", "--non-interactive"])
             return True
         except (SubprocessCommandError, RuntimeError):
             return False
@@ -171,7 +172,9 @@ class SvnRepo(VCS):
 
     def _list_of_tags(self) -> list[str]:
         """Get list of all available tags."""
-        result = run_on_cmdline(logger, f"svn ls --non-interactive {self.remote}/tags")
+        result = run_on_cmdline(
+            logger, ["svn", "ls", "--non-interactive", f"{self.remote}/tags"]
+        )
         return [
             str(tag).strip("/\r") for tag in result.stdout.decode().split("\n") if tag
         ]
@@ -180,7 +183,7 @@ class SvnRepo(VCS):
     def list_tool_info() -> None:
         """Print out version information."""
         try:
-            result = run_on_cmdline(logger, "svn --version")
+            result = run_on_cmdline(logger, ["svn", "--version", "--non-interactive"])
         except RuntimeError as exc:
             logger.debug(
                 f"Something went wrong trying to get the version of svn: {exc}"
@@ -304,7 +307,9 @@ class SvnRepo(VCS):
     def _files_in_path(url_path: str) -> list[str]:
         return [
             str(line)
-            for line in run_on_cmdline(logger, f"svn list --non-interactive {url_path}")
+            for line in run_on_cmdline(
+                logger, ["svn", "list", "--non-interactive", url_path]
+            )
             .stdout.decode()
             .splitlines()
         ]
@@ -322,7 +327,7 @@ class SvnRepo(VCS):
     def _get_info_from_target(target: str = "") -> dict[str, str]:
         try:
             result = run_on_cmdline(
-                logger, f"svn info --non-interactive {target.strip()}"
+                logger, ["svn", "info", "--non-interactive", target.strip()]
             ).stdout.decode()
         except SubprocessCommandError as exc:
             if exc.stdout.startswith("svn: E170013"):
@@ -347,7 +352,7 @@ class SvnRepo(VCS):
         if os.path.isdir(target):
             last_digits = re.compile(r"(?P<digits>\d+)(?!.*\d)")
             version = run_on_cmdline(
-                logger, f"svnversion {target.strip()}"
+                logger, ["svnversion", target.strip()]
             ).stdout.decode()
 
             parsed_version = last_digits.search(version)
@@ -358,7 +363,14 @@ class SvnRepo(VCS):
         return str(
             run_on_cmdline(
                 logger,
-                f"svn info --non-interactive --show-item last-changed-revision {target.strip()}",
+                [
+                    "svn",
+                    "info",
+                    "--non-interactive",
+                    "--show-item",
+                    "last-changed-revision",
+                    target.strip(),
+                ],
             )
             .stdout.decode()
             .strip()
@@ -415,7 +427,7 @@ class SvnRepo(VCS):
         result = (
             run_on_cmdline(
                 logger,
-                ["svn", "status", path],
+                ["svn", "status", "--non-interactive", path],
             )
             .stdout.decode()
             .splitlines()
@@ -441,7 +453,7 @@ class SvnRepo(VCS):
             result = (
                 run_on_cmdline(
                     logger,
-                    ["svn", "status", "--no-ignore", "."],
+                    ["svn", "status", "--non-interactive", "--no-ignore", "."],
                 )
                 .stdout.decode()
                 .splitlines()

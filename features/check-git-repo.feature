@@ -221,6 +221,5 @@ Feature: Checking dependencies from a git repository
             """
             Dfetch (0.10.0)
             >>>git ls-remote --heads --tags https://github.com/dfetch-org/test-repo-private.git<<< returned 128:
-            remote: Write access to repository not granted.
-            fatal: unable to access 'https://github.com/dfetch-org/test-repo-private.git/': The requested URL returned error: 403
+            fatal: could not read Username for 'https://github.com': terminal prompts disabled
             """

@@ -30,7 +30,7 @@ class Submodule(NamedTuple):
 
 def get_git_version() -> tuple[str, str]:
     """Get the name and version of git."""
-    result = run_on_cmdline(logger, "git --version")
+    result = run_on_cmdline(logger, ["git", "--version"])
     tool, version = result.stdout.decode().strip().split("version", maxsplit=1)
     return (str(tool), str(version))
 
@@ -48,7 +48,11 @@ class GitRemote:
             return True
 
         try:
-            run_on_cmdline(logger, f"git ls-remote --heads {self._remote}")
+            run_on_cmdline(
+                logger,
+                cmd=["git", "ls-remote", "--heads", self._remote],
+                env={"GIT_TERMINAL_PROMPT": "0"},
+            )
             return True
         except SubprocessCommandError as exc:
             if exc.returncode == 128 and "Could not resolve host" in exc.stdout:
@@ -82,7 +86,9 @@ class GitRemote:
         """Try to get the default branch or fallback to master."""
         try:
             result = run_on_cmdline(
-                logger, f"git ls-remote --symref {self._remote} HEAD"
+                logger,
+                cmd=["git", "ls-remote", "--symref", self._remote, "HEAD"],
+                env={"GIT_TERMINAL_PROMPT": "0"},
             ).stdout.decode()
         except SubprocessCommandError:
             logger.debug(
@@ -101,7 +107,9 @@ class GitRemote:
     @staticmethod
     def _ls_remote(remote: str) -> dict[str, str]:
         result = run_on_cmdline(
-            logger, f"git ls-remote --heads --tags {remote}"
+            logger,
+            cmd=["git", "ls-remote", "--heads", "--tags", remote],
+            env={"GIT_TERMINAL_PROMPT": "0"},
         ).stdout.decode()
 
         info: dict[str, str] = {}
@@ -156,12 +164,14 @@ class GitRemote:
         temp_dir = tempfile.mkdtemp()
         exists = False
         with in_directory(temp_dir):
-            run_on_cmdline(logger, "git init")
-            run_on_cmdline(logger, f"git remote add origin {self._remote}")
-            run_on_cmdline(logger, "git checkout -b dfetch-local-branch")
+            run_on_cmdline(logger, ["git", "init"])
+            run_on_cmdline(logger, ["git", "remote", "add", "origin", self._remote])
+            run_on_cmdline(logger, ["git", "checkout", "-b", "dfetch-local-branch"])
             try:
                 run_on_cmdline(
-                    logger, f"git fetch --dry-run --depth 1 origin {version}"
+                    logger,
+                    ["git", "fetch", "--dry-run", "--depth", "1", "origin", version],
+                    env={"GIT_TERMINAL_PROMPT": "0"},
                 )
                 exists = True
             except SubprocessCommandError as exc:
@@ -185,7 +195,11 @@ class GitLocalRepo:
         """Check if is git."""
         try:
             with in_directory(self._path):
-                run_on_cmdline(logger, "git status")
+                run_on_cmdline(
+                    logger,
+                    ["git", "status"],
+                    env={"GIT_TERMINAL_PROMPT": "0"},
+                )
             return True
         except (SubprocessCommandError, RuntimeError):
             return False
@@ -209,12 +223,12 @@ class GitLocalRepo:
             ignore (Optional[Sequence[str]]): Optional sequence of glob patterns to ignore (relative to src)
         """
         with in_directory(self._path):
-            run_on_cmdline(logger, "git init")
-            run_on_cmdline(logger, f"git remote add origin {remote}")
-            run_on_cmdline(logger, "git checkout -b dfetch-local-branch")
+            run_on_cmdline(logger, ["git", "init"])
+            run_on_cmdline(logger, ["git", "remote", "add", "origin", remote])
+            run_on_cmdline(logger, ["git", "checkout", "-b", "dfetch-local-branch"])
 
             if src or ignore:
-                run_on_cmdline(logger, "git config core.sparsecheckout true")
+                run_on_cmdline(logger, ["git", "config", "core.sparsecheckout", "true"])
                 with open(
                     ".git/info/sparse-checkout", "a", encoding="utf-8"
                 ) as sparse_checkout_file:
@@ -228,11 +242,17 @@ class GitLocalRepo:
                         sparse_checkout_file.write("\n")
                         sparse_checkout_file.write("\n".join(ignore_abs_paths))
 
-            run_on_cmdline(logger, f"git fetch --depth 1 origin {version}")
-            run_on_cmdline(logger, "git reset --hard FETCH_HEAD")
+            run_on_cmdline(
+                logger,
+                ["git", "fetch", "--depth", "1", "origin", version],
+                env={"GIT_TERMINAL_PROMPT": "0"},
+            )
+            run_on_cmdline(logger, ["git", "reset", "--hard", "FETCH_HEAD"])
 
             current_sha = (
-                run_on_cmdline(logger, "git rev-parse HEAD").stdout.decode().strip()
+                run_on_cmdline(logger, ["git", "rev-parse", "HEAD"])
+                .stdout.decode()
+                .strip()
             )
 
             if src:
@@ -305,10 +325,7 @@ class GitLocalRepo:
     def get_remote_url() -> str:
         """Get the url of the remote origin."""
         try:
-            result = run_on_cmdline(
-                logger,
-                ["git", "remote", "get-url", "origin"],
-            )
+            result = run_on_cmdline(logger, ["git", "remote", "get-url", "origin"])
             decoded_result = str(result.stdout.decode())
         except SubprocessCommandError:
             decoded_result = ""
