@@ -244,7 +244,6 @@ class GitLocalRepo:
                 run_on_cmdline(
                     logger,
                     ["git", "status"],
-                    env=_extend_env_for_non_interactive_mode(),
                 )
             return True
         except (SubprocessCommandError, RuntimeError):
