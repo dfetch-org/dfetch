@@ -154,6 +154,48 @@ def list_dir(path):
     return result
 
 
+def check_output(context, line_count=None):
+    """Check command output against expected text.
+
+    Args:
+        context: Behave context with cmd_output and expected text
+        line_count: If set, compare only the first N lines of actual output
+    """
+    expected_text = multisub(
+        patterns=[
+            (git_hash, r"\1[commit hash]\2"),
+            (timestamp, "[timestamp]"),
+            (dfetch_title, ""),
+            (svn_error, "svn: EXXXXXX: <some error text>"),
+        ],
+        text=context.text,
+    )
+
+    actual_text = multisub(
+        patterns=[
+            (git_hash, r"\1[commit hash]\2"),
+            (timestamp, "[timestamp]"),
+            (ansi_escape, ""),
+            (
+                re.compile(f"file:///{remote_server_path(context)}"),
+                "some-remote-server",
+            ),
+            (svn_error, "svn: EXXXXXX: <some error text>"),
+        ],
+        text=context.cmd_output,
+    )
+
+    actual_lines = actual_text.splitlines()[:line_count]
+    diff = difflib.ndiff(actual_lines, expected_text.splitlines())
+
+    diffs = [x for x in diff if x[0] in ("+", "-")]
+    if diffs:
+        comp = "\n".join(diffs)
+        print(actual_text)
+        print(comp)
+        assert False, "Output not as expected!"
+
+
 @given('"{old}" is replaced with "{new}" in "{path}"')
 def step_impl(_, old: str, new: str, path: str):
     replace_in_file(path, old, new)
@@ -255,42 +297,6 @@ def step_impl(context):
 @then("the output shows")
 def step_impl(context):
     check_output(context)
-
-
-def check_output(context, line_count=None):
-    expected_text = multisub(
-        patterns=[
-            (git_hash, r"\1[commit hash]\2"),
-            (timestamp, "[timestamp]"),
-            (dfetch_title, ""),
-            (svn_error, "svn: EXXXXXX: <some error text>"),
-        ],
-        text=context.text,
-    )
-
-    actual_text = multisub(
-        patterns=[
-            (git_hash, r"\1[commit hash]\2"),
-            (timestamp, "[timestamp]"),
-            (ansi_escape, ""),
-            (
-                re.compile(f"file:///{remote_server_path(context)}"),
-                "some-remote-server",
-            ),
-            (svn_error, "svn: EXXXXXX: <some error text>"),
-        ],
-        text=context.cmd_output,
-    )
-
-    actual_lines = actual_text.splitlines()[:line_count]
-    diff = difflib.ndiff(actual_lines, expected_text.splitlines())
-
-    diffs = [x for x in diff if x[0] in ("+", "-")]
-    if diffs:
-        comp = "\n".join(diffs)
-        print(actual_text)
-        print(comp)
-        assert False, "Output not as expected!"
 
 
 @then("the following projects are fetched")
