@@ -25,6 +25,17 @@ Binary distributions
 Each release on the `releases page <https://github.com/dfetch-org/dfetch/releases>`_
 provides pre-built installers for all major platforms, so no compilation is required.
 
+Each installer package has a name in the format ``<version>-<platform>``.
+
+- ``<version>`` shows the software version:
+
+    - If it includes ``dev``, it is a development release (for testing).
+    - If it is only numbers (e.g. ``0.11.0``), it is an official release.
+
+- ``<platform>`` indicates the system the installer is for: ``nix`` (Linux), ``osx`` (Mac), or ``win`` (Windows).
+
+The version is automatically determined from the project and used to name the installer files.
+
 .. tabs::
 
     .. tab:: Linux
