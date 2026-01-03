@@ -223,3 +223,25 @@ Feature: Checking dependencies from a git repository
             >>>git ls-remote --heads --tags https://github.com/dfetch-org/test-repo-private.git<<< returned 128:
             fatal: could not read Username for 'https://github.com': terminal prompts disabled
             """
+
+    Scenario: SSH issues
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: private-repo
+                  url: git@github.com:dfetch-org/test-repo-private.git
+            """
+        When I run "dfetch check"
+        Then the output shows
+            """
+            Dfetch (0.10.0)
+            >>>git ls-remote --heads --tags git@github.com:dfetch-org/test-repo-private.git<<< returned 128:
+            Host key verification failed.
+            fatal: Could not read from remote repository.
+
+            Please make sure you have the correct access rights
+            and the repository exists.
+            """
