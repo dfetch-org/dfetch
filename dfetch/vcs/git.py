@@ -1,5 +1,6 @@
 """Git specific implementation."""
 
+import functools
 import os
 import re
 import shutil
@@ -35,6 +36,46 @@ def get_git_version() -> tuple[str, str]:
     return (str(tool), str(version))
 
 
+def _build_git_ssh_command() -> str:
+    """Returns a safe SSH command string for Git that enforces non-interactive mode.
+
+    Respects existing GIT_SSH_COMMAND and git core.sshCommand.
+    """
+    ssh_cmd = os.environ.get("GIT_SSH_COMMAND")
+
+    if not ssh_cmd:
+
+        try:
+            ssh_cmd = (
+                run_on_cmdline(
+                    logger,
+                    ["git", "config", "--get", "core.sshCommand"],
+                )
+                .stdout.decode("utf-8")
+                .strip()
+            )
+
+        except SubprocessCommandError:
+            ssh_cmd = None
+
+    if not ssh_cmd:
+        ssh_cmd = "ssh"
+
+    if "BatchMode=" not in ssh_cmd:
+        ssh_cmd += " -o BatchMode=yes"
+
+    return ssh_cmd
+
+
+@functools.lru_cache
+def _extend_env_for_non_interactive_mode() -> dict[str, str]:
+    """Extend the environment vars for git running in non-interactive mode."""
+    env = os.environ.copy()
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    env["GIT_SSH_COMMAND"] = _build_git_ssh_command()
+    return env
+
+
 class GitRemote:
     """A remote git repo."""
 
@@ -51,7 +92,7 @@ class GitRemote:
             run_on_cmdline(
                 logger,
                 cmd=["git", "ls-remote", "--heads", self._remote],
-                env={"GIT_TERMINAL_PROMPT": "0"},
+                env=_extend_env_for_non_interactive_mode(),
             )
             return True
         except SubprocessCommandError as exc:
@@ -88,7 +129,7 @@ class GitRemote:
             result = run_on_cmdline(
                 logger,
                 cmd=["git", "ls-remote", "--symref", self._remote, "HEAD"],
-                env={"GIT_TERMINAL_PROMPT": "0"},
+                env=_extend_env_for_non_interactive_mode(),
             ).stdout.decode()
         except SubprocessCommandError:
             logger.debug(
@@ -109,7 +150,7 @@ class GitRemote:
         result = run_on_cmdline(
             logger,
             cmd=["git", "ls-remote", "--heads", "--tags", remote],
-            env={"GIT_TERMINAL_PROMPT": "0"},
+            env=_extend_env_for_non_interactive_mode(),
         ).stdout.decode()
 
         info: dict[str, str] = {}
@@ -171,7 +212,7 @@ class GitRemote:
                 run_on_cmdline(
                     logger,
                     ["git", "fetch", "--dry-run", "--depth", "1", "origin", version],
-                    env={"GIT_TERMINAL_PROMPT": "0"},
+                    env=_extend_env_for_non_interactive_mode(),
                 )
                 exists = True
             except SubprocessCommandError as exc:
@@ -198,7 +239,7 @@ class GitLocalRepo:
                 run_on_cmdline(
                     logger,
                     ["git", "status"],
-                    env={"GIT_TERMINAL_PROMPT": "0"},
+                    env=_extend_env_for_non_interactive_mode(),
                 )
             return True
         except (SubprocessCommandError, RuntimeError):
@@ -245,7 +286,7 @@ class GitLocalRepo:
             run_on_cmdline(
                 logger,
                 ["git", "fetch", "--depth", "1", "origin", version],
-                env={"GIT_TERMINAL_PROMPT": "0"},
+                env=_extend_env_for_non_interactive_mode(),
             )
             run_on_cmdline(logger, ["git", "reset", "--hard", "FETCH_HEAD"])
 
