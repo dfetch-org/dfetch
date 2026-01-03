@@ -22,7 +22,7 @@ Release 0.11.0 (unreleased)
 * Don't make metadata file part of diff (#267)
 * Fix unneeded project prefix in SVN diffs (#888)
 * Add more tests and documentation for patching (#888)
-* Restrict ``src`` to string only in schema (#889)
+* Restrict ``src`` to string only in schema (#888)
 * Don't consider ignored files for determining local changes (#350)
 
 Release 0.10.0 (released 2025-03-12)
