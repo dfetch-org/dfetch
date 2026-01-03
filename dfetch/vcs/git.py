@@ -66,6 +66,7 @@ def _build_git_ssh_command() -> str:
     return ssh_cmd
 
 
+# As a cli tool, we can safely assume this remains stable during the runtime, caching for speed is better
 @functools.lru_cache
 def _extend_env_for_non_interactive_mode() -> dict[str, str]:
     """Extend the environment vars for git running in non-interactive mode.
