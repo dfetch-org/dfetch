@@ -1,7 +1,7 @@
 .. Dfetch documentation master file
 
-Vendoring Dependencies
-======================
+Vendoring
+=========
 
 Vendoring is the practice of copying the source code of another project directly
 into your own project's repository. Instead of relying on a package manager to
