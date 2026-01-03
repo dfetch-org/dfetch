@@ -3,7 +3,8 @@
 import logging
 import os
 import subprocess  # nosec
-from typing import Any, Optional, Union  # pylint: disable=unused-import
+from collections.abc import Mapping
+from typing import Any, Optional
 
 
 class SubprocessCommandError(Exception):
@@ -36,16 +37,15 @@ class SubprocessCommandError(Exception):
 
 
 def run_on_cmdline(
-    logger: logging.Logger, cmd: Union[str, list[str]]
+    logger: logging.Logger,
+    cmd: list[str],
+    env: Optional[Mapping[str, str]] = None,
 ) -> "subprocess.CompletedProcess[Any]":
     """Run a command and log the output, and raise if something goes wrong."""
     logger.debug(f"Running {cmd}")
 
-    if not isinstance(cmd, list):
-        cmd = cmd.split(" ")
-
     try:
-        proc = subprocess.run(cmd, capture_output=True, check=True)  # nosec
+        proc = subprocess.run(cmd, env=env, capture_output=True, check=True)  # nosec
     except subprocess.CalledProcessError as exc:
         raise SubprocessCommandError(
             exc.cmd,
@@ -54,8 +54,7 @@ def run_on_cmdline(
             exc.returncode,
         ) from exc
     except FileNotFoundError as exc:
-        cmd = cmd[0]
-        raise RuntimeError(f"{cmd} not available on system, please install") from exc
+        raise RuntimeError(f"{cmd[0]} not available on system, please install") from exc
 
     stdout, stderr = proc.stdout, proc.stderr
 
