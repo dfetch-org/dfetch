@@ -22,7 +22,7 @@ Compare the output to the expected tools your commands require.
 .. asciinema:: asciicasts/environment.cast
 
 Step 2: Use verbose mode
------------------------
+------------------------
 
 If a specific *Dfetch* command gives unexpected results, run it with the ``-v`` flag
 to see exactly what *Dfetch* is doing:
