@@ -247,8 +247,17 @@ def multisub(patterns: List[Tuple[Pattern[str], str]], text: str) -> str:
     return text
 
 
+@then("the output starts with:")
+def step_impl(context):
+    check_output(context, line_count=len(context.text.splitlines()))
+
+
 @then("the output shows")
 def step_impl(context):
+    check_output(context)
+
+
+def check_output(context, line_count=None):
     expected_text = multisub(
         patterns=[
             (git_hash, r"\1[commit hash]\2"),
@@ -273,7 +282,9 @@ def step_impl(context):
         text=context.cmd_output,
     )
 
-    diff = difflib.ndiff(actual_text.splitlines(), expected_text.splitlines())
+    diff = difflib.ndiff(
+        actual_text.splitlines()[:line_count], expected_text.splitlines()
+    )
 
     diffs = [x for x in diff if x[0] in ("+", "-")]
     if diffs:
