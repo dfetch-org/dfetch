@@ -26,7 +26,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               ext/test-repo-rev-only: wanted (e1fda19a57b873eb8e6ae37780594cbb77b70f1a), available (e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
               ext/test-rev-and-branch: wanted (main - 8df389d0524863b85f484f15a91c5f2c40aefda1), available (main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
             """
@@ -50,7 +50,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               ext/test-repo-tag-v1: wanted (v1), available (v2.0)
             """
 
@@ -79,7 +79,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               ext/test-repo-rev-only: up-to-date (e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
               ext/test-rev-and-branch: wanted & current (main - 8df389d0524863b85f484f15a91c5f2c40aefda1), available (main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
             """
@@ -111,7 +111,7 @@ Feature: Checking dependencies from a git repository
         And I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               ext/test-repo-tag   : wanted (v2.0), current (v1), available (v2.0)
             """
 
@@ -132,7 +132,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check SomeProject"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               SomeProject         : Local changes were detected, please generate a patch using 'dfetch diff SomeProject' and add it to your manifest using 'patch:'. Alternatively overwrite the local changes with 'dfetch update --force SomeProject'
               SomeProject         : up-to-date (master - 90be799b58b10971691715bdc751fbe5237848a0)
             """
@@ -152,7 +152,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check SomeProject"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               SomeProject         : up-to-date (master - 90be799b58b10971691715bdc751fbe5237848a0)
             """
 
@@ -171,7 +171,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
             >>>git ls-remote --heads https://giiiiiidhub.com/i-do-not-exist/broken<<< failed!
             'https://giiiiiidhub.com/i-do-not-exist/broken' is not a valid URL or unreachable:
             fatal: unable to access 'https://giiiiiidhub.com/i-do-not-exist/broken/': Could not resolve host: giiiiiidhub.com
@@ -200,7 +200,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               SomeProjectMissingTag: wanted (i-dont-exist), but not available at the upstream.
               SomeProjectNonExistentBranch: wanted (i-dont-exist), but not available at the upstream.
               SomeProjectNonExistentRevision: wanted (0123112321234123512361236123712381239123), but not available at the upstream.
@@ -219,7 +219,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output starts with:
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
             >>>git ls-remote --heads --tags https://github.com/dfetch-org/test-repo-private.git<<< returned 128:
             """
 
@@ -236,6 +236,6 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output starts with:
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
             >>>git ls-remote --heads --tags git@github.com:dfetch-org/test-repo-private.git<<< returned 128:
             """

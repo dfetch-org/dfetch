@@ -1,9 +1,5 @@
-Release 0.11.0 (unreleased)
+Release 0.11.0 (released 2026-01-03)
 ====================================
-
-.. note::
-
-    This is the latest unreleased version and may change
 
 * Support python 3.14
 * Drop python 3.7, 3.8 support (#801)
