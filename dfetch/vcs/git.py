@@ -63,6 +63,8 @@ def _build_git_ssh_command() -> str:
 
     if "BatchMode=" not in ssh_cmd:
         ssh_cmd += " -o BatchMode=yes"
+    else:
+        logger.debug(f'BatchMode already configured in "{ssh_cmd}"')
 
     return ssh_cmd
 
