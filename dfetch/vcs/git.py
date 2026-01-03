@@ -69,10 +69,16 @@ def _build_git_ssh_command() -> str:
 
 @functools.lru_cache
 def _extend_env_for_non_interactive_mode() -> dict[str, str]:
-    """Extend the environment vars for git running in non-interactive mode."""
+    """Extend the environment vars for git running in non-interactive mode.
+
+    See https://serverfault.com/a/1054253 for background info
+    """
     env = os.environ.copy()
     env["GIT_TERMINAL_PROMPT"] = "0"
     env["GIT_SSH_COMMAND"] = _build_git_ssh_command()
+
+    # https://stackoverflow.com/questions/37182847/how-do-i-disable-git-credential-manager-for-windows#answer-45513654
+    env["GCM_INTERACTIVE"] = "never"
     return env
 
 
