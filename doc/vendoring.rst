@@ -322,6 +322,16 @@ Real-world projects using vendoring
 - `Kubernetes - (Go) <https://github.com/kubernetes/kubernetes/tree/master/vendor>`_
 - `Cargo - (Rust) <https://doc.rust-lang.org/cargo/commands/cargo-vendor.html>`_
 
+Real world projects using Dfetch
+--------------------------------
+
+Here are some links to example projects using *Dfetch*.
+
+- `Dfetch`: https://github.com/dfetch-org/dfetch
+- `ModbusScope`: https://github.com/ModbusScope/ModbusScope
+
+Internally we use *Dfetch* for various projects and uses.
+
 
 Further Reading
 ---------------

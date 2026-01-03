@@ -35,7 +35,6 @@
    contributing
    changelog
    alternatives
-   examples
    vendoring
    legal
    internal
