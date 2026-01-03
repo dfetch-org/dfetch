@@ -10,7 +10,11 @@ from unittest.mock import Mock, patch
 import pytest
 
 from dfetch.util.cmdline import SubprocessCommandError
-from dfetch.vcs.git import GitLocalRepo, GitRemote
+from dfetch.vcs.git import (
+    GitLocalRepo,
+    GitRemote,
+    _build_git_ssh_command,
+)
 
 
 @pytest.mark.parametrize(
@@ -110,9 +114,6 @@ def test_ls_remote():
         }
 
         assert info == expected
-
-
-from dfetch.vcs.git import SubprocessCommandError, _build_git_ssh_command
 
 
 @pytest.mark.parametrize(
