@@ -101,11 +101,14 @@ Releasing
 - Run all unit / feature tests.
 - Re-generate asciicasts using VSCode task (linux/mac).
 - Commit all release changes.
-- Create annotated tag and push it:
+- Create pull request & merge to ``main``.
+- Create annotated tag on ``main`` and push it:
 
 .. code-block:: bash
 
-    git tag -a '0.5.0' -m "Release version 0.5.0"
+    git checkout main
+    git pull
+    git tag -a '0.11.0' -m "Release version 0.11.0"
     git push --tags
 
 - The ``ci.yml`` job will automatically create a draft release in `GitHub Releases <https://github.com/dfetch-org/dfetch/releases/>`_ with all artifacts.
@@ -115,5 +118,5 @@ Releasing
 
 .. code-block:: rst
 
-    Release 0.0.3 (unreleased)
+    Release 0.12.0 (unreleased)
     ====================================
