@@ -28,6 +28,7 @@
 .. toctree::
    :maxdepth: 2
 
+   installation
    getting_started
    manifest
    manual
@@ -53,28 +54,6 @@ Dfetch must promote upstreaming changes, but allow for local customizations.
 
 Other tools that do similar things are `Zephyr's West`, `CMake ExternalProject` and other meta tools.
 See :ref:`alternatives` for a complete list.
-
-Installation
-------------
-`Dfetch` is a python based cross-platform cli tool.
-
-Install the latest release with:
-
-.. code-block::
-
-   pip install dfetch
-
-Or install the latest version from the main branch:
-
-.. code-block::
-
-   pip install https://github.com/dfetch-org/dfetch/archive/main.zip
-
-Once installed dfetch output can be seen.
-
-.. code-block::
-
-   dfetch --version
 
 Basic usage
 -----------
