@@ -36,3 +36,8 @@ jobs:
     permissions:
       contents: read
       security-events: write
+
+  test:
+    uses: ./.github/workflows/test.yml
+    permissions:
+      contents: read
