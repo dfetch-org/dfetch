@@ -5,8 +5,11 @@ Alternatives
 The problem *Dfetch* tries to solve isn't new. There are other tools doing the same.
 In making a proper choice, see the below alternatives.
 
-These alternatives could all be used to use *source* code from another project as part
-of your project.
+There are many alternatives, each with slightly different approaches or focuses: some are designed to manage
+multiple repositories together, some are specialized in :ref:`vendoring` code into your project, and others provide
+build-system or version-control-specific helpers.
+
+Below is a list of notable tools along with their supported version control systems, platforms, and compatibility.
 
 ========================= ===== ===== ========= ======= =================== =======================
  Name                      Git   SVN   Windows   Linux   Language Agnostic   Build System Agnostic
