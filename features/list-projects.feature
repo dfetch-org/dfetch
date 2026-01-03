@@ -27,7 +27,7 @@ Feature: List dependencies
         When I run "dfetch report"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               project             : ext/test-repo-tag
                   remote          : <none>
                   remote url      : https://github.com/dfetch-org/test-repo
@@ -67,7 +67,7 @@ Feature: List dependencies
         When I run "dfetch report"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               project             : cutter-svn-tag
                   remote          : <none>
                   remote url      : svn://svn.code.sf.net/p/cutter/svn/cutter
@@ -84,7 +84,7 @@ Feature: List dependencies
         When I run "dfetch report"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               project             : ext/test-repo-tag
                   remote          : github-com-dfetch-org
                   remote url      : https://github.com/dfetch-org/test-repo

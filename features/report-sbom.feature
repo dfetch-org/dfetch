@@ -41,7 +41,7 @@ Feature: Create an CycloneDX sbom
                                         }
                                     ],
                                     "tools": [
-                                        "dfetch-0.10.0"
+                                        "dfetch-0.11.0"
                                     ]
                                 },
                                 {
@@ -55,7 +55,7 @@ Feature: Create an CycloneDX sbom
                                         }
                                     ],
                                     "tools": [
-                                        "dfetch-0.10.0"
+                                        "dfetch-0.11.0"
                                     ]
                                 },
                                 {
@@ -69,7 +69,7 @@ Feature: Create an CycloneDX sbom
                                         }
                                     ],
                                     "tools": [
-                                        "dfetch-0.10.0"
+                                        "dfetch-0.11.0"
                                     ]
                                 }
                             ],
@@ -117,7 +117,7 @@ Feature: Create an CycloneDX sbom
                     "tools": {
                         "components": [
                             {
-                                "bom-ref": "dfetch-0.10.0",
+                                "bom-ref": "dfetch-0.11.0",
                                 "externalReferences": [
                                     {
                                         "type": "build-system",
@@ -165,7 +165,7 @@ Feature: Create an CycloneDX sbom
                                     "name": "dfetch-org"
                                 },
                                 "type": "application",
-                                "version": "0.10.0"
+                                "version": "0.11.0"
                             },
                             {
                                 "description": "Python library for CycloneDX",
