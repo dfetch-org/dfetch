@@ -3,6 +3,8 @@
 # mypy: ignore-errors
 # flake8: noqa
 
+import os
+from subprocess import CompletedProcess
 from unittest.mock import patch
 
 import pytest
@@ -14,12 +16,16 @@ from dfetch.vcs.git import GitLocalRepo, GitRemote
 @pytest.mark.parametrize(
     "name, cmd_result, expectation",
     [
-        ("git repo", ["Yep!"], True),
+        ("git repo", [CompletedProcess(args=[], returncode=0, stdout="Yep!")], True),
         ("not a git repo", [SubprocessCommandError()], False),
         ("no git", [RuntimeError()], False),
+        ("somewhere.git", [], True),
     ],
 )
 def test_remote_check(name, cmd_result, expectation):
+
+    os.environ["GIT_SSH_COMMAND"] = "ssh"  # prevents addition subprocess call
+
     with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
         run_on_cmdline_mock.side_effect = cmd_result
 
