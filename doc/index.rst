@@ -1,4 +1,4 @@
-.. Dfetch documentation master file
+
 
 .. meta::
    :description: Dfetch is a VCS-agnostic tool that simplifies dependency management by retrieving
