@@ -90,7 +90,7 @@ Feature: Updated project has dependencies
             Dfetch (0.10.0)
               SomeProject         : Fetched v1
             SomeProject/dfetch.yaml: Schema validation failed:
-             - Value 'very-invalid-manifest' is not a dict. Value path: ''.
+            -  : 'very-invalid-manifest' is not a map
             """
         And 'MyProject' looks like:
             """
