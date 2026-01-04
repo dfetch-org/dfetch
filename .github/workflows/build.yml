@@ -104,14 +104,15 @@ jobs:
 
       - name: Upload installer to release ⬆️
         if: ${{ inputs.release_id }}
-        run: gh release upload                \
-             "${{ inputs.release_id }}"       \
-             --clobber                        \
-              build/dfetch-package/*.deb      \
-              build/dfetch-package/*.rpm      \
-              build/dfetch-package/*.pkg      \
-              build/dfetch-package/*.msi      \
-              build/dfetch-package/*.cdx.json
+        shell: bash
+        run: gh release upload               \
+             "${{ inputs.release_id }}"      \
+             build/dfetch-package/*.deb      \
+             build/dfetch-package/*.rpm      \
+             build/dfetch-package/*.pkg      \
+             build/dfetch-package/*.msi      \
+             build/dfetch-package/*.cdx.json \
+             --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
