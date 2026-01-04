@@ -4,7 +4,7 @@
 # flake8: noqa
 
 import argparse
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -28,7 +28,11 @@ DEFAULT_ARGS.projects = []
 def test_update(name, projects):
     update = Update()
 
-    with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest(projects)
+    fake_superproject.root_directory = "/tmp"
+
+    with patch("dfetch.commands.update.SuperProject", return_value=fake_superproject):
         with patch(
             "dfetch.manifest.manifest.get_childmanifests"
         ) as mocked_get_childmanifests:
@@ -36,7 +40,6 @@ def test_update(name, projects):
                 with patch("os.path.exists"):
                     with patch("dfetch.commands.update.in_directory"):
                         with patch("dfetch.commands.update.Update._check_destination"):
-                            mocked_get_manifest.return_value = mock_manifest(projects)
                             mocked_get_childmanifests.return_value = []
 
                             update(DEFAULT_ARGS)
@@ -48,9 +51,11 @@ def test_update(name, projects):
 def test_forced_update():
     update = Update()
 
-    with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
-        mocked_get_manifest.return_value = mock_manifest([{"name": "some_project"}])
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest([{"name": "some_project"}])
+    fake_superproject.root_directory = "/tmp"
 
+    with patch("dfetch.commands.update.SuperProject", return_value=fake_superproject):
         with patch(
             "dfetch.manifest.manifest.get_childmanifests"
         ) as mocked_get_childmanifests:

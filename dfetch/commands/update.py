@@ -39,6 +39,7 @@ import dfetch.project.git
 import dfetch.project.svn
 from dfetch.commands.common import check_child_manifests, files_to_ignore
 from dfetch.log import get_logger
+from dfetch.project.superproject import SuperProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -76,14 +77,15 @@ class Update(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the update."""
-        manifest = dfetch.manifest.manifest.get_manifest()
+        superproject = SuperProject()
 
         exceptions: list[str] = []
         destinations: list[str] = [
-            os.path.realpath(project.destination) for project in manifest.projects
+            os.path.realpath(project.destination)
+            for project in superproject.manifest.projects
         ]
-        with in_directory(os.path.dirname(manifest.path)):
-            for project in manifest.selected_projects(args.projects):
+        with in_directory(superproject.root_directory):
+            for project in superproject.manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     self._check_destination(project, destinations)
                     dfetch.project.make(project).update(
@@ -95,7 +97,7 @@ class Update(dfetch.commands.command.Command):
                         project.destination
                     ):
                         with in_directory(project.destination):
-                            check_child_manifests(manifest, project)
+                            check_child_manifests(superproject.manifest, project)
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))

@@ -4,7 +4,7 @@
 # flake8: noqa
 
 import argparse
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -28,7 +28,11 @@ DEFAULT_ARGS.projects = []
 def test_check(name, projects):
     check = Check()
 
-    with patch("dfetch.manifest.manifest.get_manifest") as mocked_get_manifest:
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest(projects)
+    fake_superproject.root_directory = "/tmp"
+
+    with patch("dfetch.commands.check.SuperProject", return_value=fake_superproject):
         with patch(
             "dfetch.manifest.manifest.get_childmanifests"
         ) as mocked_get_childmanifests:
@@ -36,7 +40,6 @@ def test_check(name, projects):
                 with patch("os.path.exists"):
                     with patch("dfetch.commands.check.in_directory"):
                         with patch("dfetch.commands.check.CheckStdoutReporter"):
-                            mocked_get_manifest.return_value = mock_manifest(projects)
                             mocked_get_childmanifests.return_value = []
 
                             check(DEFAULT_ARGS)

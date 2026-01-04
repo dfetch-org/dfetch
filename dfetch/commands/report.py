@@ -13,6 +13,7 @@ import dfetch.util.util
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.metadata import Metadata
+from dfetch.project.superproject import SuperProject
 from dfetch.project.vcs import VCS
 from dfetch.reporting import REPORTERS, ReportTypes
 from dfetch.util.license import License, guess_license_in_file
@@ -62,12 +63,12 @@ class Report(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Generate the report."""
-        manifest = dfetch.manifest.manifest.get_manifest()
+        superproject = SuperProject()
 
-        with dfetch.util.util.in_directory(os.path.dirname(manifest.path)):
-            reporter = REPORTERS[args.type](manifest)
+        with dfetch.util.util.in_directory(superproject.root_directory):
+            reporter = REPORTERS[args.type](superproject.manifest)
 
-            for project in manifest.selected_projects(args.projects):
+            for project in superproject.manifest.selected_projects(args.projects):
                 determined_licenses = self._determine_licenses(project)
                 version = self._determine_version(project)
                 reporter.add_project(
