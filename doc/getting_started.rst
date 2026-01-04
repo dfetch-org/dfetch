@@ -5,22 +5,34 @@ Getting Started
 
 Main concepts
 -------------
-Your project depends on other projects to build or run. In order keep the dependencies
-with your project. *Dfetch* can fetch these dependencies and place them with your code.
+Your project depends on other projects to build or run. In order to keep these
+dependencies together with your own code, *Dfetch* can fetch these and place them
+inside your project. For clarity lets call your project the *superproject* and the
+dependencies the *sub-projects*.
 
-*Dfetch* starts from a :ref:`Manifest` file. This contains all the :ref:`Projects`
-this project is depending on. You as a user can then let *Dfetch* :ref:`update`
-your dependencies.
+*Dfetch* operates on a *superproject*: the project that contains the
+:ref:`Manifest` file. The superproject depends on one or more *subprojects*,
+which are the external projects listed in the manifest. The superproject itself
+can use any version control system (or even none at all).
 
-*Dfetch* will fetch the correct version of your dependencies and place them in the
-location of your choice. If the folder already exists and the version was updated
-*Dfetch* will overwrite the folder with the changes.
+The :ref:`Manifest` file describes all the :ref:`Projects` the superproject
+depends on. These subprojects can be a mix of different version control systems,
+such as Git or Subversion. You can then let *Dfetch* :ref:`update` your
+dependencies based on this manifest through ``git`` or ``svn``.
 
-Since the version control information (`.git` or `svn`) is removed, *Dfetch* stores some
-general information about the project in a `.dfetch_data.yaml` file inside the fetched project.
+*Dfetch* will fetch the correct version of each subproject and place it in the
+location of your choice. If the destination folder already exists and the
+version has changed, *Dfetch* will overwrite the folder with the updated
+contents.
 
-You can then review the changes in your favorite version control system and commit
-the changes as you please.
+Since any version control information (such as ``.git`` or ``.svn`` directories) is
+removed from the fetched subprojects, *Dfetch* stores general information about each
+subproject in a ``.dfetch_data.yaml`` file inside the fetched directory, referred to
+as the metadata.
+
+After updating, you can then review the changes using the version control system of
+your superproject and commit them as you see fit.
+
 
 My first manifest
 -----------------
