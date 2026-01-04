@@ -9,8 +9,8 @@ from unittest.mock import patch
 import pytest
 
 from dfetch.commands.import_ import Import
-from dfetch.project.svn import External
 from dfetch.vcs.git import Submodule
+from dfetch.vcs.svn import External
 
 DEFAULT_ARGS = argparse.Namespace(non_recursive=False)
 
@@ -105,14 +105,12 @@ SECOND_EXTERNAL = External(
 def test_svn_import(name, externals):
     import_ = Import()
 
-    with patch("dfetch.commands.import_.SvnSubProject.check_path") as check_path:
-        with patch(
-            "dfetch.commands.import_.SvnSubProject.externals"
-        ) as mocked_externals:
+    with patch("dfetch.commands.import_.SvnRepo.is_svn") as is_svn:
+        with patch("dfetch.commands.import_.SvnRepo.externals") as mocked_externals:
             with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
                 with patch("dfetch.commands.import_.GitLocalRepo.is_git") as is_git:
                     is_git.return_value = False
-                    check_path.return_value = True
+                    is_svn.return_value = True
                     mocked_externals.return_value = externals
 
                     if len(externals) == 0:

@@ -9,8 +9,9 @@ from unittest.mock import patch
 import pytest
 
 from dfetch.manifest.project import ProjectEntry
-from dfetch.project.svn import External, SvnSubProject
+from dfetch.project.svn import SvnSubProject
 from dfetch.util.cmdline import SubprocessCommandError
+from dfetch.vcs.svn import External, SvnRemote, SvnRepo
 
 REPO_ROOT = "repo-root"
 CWD = "C:\\mydir"
@@ -129,17 +130,15 @@ PINNED_MODULE_NO_SUBFOLDER_EXPECTATION = [
     ],
 )
 def test_externals(name, externals, expectations):
-    with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
-        with patch(
-            "dfetch.project.svn.SvnSubProject._get_info_from_target"
-        ) as target_info_mock:
-            with patch("dfetch.project.svn.os.getcwd") as cwd_mock:
+    with patch("dfetch.vcs.svn.run_on_cmdline") as run_on_cmdline_mock:
+        with patch("dfetch.vcs.svn.SvnRepo.get_info_from_target") as target_info_mock:
+            with patch("dfetch.vcs.svn.os.getcwd") as cwd_mock:
                 cmd_output = str(os.linesep * 2).join(externals)
                 run_on_cmdline_mock().stdout = cmd_output.encode("utf-8")
                 target_info_mock.return_value = {"Repository Root": REPO_ROOT}
 
                 cwd_mock.return_value = CWD
-                parsed_externals = SvnSubProject.externals()
+                parsed_externals = SvnRepo.externals()
 
                 for actual, expected in zip(
                     parsed_externals, expectations  # , strict=True
@@ -156,35 +155,33 @@ def test_externals(name, externals, expectations):
     ],
 )
 def test_check_path(name, cmd_result, expectation):
-    with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
+    with patch("dfetch.vcs.svn.run_on_cmdline") as run_on_cmdline_mock:
         run_on_cmdline_mock.side_effect = cmd_result
 
-        assert SvnSubProject.check_path() == expectation
+        assert SvnRepo().is_svn() == expectation
 
 
 @pytest.mark.parametrize(
-    "name, project, cmd_result, expectation",
+    "name, cmd_result, expectation",
     [
-        ("Ok url", ProjectEntry({"name": "proj1", "url": "some_url"}), ["Yep!"], True),
+        ("Ok url", ["Yep!"], True),
         (
             "Failed command",
-            ProjectEntry({"name": "proj2", "url": "some_url"}),
             [SubprocessCommandError],
             False,
         ),
         (
             "No svn",
-            ProjectEntry({"name": "proj3", "url": "some_url"}),
             [RuntimeError],
             False,
         ),
     ],
 )
-def test_check(name, project, cmd_result, expectation):
-    with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
+def test_check(name, cmd_result, expectation):
+    with patch("dfetch.vcs.svn.run_on_cmdline") as run_on_cmdline_mock:
         run_on_cmdline_mock.side_effect = cmd_result
 
-        assert SvnSubProject(project).check() == expectation
+        assert SvnRemote("some_url").is_svn() == expectation
 
 
 SVN_INFO = """
@@ -203,11 +200,11 @@ Last Changed Date: 2021-02-06 13:57:00 +0100 (za, 06 feb 2021)
 
 
 def test_get_info():
-    with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
+    with patch("dfetch.vcs.svn.run_on_cmdline") as run_on_cmdline_mock:
         run_on_cmdline_mock.return_value.stdout = os.linesep.join(
             SVN_INFO.split("\n")
         ).encode()
-        result = SvnSubProject._get_info_from_target("bla")
+        result = SvnRepo.get_info_from_target("bla")
 
         expectation = {
             "Path": "cpputest",
@@ -226,12 +223,17 @@ def test_get_info():
 
 
 @pytest.fixture
-def svn_repo():
+def svn_subproject():
     return SvnSubProject(ProjectEntry({"name": "proj3", "url": "some_url"}))
 
 
-def test_svn_repo_name(svn_repo):
-    assert svn_repo.NAME == "svn"
+def test_svn_repo_name(svn_subproject):
+    assert svn_subproject.NAME == "svn"
+
+
+@pytest.fixture
+def svn_repo():
+    return SvnRepo()
 
 
 def test_svn_repo_default_branch(svn_repo):

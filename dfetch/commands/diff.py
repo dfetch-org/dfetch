@@ -107,6 +107,7 @@ from dfetch.project.superproject import SuperProject
 from dfetch.project.svn import SvnSubProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 from dfetch.vcs.git import GitLocalRepo
+from dfetch.vcs.svn import SvnRepo
 
 logger = get_logger(__name__)
 
@@ -173,7 +174,7 @@ def _get_repo(superproject: SuperProject, project: ProjectEntry) -> SubProject:
         )
     if GitLocalRepo(superproject.root_directory).is_git():
         return GitSubProject(project)
-    if SvnSubProject.check_path(superproject.root_directory):
+    if SvnRepo(superproject.root_directory).is_svn():
         return SvnSubProject(project)
 
     raise RuntimeError(
