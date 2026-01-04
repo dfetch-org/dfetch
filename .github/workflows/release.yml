@@ -75,13 +75,14 @@ jobs:
             echo "No release found for $TAG."
           fi
 
-      - name: Create draft release
+      - name: Create release
         if: ${{ steps.release_info.outputs.tag }}
-        run: |
-          gh release create "${{ steps.release_info.outputs.tag }}" \
-            --title "${{ steps.release_info.outputs.tag }}" \
-            --notes-file release_notes.txt \
-            --draft \
-            LICENSE
+        uses: softprops/action-gh-release@5122b4edc95f85501a71628a57dc180a03ec7588 # v2.5.0
+        with:
+          tag_name: ${{ steps.release_info.outputs.tag }}
+          name: ${{ steps.release_info.outputs.tag }}
+          body_path: release_notes.txt
+          draft: true
+          files: LICENSE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
