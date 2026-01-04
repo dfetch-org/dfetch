@@ -8,8 +8,8 @@ import yaml
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest, get_childmanifests
 from dfetch.manifest.project import ProjectEntry
-from dfetch.project.svn import SvnSubProject
 from dfetch.vcs.git import GitLocalRepo
+from dfetch.vcs.svn import SvnRepo
 
 logger = get_logger(__name__)
 
@@ -72,8 +72,8 @@ def files_to_ignore(path: str) -> Sequence[str]:
     """Return a list of files that can be ignored in a given path."""
     if GitLocalRepo().is_git():
         ignore_list = GitLocalRepo.ignored_files(path)
-    elif SvnSubProject.check_path():
-        ignore_list = SvnSubProject.ignored_files(path)
+    elif SvnRepo().is_svn():
+        ignore_list = SvnRepo.ignored_files(path)
     else:
         ignore_list = []
     return ignore_list
