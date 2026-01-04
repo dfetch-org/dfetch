@@ -102,9 +102,9 @@ from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.git import GitRepo
 from dfetch.project.metadata import Metadata
+from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import SuperProject
 from dfetch.project.svn import SvnRepo
-from dfetch.project.vcs import VCS
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 from dfetch.vcs.git import GitLocalRepo
 
@@ -165,7 +165,7 @@ class Diff(dfetch.commands.command.Command):
             raise RuntimeError("\n".join(exceptions))
 
 
-def _get_repo(superproject: SuperProject, project: ProjectEntry) -> VCS:
+def _get_repo(superproject: SuperProject, project: ProjectEntry) -> SubProject:
     """Get the repo type from the project."""
     if not os.path.exists(project.destination):
         raise RuntimeError(
@@ -181,7 +181,7 @@ def _get_repo(superproject: SuperProject, project: ProjectEntry) -> VCS:
     )
 
 
-def _diff_from_repo(repo: VCS, project: ProjectEntry, revs: list[str]) -> str:
+def _diff_from_repo(repo: SubProject, project: ProjectEntry, revs: list[str]) -> str:
     """Generate a relative diff for a svn repo."""
     if len(revs) > 2:
         raise RuntimeError(f"Too many revisions given! {revs}")

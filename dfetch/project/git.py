@@ -9,14 +9,14 @@ from typing import Optional
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
-from dfetch.project.vcs import VCS
+from dfetch.project.subproject import SubProject
 from dfetch.util.util import safe_rmtree
 from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
 
 logger = get_logger(__name__)
 
 
-class GitRepo(VCS):
+class GitRepo(SubProject):
     """A git repository."""
 
     NAME = "git"
@@ -83,12 +83,12 @@ class GitRepo(VCS):
         """Print out version information."""
         try:
             tool, version = get_git_version()
-            VCS._log_tool(tool, version)
+            SubProject._log_tool(tool, version)
         except RuntimeError as exc:
             logger.debug(
                 f"Something went wrong trying to get the version of git: {exc}"
             )
-            VCS._log_tool("git", "<not found in PATH>")
+            SubProject._log_tool("git", "<not found in PATH>")
 
     def _fetch_impl(self, version: Version) -> Version:
         """Get the revision of the remote and place it at the local path."""
