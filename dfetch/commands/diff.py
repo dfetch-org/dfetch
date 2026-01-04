@@ -95,13 +95,13 @@ Now you can make further changes to the project, and re-generate the patch using
 
 import argparse
 import os
+import pathlib
 
 import dfetch.commands.command
 import dfetch.project
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.git import GitSubProject
-from dfetch.project.metadata import Metadata
 from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import SuperProject
 from dfetch.project.svn import SvnSubProject
@@ -155,19 +155,18 @@ class Diff(dfetch.commands.command.Command):
             for project in projects:
                 patch_name = f"{project.name}.patch"
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    repo = _get_repo(superproject, project)
-                    patch = _diff_from_repo(repo, project, revs)
+                    patch = _get_sub_project(superproject, project).diff(revs)
 
                     _dump_patch(
-                        superproject.manifest.path, revs, project, patch_name, patch
+                        superproject.root_directory, revs, project, patch_name, patch
                     )
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
 
 
-def _get_repo(superproject: SuperProject, project: ProjectEntry) -> SubProject:
-    """Get the repo type from the project."""
+def _get_sub_project(superproject: SuperProject, project: ProjectEntry) -> SubProject:
+    """Get the subproject in the same vcs type as the superproject."""
     if not os.path.exists(project.destination):
         raise RuntimeError(
             "You cannot generate a diff of a project that was never fetched"
@@ -178,29 +177,7 @@ def _get_repo(superproject: SuperProject, project: ProjectEntry) -> SubProject:
         return SvnSubProject(project)
 
     raise RuntimeError(
-        "Can only create patch in SVN or Git repo",
-    )
-
-
-def _diff_from_repo(repo: SubProject, project: ProjectEntry, revs: list[str]) -> str:
-    """Generate a relative diff for a svn repo."""
-    if len(revs) > 2:
-        raise RuntimeError(f"Too many revisions given! {revs}")
-
-    if not revs:
-        revs.append(repo.metadata_revision())
-        if not revs[-1]:
-            raise RuntimeError(
-                "When not providing any commits, dfetch starts from"
-                f" the last commit to {Metadata.FILENAME} in {project.destination}."
-                " Please either commit this, or specify a revision to start from with --revs"
-            )
-
-    if len(revs) == 1:
-        revs.append("")
-
-    return repo.get_diff(
-        old_revision=revs[0], new_revision=revs[1], ignore=(Metadata.FILENAME,)
+        "Can only create patch if your project is an SVN or Git repo",
     )
 
 
@@ -214,8 +191,7 @@ def _dump_patch(
             project.name,
             f"Generating patch {patch_name} {rev_range} in {os.path.dirname(path)}",
         )
-        with open(patch_name, "w", encoding="UTF-8") as patch_file:
-            patch_file.write(patch)
+        pathlib.Path(patch_name).write_text(patch, encoding="UTF-8")
     else:
         if revs[1]:
             msg = f"No diffs found from {revs[0]} to {revs[1]}"
