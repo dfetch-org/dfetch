@@ -86,7 +86,6 @@ jobs:
             --title "${{ steps.release_info.outputs.tag }}"         \
             --notes-file release_notes.txt                          \
             --draft                                                 \
-            --verify-tag                                            \
             LICENSE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
