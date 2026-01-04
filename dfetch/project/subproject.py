@@ -1,4 +1,4 @@
-"""Version Control system."""
+"""SubProject."""
 
 import fnmatch
 import os
@@ -374,8 +374,11 @@ class SubProject(ABC):
 
     @abstractmethod
     def get_diff(
-        self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
-    ) -> str:  # noqa
+        self,
+        old_revision: str,  # noqa
+        new_revision: Optional[str],  # noqa
+        ignore: Sequence[str],
+    ) -> str:
         """Get the diff of two revisions."""
 
     @abstractmethod
