@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 
 
 def get_svn_version() -> tuple[str, str]:
-    """Get the name and version of git."""
+    """Get the name and version of svn."""
     result = run_on_cmdline(logger, ["svn", "--version", "--non-interactive"])
     first_line = result.stdout.decode().split("\n")[0]
     tool, version = first_line.replace(",", "").split("version", maxsplit=1)
@@ -39,7 +39,7 @@ class SvnRemote:
     """A remote svn repository."""
 
     def __init__(self, remote: str) -> None:
-        """Create a git remote repo."""
+        """Create a svn remote repo."""
         self._remote = remote
 
     def is_svn(self) -> bool:
