@@ -97,13 +97,12 @@ import argparse
 import os
 
 import dfetch.commands.command
-import dfetch.manifest.manifest
-import dfetch.manifest.validate
 import dfetch.project
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.git import GitRepo
 from dfetch.project.metadata import Metadata
+from dfetch.project.superproject import SuperProject
 from dfetch.project.svn import SvnRepo
 from dfetch.project.vcs import VCS
 from dfetch.util.util import catch_runtime_exceptions, in_directory
@@ -142,12 +141,12 @@ class Diff(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the diff."""
-        manifest = dfetch.manifest.manifest.get_manifest()
+        superproject = SuperProject()
         revs = [r for r in args.revs.strip(":").split(":", maxsplit=1) if r]
 
-        with in_directory(os.path.dirname(manifest.path)):
+        with in_directory(superproject.root_directory):
             exceptions: list[str] = []
-            projects = manifest.selected_projects(args.projects)
+            projects = superproject.manifest.selected_projects(args.projects)
             if not projects:
                 raise RuntimeError(
                     f"No (such) project found! {', '.join(args.projects)}"
@@ -155,25 +154,26 @@ class Diff(dfetch.commands.command.Command):
             for project in projects:
                 patch_name = f"{project.name}.patch"
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    repo = _get_repo(manifest.path, project)
+                    repo = _get_repo(superproject, project)
                     patch = _diff_from_repo(repo, project, revs)
 
-                    _dump_patch(manifest.path, revs, project, patch_name, patch)
+                    _dump_patch(
+                        superproject.manifest.path, revs, project, patch_name, patch
+                    )
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
 
 
-def _get_repo(path: str, project: ProjectEntry) -> VCS:
+def _get_repo(superproject: SuperProject, project: ProjectEntry) -> VCS:
     """Get the repo type from the project."""
     if not os.path.exists(project.destination):
         raise RuntimeError(
             "You cannot generate a diff of a project that was never fetched"
         )
-    main_project_dir = os.path.dirname(path)
-    if GitLocalRepo(main_project_dir).is_git():
+    if GitLocalRepo(superproject.root_directory).is_git():
         return GitRepo(project)
-    if SvnRepo.check_path(main_project_dir):
+    if SvnRepo.check_path(superproject.root_directory):
         return SvnRepo(project)
 
     raise RuntimeError(

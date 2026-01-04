@@ -376,16 +376,6 @@ def find_manifest() -> str:
     return os.path.realpath(paths[0])
 
 
-def get_manifest() -> Manifest:
-    """Get manifest and its path."""
-    logger.debug("Looking for manifest")
-    manifest_path = find_manifest()
-    validate(manifest_path)
-
-    logger.debug(f"Using manifest {manifest_path}")
-    return Manifest.from_file(manifest_path)
-
-
 def get_childmanifests(skip: Optional[list[str]] = None) -> list[Manifest]:
     """Get manifest and its path."""
     skip = skip or []
