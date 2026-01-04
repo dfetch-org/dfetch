@@ -82,9 +82,10 @@ jobs:
         if: ${{ steps.release_info.outputs.tag }}
         run: |
           gh release create "${{ steps.release_info.outputs.tag }}" \
-            --title "${{ steps.release_info.outputs.tag }}" \
-            --notes-file release_notes.txt \
-            --draft \
+            --repo "$GITHUB_REPOSITORY"                             \
+            --title "${{ steps.release_info.outputs.tag }}"         \
+            --notes-file release_notes.txt                          \
+            --draft                                                 \
             LICENSE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
