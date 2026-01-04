@@ -102,19 +102,16 @@ jobs:
               build/dfetch-package/*.msi
               build/dfetch-package/*.cdx.json
 
-      - name: Upload installer to release
+      - name: Upload installer to release ⬆️
         if: ${{ inputs.release_id }}
-        uses: softprops/action-gh-release@5122b4edc95f85501a71628a57dc180a03ec7588 # v2.5.0
-        with:
-          tag_name: ${{ inputs.release_id }}
-          files: |
-              build/dfetch-package/*.deb
-              build/dfetch-package/*.rpm
-              build/dfetch-package/*.pkg
-              build/dfetch-package/*.msi
+        run: gh release upload                \
+             "${{ inputs.release_id }}"       \
+             --clobber                        \
+              build/dfetch-package/*.deb      \
+              build/dfetch-package/*.rpm      \
+              build/dfetch-package/*.pkg      \
+              build/dfetch-package/*.msi      \
               build/dfetch-package/*.cdx.json
-          draft: true
-          preserve_order: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -213,12 +210,7 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
-    - name: Upload artifacts to release
-      uses: softprops/action-gh-release@5122b4edc95f85501a71628a57dc180a03ec7588 # v2.5.0
-      with:
-        tag_name: ${{ inputs.release_id }}
-        files: dist/*
-        draft: true
-        preserve_order: true
+    - name: Upload artifacts to release ⬆️
+      run: gh release upload "${{ inputs.release_id }}" dist/* --clobber
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
