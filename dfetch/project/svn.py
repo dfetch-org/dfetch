@@ -39,8 +39,8 @@ class External(NamedTuple):
     src: str
 
 
-class SvnRepo(SubProject):
-    """A svn repository."""
+class SvnSubProject(SubProject):
+    """A svn subproject."""
 
     DEFAULT_BRANCH = "trunk"
     NAME = "svn"
@@ -59,7 +59,7 @@ class SvnRepo(SubProject):
             ],
         )
 
-        repo_root = SvnRepo._get_info_from_target()["Repository Root"]
+        repo_root = SvnSubProject._get_info_from_target()["Repository Root"]
 
         externals: list[External] = []
         path_pattern = r"([^\s^-]+)\s+-"
@@ -80,7 +80,7 @@ class SvnRepo(SubProject):
                 name = match.group(3) or match.group(5)
                 rev = "" if not match.group(2) else match.group(2).strip()
 
-                url, branch, tag, src = SvnRepo._split_url(url, repo_root)
+                url, branch, tag, src = SvnSubProject._split_url(url, repo_root)
 
                 externals += [
                     External(
@@ -112,7 +112,9 @@ class SvnRepo(SubProject):
             r"(.*)\/(branches\/[^\/]+|tags\/[^\/]+|trunk)[\/]*(.*)", url
         ):
             url = match.group(1)
-            branch = match.group(2) if match.group(2) != SvnRepo.DEFAULT_BRANCH else ""
+            branch = (
+                match.group(2) if match.group(2) != SvnSubProject.DEFAULT_BRANCH else ""
+            )
             src = match.group(3)
 
         path = branch.split("/")
@@ -252,7 +254,7 @@ class SvnRepo(SubProject):
 
         complete_path, file_pattern = self._parse_file_pattern(complete_path)
 
-        SvnRepo._export(complete_path, rev_arg, self.local_path)
+        SvnSubProject._export(complete_path, rev_arg, self.local_path)
 
         if file_pattern:
             for file in find_non_matching_files(self.local_path, (file_pattern,)):
@@ -265,13 +267,13 @@ class SvnRepo(SubProject):
         if self.source:
             root_branch_path = "/".join([self.remote, branch_path]).strip("/")
 
-            for file in SvnRepo._license_files(root_branch_path):
+            for file in SvnSubProject._license_files(root_branch_path):
                 dest = (
                     self.local_path
                     if os.path.isdir(self.local_path)
                     else os.path.dirname(self.local_path)
                 )
-                SvnRepo._export(f"{root_branch_path}/{file}", rev_arg, dest)
+                SvnSubProject._export(f"{root_branch_path}/{file}", rev_arg, dest)
                 break
 
         if self.ignore:
@@ -319,7 +321,7 @@ class SvnRepo(SubProject):
         return [
             str(license)
             for license in filter(
-                SvnRepo.is_license_file, SvnRepo._files_in_path(url_path)
+                SvnSubProject.is_license_file, SvnSubProject._files_in_path(url_path)
             )
         ]
 

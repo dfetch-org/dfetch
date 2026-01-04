@@ -9,7 +9,7 @@ from unittest.mock import patch
 import pytest
 
 from dfetch.manifest.project import ProjectEntry
-from dfetch.project.svn import External, SvnRepo
+from dfetch.project.svn import External, SvnSubProject
 from dfetch.util.cmdline import SubprocessCommandError
 
 REPO_ROOT = "repo-root"
@@ -131,7 +131,7 @@ PINNED_MODULE_NO_SUBFOLDER_EXPECTATION = [
 def test_externals(name, externals, expectations):
     with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
         with patch(
-            "dfetch.project.svn.SvnRepo._get_info_from_target"
+            "dfetch.project.svn.SvnSubProject._get_info_from_target"
         ) as target_info_mock:
             with patch("dfetch.project.svn.os.getcwd") as cwd_mock:
                 cmd_output = str(os.linesep * 2).join(externals)
@@ -139,7 +139,7 @@ def test_externals(name, externals, expectations):
                 target_info_mock.return_value = {"Repository Root": REPO_ROOT}
 
                 cwd_mock.return_value = CWD
-                parsed_externals = SvnRepo.externals()
+                parsed_externals = SvnSubProject.externals()
 
                 for actual, expected in zip(
                     parsed_externals, expectations  # , strict=True
@@ -159,7 +159,7 @@ def test_check_path(name, cmd_result, expectation):
     with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
         run_on_cmdline_mock.side_effect = cmd_result
 
-        assert SvnRepo.check_path() == expectation
+        assert SvnSubProject.check_path() == expectation
 
 
 @pytest.mark.parametrize(
@@ -184,7 +184,7 @@ def test_check(name, project, cmd_result, expectation):
     with patch("dfetch.project.svn.run_on_cmdline") as run_on_cmdline_mock:
         run_on_cmdline_mock.side_effect = cmd_result
 
-        assert SvnRepo(project).check() == expectation
+        assert SvnSubProject(project).check() == expectation
 
 
 SVN_INFO = """
@@ -207,7 +207,7 @@ def test_get_info():
         run_on_cmdline_mock.return_value.stdout = os.linesep.join(
             SVN_INFO.split("\n")
         ).encode()
-        result = SvnRepo._get_info_from_target("bla")
+        result = SvnSubProject._get_info_from_target("bla")
 
         expectation = {
             "Path": "cpputest",
@@ -227,7 +227,7 @@ def test_get_info():
 
 @pytest.fixture
 def svn_repo():
-    return SvnRepo(ProjectEntry({"name": "proj3", "url": "some_url"}))
+    return SvnSubProject(ProjectEntry({"name": "proj3", "url": "some_url"}))
 
 
 def test_svn_repo_name(svn_repo):

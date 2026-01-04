@@ -1,11 +1,11 @@
 """All Project related items."""
 
 import dfetch.manifest.project
-from dfetch.project.git import GitRepo
+from dfetch.project.git import GitSubProject
 from dfetch.project.subproject import SubProject
-from dfetch.project.svn import SvnRepo
+from dfetch.project.svn import SvnSubProject
 
-SUPPORTED_PROJECT_TYPES = [GitRepo, SvnRepo]
+SUPPORTED_PROJECT_TYPES = [GitSubProject, SvnSubProject]
 
 
 def make(project_entry: dfetch.manifest.project.ProjectEntry) -> SubProject:

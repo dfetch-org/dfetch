@@ -16,13 +16,13 @@ from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
 logger = get_logger(__name__)
 
 
-class GitRepo(SubProject):
-    """A git repository."""
+class GitSubProject(SubProject):
+    """A git subproject."""
 
     NAME = "git"
 
     def __init__(self, project: ProjectEntry):
-        """Create a Git project."""
+        """Create a Git subproject."""
         super().__init__(project)
         self._remote_repo = GitRemote(self.remote)
         self._local_repo = GitLocalRepo(self.local_path)

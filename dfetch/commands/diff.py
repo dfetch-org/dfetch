@@ -100,11 +100,11 @@ import dfetch.commands.command
 import dfetch.project
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
-from dfetch.project.git import GitRepo
+from dfetch.project.git import GitSubProject
 from dfetch.project.metadata import Metadata
 from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import SuperProject
-from dfetch.project.svn import SvnRepo
+from dfetch.project.svn import SvnSubProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 from dfetch.vcs.git import GitLocalRepo
 
@@ -172,9 +172,9 @@ def _get_repo(superproject: SuperProject, project: ProjectEntry) -> SubProject:
             "You cannot generate a diff of a project that was never fetched"
         )
     if GitLocalRepo(superproject.root_directory).is_git():
-        return GitRepo(project)
-    if SvnRepo.check_path(superproject.root_directory):
-        return SvnRepo(project)
+        return GitSubProject(project)
+    if SvnSubProject.check_path(superproject.root_directory):
+        return SvnSubProject(project)
 
     raise RuntimeError(
         "Can only create patch in SVN or Git repo",

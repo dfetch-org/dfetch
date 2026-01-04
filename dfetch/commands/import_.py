@@ -92,7 +92,7 @@ from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.remote import Remote
-from dfetch.project.svn import SvnRepo
+from dfetch.project.svn import SvnSubProject
 from dfetch.vcs.git import GitLocalRepo
 
 logger = get_logger(__name__)
@@ -139,7 +139,7 @@ def _import_projects() -> Sequence[ProjectEntry]:
     """Find out what type of VCS is used and import projects."""
     if GitLocalRepo().is_git():
         projects = _import_from_git()
-    elif SvnRepo.check_path():
+    elif SvnSubProject.check_path():
         projects = _import_from_svn()
     else:
         raise RuntimeError(
@@ -152,7 +152,7 @@ def _import_projects() -> Sequence[ProjectEntry]:
 def _import_from_svn() -> Sequence[ProjectEntry]:
     projects: list[ProjectEntry] = []
 
-    for external in SvnRepo.externals():
+    for external in SvnSubProject.externals():
         projects.append(
             ProjectEntry(
                 {
