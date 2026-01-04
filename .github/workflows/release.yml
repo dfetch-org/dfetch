@@ -78,10 +78,10 @@ jobs:
             echo "No release found for $TAG."
           fi
 
-      # Note that since this is a draft the link will be untagged (see https://github.com/cli/cli/issues/11589)
       - name: Create draft release
         if: ${{ steps.release_info.outputs.tag }}
         run: |
+          git fetch --tags --force
           gh release create "${{ steps.release_info.outputs.tag }}" \
             --repo "$GITHUB_REPOSITORY"                             \
             --title "${{ steps.release_info.outputs.tag }}"         \
