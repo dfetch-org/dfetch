@@ -9,7 +9,7 @@ from typing import NamedTuple, Optional
 
 from dfetch.log import get_logger
 from dfetch.manifest.version import Version
-from dfetch.project.vcs import VCS
+from dfetch.project.subproject import SubProject
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import (
     find_matching_files,
@@ -39,7 +39,7 @@ class External(NamedTuple):
     src: str
 
 
-class SvnRepo(VCS):
+class SvnRepo(SubProject):
     """A svn repository."""
 
     DEFAULT_BRANCH = "trunk"
@@ -188,12 +188,12 @@ class SvnRepo(VCS):
             logger.debug(
                 f"Something went wrong trying to get the version of svn: {exc}"
             )
-            VCS._log_tool("svn", "<not found in PATH>")
+            SubProject._log_tool("svn", "<not found in PATH>")
             return
 
         first_line = result.stdout.decode().split("\n")[0]
         tool, version = first_line.replace(",", "").split("version", maxsplit=1)
-        VCS._log_tool(tool, version)
+        SubProject._log_tool(tool, version)
 
     def _determine_what_to_fetch(self, version: Version) -> tuple[str, str, str]:
         """Based on the given version, determine what to fetch.

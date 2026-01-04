@@ -21,8 +21,8 @@ from dfetch.util.versions import latest_tag_from_list
 logger = get_logger(__name__)
 
 
-class VCS(ABC):
-    """Abstract Version Control System object.
+class SubProject(ABC):
+    """Abstract SubProject object.
 
     This object represents one Project entry in the Manifest.
     It can be updated.
@@ -32,7 +32,7 @@ class VCS(ABC):
     LICENSE_GLOBS = ["licen[cs]e*", "copying*", "copyright*"]
 
     def __init__(self, project: ProjectEntry) -> None:
-        """Create the VCS."""
+        """Create the subproject."""
         self.__project = project
         self.__metadata = Metadata.from_project_entry(self.__project)
 
@@ -95,7 +95,7 @@ class VCS(ABC):
     def update(
         self, force: bool = False, files_to_ignore: Optional[Sequence[str]] = None
     ) -> None:
-        """Update this VCS if required.
+        """Update this subproject if required.
 
         Args:
             force (bool, optional): Ignore if version is ok or any local changes were done.
@@ -230,7 +230,7 @@ class VCS(ABC):
 
     @property
     def wanted_version(self) -> Version:
-        """Get the wanted version of this VCS."""
+        """Get the wanted version of this subproject."""
         return self.__metadata.version
 
     @property
@@ -240,17 +240,17 @@ class VCS(ABC):
 
     @property
     def remote(self) -> str:
-        """Get the remote URL of this VCS."""
+        """Get the remote URL of this subproject."""
         return self.__metadata.remote_url
 
     @property
     def source(self) -> str:
-        """Get the source folder of this VCS."""
+        """Get the source folder of this subproject."""
         return self.__project.source
 
     @property
     def ignore(self) -> Sequence[str]:
-        """Get the files/folders to ignore of this VCS."""
+        """Get the files/folders to ignore of this subproject."""
         return self.__project.ignore
 
     @abstractmethod
@@ -362,7 +362,7 @@ class VCS(ABC):
 
     @abstractmethod
     def _fetch_impl(self, version: Version) -> Version:
-        """Fetch the given version of the VCS, should be implemented by the child class."""
+        """Fetch the given version of the subproject, should be implemented by the child class."""
 
     @abstractmethod
     def metadata_revision(self) -> str:
@@ -386,5 +386,6 @@ class VCS(ABC):
     def is_license_file(filename: str) -> bool:
         """Check if the given filename is a license file."""
         return any(
-            fnmatch.fnmatch(filename.lower(), pattern) for pattern in VCS.LICENSE_GLOBS
+            fnmatch.fnmatch(filename.lower(), pattern)
+            for pattern in SubProject.LICENSE_GLOBS
         )
