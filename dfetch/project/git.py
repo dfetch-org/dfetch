@@ -51,7 +51,7 @@ class GitSubProject(SubProject):
         """Get the revision of the metadata file."""
         return str(self._local_repo.get_current_hash())
 
-    def get_diff(
+    def _diff_impl(
         self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
     ) -> str:
         """Get the diff of two revisions."""

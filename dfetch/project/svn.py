@@ -189,7 +189,7 @@ class SvnSubProject(SubProject):
         """Get the current revision of the repo."""
         return self._repo.get_last_changed_revision(self.local_path)
 
-    def get_diff(
+    def _diff_impl(
         self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
     ) -> str:
         """Get the diff between two revisions."""

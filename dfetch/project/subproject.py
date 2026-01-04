@@ -373,13 +373,13 @@ class SubProject(ABC):
         """Get the revision of the metadata file."""
 
     @abstractmethod
-    def get_diff(
+    def _diff_impl(
         self,
         old_revision: str,  # noqa
         new_revision: Optional[str],  # noqa
         ignore: Sequence[str],
     ) -> str:
-        """Get the diff of two revisions."""
+        """Get the diff of two revisions, should be implemented by the child class."""
 
     @abstractmethod
     def get_default_branch(self) -> str:
@@ -391,4 +391,25 @@ class SubProject(ABC):
         return any(
             fnmatch.fnmatch(filename.lower(), pattern)
             for pattern in SubProject.LICENSE_GLOBS
+        )
+
+    def diff(self, revs: list[str]) -> str:
+        """Generate a relative diff for a subproject."""
+        if len(revs) > 2:
+            raise RuntimeError(f"Too many revisions given! {revs}")
+
+        if not revs:
+            revs.append(self.metadata_revision())
+            if not revs[-1]:
+                raise RuntimeError(
+                    "When not providing any revisions, dfetch starts from"
+                    f" the last revision to {Metadata.FILENAME} in {self.local_path}."
+                    " Please either revision this, or specify a revision to start from with --revs"
+                )
+
+        if len(revs) == 1:
+            revs.append("")
+
+        return self._diff_impl(
+            old_revision=revs[0], new_revision=revs[1], ignore=(Metadata.FILENAME,)
         )
