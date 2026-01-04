@@ -81,7 +81,7 @@ jobs:
       - name: Create draft release
         if: ${{ steps.release_info.outputs.tag }}
         run: |
-          git fetch --tags
+          git fetch --tags --force
           gh release create "${{ steps.release_info.outputs.tag }}" \
             --repo "$GITHUB_REPOSITORY"                             \
             --title "${{ steps.release_info.outputs.tag }}"         \
