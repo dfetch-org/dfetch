@@ -127,7 +127,7 @@ class SvnSubProject(SubProject):
 
         complete_path, file_pattern = self._parse_file_pattern(complete_path)
 
-        self._repo.export(complete_path, rev_arg, self.local_path)
+        SvnRepo.export(complete_path, rev_arg, self.local_path)
 
         if file_pattern:
             for file in find_non_matching_files(self.local_path, (file_pattern,)):
@@ -146,7 +146,7 @@ class SvnSubProject(SubProject):
                     if os.path.isdir(self.local_path)
                     else os.path.dirname(self.local_path)
                 )
-                self._repo.export(f"{root_branch_path}/{file}", rev_arg, dest)
+                SvnRepo.export(f"{root_branch_path}/{file}", rev_arg, dest)
                 break
 
         if self.ignore:
@@ -167,7 +167,7 @@ class SvnSubProject(SubProject):
         return complete_path, glob_filter
 
     def _get_info(self, branch: str) -> dict[str, str]:
-        return self._repo.get_info_from_target(f"{self.remote}/{branch}")
+        return SvnRepo.get_info_from_target(f"{self.remote}/{branch}")
 
     @staticmethod
     def _license_files(url_path: str) -> list[str]:
@@ -183,11 +183,11 @@ class SvnSubProject(SubProject):
 
     def metadata_revision(self) -> str:
         """Get the revision of the metadata file."""
-        return self._repo.get_last_changed_revision(self.metadata_path)
+        return SvnRepo.get_last_changed_revision(self.metadata_path)
 
     def current_revision(self) -> str:
         """Get the current revision of the repo."""
-        return self._repo.get_last_changed_revision(self.local_path)
+        return SvnRepo.get_last_changed_revision(self.local_path)
 
     def _diff_impl(
         self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]

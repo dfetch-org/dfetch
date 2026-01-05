@@ -107,6 +107,7 @@ class SvnRepo:
         repo_root = SvnRepo.get_info_from_target()["Repository Root"]
 
         externals: list[External] = []
+        # Pattern matches: "path - ..." where path is the local directory
         path_pattern = r"([^\s^-]+)\s+-"
         for entry in result.stdout.decode().split(os.linesep * 2):
             match: Optional[re.Match[str]] = None
@@ -117,6 +118,9 @@ class SvnRepo:
                 local_path = match.group(1)
                 entry = re.sub(path_pattern, "", entry)
 
+            # Pattern matches either:
+            # - url@revision name (pinned)
+            # - url name (unpinned)
             for match in re.finditer(
                 r"([^-\s\d][^\s]+)(?:@)(\d+)\s+([^\s]+)|([^-\s\d][^\s]+)\s+([^\s]+)",
                 entry,
@@ -191,7 +195,9 @@ class SvnRepo:
         return {
             key.strip(): value.strip()
             for key, value in (
-                line.split(":", maxsplit=1) for line in result.split(os.linesep) if line
+                line.split(":", maxsplit=1)
+                for line in result.split(os.linesep)
+                if line and ":" in line
             )
         }
 

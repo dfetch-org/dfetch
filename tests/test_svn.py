@@ -227,7 +227,7 @@ def svn_subproject():
     return SvnSubProject(ProjectEntry({"name": "proj3", "url": "some_url"}))
 
 
-def test_svn_repo_name(svn_subproject):
+def test_svn_subproject_name(svn_subproject):
     assert svn_subproject.NAME == "svn"
 
 

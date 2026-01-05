@@ -66,8 +66,11 @@ def test_forced_update():
                         with patch("dfetch.commands.update.Update._check_destination"):
                             mocked_get_childmanifests.return_value = []
 
-                            args = DEFAULT_ARGS
-                            args.force = True
+                            args = argparse.Namespace(
+                                no_recommendations=False,
+                                force=True,
+                                projects=[],
+                            )
 
                             update(args)
                             mocked_make.return_value.update.assert_called_once_with(
