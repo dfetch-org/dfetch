@@ -18,6 +18,8 @@ def get_svn_version() -> tuple[str, str]:
     """Get the name and version of svn."""
     result = run_on_cmdline(logger, ["svn", "--version", "--non-interactive"])
     first_line = result.stdout.decode().split("\n")[0]
+    if "version" not in first_line.lower():
+        raise RuntimeError(f"Unexpected svn --version output format: {first_line}")
     tool, version = first_line.replace(",", "").split("version", maxsplit=1)
     return (str(tool), str(version))
 
@@ -251,7 +253,7 @@ class SvnRepo:
         run_on_cmdline(
             logger,
             ["svn", "export", "--non-interactive", "--force"]
-            + rev.split(" ")
+            + (rev.split(" ") if rev else [])
             + [url, dst],
         )
 
