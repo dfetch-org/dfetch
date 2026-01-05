@@ -399,7 +399,7 @@ class SubProject(ABC):
             raise RuntimeError(
                 "When not providing any revisions, dfetch starts from"
                 f" the last revision to {Metadata.FILENAME} in {self.local_path}."
-                " Please either revision this, or specify a revision to start from with --revs"
+                " Please either commit this, or specify a revision to start from with --revs"
             )
 
         return self._diff_impl(old_rev, new_rev, ignore=(Metadata.FILENAME,))
