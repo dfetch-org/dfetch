@@ -170,10 +170,10 @@ ignore-paths = [
 convention = "google"
 
 [tool.pytest]
-filterwarnings = """
-    ignore:.*Using or importing the ABCs.*is deprecated:DeprecationWarning
-    ignore:.*the imp module.*is deprecated:DeprecationWarning
-"""
+filterwarnings = [
+    "ignore:.*Using or importing the ABCs.*is deprecated:DeprecationWarning",
+    "ignore:.*the imp module.*is deprecated:DeprecationWarning",
+]
 
 [tool.coverage.run]
 branch = true
