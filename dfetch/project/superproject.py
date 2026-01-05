@@ -9,6 +9,8 @@ it's a git or svn repository).
 from __future__ import annotations
 
 import os
+import pathlib
+from collections.abc import Sequence
 
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest, find_manifest
@@ -59,3 +61,18 @@ class SuperProject:
             return SvnSubProject(project)
 
         return None
+
+    def ignored_files(self, path: str) -> Sequence[str]:
+        """Return a list of files that can be ignored in a given path."""
+        if (
+            os.path.commonprefix((pathlib.Path(path).resolve(), self.root_directory))
+            != self.root_directory
+        ):
+            raise RuntimeError(f"{path} not in superproject {self.root_directory}!")
+
+        if GitLocalRepo(self.root_directory).is_git():
+            return GitLocalRepo.ignored_files(path)
+        if SvnRepo(self.root_directory).is_svn():
+            return SvnRepo.ignored_files(path)
+
+        return []

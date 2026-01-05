@@ -32,7 +32,7 @@ import os
 
 import dfetch.commands.command
 import dfetch.project
-from dfetch.commands.common import check_child_manifests, files_to_ignore
+from dfetch.commands.common import check_child_manifests
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.project.superproject import SuperProject
@@ -98,7 +98,8 @@ class Check(dfetch.commands.command.Command):
             for project in superproject.manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     dfetch.project.make(project).check_for_update(
-                        reporters, files_to_ignore=files_to_ignore(project.destination)
+                        reporters,
+                        files_to_ignore=superproject.ignored_files(project.destination),
                     )
 
                 if not args.no_recommendations and os.path.isdir(project.destination):
