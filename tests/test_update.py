@@ -54,6 +54,7 @@ def test_forced_update():
     fake_superproject = Mock()
     fake_superproject.manifest = mock_manifest([{"name": "some_project"}])
     fake_superproject.root_directory = "/tmp"
+    fake_superproject.ignored_files.return_value = []
 
     with patch("dfetch.commands.update.SuperProject", return_value=fake_superproject):
         with patch(
