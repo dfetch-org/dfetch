@@ -98,16 +98,9 @@ import os
 import pathlib
 
 import dfetch.commands.command
-import dfetch.project
 from dfetch.log import get_logger
-from dfetch.manifest.project import ProjectEntry
-from dfetch.project.git import GitSubProject
-from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import SuperProject
-from dfetch.project.svn import SvnSubProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
-from dfetch.vcs.git import GitLocalRepo
-from dfetch.vcs.svn import SvnRepo
 
 logger = get_logger(__name__)
 
@@ -143,7 +136,7 @@ class Diff(dfetch.commands.command.Command):
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the diff."""
         superproject = SuperProject()
-        revs = [r for r in args.revs.strip(":").split(":", maxsplit=1) if r]
+        old_rev, new_rev = self._parse_revs(args.revs)
 
         with in_directory(superproject.root_directory):
             exceptions: list[str] = []
@@ -153,49 +146,44 @@ class Diff(dfetch.commands.command.Command):
                     f"No (such) project found! {', '.join(args.projects)}"
                 )
             for project in projects:
-                patch_name = f"{project.name}.patch"
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    patch = _get_sub_project(superproject, project).diff(revs)
+                    if not os.path.exists(project.destination):
+                        raise RuntimeError(
+                            "You cannot generate a diff of a project that was never fetched"
+                        )
+                    subproject = superproject.get_sub_project(project)
 
-                    _dump_patch(
-                        superproject.root_directory, revs, project, patch_name, patch
-                    )
+                    if subproject is None:
+                        raise RuntimeError(
+                            "Can only create patch if your project is an SVN or Git repo",
+                        )
+                    old_rev = old_rev or subproject.metadata_revision()
+                    patch = subproject.diff(old_rev, new_rev)
+
+                    msg = self._rev_msg(old_rev, new_rev)
+                    if patch:
+                        patch_path = pathlib.Path(f"{project.name}.patch")
+                        logger.print_info_line(
+                            project.name,
+                            f"Generating patch {patch_path} {msg} in {superproject.root_directory}",
+                        )
+                        patch_path.write_text(patch, encoding="UTF-8")
+                    else:
+                        logger.print_info_line(project.name, f"No diffs found {msg}")
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
 
+    @staticmethod
+    def _parse_revs(revs_arg: str) -> tuple[str, str]:
+        revs = [r for r in revs_arg.strip(":").split(":", maxsplit=1) if r]
 
-def _get_sub_project(superproject: SuperProject, project: ProjectEntry) -> SubProject:
-    """Get the subproject in the same vcs type as the superproject."""
-    if not os.path.exists(project.destination):
-        raise RuntimeError(
-            "You cannot generate a diff of a project that was never fetched"
-        )
-    if GitLocalRepo(superproject.root_directory).is_git():
-        return GitSubProject(project)
-    if SvnRepo(superproject.root_directory).is_svn():
-        return SvnSubProject(project)
+        if len(revs) == 0:
+            return "", ""
+        if len(revs) == 1:
+            return revs[0], ""
+        return revs[0], revs[1]
 
-    raise RuntimeError(
-        "Can only create patch if your project is an SVN or Git repo",
-    )
-
-
-def _dump_patch(
-    path: str, revs: list[str], project: ProjectEntry, patch_name: str, patch: str
-) -> None:
-    """Dump the patch to a file."""
-    if patch:
-        rev_range = f"from {revs[0]} to {revs[1]}" if revs[1] else f"since {revs[0]}"
-        logger.print_info_line(
-            project.name,
-            f"Generating patch {patch_name} {rev_range} in {os.path.dirname(path)}",
-        )
-        pathlib.Path(patch_name).write_text(patch, encoding="UTF-8")
-    else:
-        if revs[1]:
-            msg = f"No diffs found from {revs[0]} to {revs[1]}"
-        else:
-            msg = f"No diffs found since {revs[0]}"
-
-        logger.print_info_line(project.name, msg)
+    @staticmethod
+    def _rev_msg(old_rev: str, new_rev: str) -> str:
+        return f"from {old_rev} to {new_rev}" if new_rev else f"since {old_rev}"

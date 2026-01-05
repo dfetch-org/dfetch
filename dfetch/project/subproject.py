@@ -393,23 +393,13 @@ class SubProject(ABC):
             for pattern in SubProject.LICENSE_GLOBS
         )
 
-    def diff(self, revs: list[str]) -> str:
+    def diff(self, old_rev: str, new_rev: str) -> str:
         """Generate a relative diff for a subproject."""
-        if len(revs) > 2:
-            raise RuntimeError(f"Too many revisions given! {revs}")
+        if not old_rev:
+            raise RuntimeError(
+                "When not providing any revisions, dfetch starts from"
+                f" the last revision to {Metadata.FILENAME} in {self.local_path}."
+                " Please either revision this, or specify a revision to start from with --revs"
+            )
 
-        if not revs:
-            revs.append(self.metadata_revision())
-            if not revs[-1]:
-                raise RuntimeError(
-                    "When not providing any revisions, dfetch starts from"
-                    f" the last revision to {Metadata.FILENAME} in {self.local_path}."
-                    " Please either revision this, or specify a revision to start from with --revs"
-                )
-
-        if len(revs) == 1:
-            revs.append("")
-
-        return self._diff_impl(
-            old_revision=revs[0], new_revision=revs[1], ignore=(Metadata.FILENAME,)
-        )
+        return self._diff_impl(old_rev, new_rev, ignore=(Metadata.FILENAME,))
