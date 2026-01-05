@@ -12,7 +12,13 @@ import os
 
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest, find_manifest
+from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.validate import validate
+from dfetch.project.git import GitSubProject
+from dfetch.project.subproject import SubProject
+from dfetch.project.svn import SvnSubProject
+from dfetch.vcs.git import GitLocalRepo
+from dfetch.vcs.svn import SvnRepo
 
 logger = get_logger(__name__)
 
@@ -44,3 +50,12 @@ class SuperProject:
     def manifest(self) -> Manifest:
         """The manifest of the super project."""
         return self._manifest
+
+    def get_sub_project(self, project: ProjectEntry) -> SubProject | None:
+        """Get the subproject in the same vcs type as the superproject."""
+        if GitLocalRepo(self.root_directory).is_git():
+            return GitSubProject(project)
+        if SvnRepo(self.root_directory).is_svn():
+            return SvnSubProject(project)
+
+        return None
