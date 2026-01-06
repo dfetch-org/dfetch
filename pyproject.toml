@@ -68,7 +68,7 @@ Changelog = "https://github.com/dfetch-org/dfetch/blob/main/CHANGELOG.rst"
 development = [
     # Quality dependencies
     'black==25.12.0',
-    'doc8==1.1.2',
+    'doc8==2.0.0',
     'pydocstyle==6.3.0',
     'radon==6.0.1',
     'xenon==0.9.3',
