@@ -132,13 +132,12 @@ PINNED_MODULE_NO_SUBFOLDER_EXPECTATION = [
 def test_externals(name, externals, expectations):
     with patch("dfetch.vcs.svn.run_on_cmdline") as run_on_cmdline_mock:
         with patch("dfetch.vcs.svn.SvnRepo.get_info_from_target") as target_info_mock:
-            with patch("dfetch.vcs.svn.os.getcwd") as cwd_mock:
+            with patch("dfetch.vcs.svn.os.chdir"):
                 cmd_output = str(os.linesep * 2).join(externals)
                 run_on_cmdline_mock().stdout = cmd_output.encode("utf-8")
                 target_info_mock.return_value = {"Repository Root": REPO_ROOT}
 
-                cwd_mock.return_value = CWD
-                parsed_externals = SvnRepo.externals()
+                parsed_externals = SvnRepo(CWD).externals()
 
                 for actual, expected in zip(
                     parsed_externals, expectations  # , strict=True

@@ -152,7 +152,7 @@ def _import_projects() -> Sequence[ProjectEntry]:
 def _import_from_svn() -> Sequence[ProjectEntry]:
     projects: list[ProjectEntry] = []
 
-    for external in SvnRepo.externals():
+    for external in SvnRepo(os.getcwd()).externals():
         projects.append(
             ProjectEntry(
                 {
