@@ -14,9 +14,8 @@ from dfetch.manifest.manifest import (
     ManifestDict,
     ManifestEntryLocation,
     RequestedProjectNotFoundError,
-    find_manifest,
-    get_childmanifests,
 )
+from dfetch.manifest.parse import find_manifest, get_childmanifests
 from dfetch.manifest.project import ProjectEntry
 
 BASIC_MANIFEST = """
@@ -99,20 +98,20 @@ def test_construct_from_dict() -> None:
 
 
 def test_no_manifests_found() -> None:
-    with patch("dfetch.manifest.manifest.find_file"):
+    with patch("dfetch.manifest.parse.find_file"):
         with pytest.raises(RuntimeError):
             find_manifest()
 
 
 def test_multiple_manifests_found() -> None:
-    with patch("dfetch.manifest.manifest.find_file") as find_file_mock:
+    with patch("dfetch.manifest.parse.find_file") as find_file_mock:
         find_file_mock.return_value = [DEFAULT_MANIFEST_NAME, "manifest2.yaml"]
 
         assert os.path.realpath(DEFAULT_MANIFEST_NAME) == find_manifest()
 
 
 def test_single_manifest_found() -> None:
-    with patch("dfetch.manifest.manifest.find_file") as find_file_mock:
+    with patch("dfetch.manifest.parse.find_file") as find_file_mock:
         find_file_mock.return_value = [DEFAULT_MANIFEST_NAME]
 
         joined = os.path.realpath(os.path.join(os.getcwd(), DEFAULT_MANIFEST_NAME))
@@ -140,20 +139,19 @@ def test_single_manifest_found() -> None:
 def test_get_childmanifests(name, manifest_paths) -> None:
     parent = ProjectEntry({"name": "name"})
 
-    with patch("dfetch.manifest.manifest.find_file") as find_file_mock:
-        with patch("dfetch.manifest.manifest.validate"):
-            with patch("dfetch.manifest.manifest.Manifest") as manifest_mock:
-                find_file_mock.return_value = manifest_paths
+    with patch("dfetch.manifest.parse.find_file") as find_file_mock:
+        with patch("dfetch.manifest.parse.parse") as parse_mock:
+            find_file_mock.return_value = manifest_paths
 
-                found_childmanifests = get_childmanifests([parent.name])
+            found_childmanifests = get_childmanifests([parent.name])
 
-                assert len(found_childmanifests) == len(manifest_paths)
+            assert len(found_childmanifests) == len(manifest_paths)
 
-                for path, call in zip(
-                    manifest_paths,
-                    manifest_mock.from_file.call_args_list,  # , strict=True
-                ):
-                    assert os.path.realpath(path) == call[0][0]
+            for path, call in zip(
+                manifest_paths,
+                parse_mock.call_args_list,  # , strict=True
+            ):
+                assert os.path.realpath(path) == call[0][0]
 
 
 def test_suggestion_found() -> None:

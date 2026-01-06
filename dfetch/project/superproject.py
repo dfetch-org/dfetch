@@ -13,9 +13,9 @@ import pathlib
 from collections.abc import Sequence
 
 from dfetch.log import get_logger
-from dfetch.manifest.manifest import Manifest, find_manifest
+from dfetch.manifest.manifest import Manifest
+from dfetch.manifest.parse import find_manifest, parse
 from dfetch.manifest.project import ProjectEntry
-from dfetch.manifest.validate import validate
 from dfetch.project.git import GitSubProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.svn import SvnSubProject
@@ -37,10 +37,9 @@ class SuperProject:
         """Create a SuperProject by looking for a manifest file."""
         logger.debug("Looking for manifest")
         manifest_path = find_manifest()
-        validate(manifest_path)
 
         logger.debug(f"Using manifest {manifest_path}")
-        self._manifest = Manifest.from_file(manifest_path)
+        self._manifest = parse(manifest_path)
         self._root_directory = os.path.dirname(self._manifest.path)
 
     @property

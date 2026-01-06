@@ -46,12 +46,18 @@ WINDOWS_ICO = nuitka_info.get("windows-icon-from-ico", "")
 WINDOWS_ICO_PATH = Path(WINDOWS_ICO).resolve() if WINDOWS_ICO else None
 
 
-PLATFORM_NAME = "nix"
-
-if sys.platform.startswith("darwin"):
-    PLATFORM_NAME = "osx"
-elif sys.platform.startswith("win"):
-    PLATFORM_NAME = "win"
+PLATFORM_MAPPING = {
+    "darwin": "osx",
+    "win": "win",
+}
+PLATFORM_NAME = next(
+    (
+        name
+        for prefix, name in PLATFORM_MAPPING.items()
+        if sys.platform.startswith(prefix)
+    ),
+    "nix",
+)
 
 
 def run_command(command: list[str]) -> None:

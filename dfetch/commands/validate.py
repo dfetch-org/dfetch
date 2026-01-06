@@ -11,8 +11,7 @@ import os
 
 import dfetch.commands.command
 from dfetch.log import get_logger
-from dfetch.manifest.manifest import find_manifest
-from dfetch.manifest.validate import validate
+from dfetch.manifest.parse import find_manifest, parse
 
 logger = get_logger(__name__)
 
@@ -34,6 +33,6 @@ class Validate(dfetch.commands.command.Command):
         del args  # unused
 
         manifest_path = find_manifest()
-        validate(manifest_path)
+        parse(manifest_path)
         manifest_path = os.path.relpath(manifest_path, os.getcwd())
         logger.print_info_line(manifest_path, "valid")
