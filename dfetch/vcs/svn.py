@@ -90,61 +90,61 @@ class SvnRepo:
         except (SubprocessCommandError, RuntimeError):
             return False
 
-    @staticmethod
-    def externals() -> list[External]:
+    def externals(self) -> list[External]:
         """Get list of externals."""
-        result = run_on_cmdline(
-            logger,
-            [
-                "svn",
-                "--non-interactive",
-                "propget",
-                "svn:externals",
-                "-R",
-            ],
-        )
+        with in_directory(self._path):
+            result = run_on_cmdline(
+                logger,
+                [
+                    "svn",
+                    "--non-interactive",
+                    "propget",
+                    "svn:externals",
+                    "-R",
+                ],
+            )
 
-        repo_root = SvnRepo.get_info_from_target()["Repository Root"]
+            repo_root = SvnRepo.get_info_from_target()["Repository Root"]
 
-        externals: list[External] = []
-        # Pattern matches: "path - ..." where path is the local directory
-        path_pattern = r"([^\s^-]+)\s+-"
-        for entry in result.stdout.decode().split(os.linesep * 2):
-            match: Optional[re.Match[str]] = None
-            local_path: str = ""
-            for match in re.finditer(path_pattern, entry):
-                pass
-            if match:
-                local_path = match.group(1)
-                entry = re.sub(path_pattern, "", entry)
+            externals: list[External] = []
+            # Pattern matches: "path - ..." where path is the local directory
+            path_pattern = r"([^\s^-]+)\s+-"
+            for entry in result.stdout.decode().split(os.linesep * 2):
+                match: Optional[re.Match[str]] = None
+                local_path: str = ""
+                for match in re.finditer(path_pattern, entry):
+                    pass
+                if match:
+                    local_path = match.group(1)
+                    entry = re.sub(path_pattern, "", entry)
 
-            # Pattern matches either:
-            # - url@revision name (pinned)
-            # - url name (unpinned)
-            for match in re.finditer(
-                r"([^-\s\d][^\s]+)(?:@)(\d+)\s+([^\s]+)|([^-\s\d][^\s]+)\s+([^\s]+)",
-                entry,
-            ):
-                url = match.group(1) or match.group(4)
-                name = match.group(3) or match.group(5)
-                rev = "" if not match.group(2) else match.group(2).strip()
+                # Pattern matches either:
+                # - url@revision name (pinned)
+                # - url name (unpinned)
+                for match in re.finditer(
+                    r"([^-\s\d][^\s]+)(?:@)(\d+)\s+([^\s]+)|([^-\s\d][^\s]+)\s+([^\s]+)",
+                    entry,
+                ):
+                    url = match.group(1) or match.group(4)
+                    name = match.group(3) or match.group(5)
+                    rev = "" if not match.group(2) else match.group(2).strip()
 
-                url, branch, tag, src = SvnRepo._split_url(url, repo_root)
+                    url, branch, tag, src = SvnRepo._split_url(url, repo_root)
 
-                externals += [
-                    External(
-                        name=name,
-                        toplevel=os.getcwd(),
-                        path="/".join(os.path.join(local_path, name).split(os.sep)),
-                        revision=rev,
-                        url=url,
-                        branch=branch,
-                        tag=tag,
-                        src=src,
-                    )
-                ]
+                    externals += [
+                        External(
+                            name=name,
+                            toplevel=self._path,
+                            path="/".join(os.path.join(local_path, name).split(os.sep)),
+                            revision=rev,
+                            url=url,
+                            branch=branch,
+                            tag=tag,
+                            src=src,
+                        )
+                    ]
 
-        return externals
+            return externals
 
     @staticmethod
     def _split_url(url: str, repo_root: str) -> tuple[str, str, str, str]:
