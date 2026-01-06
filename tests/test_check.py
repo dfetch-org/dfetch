@@ -34,7 +34,7 @@ def test_check(name, projects):
 
     with patch("dfetch.commands.check.SuperProject", return_value=fake_superproject):
         with patch(
-            "dfetch.manifest.manifest.get_childmanifests"
+            "dfetch.manifest.parse.get_childmanifests"
         ) as mocked_get_childmanifests:
             with patch("dfetch.project.make") as mocked_make:
                 with patch("os.path.exists"):

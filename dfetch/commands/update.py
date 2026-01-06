@@ -32,11 +32,8 @@ import os
 from pathlib import Path
 
 import dfetch.commands.command
-import dfetch.manifest.manifest
 import dfetch.manifest.project
-import dfetch.manifest.validate
-import dfetch.project.git
-import dfetch.project.svn
+import dfetch.project
 from dfetch.commands.common import check_child_manifests
 from dfetch.log import get_logger
 from dfetch.project.superproject import SuperProject

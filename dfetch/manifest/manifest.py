@@ -21,21 +21,17 @@ download and a section ``projects:`` that contains a list of projects to fetch.
 import difflib
 import io
 import os
-import pathlib
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import IO, Any, Optional, Union
 
 import yaml
-from typing_extensions import TypedDict
+from typing_extensions import NotRequired, TypedDict
 
-from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
-from dfetch.manifest.validate import validate
-from dfetch.util.util import find_file, prefix_runtime_exceptions
 
 logger = get_logger(__name__)
 
@@ -96,13 +92,11 @@ class RequestedProjectNotFoundError(RuntimeError):
         ]
 
 
-class ManifestDict(  # pylint: disable=too-many-ancestors
-    TypedDict, total=False
-):  # When https://www.python.org/dev/peps/pep-0655/ is accepted, only make remotes optional
+class ManifestDict(TypedDict, total=True):  # pylint: disable=too-many-ancestors
     """Serialized dict types."""
 
     version: Union[int, str]
-    remotes: Sequence[Union[RemoteDict, Remote]]
+    remotes: NotRequired[Sequence[Union[RemoteDict, Remote]]]
     projects: Sequence[Union[ProjectEntryDict, ProjectEntry, dict[str, str]]]
 
 
@@ -360,39 +354,6 @@ class Manifest:
                     end=int(match.end("name")),
                 )
         raise RuntimeError(f"{name} was not found in the manifest!")
-
-
-def find_manifest() -> str:
-    """Find a manifest."""
-    paths = find_file(DEFAULT_MANIFEST_NAME, ".")
-
-    if len(paths) == 0:
-        raise RuntimeError("No manifests were found!")
-    if len(paths) != 1:
-        logger.warning(
-            f"Multiple manifests found, using {pathlib.Path(paths[0]).as_posix()}"
-        )
-
-    return os.path.realpath(paths[0])
-
-
-def get_childmanifests(skip: Optional[list[str]] = None) -> list[Manifest]:
-    """Get manifest and its path."""
-    skip = skip or []
-    logger.debug("Looking for sub-manifests")
-
-    childmanifests: list[Manifest] = []
-    for path in find_file(DEFAULT_MANIFEST_NAME, "."):
-        path = os.path.realpath(path)
-        if path not in skip:
-            logger.debug(f"Found sub-manifests {path}")
-            with prefix_runtime_exceptions(
-                pathlib.Path(path).relative_to(os.path.dirname(os.getcwd())).as_posix()
-            ):
-                validate(path)
-            childmanifests += [Manifest.from_file(path)]
-
-    return childmanifests
 
 
 class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors

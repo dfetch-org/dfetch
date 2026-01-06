@@ -189,8 +189,8 @@ skip = "*.cast,./venv,**/plantuml-c4/**,./example,.mypy_cache,./doc/_build/**,./
 "features/steps/*" = ["F811"]
 
 [tool.pyright]
-exclude = ["doc/static/uml/generate_diagram.py", "./doc/_ext/sphinxcontrib_asciinema/", "./doc/_build"]
-standard = ["dfetch", "features"]
+exclude = ["doc/static/uml/generate_diagram.py", "./doc/_ext/sphinxcontrib_asciinema/", "./doc/_build", "**/node_modules", "**/__pycache__", "**/.*", "venv"]
+# standard = ["dfetch", "features"]
 reportMissingImports = false
 reportMissingModuleSource = false
 pythonVersion = "3.9"

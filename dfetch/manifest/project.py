@@ -274,7 +274,7 @@ import copy
 from collections.abc import Sequence
 from typing import Optional, Union
 
-from typing_extensions import TypedDict
+from typing_extensions import Required, TypedDict
 
 from dfetch.manifest.remote import Remote
 from dfetch.manifest.version import Version
@@ -282,7 +282,7 @@ from dfetch.manifest.version import Version
 ProjectEntryDict = TypedDict(
     "ProjectEntryDict",
     {
-        "name": str,
+        "name": Required[str],
         "revision": str,
         "remote": str,
         "src": str,
@@ -337,7 +337,9 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         Returns:
             ProjectEntry:  An immutable ProjectEntry
         """
-        kwargs: ProjectEntryDict = {}
+        kwargs: ProjectEntryDict = (
+            {}  # type: ignore # the Required name key is checked in __init__
+        )
         for key in ProjectEntryDict.__annotations__.keys():  # pylint: disable=no-member
             try:
                 kwargs[str(key)] = yamldata[key]  # type: ignore

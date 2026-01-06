@@ -5,7 +5,8 @@ import os
 import yaml
 
 from dfetch.log import get_logger
-from dfetch.manifest.manifest import Manifest, get_childmanifests
+from dfetch.manifest.manifest import Manifest
+from dfetch.manifest.parse import get_childmanifests
 from dfetch.manifest.project import ProjectEntry
 
 logger = get_logger(__name__)

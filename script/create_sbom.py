@@ -15,13 +15,18 @@ PROJECT_DIR = Path(__file__).parent.parent.resolve()
 
 DEPS = f"{PROJECT_DIR}[sbom]"
 
-
-PLATFORM_NAME = "nix"
-
-if sys.platform.startswith("darwin"):
-    PLATFORM_NAME = "osx"
-elif sys.platform.startswith("win"):
-    PLATFORM_NAME = "win"
+PLATFORM_MAPPING = {
+    "darwin": "osx",
+    "win": "win",
+}
+PLATFORM_NAME = next(
+    (
+        name
+        for prefix, name in PLATFORM_MAPPING.items()
+        if sys.platform.startswith(prefix)
+    ),
+    "nix",
+)
 
 
 @contextlib.contextmanager
