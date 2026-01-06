@@ -17,9 +17,9 @@ def _resource_path(filename: str) -> ContextManager[Path]:
     )
 
 
-def schema_path() -> ContextManager[Path]:
-    """Get path to schema."""
-    return _resource_path("schema.yaml")
+def template_path() -> ContextManager[Path]:
+    """Get path to template."""
+    return _resource_path("template.yaml")
 
 
 TEMPLATE_PATH = _resource_path("template.yaml")

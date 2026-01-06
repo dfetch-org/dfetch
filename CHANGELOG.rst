@@ -2,6 +2,8 @@ Release 0.12.0 (unreleased)
 ====================================
 
 * Internal refactoring: introduce superproject & subproject (#896)
+* Switch from pykwalify to StrictYAML (#922)
+* Show line number when manifest validation fails (#36)
 
 Release 0.11.0 (released 2026-01-03)
 ====================================

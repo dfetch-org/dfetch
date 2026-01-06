@@ -1,27 +1,61 @@
-"""Validate manifests."""
+"""Validate manifests using StrictYAML."""
 
-import logging
+import pathlib
+from collections.abc import Mapping
+from typing import Any, cast
 
-import pykwalify
-from pykwalify.core import Core, SchemaError
-from yaml.scanner import ScannerError
+from strictyaml import StrictYAMLError, YAMLValidationError, load
 
-import dfetch.resources
+from dfetch.manifest.schema import MANIFEST_SCHEMA
+
+
+def _ensure_unique(seq: list[dict[str, Any]], key: str, context: str) -> None:
+    """Ensure values for `key` are unique within a sequence of dicts."""
+    values = [item.get(key) for item in seq if key in item]
+    seen: set[Any] = set()
+    dups: set[Any] = set()
+    for val in values:
+        if val in seen:
+            dups.add(val)
+        else:
+            seen.add(val)
+
+    if dups:
+        dup_list = ", ".join(sorted(map(str, dups)))
+        raise RuntimeError(
+            f"Schema validation failed:\nDuplicate {context}.{key} value(s): {dup_list}"
+        )
 
 
 def validate(path: str) -> None:
-    """Validate the given manifest."""
-    logging.getLogger(pykwalify.__name__).setLevel(logging.CRITICAL)
+    """Validate the given manifest file against the StrictYAML schema.
 
-    with dfetch.resources.schema_path() as schema_path:
-        try:
-            validator = Core(source_file=path, schema_files=[str(schema_path)])
-        except ScannerError as err:
-            raise RuntimeError(f"{schema_path} is not a valid YAML file!") from err
-
+    Raises:
+        RuntimeError: if the file is not valid YAML or violates the schema/uniqueness constraints.
+    """
     try:
-        validator.validate(raise_exception=True)
-    except SchemaError as err:
+
+        loaded_manifest = load(
+            pathlib.Path(path).read_text(encoding="UTF-8"), schema=MANIFEST_SCHEMA
+        )
+    except (YAMLValidationError, StrictYAMLError) as err:
         raise RuntimeError(
-            str(err.msg)  # pyright: ignore[reportAttributeAccessIssue, reportCallIssue]
+            "\n".join(
+                [
+                    "Schema validation failed:",
+                    "",
+                    err.context_mark.get_snippet(),
+                    "",
+                    err.problem,
+                ]
+            )
         ) from err
+
+    data: dict[str, Any] = cast(dict[str, Any], loaded_manifest.data)
+    manifest: Mapping[str, Any] = data["manifest"]  # required
+    projects: list[dict[str, Any]] = manifest["projects"]  # required
+    remotes: list[dict[str, Any]] = manifest.get("remotes", []) or []  # optional
+
+    _ensure_unique(remotes, "name", "manifest.remotes")
+    _ensure_unique(projects, "name", "manifest.projects")
+    _ensure_unique(projects, "dst", "manifest.projects")
