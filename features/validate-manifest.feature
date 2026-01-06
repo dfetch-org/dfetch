@@ -44,6 +44,29 @@ Feature: Validate a manifest
             """
             Dfetch (0.11.0)
             Schema validation failed:
-             - Cannot find required key 'manifest'. Path: ''.
-             - Key 'manifest-wrong' was not defined. Path: ''.
+
+                manifest-wrong:
+                 ^ (line: 1)
+
+            unexpected key not in schema 'manifest-wrong'
+            """
+
+    Scenario: A manifest with duplicate project names
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+              remotes:
+                - name: github-com-dfetch-org
+                  url-base: https://github.com/dfetch-org/test-repo
+              projects:
+                - name: ext/test-repo-rev-only
+                - name: ext/test-repo-rev-only
+            """
+        When I run "dfetch validate"
+        Then the output shows
+            """
+            Dfetch (0.11.0)
+            Schema validation failed:
+            Duplicate manifest.projects.name value(s): ext/test-repo-rev-only
             """
