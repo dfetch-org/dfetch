@@ -5,7 +5,7 @@ from strictyaml import Bool, Enum, Float, Int, Map, Optional, Regex, Seq
 NUMBER = Int() | Float()
 
 # A safe string: no NUL, no control chars
-SAFE_STR = Regex(r"^[^\x00]*$")
+SAFE_STR = Regex(r"^[^\x00-\x1F\x7F-\x9F]*$")
 
 REMOTE_SCHEMA = Map(
     {

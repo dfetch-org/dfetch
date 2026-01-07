@@ -41,8 +41,10 @@ else:
 # Avoid control chars and NUL to prevent OS/path/subprocess issues in tests
 SAFE_TEXT = st.text(
     alphabet=st.characters(
-        min_codepoint=32, blacklist_categories=("Cs",)
-    ),  # no controls/surrogates
+        min_codepoint=0x20,
+        blacklist_characters=[chr(c) for c in range(0x7F, 0xA0)],
+        blacklist_categories=("Cs",),
+    ),
     min_size=0,
     max_size=64,
 )
@@ -76,7 +78,7 @@ remote_entry = st.builds(
 
 vcs_enum = st.sampled_from(["git", "svn"])
 
-ignore_list = st.lists(SAFE_TEXT, min_size=1, max_size=5)
+ignore_list = st.none() | st.lists(SAFE_TEXT, min_size=1, max_size=5)
 
 project_entry = st.builds(
     lambda name, dst, branch, tag, revision, url, repo_path, remote, patch, vcs, src, ignore: {
