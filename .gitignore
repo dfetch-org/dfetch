@@ -14,3 +14,4 @@ example/Tests/
 venv*
 *.cdx.json
 release_notes.txt
+.hypothesis
