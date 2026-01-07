@@ -108,7 +108,7 @@ project_entry = st.builds(
     patch=opt_str(),
     vcs=st.none() | vcs_enum,
     src=opt_str(),
-    ignore=st.one_of(ignore_list, st.just([])),
+    ignore=ignore_list,
 )
 
 remotes_seq = st.none() | st.lists(remote_entry, min_size=1, max_size=4)
