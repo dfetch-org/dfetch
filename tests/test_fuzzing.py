@@ -190,7 +190,7 @@ if __name__ == "__main__":
     parsed = load(as_document(example, schema).as_yaml(), schema)
     print("\nRound-trip parsed .data:\n", parsed.data)
 
-    test_data_conforms_to_schema()
-    test_manifest_can_be_created()
-    test_check()
-    test_update()
+    test_data_conforms_to_schema()  # pylint: disable=no-value-for-parameter
+    test_manifest_can_be_created()  # pylint: disable=no-value-for-parameter
+    test_check()  # pylint: disable=no-value-for-parameter
+    test_update()  # pylint: disable=no-value-for-parameter
