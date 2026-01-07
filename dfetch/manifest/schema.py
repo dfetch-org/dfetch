@@ -25,7 +25,7 @@ PROJECT_SCHEMA = Map(
         Optional("url"): SAFE_STR,
         Optional("repo-path"): SAFE_STR,
         Optional("remote"): SAFE_STR,
-        Optional("patch"): SAFE_STR,
+        Optional("patch"): SAFE_STR | Seq(SAFE_STR),
         Optional("vcs"): Enum(["git", "svn"]),
         Optional("src"): SAFE_STR,
         Optional("ignore"): Seq(SAFE_STR),

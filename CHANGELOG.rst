@@ -6,6 +6,7 @@ Release 0.12.0 (unreleased)
 * Show line number when manifest validation fails (#36)
 * Add Fuzzing (#819)
 * Don't allow NULL or control characters in manifest (#114)
+* Allow multiple patches in manifest (#897)
 
 Release 0.11.0 (released 2026-01-03)
 ====================================

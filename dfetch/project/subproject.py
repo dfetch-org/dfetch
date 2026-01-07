@@ -128,33 +128,33 @@ class SubProject(ABC):
             actually_fetched = self._fetch_impl(to_fetch)
         self._log_project(f"Fetched {actually_fetched}")
 
-        applied_patch = ""
-        if self.__project.patch:
-            if os.path.exists(self.__project.patch):
-                self.apply_patch()
-                applied_patch = self.__project.patch
+        applied_patches = []
+        for patch in self.__project.patch:
+            if os.path.exists(patch):
+                self.apply_patch(patch)
+                applied_patches += [patch]
             else:
-                logger.warning(f"Skipping non-existent patch {self.__project.patch}")
+                logger.warning(f"Skipping non-existent patch {patch}")
 
         self.__metadata.fetched(
             actually_fetched,
             hash_=hash_directory(self.local_path, skiplist=[self.__metadata.FILENAME]),
-            patch_=applied_patch,
+            patch_=applied_patches,
         )
 
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
         self.__metadata.dump()
 
-    def apply_patch(self) -> None:
+    def apply_patch(self, patch: str) -> None:
         """Apply the specified patch to the destination."""
-        patch_set = fromfile(self.__project.patch)
+        patch_set = fromfile(patch)
 
         if not patch_set:
-            raise RuntimeError(f'Invalid patch file: "{self.__project.patch}"')
+            raise RuntimeError(f'Invalid patch file: "{patch}"')
         if patch_set.apply(0, root=self.local_path, fuzz=True):
-            self._log_project(f'Applied patch "{self.__project.patch}"')
+            self._log_project(f'Applied patch "{patch}"')
         else:
-            raise RuntimeError(f'Applying patch "{self.__project.patch}" failed')
+            raise RuntimeError(f'Applying patch "{patch}" failed')
 
     def check_for_update(
         self, reporters: Sequence[AbstractCheckReporter], files_to_ignore: Sequence[str]

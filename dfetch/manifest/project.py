@@ -278,6 +278,7 @@ from typing_extensions import Required, TypedDict
 
 from dfetch.manifest.remote import Remote
 from dfetch.manifest.version import Version
+from dfetch.util.util import always_str_list
 
 ProjectEntryDict = TypedDict(
     "ProjectEntryDict",
@@ -288,7 +289,7 @@ ProjectEntryDict = TypedDict(
         "src": str,
         "dst": str,
         "url": str,
-        "patch": str,
+        "patch": Union[str, list[str]],
         "repo": str,
         "branch": str,
         "tag": str,
@@ -316,7 +317,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._src: str = kwargs.get("src", "")  # noqa
         self._dst: str = kwargs.get("dst", self._name)
         self._url: str = kwargs.get("url", "")
-        self._patch: str = kwargs.get("patch", "")  # noqa
+        self._patch: list[str] = always_str_list(kwargs.get("patch", []))
         self._repo_path: str = kwargs.get("repo-path", "")
         self._branch: str = kwargs.get("branch", "")
         self._tag: str = kwargs.get("tag", "")
@@ -329,7 +330,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
     @classmethod
     def from_yaml(
         cls,
-        yamldata: Union[dict[str, str], ProjectEntryDict],
+        yamldata: Union[dict[str, Union[str, list[str]]], ProjectEntryDict],
         default_remote: str = "",
     ) -> "ProjectEntry":
         """Create a Project Entry from yaml data.
@@ -409,8 +410,8 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         return self._dst
 
     @property
-    def patch(self) -> str:
-        """Get the patch that should be applied."""
+    def patch(self) -> list[str]:
+        """Get the patches that should be applied."""
         return self._patch
 
     @property
@@ -451,14 +452,14 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         """Get a copy that can be used as recommendation."""
         recommendation = self.copy(self)
         recommendation._dst = ""  # pylint: disable=protected-access
-        recommendation._patch = ""  # pylint: disable=protected-access
+        recommendation._patch = []  # pylint: disable=protected-access
         recommendation._url = self.remote_url  # pylint: disable=protected-access
         recommendation._remote = ""  # pylint: disable=protected-access
         recommendation._remote_obj = None  # pylint: disable=protected-access
         recommendation._repo_path = ""  # pylint: disable=protected-access
         return recommendation
 
-    def as_yaml(self) -> dict[str, str]:
+    def as_yaml(self) -> dict[str, Union[str, list[str]]]:
         """Get this project as yaml dictionary."""
         yamldata = {
             "name": self._name,

@@ -79,8 +79,8 @@ Feature: List dependencies
                   licenses        : <none>
             """
 
-    Scenario: Git repo with applied patch
-        Given MyProject with applied patch 'diff.patch'
+    Scenario: Git repo with applied patches
+        Given MyProject with applied patches "001-diff.patch, 002-diff.patch"
         When I run "dfetch report"
         Then the output shows
             """
@@ -92,6 +92,6 @@ Feature: List dependencies
                   tag             : v2.0
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : <none>
-                  patch           : diff.patch
+                  patch           : 001-diff.patch, 002-diff.patch
                   licenses        : MIT License
             """
