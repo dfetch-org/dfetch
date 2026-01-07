@@ -278,7 +278,7 @@ from typing_extensions import Required, TypedDict
 
 from dfetch.manifest.remote import Remote
 from dfetch.manifest.version import Version
-from dfetch.util.util import always_str_list
+from dfetch.util.util import always_str_list, str_if_possible
 
 ProjectEntryDict = TypedDict(
     "ProjectEntryDict",
@@ -468,7 +468,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             "src": self._src,
             "dst": self._dst if self._dst != self._name else None,
             "url": self._url,
-            "patch": self._patch,
+            "patch": str_if_possible(self._patch),
             "branch": self._branch,
             "tag": self._tag,
             "repo-path": self._repo_path,
