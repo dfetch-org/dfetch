@@ -2,9 +2,11 @@
 # For more info see https://dfetch.rtfd.io/en/latest/getting_started.html
 dfetch:
   branch: master
-  hash: c26afa0279fa96392fd7f46d516060a4
-  last_fetch: 21/12/2025, 13:39:42
-  patch: doc/_ext/sphinxcontrib_asciinema.patch
+  hash: dcd1473e1a3ca613b804e3e51e7ee342
+  last_fetch: 07/01/2026, 21:38:48
+  patch:
+  - doc/_ext/patches/001-autoformat-sphinxcontrib.asciinema.patch
+  - doc/_ext/patches/002-fix-options-sphinxcontrib.asciinema.patch
   remote_url: https://github.com/divi255/sphinxcontrib.asciinema.git
   revision: 5ee0c5be62236a5dee0032e1d8dd59957a0c1d4c
   tag: ''
