@@ -147,7 +147,7 @@ def step_impl(context, directory, path):
         commit_all("A change")
 
 
-@given("MyProject with applied patch 'diff.patch'")
+@given('MyProject with applied patches "001-diff.patch, 002-diff.patch"')
 def step_impl(context):
     manifest = """
 manifest:
@@ -161,7 +161,9 @@ manifest:
     - name: ext/test-repo-tag
       tag: v2.0
       dst: ext/test-repo-tag
-      patch: diff.patch
+      patch:
+        - 001-diff.patch
+        - 002-diff.patch
 """
 
     generate_manifest(
@@ -169,7 +171,7 @@ manifest:
         "dfetch.yaml",
         contents=manifest,
     )
-    patch_file = """
+    patch_file1 = """
 diff --git a/README.md b/README.md
 index 32d9fad..62248b7 100644
 --- a/README.md
@@ -179,5 +181,19 @@ index 32d9fad..62248b7 100644
 -A test repo for testing dfetch.
 +A test repo for testing patch.
 """
-    generate_file(os.path.join(os.getcwd(), "diff.patch"), patch_file)
+
+    patch_file2 = """
+diff --git a/README.md b/README.md
+index 62248b7..32d9fad 100644
+--- a/README.md
++++ b/README.md
+@@ -1,2 +1,2 @@
+    # Test-repo
+-A test repo for testing patch.
++A test repo for testing dfetch.
+"""
+
+    generate_file(os.path.join(os.getcwd(), "001-diff.patch"), patch_file1)
+    generate_file(os.path.join(os.getcwd(), "002-diff.patch"), patch_file2)
+
     call_command(context, ["update"])

@@ -2,12 +2,14 @@
 
 import datetime
 import os
+from typing import Optional, Union
 
 import yaml
 from typing_extensions import TypedDict
 
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
+from dfetch.util.util import always_str_list, str_if_possible
 
 DONT_EDIT_WARNING = """\
 # This is a generated file by dfetch. Don't edit this, but edit the manifest.
@@ -25,7 +27,7 @@ class Options(TypedDict):  # pylint: disable=too-many-ancestors
     remote_url: str
     destination: str
     hash: str
-    patch: str
+    patch: Union[str, list[str]]
 
 
 class Metadata:
@@ -49,7 +51,9 @@ class Metadata:
         self._remote_url: str = str(kwargs.get("remote_url", ""))
         self._destination: str = str(kwargs.get("destination", ""))
         self._hash: str = str(kwargs.get("hash", ""))
-        self._patch: str = str(kwargs.get("patch", ""))
+
+        # Historically only a single patch was allowed
+        self._patch: list[str] = always_str_list(kwargs.get("patch", []))
 
     @classmethod
     def from_project_entry(cls, project: ProjectEntry) -> "Metadata":
@@ -73,12 +77,14 @@ class Metadata:
             data: Options = yaml.safe_load(metadata_file)["dfetch"]
             return cls(data)
 
-    def fetched(self, version: Version, hash_: str = "", patch_: str = "") -> None:
+    def fetched(
+        self, version: Version, hash_: str = "", patch_: Optional[list[str]] = None
+    ) -> None:
         """Update metadata."""
         self._last_fetch = datetime.datetime.now()
         self._version = version
         self._hash = hash_
-        self._patch = patch_
+        self._patch = patch_ or []
 
     @property
     def version(self) -> Version:
@@ -120,7 +126,7 @@ class Metadata:
         return self._hash
 
     @property
-    def patch(self) -> str:
+    def patch(self) -> list[str]:
         """The applied patch as stored in the metadata."""
         return self._patch
 
@@ -160,7 +166,7 @@ class Metadata:
                 "last_fetch": self.last_fetch_string(),
                 "tag": self._version.tag,
                 "hash": self.hash,
-                "patch": self.patch,
+                "patch": str_if_possible(self.patch),
             }
         }
 

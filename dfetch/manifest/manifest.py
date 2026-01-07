@@ -97,7 +97,9 @@ class ManifestDict(TypedDict, total=True):  # pylint: disable=too-many-ancestors
 
     version: Union[int, str]
     remotes: NotRequired[Sequence[Union[RemoteDict, Remote]]]
-    projects: Sequence[Union[ProjectEntryDict, ProjectEntry, dict[str, str]]]
+    projects: Sequence[
+        Union[ProjectEntryDict, ProjectEntry, dict[str, Union[str, list[str]]]]
+    ]
 
 
 class Manifest:
@@ -138,12 +140,17 @@ class Manifest:
         self._projects = self._init_projects(manifest["projects"])
 
     def _init_projects(
-        self, projects: Sequence[Union[ProjectEntryDict, ProjectEntry, dict[str, str]]]
+        self,
+        projects: Sequence[
+            Union[ProjectEntryDict, ProjectEntry, dict[str, Union[str, list[str]]]]
+        ],
     ) -> dict[str, ProjectEntry]:
         """Iterate over projects from manifest and initialize ProjectEntries from it.
 
         Args:
-            projects (Sequence[Union[ProjectEntryDict, ProjectEntry, Dict[str, str]]]): Iterable with projects
+            projects (Sequence[
+                Union[ProjectEntryDict, ProjectEntry, Dict[str, Union[str, list[str]]]]
+            ]): Iterable with projects
 
         Raises:
             RuntimeError: Project unknown
@@ -157,6 +164,10 @@ class Manifest:
             if isinstance(project, dict):
                 if "name" not in project:
                     raise KeyError("Missing name!")
+                if not isinstance(project["name"], str):
+                    raise TypeError(
+                        f"Project name must be a string, got {type(project['name']).__name__}"
+                    )
                 last_project = _projects[project["name"]] = ProjectEntry.from_yaml(
                     project, self._default_remote_name
                 )
@@ -295,9 +306,9 @@ class Manifest:
         if len(remotes) == 1:
             remotes[0].pop("default", None)
 
-        projects: list[dict[str, str]] = []
+        projects: list[dict[str, Union[str, list[str]]]] = []
         for project in self.projects:
-            project_yaml: dict[str, str] = project.as_yaml()
+            project_yaml: dict[str, Union[str, list[str]]] = project.as_yaml()
             if len(remotes) == 1:
                 project_yaml.pop("remote", None)
             projects.append(project_yaml)

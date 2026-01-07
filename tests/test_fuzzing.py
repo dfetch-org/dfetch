@@ -107,7 +107,7 @@ project_entry = st.builds(
     url=opt_str(),
     repo_path=opt_str(),
     remote=opt_str(),
-    patch=opt_str(),
+    patch=opt_str() | st.lists(SAFE_TEXT, min_size=1, max_size=5),
     vcs=st.none() | vcs_enum,
     src=opt_str(),
     ignore=ignore_list,

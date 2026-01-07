@@ -134,3 +134,28 @@ def hash_file(file_path: str, digest: HASH) -> HASH:
                 buf = f_obj.read(1024 * 1024)
 
     return digest
+
+
+def always_str_list(data: Union[str, list[str]]) -> list[str]:
+    """Convert a string or list of strings into a list of strings.
+
+    Args:
+        data: A string or list of strings.
+
+    Returns:
+        A list of strings. Empty strings are converted to empty lists.
+    """
+    return data if not isinstance(data, str) else [data] if data else []
+
+
+def str_if_possible(data: list[str]) -> Union[str, list[str]]:
+    """Convert a single-element list to a string, otherwise keep as list.
+
+    Args:
+        data: A list of strings.
+
+    Returns:
+        A single string if the list has exactly one element, an empty string
+        if the list is empty, otherwise the original list.
+    """
+    return "" if not data else data[0] if len(data) == 1 else data

@@ -65,7 +65,7 @@ def run(argv: Sequence[str]) -> None:
 
     try:
         args.func(args)
-    except RuntimeError as exc:
+    except (RuntimeError, TypeError) as exc:
         for msg in exc.args:
             logger.error(msg, stack_info=False)
         raise DfetchFatalException from exc
