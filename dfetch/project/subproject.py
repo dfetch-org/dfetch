@@ -132,7 +132,7 @@ class SubProject(ABC):
         for patch in self.__project.patch:
             if os.path.exists(patch):
                 self.apply_patch(patch)
-                applied_patches += [patch]
+                applied_patches.append(patch)
             else:
                 logger.warning(f"Skipping non-existent patch {patch}")
 
