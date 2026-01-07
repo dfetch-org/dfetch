@@ -45,7 +45,7 @@ dependencies = [
     "halo==0.0.31",
     "colorama==0.4.6",
     "typing-extensions==4.15.0",
-    "tldextract==5.3.0",
+    "tldextract==5.3.1",
     "sarif-om==1.0.4",
     "semver==3.0.4",
     "patch-ng==1.19.0",
