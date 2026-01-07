@@ -17,6 +17,10 @@ Schema
 
 Below an overview of all possible fields on the manifest. The bold items are mandatory.
 
+.. note::
+
+  A ``string`` should be a regular string without NULL or control characters.
+
 .. jsonschema::
 
     :auto_reference:

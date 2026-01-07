@@ -1,31 +1,34 @@
 """StrictYAML schema for the manifest."""
 
-from strictyaml import Bool, Enum, Float, Int, Map, Optional, Seq, Str
+from strictyaml import Bool, Enum, Float, Int, Map, Optional, Regex, Seq
 
 NUMBER = Int() | Float()
 
+# A safe string: no NUL, no control chars
+SAFE_STR = Regex(r"^[^\x00]*$")
+
 REMOTE_SCHEMA = Map(
     {
-        "name": Str(),
-        "url-base": Str(),
+        "name": SAFE_STR,
+        "url-base": SAFE_STR,
         Optional("default"): Bool(),
     }
 )
 
 PROJECT_SCHEMA = Map(
     {
-        "name": Str(),
-        Optional("dst"): Str(),
-        Optional("branch"): Str(),
-        Optional("tag"): Str(),
-        Optional("revision"): Str(),
-        Optional("url"): Str(),
-        Optional("repo-path"): Str(),
-        Optional("remote"): Str(),
-        Optional("patch"): Str(),
+        "name": SAFE_STR,
+        Optional("dst"): SAFE_STR,
+        Optional("branch"): SAFE_STR,
+        Optional("tag"): SAFE_STR,
+        Optional("revision"): SAFE_STR,
+        Optional("url"): SAFE_STR,
+        Optional("repo-path"): SAFE_STR,
+        Optional("remote"): SAFE_STR,
+        Optional("patch"): SAFE_STR,
         Optional("vcs"): Enum(["git", "svn"]),
-        Optional("src"): Str(),
-        Optional("ignore"): Seq(Str()),
+        Optional("src"): SAFE_STR,
+        Optional("ignore"): Seq(SAFE_STR),
     }
 )
 
