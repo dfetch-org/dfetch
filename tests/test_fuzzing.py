@@ -154,7 +154,7 @@ def test_manifest_can_be_created(data):
 
 @given(manifest_strategy)
 def test_check(data):
-    """Validate check comand."""
+    """Validate check command."""
     with suppress(DfetchFatalException):
         with tempfile.TemporaryDirectory() as tmpdir:
             with in_directory(tmpdir):
@@ -165,7 +165,7 @@ def test_check(data):
 
 @given(manifest_strategy)
 def test_update(data):
-    """Validate update comand."""
+    """Validate update command."""
     with suppress(DfetchFatalException):
         with tempfile.TemporaryDirectory() as tmpdir:
             with in_directory(tmpdir):
