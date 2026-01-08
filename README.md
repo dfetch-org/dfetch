@@ -37,6 +37,15 @@ See [alternatives](https://dfetch.readthedocs.io/en/latest/alternatives.html) fo
 [**Troubleshooting**](https://dfetch.readthedocs.io/en/latest/troubleshooting.html)  |
 [**Contributing**](https://dfetch.readthedocs.io/en/latest/contributing.html)
 
+## Problems DFetch Solves
+
+* Declarative code reuse across projects ([inner sourcing](https://about.gitlab.com/topics/version-control/what-is-innersource/))
+* Compose multi-repo code bases into a single working tree
+* Vendoring dependencies for reproducible builds
+* Apply local patches while keeping upstream syncable
+* VCS-agnostic dependency management
+* Self-contained exports for releases or audits
+
 ## Install
 
 ### Stable
