@@ -1,9 +1,9 @@
 """*Dfetch* can create a patch file with your local changes to the external project.
 
 If you've found any issues with the remote project, you can fix them within the context of your project.
-To help the upstream project, you can generate a patch file
-that can be applied by the upstream maintainer. The patch will be generated using the version control system
-of your main project that contains the manifest.
+To help the upstream project, you can generate a patch file that can be applied by the upstream maintainer.
+The patch will be generated using the version control system
+of your main project (also referred to as superproject) that contains the manifest.
 
 To generate a patch, *Dfetch* requires two revisions to identify the changes. You can
 provide these through the ``--revs`` argument.
@@ -64,7 +64,10 @@ See below for the version control specifics. The patch will also contain the con
 
 Updating the patch
 ======================
-If you have further changes to a project with a patch, you can update the patch by first reversing the patch, using
+If you have further changes to a project with a patch, you can create an additional patch if the changes are
+unrelated, or you can update the patch as described below.
+
+First step is to reverse the original patch, using
 ``apply`` and with the ``--directory`` argument as shown above. To reverse the patch you also require the ``-R``.
 This will return the project to the state before the patch was applied. You can then stage the project and re-apply
 the patch to the project to have an editable patch.

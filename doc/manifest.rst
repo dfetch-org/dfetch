@@ -92,7 +92,7 @@ Below an overview of all possible fields on the manifest. The bold items are man
                   type: string
                 patch:
                   type: string
-                  description: Patch to apply after fetching see :ref:`Patch`.
+                  description: One or more patches to apply after fetching, see :ref:`Patch`.
                 vcs:
                   type: string
                   description: Version control system used by the project. See :ref:`VCS type` for details.
