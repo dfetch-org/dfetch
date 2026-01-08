@@ -223,9 +223,9 @@ from trunk for svn and master from git.
 
 Patch
 #####
-*DFetch* promotes upstreaming changes, but also allows local changes. These changes can be managed with a local patch
-file. *DFetch* will apply the patch file every time a new upstream version is fetched. The patch file can be specified
-with the ``patch:`` attribute.
+*DFetch* promotes upstreaming changes, but also allows local changes. These changes can be managed with local patch
+files. *DFetch* will apply the patch files in order every time a new upstream version is fetched. The patch file can
+be specified with the ``patch:`` attribute. This can be a single patch file or multiple.
 
 .. code-block:: yaml
 

@@ -254,7 +254,8 @@ They *mitigate* vendoring risks; they do not eliminate them.
     **Rationale** The vendored dependency may diverge, keeping it the same as upstream makes it easy to keep following
     upstream updates. Also by upstreaming any changes, more people outside the project can profit from any fixes.
 
-    *Dfetch* addresses this by providing a ``dfetch diff`` (:ref:`Diff`) command and a ``patch`` :ref:`Patch` attribute in the manifest.
+    *Dfetch* addresses this by providing a ``dfetch diff`` (:ref:`Diff`) command and a ``patch`` (:ref:`Patch`) attribute in the manifest.
+    This attribute can point to one or more patches that should be applied to the vendored dependency.
     Next to this there is a CI system to detect local changes using :ref:`Check`.
 
 .. admonition :: Continuous Automation and Security Scanning
