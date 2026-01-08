@@ -330,6 +330,7 @@ Here are some links to example projects using *Dfetch*.
 
 - `Dfetch`: https://github.com/dfetch-org/dfetch
 - `ModbusScope`: https://github.com/ModbusScope/ModbusScope
+- `Red Jackets Jazzband`: https://github.com/red-jackets-jazzband/website
 
 Internally we use *Dfetch* for various projects and uses.
 
