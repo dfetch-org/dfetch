@@ -125,8 +125,42 @@ Feature: Patch after fetching from git repo
             """
             Dfetch (0.11.0)
               ext/test-repo-tag   : Fetched v2.0
-            successfully patched 1/1:      b'README.md'
+            successfully patched 1/1:	 b'README.md'
               ext/test-repo-tag   : Applied patch "001-diff.patch"
-            successfully patched 1/1:      b'README.md'
+            successfully patched 1/1:	 b'README.md'
               ext/test-repo-tag   : Applied patch "002-diff.patch"
+            """
+
+    Scenario: A UTF-16 encoded patch file is applied after fetching
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+                version: '0.0'
+
+                remotes:
+                - name: github-com-dfetch-org
+                  url-base: https://github.com/dfetch-org/test-repo
+
+                projects:
+                - name: ext/test-repo-tag
+                  tag: v2.0
+                  dst: ext/test-repo-tag
+                  patch: diff.patch
+            """
+        And the patch file 'diff.patch' with 'UTF-16' encoding
+            """
+            diff --git a/README.md b/README.md
+            index 32d9fad..62248b7 100644
+            --- a/README.md
+            +++ b/README.md
+            @@ -1,2 +1,2 @@
+             # Test-repo
+            -A test repo for testing dfetch.
+            +A test repo for testing patch.
+            """
+        When I run "dfetch update"
+        Then the patched 'ext/test-repo-tag/README.md' is
+            """
+            # Test-repo
+            A test repo for testing patch.
             """

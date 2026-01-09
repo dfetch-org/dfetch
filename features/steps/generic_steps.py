@@ -104,13 +104,13 @@ def check_content(
         )
 
 
-def generate_file(path, content):
+def generate_file(path, content, encoding="UTF-8"):
     opt_dir = path.rsplit("/", maxsplit=1)
 
     if len(opt_dir) > 1:
         pathlib.Path(opt_dir[0]).mkdir(parents=True, exist_ok=True)
 
-    with open(path, "w", encoding="UTF-8") as new_file:
+    with open(path, "w", encoding=encoding) as new_file:
         for line in content.splitlines():
             print(line, file=new_file)
 
@@ -202,8 +202,9 @@ def step_impl(_, old: str, new: str, path: str):
 
 
 @given("the patch file '{name}'")
-def step_impl(context, name):
-    generate_file(os.path.join(os.getcwd(), name), context.text)
+@given("the patch file '{name}' with '{encoding}' encoding")
+def step_impl(context, name, encoding="UTF-8"):
+    generate_file(os.path.join(os.getcwd(), name), context.text, encoding)
 
 
 @given('"{path}" in {directory} is created')
