@@ -55,6 +55,16 @@ def dump_patch(patch_set: patch_ng.PatchSet) -> str:
     return "\n".join(patch_lines) + "\n" if patch_lines else ""
 
 
+def apply_patch(patch_path: str, root: str = ".") -> None:
+    """Apply the specified patch relative to the root."""
+    patch_set = patch_ng.fromfile(patch_path)
+
+    if not patch_set:
+        raise RuntimeError(f'Invalid patch file: "{patch_path}"')
+    if not patch_set.apply(strip=0, root=root, fuzz=True):
+        raise RuntimeError(f'Applying patch "{patch_path}" failed')
+
+
 def create_svn_patch_for_new_file(file_path: str) -> str:
     """Create a svn patch for a new file."""
     diff = unified_diff_new_file(Path(file_path))
