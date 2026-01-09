@@ -57,7 +57,7 @@ jobs:
 
       - name: Publish
         if: github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@4b09552702d0b65573696410d4707c765da2630b # v4.0.0
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
         with:
           publish_dir: ./doc/landing-page/_build/html
           external_repository: dfetch-org/dfetch-org.github.io
