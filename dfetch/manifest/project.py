@@ -225,7 +225,8 @@ Patch
 #####
 *DFetch* promotes upstreaming changes, but also allows local changes. These changes can be managed with local patch
 files. *DFetch* will apply the patch files in order every time a new upstream version is fetched. The patch file can
-be specified with the ``patch:`` attribute. This can be a single patch file or multiple.
+be specified with the ``patch:`` attribute. This can be a single patch file or multiple. Patch files should be UTF-8
+encoded files.
 
 .. code-block:: yaml
 

@@ -131,7 +131,7 @@ Feature: Patch after fetching from git repo
               ext/test-repo-tag   : Applied patch "002-diff.patch"
             """
 
-    Scenario: A UTF-16 encoded patch file is applied after fetching
+    Scenario: Fallback to other file encodings if patch file is not UTF-8 encoded
         Given the manifest 'dfetch.yaml'
             """
             manifest:
@@ -163,4 +163,13 @@ Feature: Patch after fetching from git repo
             """
             # Test-repo
             A test repo for testing patch.
+            """
+        And the output shows
+            """
+            Dfetch (0.11.0)
+              ext/test-repo-tag   : Fetched v2.0
+            error: no patch data found!
+            After retrying found that patch-file "diff.patch" is not UTF-8 encoded, consider saving it with UTF-8 encoding.
+            successfully patched 1/1:	 b'README.md'
+              ext/test-repo-tag   : Applied patch "diff.patch"
             """
