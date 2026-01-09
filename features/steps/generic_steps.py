@@ -25,6 +25,7 @@ iso_timestamp = re.compile(r'"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}\+\d{2}:\
 urn_uuid = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 bom_ref = re.compile(r"BomRef\.[0-9]+\.[0-9]+")
 svn_error = re.compile(r"svn: E\d{6}: .+")
+abs_path = re.compile(r"/tmp/[\w_]+")
 
 
 def remote_server_path(context):
@@ -181,6 +182,7 @@ def check_output(context, line_count=None):
                 "some-remote-server",
             ),
             (svn_error, "svn: EXXXXXX: <some error text>"),
+            (abs_path, "/some/path"),
         ],
         text=context.cmd_output,
     )

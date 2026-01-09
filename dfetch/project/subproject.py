@@ -142,25 +142,23 @@ class SubProject(ABC):
 
     def _apply_patches(self) -> list[str]:
         """Apply the patches."""
-        manifest_dir = Path(".").resolve()
+        cwd = Path(".").resolve()
         applied_patches = []
         for patch in self.__project.patch:
 
-            patch_path = (manifest_dir / patch).resolve()
+            patch_path = (cwd / patch).resolve()
 
             try:
-                patch_path.relative_to(manifest_dir)
+                patch_path.relative_to(cwd)
             except ValueError:
-                self._log_project(
-                    f'Skipping patch "{patch}" which is outside manifest dir.'
-                )
+                self._log_project(f'Skipping patch "{patch}" which is outside {cwd}.')
                 continue
 
             if not patch_path.exists():
                 self._log_project(f"Skipping non-existent patch {patch}")
                 continue
 
-            normalized_patch_path = str(patch_path.relative_to(manifest_dir).as_posix())
+            normalized_patch_path = str(patch_path.relative_to(cwd).as_posix())
 
             apply_patch(normalized_patch_path, root=self.local_path)
             self._log_project(f'Applied patch "{normalized_patch_path}"')
