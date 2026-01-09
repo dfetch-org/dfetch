@@ -45,6 +45,7 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 `LsiGitCheckout`_           ✔    ✘       ✔        ✘             ✔                   ✔
 `mdlr`_                     ✔    ✘       Beta      ✔             ✔                   ✔
 `myrepos`_                  ✔    ✘       ✘        ✔             ✔                   ✔
+`multi_repo`_               ✔    ✘       ✔        ✔             ✔                   ✔
 `OpenTitan-vendor.py`_      ✔    ✘       ✘        ✔             ✔                   ✔
 `pasta`_                    ✔    ✘       ✔        ✔             ✔                   ✔
 `peru`_                     ✔    ✘       ✔        ✔             ✔                   ✔
@@ -96,6 +97,7 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 .. _`LsiGitCheckout`: https://github.com/LS-Instruments/LsiGitCheckout
 .. _`mdlr`: https://github.com/exlinc/mdlr
 .. _`myrepos`: http://myrepos.branchable.com/
+.. _`multi_repo`: https://github.com/ManageIQ/multi_repo
 .. _`OpenTitan-vendor.py`: https://github.com/lowRISC/opentitan/blob/master/util/vendor.py
 .. _`pasta`: https://github.com/audiotool/pasta
 .. _`peru`: https://github.com/buildinspace/peru
