@@ -8,7 +8,6 @@ from collections.abc import Sequence
 from typing import Optional
 
 from halo import Halo
-from patch_ng import fromfile
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
@@ -17,6 +16,7 @@ from dfetch.project.abstract_check_reporter import AbstractCheckReporter
 from dfetch.project.metadata import Metadata
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
+from dfetch.vcs.patch import apply_patch
 
 logger = get_logger(__name__)
 
@@ -130,11 +130,13 @@ class SubProject(ABC):
 
         applied_patches = []
         for patch in self.__project.patch:
-            if os.path.exists(patch):
-                self.apply_patch(patch)
-                applied_patches.append(patch)
-            else:
+            if not os.path.exists(patch):
                 logger.warning(f"Skipping non-existent patch {patch}")
+                continue
+
+            apply_patch(patch, root=self.local_path)
+            self._log_project(f'Applied patch "{patch}"')
+            applied_patches.append(patch)
 
         self.__metadata.fetched(
             actually_fetched,
@@ -144,17 +146,6 @@ class SubProject(ABC):
 
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
         self.__metadata.dump()
-
-    def apply_patch(self, patch: str) -> None:
-        """Apply the specified patch to the destination."""
-        patch_set = fromfile(patch)
-
-        if not patch_set:
-            raise RuntimeError(f'Invalid patch file: "{patch}"')
-        if patch_set.apply(0, root=self.local_path, fuzz=True):
-            self._log_project(f'Applied patch "{patch}"')
-        else:
-            raise RuntimeError(f'Applying patch "{patch}" failed')
 
     def check_for_update(
         self, reporters: Sequence[AbstractCheckReporter], files_to_ignore: Sequence[str]
