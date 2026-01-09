@@ -5,7 +5,6 @@ import os
 import pathlib
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from pathlib import Path
 from typing import Optional
 
 from halo import Halo
@@ -142,7 +141,7 @@ class SubProject(ABC):
 
     def _apply_patches(self) -> list[str]:
         """Apply the patches."""
-        cwd = Path(".").resolve()
+        cwd = pathlib.Path(".").resolve()
         applied_patches = []
         for patch in self.__project.patch:
 
