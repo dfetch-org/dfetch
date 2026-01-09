@@ -34,8 +34,6 @@ jobs:
   landing-page:
     name: Landing page
     runs-on: ubuntu-latest
-    permissions:
-        contents: write # For publishing landing page
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
@@ -59,9 +57,9 @@ jobs:
 
       - name: Publish
         if: github.ref == 'refs/heads/main'
-        uses: tsunematsu21/actions-publish-gh-pages@c04b531c52b8f9d25c596bc6e6a7ddc116b2f3f8 # v1.0.2
+        uses: peaceiris/actions-gh-pages@4b09552702d0b65573696410d4707c765da2630b # v4.0.0
         with:
-          dir: doc/landing-page/_build/html
-          repo: dfetch-org/dfetch-org.github.io
-          branch: main
-          token: ${{ secrets.GH_DFETCH_ORG_DEPLOY }}
+          publish_dir: ./doc/landing-page/_build/html
+          external_repository: dfetch-org/dfetch-org.github.io
+          publish_branch: main
+          deploy_key: ${{ secrets.GH_DFETCH_ORG_DEPLOY }}
