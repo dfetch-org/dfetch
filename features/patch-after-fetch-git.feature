@@ -195,5 +195,5 @@ Feature: Patch after fetching from git repo
             """
             Dfetch (0.11.0)
               ext/test-repo-tag   : Fetched v2.0
-              ext/test-repo-tag   : Skipping patch "../diff.patch" which is outside manifest dir.
+              ext/test-repo-tag   : Skipping patch "../diff.patch" which is outside /some/path.
             """
