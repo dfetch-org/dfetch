@@ -128,15 +128,7 @@ class SubProject(ABC):
             actually_fetched = self._fetch_impl(to_fetch)
         self._log_project(f"Fetched {actually_fetched}")
 
-        applied_patches = []
-        for patch in self.__project.patch:
-            if not os.path.exists(patch):
-                logger.warning(f"Skipping non-existent patch {patch}")
-                continue
-
-            apply_patch(patch, root=self.local_path)
-            self._log_project(f'Applied patch "{patch}"')
-            applied_patches.append(patch)
+        applied_patches = self._apply_patches()
 
         self.__metadata.fetched(
             actually_fetched,
@@ -146,6 +138,28 @@ class SubProject(ABC):
 
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
         self.__metadata.dump()
+
+    def _apply_patches(self) -> list[str]:
+        """Apply the patches."""
+        manifest_dir = os.getcwd()
+        applied_patches = []
+        for patch in self.__project.patch:
+
+            real_path = os.path.realpath(patch)
+            if os.path.commonprefix((real_path, manifest_dir)) != manifest_dir:
+                self._log_project(
+                    f'Skipping patch "{patch}" which is outside manifest dir.'
+                )
+                continue
+
+            if not os.path.exists(patch):
+                self._log_project(f"Skipping non-existent patch {patch}")
+                continue
+
+            apply_patch(patch, root=self.local_path)
+            self._log_project(f'Applied patch "{patch}"')
+            applied_patches.append(patch)
+        return applied_patches
 
     def check_for_update(
         self, reporters: Sequence[AbstractCheckReporter], files_to_ignore: Sequence[str]

@@ -173,3 +173,27 @@ Feature: Patch after fetching from git repo
             successfully patched 1/1:	 b'README.md'
               ext/test-repo-tag   : Applied patch "diff.patch"
             """
+
+    Scenario: Patch files are outside manifest dir
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+                version: '0.0'
+
+                remotes:
+                - name: github-com-dfetch-org
+                  url-base: https://github.com/dfetch-org/test-repo
+
+                projects:
+                - name: ext/test-repo-tag
+                  tag: v2.0
+                  dst: ext/test-repo-tag
+                  patch: ../diff.patch
+            """
+        When I run "dfetch update"
+        Then the output shows
+            """
+            Dfetch (0.11.0)
+              ext/test-repo-tag   : Fetched v2.0
+              ext/test-repo-tag   : Skipping patch "../diff.patch" which is outside manifest dir.
+            """
