@@ -121,3 +121,12 @@ Feature: Patch after fetching from git repo
             # Test-repo
             A test repo for testing dfetch.
             """
+        And the output shows
+            """
+            Dfetch (0.11.0)
+              ext/test-repo-tag   : Fetched v2.0
+            successfully patched 1/1:      b'README.md'
+              ext/test-repo-tag   : Applied patch "001-diff.patch"
+            successfully patched 1/1:      b'README.md'
+              ext/test-repo-tag   : Applied patch "002-diff.patch"
+            """
