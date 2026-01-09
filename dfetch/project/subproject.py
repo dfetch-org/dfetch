@@ -148,7 +148,7 @@ class SubProject(ABC):
             patch_path = (cwd / patch).resolve()
 
             try:
-                patch_path.relative_to(cwd)
+                relative_patch_path = patch_path.relative_to(cwd)
             except ValueError:
                 self._log_project(f'Skipping patch "{patch}" which is outside {cwd}.')
                 continue
@@ -157,7 +157,7 @@ class SubProject(ABC):
                 self._log_project(f"Skipping non-existent patch {patch}")
                 continue
 
-            normalized_patch_path = str(patch_path.relative_to(cwd).as_posix())
+            normalized_patch_path = str(relative_patch_path.as_posix())
 
             apply_patch(normalized_patch_path, root=self.local_path)
             self._log_project(f'Applied patch "{normalized_patch_path}"')
