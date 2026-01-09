@@ -42,6 +42,7 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 `Hemlock`_                  ✔    ✘       ✔        ✔             ✔                   ✔
 `josh`_                     ✔    ✘       ✔        ✔             ✔                   ✔
 `Kitenet mr`_               ✔    ✔       ?         ✔             ✔                   ✔
+`LsiGitCheckout`_           ✔    ✘       ✔        ✘             ✔                   ✔
 `mdlr`_                     ✔    ✘       Beta      ✔             ✔                   ✔
 `myrepos`_                  ✔    ✘       ✘        ✔             ✔                   ✔
 `OpenTitan-vendor.py`_      ✔    ✘       ✘        ✔             ✔                   ✔
@@ -92,6 +93,7 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 .. _`Hemlock`: https://github.com/MadL1me/hemlock
 .. _`josh`: https://github.com/josh-project/josh
 .. _`Kitenet mr`: https://github.com/toddr/kitenet-mr
+.. _`LsiGitCheckout`: https://github.com/LS-Instruments/LsiGitCheckout
 .. _`mdlr`: https://github.com/exlinc/mdlr
 .. _`myrepos`: http://myrepos.branchable.com/
 .. _`OpenTitan-vendor.py`: https://github.com/lowRISC/opentitan/blob/master/util/vendor.py
