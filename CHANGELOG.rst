@@ -9,6 +9,7 @@ Release 0.12.0 (unreleased)
 * Allow multiple patches in manifest (#897)
 * Fallback and warn if patch is not UTF-8 encoded (#941)
 * Skip patches outside manifest dir (#942)
+* Make patch path in metadata platform independent (#937)
 
 Release 0.11.0 (released 2026-01-03)
 ====================================

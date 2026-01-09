@@ -226,7 +226,8 @@ Patch
 *DFetch* promotes upstreaming changes, but also allows local changes. These changes can be managed with local patch
 files. *DFetch* will apply the patch files in order every time a new upstream version is fetched. The patch file can
 be specified with the ``patch:`` attribute. This can be a single patch file or multiple. Patch files should be UTF-8
-encoded files.
+encoded files and using forward slashes is encouraged for cross-platform support. The path should be relative to the
+directory of the manifest.
 
 .. code-block:: yaml
 
@@ -241,11 +242,11 @@ encoded files.
         - name: cpputest
           vcs: git
           repo-path: cpputest/cpputest
-          patch: local_changes.patch
+          patch: patches/local_changes.patch
 
 The patch should be generated using the *Dfetch* :ref:`Diff` command.
-Alternately the patch can be generated manually as such.
-Note that the patch should be *relative* to the projects root.
+Alternately the patch can be generated manually as such and should be
+a *relative* patch, relative to the fetched projects root.
 
 .. tabs::
 

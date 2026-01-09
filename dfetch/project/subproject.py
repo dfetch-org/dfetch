@@ -5,6 +5,7 @@ import os
 import pathlib
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Optional
 
 from halo import Halo
@@ -141,24 +142,29 @@ class SubProject(ABC):
 
     def _apply_patches(self) -> list[str]:
         """Apply the patches."""
-        manifest_dir = os.getcwd()
+        manifest_dir = Path(".").resolve()
         applied_patches = []
         for patch in self.__project.patch:
 
-            real_path = os.path.realpath(patch)
-            if os.path.commonprefix((real_path, manifest_dir)) != manifest_dir:
+            patch_path = (manifest_dir / patch).resolve()
+
+            try:
+                patch_path.relative_to(manifest_dir)
+            except ValueError:
                 self._log_project(
                     f'Skipping patch "{patch}" which is outside manifest dir.'
                 )
                 continue
 
-            if not os.path.exists(patch):
+            if not patch_path.exists():
                 self._log_project(f"Skipping non-existent patch {patch}")
                 continue
 
-            apply_patch(patch, root=self.local_path)
-            self._log_project(f'Applied patch "{patch}"')
-            applied_patches.append(patch)
+            normalized_patch_path = str(patch_path.relative_to(manifest_dir).as_posix())
+
+            apply_patch(normalized_patch_path, root=self.local_path)
+            self._log_project(f'Applied patch "{normalized_patch_path}"')
+            applied_patches.append(normalized_patch_path)
         return applied_patches
 
     def check_for_update(
