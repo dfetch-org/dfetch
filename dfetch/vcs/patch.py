@@ -8,6 +8,10 @@ from pathlib import Path
 
 import patch_ng
 
+from dfetch.log import get_logger
+
+logger = get_logger(__name__)
+
 
 def _git_mode(path: Path) -> str:
     if path.is_symlink():
@@ -58,6 +62,17 @@ def dump_patch(patch_set: patch_ng.PatchSet) -> str:
 def apply_patch(patch_path: str, root: str = ".") -> None:
     """Apply the specified patch relative to the root."""
     patch_set = patch_ng.fromfile(patch_path)
+
+    if not patch_set:
+        with open(patch_path, "rb") as patch_file:
+            patch_text = patch_ng.decode_text(patch_file.read()).encode("utf-8")
+            patch_set = patch_ng.fromstring(patch_text)
+
+            if patch_set:
+                logger.warning(
+                    f'After retrying found that patch-file "{patch_path}" '
+                    "is not UTF-8 encoded, consider saving it with UTF-8 encoding."
+                )
 
     if not patch_set:
         raise RuntimeError(f'Invalid patch file: "{patch_path}"')

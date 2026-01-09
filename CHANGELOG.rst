@@ -7,6 +7,7 @@ Release 0.12.0 (unreleased)
 * Add Fuzzing (#819)
 * Don't allow NULL or control characters in manifest (#114)
 * Allow multiple patches in manifest (#897)
+* Fallback and warn if patch is not UTF-8 encoded (#941)
 
 Release 0.11.0 (released 2026-01-03)
 ====================================
