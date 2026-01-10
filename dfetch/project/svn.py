@@ -190,9 +190,19 @@ class SvnSubProject(SubProject):
         return SvnRepo.get_last_changed_revision(self.local_path)
 
     def _diff_impl(
-        self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
+        self,
+        old_revision: str,
+        new_revision: Optional[str],
+        ignore: Sequence[str],
+        reverse: bool = False,
     ) -> str:
         """Get the diff between two revisions."""
+        if not new_revision:
+            new_revision = "HEAD"
+
+        if reverse:
+            new_revision, old_revision = old_revision, new_revision
+
         filtered = self._repo.create_diff(old_revision, new_revision, ignore)
 
         if new_revision:

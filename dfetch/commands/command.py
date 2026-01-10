@@ -1,6 +1,7 @@
 """A generic command."""
 
 import argparse
+import re
 import sys
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser  # pylint: disable=unused-import
@@ -16,6 +17,12 @@ else:
     SubparserActionType = (
         argparse._SubParsersAction  # pyright: ignore[reportPrivateUsage] #pylint: disable=protected-access
     )
+
+
+def pascal_to_kebab(name: str) -> str:
+    """Insert a dash before each uppercase letter (except the first) and lowercase everything."""
+    s1 = re.sub(r"(?<!^)(?=[A-Z])", "-", name)
+    return s1.lower()
 
 
 class Command(ABC):
@@ -78,7 +85,7 @@ class Command(ABC):
         help_str, epilog = command.__doc__.split("\n", 1)
 
         parser = subparsers.add_parser(
-            command.__name__.lower(),
+            pascal_to_kebab(command.__name__),
             description=help_str,
             help=help_str,
             epilog=epilog,
