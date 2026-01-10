@@ -93,7 +93,10 @@ class SubProject(ABC):
         return wanted
 
     def update(
-        self, force: bool = False, files_to_ignore: Optional[Sequence[str]] = None
+        self,
+        force: bool = False,
+        files_to_ignore: Optional[Sequence[str]] = None,
+        patch_count: int = -1,
     ) -> None:
         """Update this subproject if required.
 
@@ -101,6 +104,7 @@ class SubProject(ABC):
             force (bool, optional): Ignore if version is ok or any local changes were done.
                                     Defaults to False.
             files_to_ignore (Sequence[str], optional): list of files that are ok to overwrite.
+            patch_count (int, optional): Number of patches to apply (-1 means all).
         """
         to_fetch = self.update_is_required(force)
 
@@ -128,7 +132,7 @@ class SubProject(ABC):
             actually_fetched = self._fetch_impl(to_fetch)
         self._log_project(f"Fetched {actually_fetched}")
 
-        applied_patches = self._apply_patches()
+        applied_patches = self._apply_patches(patch_count)
 
         self.__metadata.fetched(
             actually_fetched,
@@ -139,11 +143,12 @@ class SubProject(ABC):
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
         self.__metadata.dump()
 
-    def _apply_patches(self) -> list[str]:
+    def _apply_patches(self, count: int = -1) -> list[str]:
         """Apply the patches."""
         cwd = pathlib.Path(".").resolve()
         applied_patches = []
-        for patch in self.__project.patch:
+        count = len(self.__project.patch) if count == -1 else count
+        for patch in self.__project.patch[:count]:
 
             patch_path = (cwd / patch).resolve()
 
@@ -260,6 +265,11 @@ class SubProject(ABC):
     def ignore(self) -> Sequence[str]:
         """Get the files/folders to ignore of this subproject."""
         return self.__project.ignore
+
+    @property
+    def patch(self) -> Sequence[str]:
+        """Get the patches of this project."""
+        return self.__project.patch
 
     @abstractmethod
     def check(self) -> bool:
@@ -386,6 +396,7 @@ class SubProject(ABC):
         old_revision: str,  # noqa
         new_revision: Optional[str],  # noqa
         ignore: Sequence[str],
+        reverse: bool = False,
     ) -> str:
         """Get the diff of two revisions, should be implemented by the child class."""
 
@@ -401,13 +412,15 @@ class SubProject(ABC):
             for pattern in SubProject.LICENSE_GLOBS
         )
 
-    def diff(self, old_rev: str, new_rev: str) -> str:
+    def diff(self, old_revision: str, new_revision: str, reverse: bool = False) -> str:
         """Generate a relative diff for a subproject."""
-        if not old_rev:
+        if not old_revision:
             raise RuntimeError(
                 "When not providing any revisions, dfetch starts from"
                 f" the last revision to {Metadata.FILENAME} in {self.local_path}."
                 " Please either commit this, or specify a revision to start from with --revs"
             )
 
-        return self._diff_impl(old_rev, new_rev, ignore=(Metadata.FILENAME,))
+        return self._diff_impl(
+            old_revision, new_revision, ignore=(Metadata.FILENAME,), reverse=reverse
+        )

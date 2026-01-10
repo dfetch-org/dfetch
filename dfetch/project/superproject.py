@@ -75,3 +75,10 @@ class SuperProject:
             return SvnRepo.ignored_files(path)
 
         return []
+
+    def in_vcs(self) -> bool:
+        """Check if this superproject is under version control."""
+        return (
+            GitLocalRepo(self.root_directory).is_git()
+            or SvnRepo(self.root_directory).is_svn()
+        )
