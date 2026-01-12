@@ -82,37 +82,39 @@ def apply_patch(patch_path: str, root: str = ".") -> None:
 
 def create_svn_patch_for_new_file(file_path: str) -> str:
     """Create a svn patch for a new file."""
-    diff = unified_diff_new_file(Path(file_path))
-    return "" if not diff else "\n".join([f"Index: {file_path}", "=" * 67] + diff)
+    diff = _unified_diff_new_file(Path(file_path))
+    return (
+        "" if not diff else "".join([f"Index: {file_path}\n", "=" * 67 + "\n"] + diff)
+    )
 
 
 def create_git_patch_for_new_file(file_path: str) -> str:
     """Create a Git patch for a new untracked file, preserving file mode."""
     path = Path(file_path)
-    diff = unified_diff_new_file(path)
+    diff = _unified_diff_new_file(path)
 
     return (
         ""
         if not diff
-        else "\n".join(
+        else "".join(
             [
-                f"diff --git a/{file_path} b/{file_path}",
-                f"new file mode {_git_mode(path)}",
-                f"index 0000000..{_git_blob_sha1(path)[:7]}",
+                f"diff --git a/{file_path} b/{file_path}\n",
+                f"new file mode {_git_mode(path)}\n",
+                f"index 0000000..{_git_blob_sha1(path)[:7]}\n",
             ]
             + diff
         )
     )
 
 
-def unified_diff_new_file(path: Path) -> list[str]:
+def _unified_diff_new_file(path: Path) -> list[str]:
     """Create a unified diff for a new file."""
     with path.open("r", encoding="utf-8", errors="replace") as new_file:
         lines = new_file.readlines()
 
     return list(
         difflib.unified_diff(
-            [], lines, fromfile="/dev/null", tofile=str(path), lineterm=""
+            [], lines, fromfile="/dev/null", tofile=str(path), lineterm="\n"
         )
     )
 
