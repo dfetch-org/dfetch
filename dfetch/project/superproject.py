@@ -19,6 +19,7 @@ from dfetch.manifest.project import ProjectEntry
 from dfetch.project.git import GitSubProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.svn import SvnSubProject
+from dfetch.util.util import resolve_absolute_path
 from dfetch.vcs.git import GitLocalRepo
 from dfetch.vcs.svn import SvnRepo
 
@@ -40,7 +41,9 @@ class SuperProject:
 
         logger.debug(f"Using manifest {manifest_path}")
         self._manifest = parse(manifest_path)
-        self._root_directory = os.path.dirname(self._manifest.path)
+        self._root_directory = str(
+            resolve_absolute_path(os.path.dirname(self._manifest.path))
+        )
 
     @property
     def root_directory(self) -> str:
@@ -63,11 +66,13 @@ class SuperProject:
 
     def ignored_files(self, path: str) -> Sequence[str]:
         """Return a list of files that can be ignored in a given path."""
-        if (
-            os.path.commonprefix((pathlib.Path(path).resolve(), self.root_directory))
-            != self.root_directory
-        ):
-            raise RuntimeError(f"{path} not in superproject {self.root_directory}!")
+        resolved_path = resolve_absolute_path(path)
+        root_path = pathlib.Path(self.root_directory)
+
+        if not resolved_path.is_relative_to(root_path):
+            raise RuntimeError(
+                f"{resolved_path} not in superproject {self.root_directory}! "
+            )
 
         if GitLocalRepo(self.root_directory).is_git():
             return GitLocalRepo.ignored_files(path)
