@@ -41,12 +41,12 @@ class SuperProject:
 
         logger.debug(f"Using manifest {manifest_path}")
         self._manifest = parse(manifest_path)
-        self._root_directory = str(
-            resolve_absolute_path(os.path.dirname(self._manifest.path))
+        self._root_directory = resolve_absolute_path(
+            os.path.dirname(self._manifest.path)
         )
 
     @property
-    def root_directory(self) -> str:
+    def root_directory(self) -> pathlib.Path:
         """Return the directory that contains the manifest file."""
         return self._root_directory
 
@@ -67,11 +67,10 @@ class SuperProject:
     def ignored_files(self, path: str) -> Sequence[str]:
         """Return a list of files that can be ignored in a given path."""
         resolved_path = resolve_absolute_path(path)
-        root_path = pathlib.Path(self.root_directory)
 
-        if not resolved_path.is_relative_to(root_path):
+        if not resolved_path.is_relative_to(self.root_directory):
             raise RuntimeError(
-                f"{resolved_path} not in superproject {self.root_directory}! "
+                f"{resolved_path} not in superproject {self.root_directory}!"
             )
 
         if GitLocalRepo(self.root_directory).is_git():

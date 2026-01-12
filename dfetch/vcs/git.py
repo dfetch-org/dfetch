@@ -7,7 +7,7 @@ import shutil
 import tempfile
 from collections.abc import Generator, Sequence
 from pathlib import Path, PurePath
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, Union
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -234,9 +234,9 @@ class GitLocalRepo:
 
     METADATA_DIR = ".git"
 
-    def __init__(self, path: str = ".") -> None:
+    def __init__(self, path: Union[str, Path] = ".") -> None:
         """Create a local git repo."""
-        self._path = path
+        self._path = str(path)
 
     def is_git(self) -> bool:
         """Check if is git."""
