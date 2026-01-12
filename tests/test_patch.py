@@ -1,4 +1,4 @@
-"""Test the pathch module."""
+"""Test the patch module."""
 
 # mypy: ignore-errors
 # flake8: noqa
