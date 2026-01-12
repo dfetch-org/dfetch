@@ -4,7 +4,7 @@ import os
 import pathlib
 import re
 from collections.abc import Sequence
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, Union
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -76,10 +76,10 @@ class SvnRepo:
 
     def __init__(
         self,
-        path: str = ".",
+        path: Union[str, pathlib.Path] = ".",
     ) -> None:
         """Create a svn repo."""
-        self._path = path
+        self._path = str(path)
 
     def is_svn(self) -> bool:
         """Check if is SVN."""

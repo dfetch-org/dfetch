@@ -63,14 +63,14 @@ def safe_rmtree(path: str) -> None:
 
 
 @contextmanager
-def in_directory(path: str) -> Generator[str, None, None]:
+def in_directory(path: Union[str, Path]) -> Generator[str, None, None]:
     """Work temporarily in a given directory."""
     pwd = os.getcwd()
     if not os.path.isdir(path):
         path = os.path.dirname(path)
     os.chdir(path)
     try:
-        yield path
+        yield str(path)
     finally:
         os.chdir(pwd)
 

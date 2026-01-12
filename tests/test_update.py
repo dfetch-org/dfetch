@@ -4,6 +4,7 @@
 # flake8: noqa
 
 import argparse
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
@@ -30,7 +31,7 @@ def test_update(name, projects):
 
     fake_superproject = Mock()
     fake_superproject.manifest = mock_manifest(projects)
-    fake_superproject.root_directory = "/tmp"
+    fake_superproject.root_directory = Path("/tmp")
 
     with patch("dfetch.commands.update.SuperProject", return_value=fake_superproject):
         with patch(
@@ -53,7 +54,7 @@ def test_forced_update():
 
     fake_superproject = Mock()
     fake_superproject.manifest = mock_manifest([{"name": "some_project"}])
-    fake_superproject.root_directory = "/tmp"
+    fake_superproject.root_directory = Path("/tmp")
     fake_superproject.ignored_files.return_value = []
 
     with patch("dfetch.commands.update.SuperProject", return_value=fake_superproject):
