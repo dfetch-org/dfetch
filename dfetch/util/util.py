@@ -159,3 +159,16 @@ def str_if_possible(data: list[str]) -> Union[str, list[str]]:
         if the list is empty, otherwise the original list.
     """
     return "" if not data else data[0] if len(data) == 1 else data
+
+
+def resolve_absolute_path(path: Union[str, Path]) -> Path:
+    """Return a guaranteed absolute Path, resolving symlinks.
+
+    Args:
+        path: A string or Path to resolve.
+
+    Notes:
+        - Uses os.path.realpath for reliable absolute paths across platforms.
+        - Handles Windows drive-relative paths and expands '~'.
+    """
+    return Path(os.path.realpath(Path(path).expanduser()))
