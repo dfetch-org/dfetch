@@ -52,11 +52,15 @@ class GitSubProject(SubProject):
         return str(self._local_repo.get_current_hash())
 
     def _diff_impl(
-        self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
+        self,
+        old_revision: str,
+        new_revision: Optional[str],
+        ignore: Sequence[str],
+        reverse: bool = False,
     ) -> str:
         """Get the diff of two revisions."""
         diff_since_revision = str(
-            self._local_repo.create_diff(old_revision, new_revision, ignore)
+            self._local_repo.create_diff(old_revision, new_revision, ignore, reverse)
         )
 
         if new_revision:

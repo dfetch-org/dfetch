@@ -8,6 +8,7 @@ import pytest
 from dfetch.vcs.patch import (
     create_git_patch_for_new_file,
     create_svn_patch_for_new_file,
+    reverse_patch,
 )
 
 
@@ -58,3 +59,30 @@ def test_create_svn_patch_for_new_file(tmp_path):
     )
 
     assert actual_patch == expected_patch
+
+
+def test_reverse_patch():
+    """Check reversing a patch."""
+    patch = b"""
+Index: README.md
+===================================================================
+--- README.md
++++ README.md
+@@ -1,1 +1,2 @@
+ Patched file for SomeProject
++Update to patched file for SomeProject
+"""
+
+    reversed_patch = reverse_patch(patch)
+
+    expected = """
+Index: README.md
+===================================================================
+--- README.md
++++ README.md
+@@ -1,2 +1,1 @@
+ Patched file for SomeProject
+-Update to patched file for SomeProject
+"""
+
+    assert reversed_patch == expected
