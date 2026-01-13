@@ -383,6 +383,7 @@ class GitLocalRepo:
         old_hash: Optional[str],
         new_hash: Optional[str],
         ignore: Optional[Sequence[str]] = None,
+        reverse: bool = False,
     ) -> str:
         """Generate a relative diff patch."""
         with in_directory(self._path):
@@ -394,6 +395,10 @@ class GitLocalRepo:
                 "--no-ext-diff",  # Don't allow external diff tools
                 "--no-color",
             ]
+
+            if reverse:
+                cmd.extend(["-R", "--src-prefix=b/", "--dst-prefix=a/"])
+
             if old_hash:
                 cmd.append(old_hash)
                 if new_hash:
@@ -423,6 +428,28 @@ class GitLocalRepo:
                         "--ignored",
                         "--others",
                         "--exclude-standard",
+                        ".",
+                    ],
+                )
+                .stdout.decode()
+                .splitlines()
+            )
+
+    @staticmethod
+    def any_changes_or_untracked(path: str) -> bool:
+        """List of any changed files."""
+        if not Path(path).exists():
+            raise RuntimeError("Path does not exist.")
+
+        with in_directory(path):
+            return bool(
+                run_on_cmdline(
+                    logger,
+                    [
+                        "git",
+                        "status",
+                        "--porcelain",
+                        "--",
                         ".",
                     ],
                 )

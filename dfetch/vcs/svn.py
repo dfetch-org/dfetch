@@ -4,6 +4,7 @@ import os
 import pathlib
 import re
 from collections.abc import Sequence
+from pathlib import Path
 from typing import NamedTuple, Optional, Union
 
 from dfetch.log import get_logger
@@ -202,13 +203,12 @@ class SvnRepo:
         }
 
     @staticmethod
-    def get_last_changed_revision(target: str) -> str:
+    def get_last_changed_revision(target: Union[str, Path]) -> str:
         """Get the last changed revision of the given target."""
+        target_str = str(target).strip()
         if os.path.isdir(target):
             last_digits = re.compile(r"(?P<digits>\d+)(?!.*\d)")
-            version = run_on_cmdline(
-                logger, ["svnversion", target.strip()]
-            ).stdout.decode()
+            version = run_on_cmdline(logger, ["svnversion", target_str]).stdout.decode()
 
             parsed_version = last_digits.search(version)
             if parsed_version:
@@ -224,7 +224,7 @@ class SvnRepo:
                     "--non-interactive",
                     "--show-item",
                     "last-changed-revision",
-                    target.strip(),
+                    target_str,
                 ],
             )
             .stdout.decode()
@@ -293,6 +293,26 @@ class SvnRepo:
 
         return [line[1:].strip() for line in result if line.startswith("I")]
 
+    @staticmethod
+    def any_changes_or_untracked(path: str) -> bool:
+        """List of any changed files."""
+        if not pathlib.Path(path).exists():
+            raise RuntimeError("Path does not exist.")
+
+        with in_directory(path):
+            return bool(
+                run_on_cmdline(
+                    logger,
+                    [
+                        "svn",
+                        "status",
+                        ".",
+                    ],
+                )
+                .stdout.decode()
+                .splitlines()
+            )
+
     def create_diff(
         self,
         old_revision: str,
@@ -307,10 +327,8 @@ class SvnRepo:
             "--ignore-properties",
             ".",
             "-r",
-            old_revision,
+            f"{old_revision}:{new_revision}" if new_revision else old_revision,
         ]
-        if new_revision:
-            cmd[-1] += f":{new_revision}"
 
         with in_directory(self._path):
             patch_text = run_on_cmdline(logger, cmd).stdout

@@ -16,7 +16,11 @@ from dfetch.util.util import (
     in_directory,
     safe_rm,
 )
-from dfetch.vcs.patch import combine_patches, create_svn_patch_for_new_file
+from dfetch.vcs.patch import (
+    combine_patches,
+    create_svn_patch_for_new_file,
+    reverse_patch,
+)
 from dfetch.vcs.svn import SvnRemote, SvnRepo, get_svn_version
 
 logger = get_logger(__name__)
@@ -190,9 +194,17 @@ class SvnSubProject(SubProject):
         return SvnRepo.get_last_changed_revision(self.local_path)
 
     def _diff_impl(
-        self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
+        self,
+        old_revision: str,
+        new_revision: Optional[str],
+        ignore: Sequence[str],
+        reverse: bool = False,
     ) -> str:
         """Get the diff between two revisions."""
+        if reverse:
+            if new_revision:
+                new_revision, old_revision = old_revision, new_revision
+
         filtered = self._repo.create_diff(old_revision, new_revision, ignore)
 
         if new_revision:
@@ -205,7 +217,13 @@ class SvnSubProject(SubProject):
                 if patch:
                     patches.append(patch.encode("utf-8"))
 
-        return combine_patches(patches)
+        patch_str = combine_patches(patches)
+
+        # SVN has no way of producing a reverse working copy patch, reverse ourselves
+        if reverse and not new_revision:
+            patch_str = reverse_patch(patch_str.encode("UTF-8"))
+
+        return patch_str
 
     def get_default_branch(self) -> str:
         """Get the default branch of this repository."""

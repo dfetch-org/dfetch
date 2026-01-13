@@ -49,7 +49,13 @@ class ConcreteSubProject(SubProject):
     def metadata_revision(self):
         return "1"
 
-    def _diff_impl(self, old_revision, new_revision, ignore):
+    def _diff_impl(
+        self,
+        old_revision,
+        new_revision,
+        ignore,
+        reverse=False,
+    ):
         return ""
 
     def get_default_branch(self):

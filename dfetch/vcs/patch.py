@@ -142,3 +142,39 @@ def combine_patches(patches: Sequence[bytes]) -> str:
             final_patchset.items += [patch_obj]
 
     return dump_patch(final_patchset)
+
+
+def reverse_patch(patch_text: bytes) -> str:
+    """Reverse the given patch."""
+    patch = patch_ng.fromstring(patch_text)
+
+    reverse_patch_lines: list[bytes] = []
+
+    if not patch:
+        return ""
+
+    for file in patch.items:
+        reverse_patch_lines.extend(line.strip() for line in file.header)
+        reverse_patch_lines.append(b"--- " + file.target)
+        reverse_patch_lines.append(b"+++ " + file.source)
+        for hunk in file.hunks:
+            # swap additions and deletions in the hunk
+            hunk_lines: list[bytes] = []
+            for line in hunk.text:
+                line = line.rstrip(b"\n")
+                if line.startswith(b"+"):
+                    hunk_lines.append(b"-" + line[1:])
+                elif line.startswith(b"-"):
+                    hunk_lines.append(b"+" + line[1:])
+                else:
+                    hunk_lines.append(line)
+            # Rebuild hunk header
+            reverse_patch_lines.append(
+                f"@@ -{hunk.starttgt},{hunk.linestgt} +{hunk.startsrc},{hunk.linessrc} @@".encode(
+                    encoding="UTF-8"
+                )
+            )
+            reverse_patch_lines.extend(hunk_lines)
+        reverse_patch_lines.append(b"")  # blank line between files
+
+    return (b"\n".join(reverse_patch_lines)).decode(encoding="UTF-8")

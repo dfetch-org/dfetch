@@ -125,6 +125,12 @@ def step_impl(context):
         add_and_commit("Initial commit")
 
 
+@given("all files in {directory} are added and committed")
+def step_impl(_, directory):
+    with in_directory(directory):
+        add_and_commit(f"Committed all files in {directory}")
+
+
 @given('"{path}" in {directory} is changed, added and committed with')
 def step_impl(context, directory, path):
     with in_directory(directory):
