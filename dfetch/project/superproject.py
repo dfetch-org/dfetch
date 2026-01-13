@@ -79,3 +79,30 @@ class SuperProject:
             return SvnRepo.ignored_files(path)
 
         return []
+
+    def in_vcs(self) -> bool:
+        """Check if this superproject is under version control."""
+        return (
+            GitLocalRepo(self.root_directory).is_git()
+            or SvnRepo(self.root_directory).is_svn()
+        )
+
+    def has_local_changes_in_dir(self, path: str) -> bool:
+        """Check if the superproject has local changes."""
+        if GitLocalRepo(self.root_directory).is_git():
+            return GitLocalRepo.any_changes_or_untracked(path)
+
+        if SvnRepo(self.root_directory).is_svn():
+            return SvnRepo.any_changes_or_untracked(path)
+
+        return True
+
+    def current_revision(self) -> str:
+        """Get the last revision of the superproject."""
+        if GitLocalRepo(self.root_directory).is_git():
+            return GitLocalRepo(self.root_directory).get_current_hash()
+
+        if SvnRepo(self.root_directory).is_svn():
+            return SvnRepo.get_last_changed_revision(self.root_directory)
+
+        return ""
