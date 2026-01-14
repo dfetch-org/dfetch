@@ -29,7 +29,7 @@ Feature: Diff in svn
             --- README.md
             +++ README.md
             @@ -1,1 +1,2 @@
-             some content
+             Generated file for SomeProject
             +An important sentence for the README!
             """
 
@@ -79,7 +79,7 @@ Feature: Diff in svn
             --- README.md
             +++ README.md
             @@ -1,1 +1,2 @@
-             some content
+             Generated file for SomeProject
             +An important sentence for the README!
             """
 
