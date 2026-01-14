@@ -15,28 +15,28 @@ from features.steps.manifest_steps import generate_manifest
 
 
 def create_repo():
-    subprocess.call(
+    subprocess.check_call(
         ["git", "init", "--initial-branch=master", "--quiet"]
     )  # Be quiet about using master as the default branch
 
-    subprocess.call(["git", "config", "user.email", "you@example.com"])
-    subprocess.call(["git", "config", "user.name", "John Doe"])
+    subprocess.check_call(["git", "config", "user.email", "you@example.com"])
+    subprocess.check_call(["git", "config", "user.name", "John Doe"])
 
     if os.name == "nt":
         # Creates zombie fsmonitor-daemon process that holds files
         # (see https://github.com/git-for-windows/git/issues/3326)
-        subprocess.call(
+        subprocess.check_call(
             ["git", "config", "--global", "core.usebuiltinfsmonitor", "false"]
         )
 
 
 def commit_all(msg):
-    subprocess.call(["git", "add", "-A"])
-    subprocess.call(["git", "commit", "-m", f'"{msg}"'])
+    subprocess.check_call(["git", "add", "-A"])
+    subprocess.check_call(["git", "commit", "-m", f'"{msg}"'])
 
 
 def tag(name: str):
-    subprocess.call(["git", "tag", "-a", name, "-m", "'Some tag'"])
+    subprocess.check_call(["git", "tag", "-a", name, "-m", "'Some tag'"])
 
 
 @given("a git repo with the following submodules")
@@ -44,12 +44,12 @@ def step_impl(context):
     create_repo()
 
     for submodule in context.table:
-        subprocess.call(
+        subprocess.check_call(
             ["git", "submodule", "add", submodule["url"], submodule["path"]]
         )
 
         with in_directory(submodule["path"]):
-            subprocess.call(["git", "checkout", submodule["revision"]])
+            subprocess.check_call(["git", "checkout", submodule["revision"]])
     commit_all("Added submodules")
 
 
