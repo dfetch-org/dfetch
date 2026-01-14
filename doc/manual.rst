@@ -8,6 +8,7 @@ Introduction
 *Dfetch* can perform various actions based on the projects listed in the `manifest <manifest>`_.
 Each of these actions are a separate command. Below an overview of all available commands and
 their usage. For detailed information on each command, please refer to the respective sections below.
+For a step-by-step guide see the `Getting Started <getting_started>`_.
 
 .. program-output:: dfetch --help
    :shell:
@@ -23,6 +24,18 @@ Init
 .. asciinema:: asciicasts/init.cast
 
 .. automodule:: dfetch.commands.init
+
+Import
+------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: import
+
+.. asciinema:: asciicasts/import.cast
+
+.. automodule:: dfetch.commands.import_
 
 Check
 -----
@@ -54,6 +67,18 @@ Code-climate reporter
 '''''''''''''''''''''
 .. automodule:: dfetch.reporting.check.code_climate_reporter
 
+Update
+------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: update
+
+.. asciinema:: asciicasts/update.cast
+
+.. automodule:: dfetch.commands.update
+
 Report
 ------
 .. argparse::
@@ -76,32 +101,8 @@ Software Bill-of-Materials
 
 .. asciinema:: asciicasts/sbom.cast
 
-Update
-------
-.. argparse::
-   :module: dfetch.__main__
-   :func: create_parser
-   :prog: dfetch
-   :path: update
-
-.. asciinema:: asciicasts/update.cast
-
-.. automodule:: dfetch.commands.update
-
-Validate
---------
-.. argparse::
-   :module: dfetch.__main__
-   :func: create_parser
-   :prog: dfetch
-   :path: validate
-
-.. asciinema:: asciicasts/validate.cast
-
-.. automodule:: dfetch.commands.validate
-
 Diff
------
+----
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -136,18 +137,18 @@ Environment
 
 .. automodule:: dfetch.commands.environment
 
-
-Import
-------
+Validate
+--------
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
    :prog: dfetch
-   :path: import
+   :path: validate
 
-.. asciinema:: asciicasts/import.cast
+.. asciinema:: asciicasts/validate.cast
 
-.. automodule:: dfetch.commands.import_
+.. automodule:: dfetch.commands.validate
+
 
 CLI Cheatsheet
 --------------
