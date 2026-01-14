@@ -48,7 +48,7 @@ class GitSubProject(SubProject):
         return str(self._local_repo.get_last_file_hash(self.metadata_path))
 
     def current_revision(self) -> str:
-        """Get the revision of the metadata file."""
+        """Get the last revision of the repository."""
         return str(self._local_repo.get_current_hash())
 
     def _diff_impl(

@@ -378,7 +378,7 @@ class SubProject(ABC):
 
     @abstractmethod
     def current_revision(self) -> str:
-        """Get the revision of the metadata file."""
+        """Get the last revision of the repository."""
 
     @abstractmethod
     def _diff_impl(

@@ -186,7 +186,7 @@ class SvnSubProject(SubProject):
         return SvnRepo.get_last_changed_revision(self.metadata_path)
 
     def current_revision(self) -> str:
-        """Get the current revision of the repo."""
+        """Get the last revision of the repository."""
         return SvnRepo.get_last_changed_revision(self.local_path)
 
     def _diff_impl(
