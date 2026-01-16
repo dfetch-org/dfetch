@@ -125,9 +125,9 @@ Feature: Patch after fetching from git repo
             """
             Dfetch (0.11.0)
               ext/test-repo-tag   : Fetched v2.0
-            successfully patched 1/1:	 b'README.md'
+            successfully patched 1/1:        b'README.md'
               ext/test-repo-tag   : Applied patch "001-diff.patch"
-            successfully patched 1/1:	 b'README.md'
+            successfully patched 1/1:        b'README.md'
               ext/test-repo-tag   : Applied patch "002-diff.patch"
             """
 
@@ -170,7 +170,7 @@ Feature: Patch after fetching from git repo
               ext/test-repo-tag   : Fetched v2.0
             error: no patch data found!
             After retrying found that patch-file "diff.patch" is not UTF-8 encoded, consider saving it with UTF-8 encoding.
-            successfully patched 1/1:	 b'README.md'
+            successfully patched 1/1:        b'README.md'
               ext/test-repo-tag   : Applied patch "diff.patch"
             """
 

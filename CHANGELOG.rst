@@ -11,6 +11,8 @@ Release 0.12.0 (unreleased)
 * Skip patches outside manifest dir (#942)
 * Make patch path in metadata platform independent (#937)
 * Fix extra newlines in patch for new files (#945)
+* Replace colored-logs with Rich
+* Respect `NO_COLOR <https://no-color.org/>`_
 
 Release 0.11.0 (released 2026-01-03)
 ====================================
