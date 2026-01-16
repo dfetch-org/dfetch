@@ -8,9 +8,11 @@ from pathlib import Path
 
 import patch_ng
 
-from dfetch.log import get_logger
+from dfetch.log import configure_external_logger, get_logger
 
 logger = get_logger(__name__)
+
+configure_external_logger("patch_ng")
 
 
 def _git_mode(path: Path) -> str:
