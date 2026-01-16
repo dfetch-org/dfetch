@@ -62,38 +62,6 @@ See below for the version control specifics. The patch will also contain the con
 
    ``git apply --verbose --directory='Core/MyModule/MySubmodule' MySubmodule.patch``
 
-Updating the patch
-======================
-If you have further changes to a project with a patch, you can create an additional patch if the changes are
-unrelated, or you can update the patch as described below.
-
-First step is to reverse the original patch, using
-``apply`` and with the ``--directory`` argument as shown above. To reverse the patch you also require the ``-R``.
-This will return the project to the state before the patch was applied. You can then stage the project and re-apply
-the patch to the project to have an editable patch.
-
-.. code-block:: sh
-
-   # First apply the reverse patch
-   git apply --verbose --directory='some-project' -R some-project.patch
-
-   # Stage the project in its unpatched state
-   git add some-project
-
-   # Re-apply the patch
-   git apply --verbose --directory='some-project' some-project.patch
-
-Now you can make further changes to the project, and re-generate the patch using the raw git command as shown below.
-
-.. code-block:: sh
-
-   # Generate the patch from the directory again
-   cd some-project
-   git diff --relative --binary --no-ext-diff --no-color . > ../some-project.patch
-
-   # Force a fetch and update the patch to test your changes
-   dfetch update -f some-project
-
 """
 
 import argparse

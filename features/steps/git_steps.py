@@ -134,6 +134,7 @@ def step_impl(context, directory, path):
         commit_all("A change")
 
 
+@given("all files in {directory} are committed")
 @when("all files in {directory} are committed")
 def step_impl(_, directory):
     with in_directory(directory):
