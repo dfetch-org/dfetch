@@ -17,7 +17,7 @@ from behave.runner import Context
 from dfetch.__main__ import DfetchFatalException, run
 from dfetch.util.util import in_directory
 
-ansi_escape = re.compile(r"\x1b(?:[@A-Z\\-_]|\[[0-9:;<=>?]*[ -/]*[@-~])")
+ansi_escape = re.compile(r"\[/?[a-z\_ ]+\]")
 dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
 timestamp = re.compile(r"\d+\/\d+\/\d+, \d+:\d+:\d+")
 git_hash = re.compile(r"(\s?)[a-f0-9]{40}(\s?)")
@@ -81,7 +81,7 @@ def check_content(
     ):
         expected = multisub(
             patterns=[
-                (git_hash, r"\1[commit hash]\2"),
+                (git_hash, r"\1[commit-hash]\2"),
                 (iso_timestamp, "[timestamp]"),
                 (urn_uuid, "[urn-uuid]"),
                 (bom_ref, "[bom-ref]"),
@@ -91,7 +91,7 @@ def check_content(
 
         actual = multisub(
             patterns=[
-                (git_hash, r"\1[commit hash]\2"),
+                (git_hash, r"\1[commit-hash]\2"),
                 (iso_timestamp, "[timestamp]"),
                 (urn_uuid, "[urn-uuid]"),
                 (bom_ref, "[bom-ref]"),
@@ -164,7 +164,7 @@ def check_output(context, line_count=None):
     """
     expected_text = multisub(
         patterns=[
-            (git_hash, r"\1[commit hash]\2"),
+            (git_hash, r"\1[commit-hash]\2"),
             (timestamp, "[timestamp]"),
             (dfetch_title, ""),
             (svn_error, "svn: EXXXXXX: <some error text>"),
@@ -174,7 +174,7 @@ def check_output(context, line_count=None):
 
     actual_text = multisub(
         patterns=[
-            (git_hash, r"\1[commit hash]\2"),
+            (git_hash, r"\1[commit-hash]\2"),
             (timestamp, "[timestamp]"),
             (ansi_escape, ""),
             (
