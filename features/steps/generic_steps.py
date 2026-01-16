@@ -17,7 +17,7 @@ from behave.runner import Context
 from dfetch.__main__ import DfetchFatalException, run
 from dfetch.util.util import in_directory
 
-ansi_escape = re.compile(r"\x1b(?:[@A-Z\\-_]|\[[0-9:;<=>?]*[ -/]*[@-~])")
+ansi_escape = re.compile(r"\[/?[a-z\_ ]+\]")
 dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
 timestamp = re.compile(r"\d+\/\d+\/\d+, \d+:\d+:\d+")
 git_hash = re.compile(r"(\s?)[a-f0-9]{40}(\s?)")
@@ -34,17 +34,18 @@ def remote_server_path(context):
 
 
 def call_command(context: Context, args: list[str], path: Optional[str] = ".") -> None:
-    length_at_start = len(context.captured.output)
+    before = context.console.export_text()
+
     with in_directory(path or "."):
         try:
-            run(args)
+            run(args, context.console)
             context.cmd_returncode = 0
         except DfetchFatalException:
             context.cmd_returncode = 1
-    # Remove the color code + title
-    context.cmd_output = dfetch_title.sub(
-        "", ansi_escape.sub("", context.captured.output[length_at_start:].strip("\n"))
-    )
+
+    after = context.console.export_text()
+    context.cmd_output = after[len(before) :].strip("\n")
+    print(context.cmd_output)
 
 
 def check_file(path, content):
@@ -81,7 +82,7 @@ def check_content(
     ):
         expected = multisub(
             patterns=[
-                (git_hash, r"\1[commit hash]\2"),
+                (git_hash, r"\1[commit-hash]\2"),
                 (iso_timestamp, "[timestamp]"),
                 (urn_uuid, "[urn-uuid]"),
                 (bom_ref, "[bom-ref]"),
@@ -91,7 +92,7 @@ def check_content(
 
         actual = multisub(
             patterns=[
-                (git_hash, r"\1[commit hash]\2"),
+                (git_hash, r"\1[commit-hash]\2"),
                 (iso_timestamp, "[timestamp]"),
                 (urn_uuid, "[urn-uuid]"),
                 (bom_ref, "[bom-ref]"),
@@ -155,6 +156,12 @@ def list_dir(path):
     return result
 
 
+def normalize_lines(text: str) -> list[str]:
+    """Normalize text for diffing."""
+    lines = text.splitlines()
+    return [line.rstrip() for line in lines if line.strip() != ""]
+
+
 def check_output(context, line_count=None):
     """Check command output against expected text.
 
@@ -164,7 +171,7 @@ def check_output(context, line_count=None):
     """
     expected_text = multisub(
         patterns=[
-            (git_hash, r"\1[commit hash]\2"),
+            (git_hash, r"\1[commit-hash]\2"),
             (timestamp, "[timestamp]"),
             (dfetch_title, ""),
             (svn_error, "svn: EXXXXXX: <some error text>"),
@@ -174,7 +181,7 @@ def check_output(context, line_count=None):
 
     actual_text = multisub(
         patterns=[
-            (git_hash, r"\1[commit hash]\2"),
+            (git_hash, r"\1[commit-hash]\2"),
             (timestamp, "[timestamp]"),
             (ansi_escape, ""),
             (
@@ -187,8 +194,10 @@ def check_output(context, line_count=None):
         text=context.cmd_output,
     )
 
-    actual_lines = actual_text.splitlines()[:line_count]
-    diff = difflib.ndiff(actual_lines, expected_text.splitlines())
+    actual_lines = normalize_lines(actual_text)[:line_count]
+    expected_lines = normalize_lines(expected_text)
+
+    diff = difflib.ndiff(actual_lines, expected_lines)
 
     diffs = [x for x in diff if x[0] in ("+", "-")]
     if diffs:
