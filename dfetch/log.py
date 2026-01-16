@@ -61,3 +61,10 @@ def get_logger(name: str) -> DLogger:
     """Get logger for a module."""
     logging.setLoggerClass(DLogger)
     return cast(DLogger, logging.getLogger(name))
+
+
+def configure_external_logger(name: str, level: int = logging.INFO) -> None:
+    """Configure an external logger from a third party package."""
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.propagate = True
