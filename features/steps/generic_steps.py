@@ -45,7 +45,6 @@ def call_command(context: Context, args: list[str], path: Optional[str] = ".") -
 
     after = context.console.export_text()
     context.cmd_output = after[len(before) :].strip("\n")
-    print(context.cmd_output)
 
 
 def check_file(path, content):
@@ -173,7 +172,7 @@ def check_output(context, line_count=None):
         patterns=[
             (git_hash, r"\1[commit-hash]\2"),
             (timestamp, "[timestamp]"),
-            (dfetch_title, ""),
+            (ansi_escape, ""),
             (svn_error, "svn: EXXXXXX: <some error text>"),
         ],
         text=context.text,
