@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-      - uses: cygwin/cygwin-install-action@4210deba1a995b9e15478134b1d5ad09a5633959 # master
+      - uses: cygwin/cygwin-install-action@41415fa848738cfd62048b969da76d276782d43f # master
 
       - name: Install Subversion (SVN) on Windows
         run: |
