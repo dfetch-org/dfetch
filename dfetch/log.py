@@ -3,11 +3,13 @@
 import logging
 import os
 import sys
-from typing import Any, Optional, cast
+from contextlib import nullcontext
+from typing import Any, Optional, Union, cast
 
 from rich.console import Console
 from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
+from rich.status import Status
 
 from dfetch import __version__
 
@@ -75,6 +77,34 @@ class DLogger(logging.Logger):
     def error(self, msg: object, *args: Any, **kwargs: Any) -> None:
         """Log error."""
         super().error(f"[red]{msg}[/red]", *args, **kwargs)
+
+    def status(
+        self, name: str, message: str, spinner: str = "dots", enabled: bool = True
+    ) -> Union[Status, nullcontext[None]]:
+        """Show status message with spinner if enabled."""
+        rich_console = None
+        logger: Optional[logging.Logger] = self
+        while logger:
+            for handler in getattr(logger, "handlers", []):
+                if isinstance(handler, RichHandler):
+                    rich_console = handler.console
+                    break
+            if rich_console or not getattr(logger, "parent", None):
+                break
+            logger = logger.parent
+
+        if not rich_console or not enabled:
+            return nullcontext(None)
+
+        if name not in DLogger._printed_projects:
+            self.info(f"  [bold][bright_green]{name}:[/bright_green][/bold]")
+            DLogger._printed_projects.add(name)
+
+        return Status(
+            f"[bold bright_green]{message}[/bold bright_green]",
+            spinner=spinner,
+            console=rich_console,
+        )
 
 
 def setup_root(name: str, console: Optional[Console] = None) -> DLogger:
