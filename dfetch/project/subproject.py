@@ -7,8 +7,6 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from typing import Optional
 
-from halo import Halo
-
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
@@ -119,10 +117,9 @@ class SubProject(ABC):
             logger.debug(f"Clearing destination {self.local_path}")
             safe_rm(self.local_path)
 
-        with Halo(
-            text=f"Fetching {self.__project.name} {to_fetch}",
-            spinner="dots",
-            text_color="green",
+        with logger.status(
+            self.__project.name,
+            f"Fetching {to_fetch}",
             enabled=self._show_animations,
         ):
             actually_fetched = self._fetch_impl(to_fetch)
@@ -169,11 +166,8 @@ class SubProject(ABC):
     ) -> None:
         """Check if there is an update available."""
         on_disk_version = self.on_disk_version()
-        with Halo(
-            text=f"Checking {self.__project.name}",
-            spinner="dots",
-            text_color="green",
-            enabled=self._show_animations,
+        with logger.status(
+            self.__project.name, "Checking", enabled=self._show_animations
         ):
             latest_version = self._check_for_newer_version()
 

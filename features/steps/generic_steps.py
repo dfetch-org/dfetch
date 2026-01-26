@@ -8,6 +8,7 @@ import json
 import os
 import pathlib
 import re
+from contextlib import contextmanager
 from itertools import zip_longest
 from typing import Iterable, List, Optional, Pattern, Tuple, Union
 
@@ -28,6 +29,20 @@ svn_error = re.compile(r"svn: E\d{6}: .+")
 abs_path = re.compile(r"/tmp/[\w_]+")
 
 
+@contextmanager
+def temporary_env(key: str, value: str):
+    """Temporarily set an environment variable inside a context."""
+    old_value = os.environ.get(key)
+    os.environ[key] = value
+    try:
+        yield
+    finally:
+        if old_value is None:
+            del os.environ[key]
+        else:
+            os.environ[key] = old_value
+
+
 def remote_server_path(context):
     """Get the path to the remote dir."""
     return "/".join(context.remotes_dir_path.split(os.sep))
@@ -36,12 +51,13 @@ def remote_server_path(context):
 def call_command(context: Context, args: list[str], path: Optional[str] = ".") -> None:
     before = context.console.export_text()
 
-    with in_directory(path or "."):
-        try:
-            run(args, context.console)
-            context.cmd_returncode = 0
-        except DfetchFatalException:
-            context.cmd_returncode = 1
+    with temporary_env("CI", "true"):
+        with in_directory(path or "."):
+            try:
+                run(args, context.console)
+                context.cmd_returncode = 0
+            except DfetchFatalException:
+                context.cmd_returncode = 1
 
     after = context.console.export_text()
     context.cmd_output = after[len(before) :].strip("\n")
