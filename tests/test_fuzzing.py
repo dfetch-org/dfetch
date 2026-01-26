@@ -181,7 +181,6 @@ def test_update(data):
 
 
 if __name__ == "__main__":
-
     settings.load_profile("manual")
 
     example = manifest_strategy.example()

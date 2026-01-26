@@ -18,6 +18,7 @@ asciinema rec --overwrite -c "./report-demo.sh" ../asciicasts/report.cast
 asciinema rec --overwrite -c "./report-sbom-demo.sh" ../asciicasts/sbom.cast
 asciinema rec --overwrite -c "./freeze-demo.sh" ../asciicasts/freeze.cast
 asciinema rec --overwrite -c "./diff-demo.sh" ../asciicasts/diff.cast
+asciinema rec --overwrite -c "./update-patch-demo.sh" ../asciicasts/update-patch.cast
 
 rm -rf update
 
