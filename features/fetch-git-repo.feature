@@ -64,7 +64,8 @@ Feature: Fetching dependencies from a git repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              ext/test-repo-tag   : Fetched v2.0
+              ext/test-repo-tag:
+              > Fetched v2.0
             """
 
     Scenario: Version check ignored when force flag is given
@@ -84,5 +85,6 @@ Feature: Fetching dependencies from a git repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              ext/test-repo-tag   : Fetched v1
+              ext/test-repo-tag:
+              > Fetched v1
             """

@@ -48,17 +48,31 @@ def configure_root_logger(console: Optional[Console] = None) -> None:
 class DLogger(logging.Logger):
     """Logging class extended with specific log items for dfetch."""
 
-    def print_info_line(self, name: str, info: str) -> None:
-        """Print a line of info."""
+    _printed_projects: set[str] = set()
+
+    def print_report_line(self, name: str, info: str) -> None:
+        """Print a line for a report."""
         self.info(
             f"  [bold][bright_green]{name:20s}:[/bright_green][blue] {info}[/blue][/bold]"
         )
 
+    def print_info_line(self, name: str, info: str) -> None:
+        """Print a line of info, only printing the project name once."""
+        if name not in DLogger._printed_projects:
+            self.info(f"  [bold][bright_green]{name}:[/bright_green][/bold]")
+            DLogger._printed_projects.add(name)
+
+        line = info.replace("\n", "\n    ")
+        self.info(f"  [bold blue]> {line}[/bold blue]")
+
     def print_warning_line(self, name: str, info: str) -> None:
         """Print a warning line: green name, yellow value."""
-        self.warning(
-            f"  [bold][bright_green]{name:20s}:[/bright_green][bright_yellow] {info}[/bright_yellow][/bold]"
-        )
+        if name not in DLogger._printed_projects:
+            self.info(f"  [bold][bright_green]{name}:[/bright_green][/bold]")
+            DLogger._printed_projects.add(name)
+
+        line = info.replace("\n", "\n    ")
+        self.info(f"  [bold bright_yellow]> {line}[/bold bright_yellow]")
 
     def print_title(self) -> None:
         """Print the DFetch tool title and version."""
@@ -66,7 +80,7 @@ class DLogger(logging.Logger):
 
     def print_info_field(self, field_name: str, field: str) -> None:
         """Print a field with corresponding value."""
-        self.print_info_line(field_name, field if field else "<none>")
+        self.print_report_line(field_name, field if field else "<none>")
 
     def warning(self, msg: object, *args: Any, **kwargs: Any) -> None:
         """Log warning."""
@@ -101,10 +115,32 @@ class DLogger(logging.Logger):
             DLogger._printed_projects.add(name)
 
         return Status(
-            f"[bold bright_green]{message}[/bold bright_green]",
+            f"[bold bright_blue]> {message}[/bold bright_blue]",
             spinner=spinner,
             console=rich_console,
         )
+
+    @classmethod
+    def reset_projects(cls) -> None:
+        """Clear the record of printed project names."""
+        cls._printed_projects.clear()
+
+
+class ExtLogFilter(logging.Filter):  # pylint: disable=too-few-public-methods
+    """Adds indentation to all log messages that pass through this filter."""
+
+    def __init__(self, prefix: str = "    "):
+        """Initialize the ExtLogFilter with a prefix."""
+        super().__init__()
+        self.prefix = prefix
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Add indentation to the log record message."""
+        color = "blue" if record.levelno < logging.WARNING else "yellow"
+
+        line = record.msg.replace("\n", "\n    ")
+        record.msg = f"{self.prefix}[{color}]{line}[/{color}]"
+        return True
 
 
 def setup_root(name: str, console: Optional[Console] = None) -> DLogger:
@@ -153,3 +189,4 @@ def configure_external_logger(name: str, level: int = logging.INFO) -> None:
     logger.setLevel(level)
     logger.propagate = True
     logger.handlers.clear()
+    logger.addFilter(ExtLogFilter())

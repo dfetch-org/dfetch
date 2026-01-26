@@ -34,12 +34,12 @@ def test_report(name, projects):
     fake_superproject.root_directory = Path("/tmp")
 
     with patch("dfetch.commands.report.SuperProject", return_value=fake_superproject):
-        with patch("dfetch.log.DLogger.print_info_line") as mocked_print_info_line:
+        with patch("dfetch.log.DLogger.print_report_line") as mocked_print_report_line:
 
             report(DEFAULT_ARGS)
 
             if projects:
                 for project in projects:
-                    mocked_print_info_line.assert_any_call("project", project["name"])
+                    mocked_print_report_line.assert_any_call("project", project["name"])
             else:
-                mocked_print_info_line.assert_not_called()
+                mocked_print_report_line.assert_not_called()

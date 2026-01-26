@@ -16,6 +16,7 @@ from behave import given, then, when  # pylint: disable=no-name-in-module
 from behave.runner import Context
 
 from dfetch.__main__ import DfetchFatalException, run
+from dfetch.log import DLogger
 from dfetch.util.util import in_directory
 
 ansi_escape = re.compile(r"\[/?[a-z\_ ]+\]")
@@ -50,6 +51,8 @@ def remote_server_path(context):
 
 def call_command(context: Context, args: list[str], path: Optional[str] = ".") -> None:
     before = context.console.export_text()
+
+    DLogger.reset_projects()
 
     with temporary_env("CI", "true"):
         with in_directory(path or "."):

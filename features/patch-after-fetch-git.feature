@@ -68,10 +68,12 @@ Feature: Patch after fetching from git repo
         Then the output shows
             """
             Dfetch (0.11.0)
-              ext/test-repo-tag   : Fetched v2.0
-            source/target file does not exist:
-              --- b'README1.md'
-              +++ b'README1.md'
+              ext/test-repo-tag:
+              > Fetched v2.0
+              > Applying patch "diff.patch"
+                source/target file does not exist:
+                  --- b'README1.md'
+                  +++ b'README1.md'
             Applying patch "diff.patch" failed
             """
 
@@ -124,11 +126,12 @@ Feature: Patch after fetching from git repo
         And the output shows
             """
             Dfetch (0.11.0)
-              ext/test-repo-tag   : Fetched v2.0
-            successfully patched 1/1:        b'README.md'
-              ext/test-repo-tag   : Applied patch "001-diff.patch"
-            successfully patched 1/1:        b'README.md'
-              ext/test-repo-tag   : Applied patch "002-diff.patch"
+              ext/test-repo-tag:
+              > Fetched v2.0
+              > Applying patch "001-diff.patch"
+                successfully patched 1/1:    b'README.md'
+              > Applying patch "002-diff.patch"
+                successfully patched 1/1:    b'README.md'
             """
 
     Scenario: Fallback to other file encodings if patch file is not UTF-8 encoded
@@ -167,11 +170,12 @@ Feature: Patch after fetching from git repo
         And the output shows
             """
             Dfetch (0.11.0)
-              ext/test-repo-tag   : Fetched v2.0
-            error: no patch data found!
-            After retrying found that patch-file "diff.patch" is not UTF-8 encoded, consider saving it with UTF-8 encoding.
-            successfully patched 1/1:        b'README.md'
-              ext/test-repo-tag   : Applied patch "diff.patch"
+              ext/test-repo-tag:
+              > Fetched v2.0
+              > Applying patch "diff.patch"
+                error: no patch data found!
+                successfully patched 1/1:    b'README.md'
+              > After retrying found that patch-file "diff.patch" is not UTF-8 encoded, consider saving it with UTF-8 encoding.
             """
 
     Scenario: Patch files are outside manifest dir
@@ -194,6 +198,7 @@ Feature: Patch after fetching from git repo
         Then the output shows
             """
             Dfetch (0.11.0)
-              ext/test-repo-tag   : Fetched v2.0
-              ext/test-repo-tag   : Skipping patch "../diff.patch" which is outside /some/path.
+              ext/test-repo-tag:
+              > Fetched v2.0
+              > Skipping patch "../diff.patch" which is outside /some/path.
             """
