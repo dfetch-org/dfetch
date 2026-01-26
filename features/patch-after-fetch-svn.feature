@@ -70,9 +70,11 @@ Feature: Patch after fetching from svn repo
         Then the output shows
             """
             Dfetch (0.11.0)
-              cutter              : Fetched 1.1.7
-            source/target file does not exist:
-              --- b'build-deb2.sh'
-              +++ b'build-deb2.sh'
+              cutter:
+              > Fetched 1.1.7
+              > Applying patch "diff.patch"
+                source/target file does not exist:
+                  --- b'build-deb2.sh'
+                  +++ b'build-deb2.sh'
             Applying patch "diff.patch" failed
             """

@@ -30,7 +30,8 @@ Feature: Check for dependencies in projects
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProject         : wanted (v1), available (v1)
+              SomeProject:
+              > wanted (v1), available (v1)
             """
 
     Scenario: A recommendation is done due to a missing dependency
@@ -67,17 +68,18 @@ Feature: Check for dependencies in projects
             """
             Dfetch (0.11.0)
             Multiple manifests found, using dfetch.yaml
-              SomeProject         : up-to-date (v1)
+              SomeProject:
+              > up-to-date (v1)
 
-            "SomeProject" depends on the following project(s) which are not part of your manifest:
-            (found in third-party/SomeProject/dfetch.yaml)
+              > "SomeProject" depends on the following project(s) which are not part of your manifest:
+                (found in third-party/SomeProject/dfetch.yaml)
 
-            -   name: SomeOtherProject
-                url: some-remote-server/SomeOtherProject.git
-                tag: v1
-            -   name: ext/test-repo-tag-v1
-                url: https://github.com/dfetch-org/test-repo
-                tag: v1
+                -   name: SomeOtherProject
+                    url: some-remote-server/SomeOtherProject.git
+                    tag: v1
+                -   name: ext/test-repo-tag-v1
+                    url: https://github.com/dfetch-org/test-repo
+                    tag: v1
             """
 
     Scenario: No recommendation is done
@@ -110,6 +112,8 @@ Feature: Check for dependencies in projects
             """
             Dfetch (0.11.0)
             Multiple manifests found, using dfetch.yaml
-              SomeProject         : up-to-date (v1)
-              SomeOtherProject    : up-to-date (v1)
+              SomeProject:
+              > up-to-date (v1)
+              SomeOtherProject:
+              > up-to-date (v1)
             """

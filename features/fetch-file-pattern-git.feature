@@ -23,7 +23,8 @@ Feature: Fetch file pattern from git repo
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProjectWithAnInterestingFile: Fetched v1
+              SomeProjectWithAnInterestingFile:
+              > Fetched v1
             """
         Then 'MyProject' looks like:
             """

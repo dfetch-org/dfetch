@@ -24,7 +24,8 @@ Feature: Guard against overwriting in git
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProject         : skipped - local changes after last update (use --force to overwrite)
+              SomeProject:
+              > skipped - local changes after last update (use --force to overwrite)
             """
 
     Scenario: Force flag overrides local changes check
@@ -33,7 +34,8 @@ Feature: Guard against overwriting in git
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProject         : Fetched v2
+              SomeProject:
+              > Fetched v2
             """
 
     Scenario: Ignored files are overwritten
@@ -43,5 +45,6 @@ Feature: Guard against overwriting in git
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProject         : Fetched v2
+              SomeProject:
+              > Fetched v2
             """

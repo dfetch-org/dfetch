@@ -41,19 +41,20 @@ Feature: Updated project has dependencies
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProjectWithChild: Fetched v1
+              SomeProjectWithChild:
+              > Fetched v1
+              > "SomeProjectWithChild" depends on the following project(s) which are not part of your manifest:
+                (found in third-party/SomeProjectWithChild/dfetch.yaml)
 
-            "SomeProjectWithChild" depends on the following project(s) which are not part of your manifest:
-            (found in third-party/SomeProjectWithChild/dfetch.yaml)
+                -   name: SomeOtherProject
+                    url: some-remote-server/SomeOtherProject.git
+                    tag: v1
+                -   name: ext/test-repo-tag-v1
+                    url: https://github.com/dfetch-org/test-repo
+                    tag: v1
 
-            -   name: SomeOtherProject
-                url: some-remote-server/SomeOtherProject.git
-                tag: v1
-            -   name: ext/test-repo-tag-v1
-                url: https://github.com/dfetch-org/test-repo
-                tag: v1
-
-              SomeProjectWithoutChild: Fetched v1
+              SomeProjectWithoutChild:
+              > Fetched v1
             """
         And 'MyProject' looks like:
             """
@@ -88,7 +89,8 @@ Feature: Updated project has dependencies
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProject         : Fetched v1
+              SomeProject:
+              > Fetched v1
             SomeProject/dfetch.yaml: Schema validation failed:
 
                 "very-invalid-manifest\n"

@@ -28,7 +28,8 @@ Feature: Fetch with ignore in svn
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeInterestingProject: Fetched trunk - 1
+              SomeInterestingProject:
+              > Fetched trunk - 1
             """
         Then 'MyProject' looks like:
             """
@@ -56,7 +57,8 @@ Feature: Fetch with ignore in svn
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeInterestingProject: Fetched trunk - 1
+              SomeInterestingProject:
+              > Fetched trunk - 1
             """
         Then 'MyProject' looks like:
             """
@@ -87,7 +89,8 @@ Feature: Fetch with ignore in svn
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeInterestingProject: Fetched trunk - 1
+              SomeInterestingProject:
+              > Fetched trunk - 1
             """
         Then 'MyProject' looks like:
             """

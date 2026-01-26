@@ -4,15 +4,21 @@ import difflib
 import hashlib
 import stat
 from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
 
 import patch_ng
 
-from dfetch.log import configure_external_logger, get_logger
-
-logger = get_logger(__name__)
+from dfetch.log import configure_external_logger
 
 configure_external_logger("patch_ng")
+
+
+@dataclass
+class PatchResult:
+    """Result of applying a patch."""
+
+    encoding_warning: bool = False
 
 
 def _git_mode(path: Path) -> str:
@@ -61,9 +67,14 @@ def dump_patch(patch_set: patch_ng.PatchSet) -> str:
     return "\n".join(patch_lines) + "\n" if patch_lines else ""
 
 
-def apply_patch(patch_path: str, root: str = ".") -> None:
+def apply_patch(
+    patch_path: str,
+    root: str = ".",
+) -> PatchResult:
     """Apply the specified patch relative to the root."""
     patch_set = patch_ng.fromfile(patch_path)
+
+    result = PatchResult()
 
     if not patch_set:
         with open(patch_path, "rb") as patch_file:
@@ -71,15 +82,14 @@ def apply_patch(patch_path: str, root: str = ".") -> None:
             patch_set = patch_ng.fromstring(patch_text)
 
             if patch_set:
-                logger.warning(
-                    f'After retrying found that patch-file "{patch_path}" '
-                    "is not UTF-8 encoded, consider saving it with UTF-8 encoding."
-                )
+                result.encoding_warning = True
 
     if not patch_set:
         raise RuntimeError(f'Invalid patch file: "{patch_path}"')
     if not patch_set.apply(strip=0, root=root, fuzz=True):
         raise RuntimeError(f'Applying patch "{patch_path}" failed')
+
+    return result
 
 
 def create_svn_patch_for_new_file(file_path: str) -> str:
