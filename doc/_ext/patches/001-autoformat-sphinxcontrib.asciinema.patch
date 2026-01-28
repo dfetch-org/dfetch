@@ -1,5 +1,5 @@
 diff --git a/asciinema.py b/asciinema.py
-index 8644220..44dad26 100644
+index 8644220..0b73d80 100644
 --- a/asciinema.py
 +++ b/asciinema.py
 @@ -2,20 +2,20 @@ import os
@@ -29,39 +29,17 @@ index 8644220..44dad26 100644
 
 
  class Asciinema(nodes.General, nodes.Element):
-@@ -24,22 +24,37 @@ class Asciinema(nodes.General, nodes.Element):
-
- def visit_html(self, node):
-     rst_to_js_option_names: dict[str, str] = {
-+        "autoplay": "autoPlay",
-+        "idle-time-limit": "idleTimeLimit",
-         "terminalfontsize": "terminalFontSize",
--        "terminallineheigth": "terminalLineHeigth",
-+        "terminallineheight": "terminalLineHeight",
-         "terminalfontfamily": "terminalFontFamily",
+@@ -30,16 +30,17 @@ def visit_html(self, node):
          "audiourl": "audioUrl",
      }
 
 -    options_raw = ['markers']
--
++    options_raw = ["markers"]
+
 -    gen = ((rst_option_name, js_option_name)
 -           for (rst_option_name,
 -                js_option_name) in rst_to_js_option_names.items()
 -           if rst_option_name in node["options"])
-+    options_raw = [
-+        "markers",
-+        "loop",
-+        "autoPlay",
-+        "preload",
-+        "pauseOnMarkers",
-+        "cols",
-+        "rows",
-+        "speed",
-+    ]
-+
-+    for option, value in node["options"].items():
-+        node["options"][option] = ASCIINemaDirective.option_spec[option](value)
-+
 +    gen = (
 +        (rst_option_name, js_option_name)
 +        for (rst_option_name, js_option_name) in rst_to_js_option_names.items()
@@ -75,7 +53,7 @@ index 8644220..44dad26 100644
          template = """<div id="asciicast-{id}"></div>
              <script>
                  document.addEventListener("DOMContentLoaded", function() {{
-@@ -50,7 +65,7 @@ def visit_html(self, node):
+@@ -50,7 +51,7 @@ def visit_html(self, node):
                  }});
              </script>"""
          option_template = '{}: "{}", '
@@ -84,7 +62,7 @@ index 8644220..44dad26 100644
      else:
          template = """<script async id="asciicast-{src}" {options}
                  src="https://asciinema.org/a/{src}.js"></script>"""
-@@ -58,14 +73,17 @@ def visit_html(self, node):
+@@ -58,14 +59,17 @@ def visit_html(self, node):
          option_template_raw = 'data-{}="{}" '
      options = ""
      for n, v in node["options"].items():
@@ -105,55 +83,7 @@ index 8644220..44dad26 100644
      raise nodes.SkipNode
 
 
-@@ -73,15 +91,35 @@ def depart(self, node):
-     pass
-
-
-+def bool_parse(argument):
-+    """Parse the option as boolean."""
-+    if argument is None:
-+        raise ValueError("Boolean option must have a value")
-+
-+    val = str(argument).strip().lower()
-+
-+    if val in ("true", "false"):
-+        return val
-+    raise ValueError("Must be boolean; True or False")
-+
-+
-+def bool_or_positive_int(argument):
-+    """Parse the option as boolean or positive integer."""
-+    try:
-+        return bool_parse(argument)
-+    except ValueError:
-+        return directives.positive_int(argument)
-+
-+
- class ASCIINemaDirective(SphinxDirective):
-     has_content = True
-     final_argument_whitespace = False
-     option_spec = {
-         "cols": directives.positive_int,
-         "rows": directives.positive_int,
--        "autoplay": directives.unchanged,
--        "preload": directives.unchanged,
--        "loop": directives.unchanged,
-+        "autoplay": bool_parse,
-+        "preload": bool_parse,
-+        "loop": bool_or_positive_int,
-         "start-at": directives.unchanged,
-         "speed": directives.unchanged,
-         "idle-time-limit": directives.unchanged,
-@@ -90,7 +128,7 @@ class ASCIINemaDirective(SphinxDirective):
-         "fit": directives.unchanged,
-         "controls": directives.unchanged,
-         "markers": directives.unchanged,
--        "pauseOnMarkers": directives.unchanged,
-+        "pauseOnMarkers": bool_parse,
-         "terminalfontsize": directives.unchanged,
-         "terminalfontfamily": directives.unchanged,
-         "terminallineheight": directives.unchanged,
-@@ -102,25 +140,25 @@ class ASCIINemaDirective(SphinxDirective):
+@@ -102,25 +106,25 @@ class ASCIINemaDirective(SphinxDirective):
 
      def run(self):
          arg = self.arguments[0]
@@ -195,7 +125,7 @@ index 8644220..44dad26 100644
          return [Asciinema(**kw)]
 
      def is_file(self, rel_file):
-@@ -129,17 +167,18 @@ class ASCIINemaDirective(SphinxDirective):
+@@ -129,17 +133,18 @@ class ASCIINemaDirective(SphinxDirective):
 
      def to_b64(self, filename):
          import base64

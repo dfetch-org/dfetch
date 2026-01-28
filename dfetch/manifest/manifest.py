@@ -21,21 +21,17 @@ download and a section ``projects:`` that contains a list of projects to fetch.
 import difflib
 import io
 import os
-import pathlib
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import IO, Any, Optional, Union
 
 import yaml
-from typing_extensions import TypedDict
+from typing_extensions import NotRequired, TypedDict
 
-from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
-from dfetch.manifest.validate import validate
-from dfetch.util.util import find_file, prefix_runtime_exceptions
 
 logger = get_logger(__name__)
 
@@ -96,14 +92,14 @@ class RequestedProjectNotFoundError(RuntimeError):
         ]
 
 
-class ManifestDict(  # pylint: disable=too-many-ancestors
-    TypedDict, total=False
-):  # When https://www.python.org/dev/peps/pep-0655/ is accepted, only make remotes optional
+class ManifestDict(TypedDict, total=True):  # pylint: disable=too-many-ancestors
     """Serialized dict types."""
 
     version: Union[int, str]
-    remotes: Sequence[Union[RemoteDict, Remote]]
-    projects: Sequence[Union[ProjectEntryDict, ProjectEntry, dict[str, str]]]
+    remotes: NotRequired[Sequence[Union[RemoteDict, Remote]]]
+    projects: Sequence[
+        Union[ProjectEntryDict, ProjectEntry, dict[str, Union[str, list[str]]]]
+    ]
 
 
 class Manifest:
@@ -144,12 +140,17 @@ class Manifest:
         self._projects = self._init_projects(manifest["projects"])
 
     def _init_projects(
-        self, projects: Sequence[Union[ProjectEntryDict, ProjectEntry, dict[str, str]]]
+        self,
+        projects: Sequence[
+            Union[ProjectEntryDict, ProjectEntry, dict[str, Union[str, list[str]]]]
+        ],
     ) -> dict[str, ProjectEntry]:
         """Iterate over projects from manifest and initialize ProjectEntries from it.
 
         Args:
-            projects (Sequence[Union[ProjectEntryDict, ProjectEntry, Dict[str, str]]]): Iterable with projects
+            projects (Sequence[
+                Union[ProjectEntryDict, ProjectEntry, Dict[str, Union[str, list[str]]]]
+            ]): Iterable with projects
 
         Raises:
             RuntimeError: Project unknown
@@ -163,6 +164,10 @@ class Manifest:
             if isinstance(project, dict):
                 if "name" not in project:
                     raise KeyError("Missing name!")
+                if not isinstance(project["name"], str):
+                    raise TypeError(
+                        f"Project name must be a string, got {type(project['name']).__name__}"
+                    )
                 last_project = _projects[project["name"]] = ProjectEntry.from_yaml(
                     project, self._default_remote_name
                 )
@@ -301,9 +306,9 @@ class Manifest:
         if len(remotes) == 1:
             remotes[0].pop("default", None)
 
-        projects: list[dict[str, str]] = []
+        projects: list[dict[str, Union[str, list[str]]]] = []
         for project in self.projects:
-            project_yaml: dict[str, str] = project.as_yaml()
+            project_yaml: dict[str, Union[str, list[str]]] = project.as_yaml()
             if len(remotes) == 1:
                 project_yaml.pop("remote", None)
             projects.append(project_yaml)
@@ -328,7 +333,11 @@ class Manifest:
         """Dump metadata file to correct path."""
         with open(path, "w+", encoding="utf-8") as manifest_file:
             yaml.dump(
-                self._as_dict(), manifest_file, Dumper=ManifestDumper, sort_keys=False
+                self._as_dict(),
+                manifest_file,
+                Dumper=ManifestDumper,
+                sort_keys=False,
+                line_break=os.linesep,
             )
 
     def find_name_in_manifest(self, name: str) -> ManifestEntryLocation:
@@ -358,49 +367,6 @@ class Manifest:
         raise RuntimeError(f"{name} was not found in the manifest!")
 
 
-def find_manifest() -> str:
-    """Find a manifest."""
-    paths = find_file(DEFAULT_MANIFEST_NAME, ".")
-
-    if len(paths) == 0:
-        raise RuntimeError("No manifests were found!")
-    if len(paths) != 1:
-        logger.warning(
-            f"Multiple manifests found, using {pathlib.Path(paths[0]).as_posix()}"
-        )
-
-    return os.path.realpath(paths[0])
-
-
-def get_manifest() -> Manifest:
-    """Get manifest and its path."""
-    logger.debug("Looking for manifest")
-    manifest_path = find_manifest()
-    validate(manifest_path)
-
-    logger.debug(f"Using manifest {manifest_path}")
-    return Manifest.from_file(manifest_path)
-
-
-def get_childmanifests(skip: Optional[list[str]] = None) -> list[Manifest]:
-    """Get manifest and its path."""
-    skip = skip or []
-    logger.debug("Looking for sub-manifests")
-
-    childmanifests: list[Manifest] = []
-    for path in find_file(DEFAULT_MANIFEST_NAME, "."):
-        path = os.path.realpath(path)
-        if path not in skip:
-            logger.debug(f"Found sub-manifests {path}")
-            with prefix_runtime_exceptions(
-                pathlib.Path(path).relative_to(os.path.dirname(os.getcwd())).as_posix()
-            ):
-                validate(path)
-            childmanifests += [Manifest.from_file(path)]
-
-    return childmanifests
-
-
 class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
     """Dump a manifest YAML.
 
@@ -412,12 +378,12 @@ class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
 
     def write_line_break(self, data: Any = None) -> None:
         """Write a line break."""
-        super().write_line_break(data)  # type: ignore[unused-ignore]
+        super().write_line_break(data)  # type: ignore[unused-ignore, no-untyped-call]
 
         if len(self.indents) == 2 and getattr(self.event, "value", "") != "version":
-            super().write_line_break()  # type: ignore[unused-ignore]
+            super().write_line_break()  # type: ignore[unused-ignore, no-untyped-call]
 
         if len(self.indents) == 3 and self._last_additional_break != 2:
-            super().write_line_break()  # type: ignore[unused-ignore]
+            super().write_line_break()  # type: ignore[unused-ignore, no-untyped-call]
 
         self._last_additional_break = len(self.indents)

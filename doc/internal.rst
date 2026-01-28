@@ -2,7 +2,34 @@
 
 Internal
 ========
-*DFetch* is becoming larger everyday. To give it some structure below a description of the internals
+*DFetch* is becoming larger everyday. To give it some structure below a description of the internals.
+
+Glossary
+--------
+
+Superproject
+    The top-level project that contains the manifest. It defines and
+    coordinates all included projects.
+
+Subproject
+    A project defined in the manifest that is copied into the
+    superproject. Subprojects are managed and updated as part of the
+    superproject's configuration.
+
+Remote
+    Defines a source repository base URL and a name. Remotes
+    allow you to avoid repeating common URL bases for multiple
+    projects in a manifest. A single remote may contain multiple
+    (sub-)projects to fetch.
+
+Child Manifest
+    Some subprojects can themselves contain a manifest. When
+    fetching a subproject, dfetch can optionally check these
+    child manifests for additional dependencies or recommendations.
+
+Metadata
+    A file created by *DFetch* to store some relevant information about
+    a subproject.
 
 Architecture
 ------------

@@ -47,8 +47,9 @@ import dfetch.manifest.project
 import dfetch.project
 from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
-from dfetch.manifest.manifest import Manifest, get_manifest
+from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
+from dfetch.project.superproject import SuperProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -69,13 +70,13 @@ class Freeze(dfetch.commands.command.Command):
         """Perform the freeze."""
         del args  # unused
 
-        manifest = get_manifest()
+        superproject = SuperProject()
 
         exceptions: list[str] = []
         projects: list[ProjectEntry] = []
 
-        with in_directory(os.path.dirname(manifest.path)):
-            for project in manifest.projects:
+        with in_directory(superproject.root_directory):
+            for project in superproject.manifest.projects:
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     on_disk_version = dfetch.project.make(project).on_disk_version()
 
@@ -98,7 +99,11 @@ class Freeze(dfetch.commands.command.Command):
                     projects.append(project)
 
             manifest = Manifest(
-                {"version": "0.0", "remotes": manifest.remotes, "projects": projects}
+                {
+                    "version": "0.0",
+                    "remotes": superproject.manifest.remotes,
+                    "projects": projects,
+                }
             )
 
             shutil.move(DEFAULT_MANIFEST_NAME, DEFAULT_MANIFEST_NAME + ".backup")

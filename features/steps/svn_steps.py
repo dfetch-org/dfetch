@@ -84,10 +84,16 @@ def step_impl(context, name, tag_name=None):
         create_stdlayout()
         with in_directory("trunk"):
             for file in files:
-                generate_file(file["path"], "some content")
+                generate_file(file["path"], f"Generated file for {name}")
         add_and_commit("Added files")
         if tag_name:
             create_tag(tag_name)
+
+
+@given('a new tag "{tag_name}" is added to "{name}"')
+def step_impl(_, tag_name, name):
+    with in_directory(name):
+        create_tag(tag_name)
 
 
 @given('a non-standard svn-server "{name}" with the files')

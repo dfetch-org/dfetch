@@ -1,0 +1,82 @@
+diff --git a/asciinema.py b/asciinema.py
+index 0b73d80..44dad26 100644
+--- a/asciinema.py
++++ b/asciinema.py
+@@ -24,13 +24,27 @@ class Asciinema(nodes.General, nodes.Element):
+
+ def visit_html(self, node):
+     rst_to_js_option_names: dict[str, str] = {
++        "autoplay": "autoPlay",
++        "idle-time-limit": "idleTimeLimit",
+         "terminalfontsize": "terminalFontSize",
+-        "terminallineheigth": "terminalLineHeigth",
++        "terminallineheight": "terminalLineHeight",
+         "terminalfontfamily": "terminalFontFamily",
+         "audiourl": "audioUrl",
+     }
+
+-    options_raw = ["markers"]
++    options_raw = [
++        "markers",
++        "loop",
++        "autoPlay",
++        "preload",
++        "pauseOnMarkers",
++        "cols",
++        "rows",
++        "speed",
++    ]
++
++    for option, value in node["options"].items():
++        node["options"][option] = ASCIINemaDirective.option_spec[option](value)
+
+     gen = (
+         (rst_option_name, js_option_name)
+@@ -77,15 +91,35 @@ def depart(self, node):
+     pass
+
+
++def bool_parse(argument):
++    """Parse the option as boolean."""
++    if argument is None:
++        raise ValueError("Boolean option must have a value")
++
++    val = str(argument).strip().lower()
++
++    if val in ("true", "false"):
++        return val
++    raise ValueError("Must be boolean; True or False")
++
++
++def bool_or_positive_int(argument):
++    """Parse the option as boolean or positive integer."""
++    try:
++        return bool_parse(argument)
++    except ValueError:
++        return directives.positive_int(argument)
++
++
+ class ASCIINemaDirective(SphinxDirective):
+     has_content = True
+     final_argument_whitespace = False
+     option_spec = {
+         "cols": directives.positive_int,
+         "rows": directives.positive_int,
+-        "autoplay": directives.unchanged,
+-        "preload": directives.unchanged,
+-        "loop": directives.unchanged,
++        "autoplay": bool_parse,
++        "preload": bool_parse,
++        "loop": bool_or_positive_int,
+         "start-at": directives.unchanged,
+         "speed": directives.unchanged,
+         "idle-time-limit": directives.unchanged,
+@@ -94,7 +128,7 @@ class ASCIINemaDirective(SphinxDirective):
+         "fit": directives.unchanged,
+         "controls": directives.unchanged,
+         "markers": directives.unchanged,
+-        "pauseOnMarkers": directives.unchanged,
++        "pauseOnMarkers": bool_parse,
+         "terminalfontsize": directives.unchanged,
+         "terminalfontfamily": directives.unchanged,
+         "terminallineheight": directives.unchanged,

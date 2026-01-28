@@ -1,12 +1,13 @@
 """Git specific implementation."""
 
+import functools
 import os
 import re
 import shutil
 import tempfile
 from collections.abc import Generator, Sequence
 from pathlib import Path, PurePath
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, Union
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -30,9 +31,55 @@ class Submodule(NamedTuple):
 
 def get_git_version() -> tuple[str, str]:
     """Get the name and version of git."""
-    result = run_on_cmdline(logger, "git --version")
+    result = run_on_cmdline(logger, ["git", "--version"])
     tool, version = result.stdout.decode().strip().split("version", maxsplit=1)
     return (str(tool), str(version))
+
+
+def _build_git_ssh_command() -> str:
+    """Returns a safe SSH command string for Git that enforces non-interactive mode.
+
+    Respects existing GIT_SSH_COMMAND and git core.sshCommand.
+    """
+    ssh_cmd = os.environ.get("GIT_SSH_COMMAND")
+
+    if not ssh_cmd:
+
+        try:
+            result = run_on_cmdline(
+                logger,
+                ["git", "config", "--get", "core.sshCommand"],
+            )
+            ssh_cmd = result.stdout.decode().strip()
+
+        except SubprocessCommandError:
+            ssh_cmd = None
+
+    if not ssh_cmd:
+        ssh_cmd = "ssh"
+
+    if "BatchMode=" not in ssh_cmd:
+        ssh_cmd += " -o BatchMode=yes"
+    else:
+        logger.debug(f'BatchMode already configured in "{ssh_cmd}"')
+
+    return ssh_cmd
+
+
+# As a cli tool, we can safely assume this remains stable during the runtime, caching for speed is better
+@functools.lru_cache
+def _extend_env_for_non_interactive_mode() -> dict[str, str]:
+    """Extend the environment vars for git running in non-interactive mode.
+
+    See https://serverfault.com/a/1054253 for background info
+    """
+    env = os.environ.copy()
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    env["GIT_SSH_COMMAND"] = _build_git_ssh_command()
+
+    # https://stackoverflow.com/questions/37182847/how-do-i-disable-git-credential-manager-for-windows#answer-45513654
+    env["GCM_INTERACTIVE"] = "never"
+    return env
 
 
 class GitRemote:
@@ -48,10 +95,14 @@ class GitRemote:
             return True
 
         try:
-            run_on_cmdline(logger, f"git ls-remote --heads {self._remote}")
+            run_on_cmdline(
+                logger,
+                cmd=["git", "ls-remote", "--heads", self._remote],
+                env=_extend_env_for_non_interactive_mode(),
+            )
             return True
         except SubprocessCommandError as exc:
-            if exc.returncode == 128 and "Could not resolve host" in exc.stdout:
+            if exc.returncode == 128 and "Could not resolve host" in exc.stderr:
                 raise RuntimeError(
                     f">>>{exc.cmd}<<< failed!\n"
                     + f"'{self._remote}' is not a valid URL or unreachable:\n{exc.stderr or exc.stdout}"
@@ -82,7 +133,9 @@ class GitRemote:
         """Try to get the default branch or fallback to master."""
         try:
             result = run_on_cmdline(
-                logger, f"git ls-remote --symref {self._remote} HEAD"
+                logger,
+                cmd=["git", "ls-remote", "--symref", self._remote, "HEAD"],
+                env=_extend_env_for_non_interactive_mode(),
             ).stdout.decode()
         except SubprocessCommandError:
             logger.debug(
@@ -101,7 +154,9 @@ class GitRemote:
     @staticmethod
     def _ls_remote(remote: str) -> dict[str, str]:
         result = run_on_cmdline(
-            logger, f"git ls-remote --heads --tags {remote}"
+            logger,
+            cmd=["git", "ls-remote", "--heads", "--tags", remote],
+            env=_extend_env_for_non_interactive_mode(),
         ).stdout.decode()
 
         info: dict[str, str] = {}
@@ -156,12 +211,14 @@ class GitRemote:
         temp_dir = tempfile.mkdtemp()
         exists = False
         with in_directory(temp_dir):
-            run_on_cmdline(logger, "git init")
-            run_on_cmdline(logger, f"git remote add origin {self._remote}")
-            run_on_cmdline(logger, "git checkout -b dfetch-local-branch")
+            run_on_cmdline(logger, ["git", "init"])
+            run_on_cmdline(logger, ["git", "remote", "add", "origin", self._remote])
+            run_on_cmdline(logger, ["git", "checkout", "-b", "dfetch-local-branch"])
             try:
                 run_on_cmdline(
-                    logger, f"git fetch --dry-run --depth 1 origin {version}"
+                    logger,
+                    ["git", "fetch", "--dry-run", "--depth", "1", "origin", version],
+                    env=_extend_env_for_non_interactive_mode(),
                 )
                 exists = True
             except SubprocessCommandError as exc:
@@ -177,15 +234,18 @@ class GitLocalRepo:
 
     METADATA_DIR = ".git"
 
-    def __init__(self, path: str = ".") -> None:
+    def __init__(self, path: Union[str, Path] = ".") -> None:
         """Create a local git repo."""
-        self._path = path
+        self._path = str(path)
 
     def is_git(self) -> bool:
         """Check if is git."""
         try:
             with in_directory(self._path):
-                run_on_cmdline(logger, "git status")
+                run_on_cmdline(
+                    logger,
+                    ["git", "status"],
+                )
             return True
         except (SubprocessCommandError, RuntimeError):
             return False
@@ -209,12 +269,12 @@ class GitLocalRepo:
             ignore (Optional[Sequence[str]]): Optional sequence of glob patterns to ignore (relative to src)
         """
         with in_directory(self._path):
-            run_on_cmdline(logger, "git init")
-            run_on_cmdline(logger, f"git remote add origin {remote}")
-            run_on_cmdline(logger, "git checkout -b dfetch-local-branch")
+            run_on_cmdline(logger, ["git", "init"])
+            run_on_cmdline(logger, ["git", "remote", "add", "origin", remote])
+            run_on_cmdline(logger, ["git", "checkout", "-b", "dfetch-local-branch"])
 
             if src or ignore:
-                run_on_cmdline(logger, "git config core.sparsecheckout true")
+                run_on_cmdline(logger, ["git", "config", "core.sparsecheckout", "true"])
                 with open(
                     ".git/info/sparse-checkout", "a", encoding="utf-8"
                 ) as sparse_checkout_file:
@@ -228,11 +288,17 @@ class GitLocalRepo:
                         sparse_checkout_file.write("\n")
                         sparse_checkout_file.write("\n".join(ignore_abs_paths))
 
-            run_on_cmdline(logger, f"git fetch --depth 1 origin {version}")
-            run_on_cmdline(logger, "git reset --hard FETCH_HEAD")
+            run_on_cmdline(
+                logger,
+                ["git", "fetch", "--depth", "1", "origin", version],
+                env=_extend_env_for_non_interactive_mode(),
+            )
+            run_on_cmdline(logger, ["git", "reset", "--hard", "FETCH_HEAD"])
 
             current_sha = (
-                run_on_cmdline(logger, "git rev-parse HEAD").stdout.decode().strip()
+                run_on_cmdline(logger, ["git", "rev-parse", "HEAD"])
+                .stdout.decode()
+                .strip()
             )
 
             if src:
@@ -305,10 +371,7 @@ class GitLocalRepo:
     def get_remote_url() -> str:
         """Get the url of the remote origin."""
         try:
-            result = run_on_cmdline(
-                logger,
-                ["git", "remote", "get-url", "origin"],
-            )
+            result = run_on_cmdline(logger, ["git", "remote", "get-url", "origin"])
             decoded_result = str(result.stdout.decode())
         except SubprocessCommandError:
             decoded_result = ""
@@ -343,6 +406,29 @@ class GitLocalRepo:
             result = run_on_cmdline(logger, cmd)
 
         return str(result.stdout.decode())
+
+    @staticmethod
+    def ignored_files(path: str) -> Sequence[str]:
+        """List of ignored files."""
+        if not Path(path).exists():
+            return []
+
+        with in_directory(path):
+            return list(
+                run_on_cmdline(
+                    logger,
+                    [
+                        "git",
+                        "ls-files",
+                        "--ignored",
+                        "--others",
+                        "--exclude-standard",
+                        ".",
+                    ],
+                )
+                .stdout.decode()
+                .splitlines()
+            )
 
     def untracked_files_patch(self, ignore: Optional[Sequence[str]] = None) -> str:
         """Create a diff for untracked files."""

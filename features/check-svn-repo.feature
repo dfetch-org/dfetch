@@ -29,7 +29,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               cunit-svn-rev-only  : wanted (170), available (trunk - 170)
               cunit-svn-rev-and-branch: wanted (mingw64 - 156), available (mingw64 - 170)
             """
@@ -54,7 +54,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               cutter-svn-tag      : wanted (1.1.7), available (1.1.8)
             """
 
@@ -91,7 +91,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               cunit-svn-rev-only  : wanted (169), current (trunk - 169), available (trunk - 170)
               cunit-svn-rev-and-branch: wanted & current (mingw64 - 156), available (mingw64 - 170)
               ext/test-non-standard-svn: wanted (latest), current (1), available (1)
@@ -112,7 +112,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               SomeProject         : wanted (latest), current (1), available (1)
             """
 
@@ -130,7 +130,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
             >>>svn info --non-interactive https://giiiiiidhub.com/i-do-not-exist/broken/trunk<<< failed!
             'https://giiiiiidhub.com/i-do-not-exist/broken/trunk' is not a valid URL or unreachable:
             svn: E170013: Unable to connect to a repository at URL 'https://giiiiiidhub.com/i-do-not-exist/broken/trunk'
@@ -155,6 +155,26 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               cutter-svn-tag      : wanted (non-existent-tag), but not available at the upstream.
+            """
+
+    Scenario: Change to ignored files are not reported
+        Given a svn-server "SomeProject" with the tag "v1"
+        And a fetched and committed MySvnProject with the manifest
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: SomeProject
+                      url: some-remote-server/SomeProject
+                      tag: 'v1'
+            """
+        And files as '*.tmp' are ignored in 'MySvnProject/SomeProject' in svn
+        And "SomeProject/IGNORE_ME.tmp" in MySvnProject is created
+        When I run "dfetch check SomeProject"
+        Then the output shows
+            """
+            Dfetch (0.11.0)
+              SomeProject         : up-to-date (v1)
             """

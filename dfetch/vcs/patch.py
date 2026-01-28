@@ -8,6 +8,10 @@ from pathlib import Path
 
 import patch_ng
 
+from dfetch.log import get_logger
+
+logger = get_logger(__name__)
+
 
 def _git_mode(path: Path) -> str:
     if path.is_symlink():
@@ -55,39 +59,62 @@ def dump_patch(patch_set: patch_ng.PatchSet) -> str:
     return "\n".join(patch_lines) + "\n" if patch_lines else ""
 
 
+def apply_patch(patch_path: str, root: str = ".") -> None:
+    """Apply the specified patch relative to the root."""
+    patch_set = patch_ng.fromfile(patch_path)
+
+    if not patch_set:
+        with open(patch_path, "rb") as patch_file:
+            patch_text = patch_ng.decode_text(patch_file.read()).encode("utf-8")
+            patch_set = patch_ng.fromstring(patch_text)
+
+            if patch_set:
+                logger.warning(
+                    f'After retrying found that patch-file "{patch_path}" '
+                    "is not UTF-8 encoded, consider saving it with UTF-8 encoding."
+                )
+
+    if not patch_set:
+        raise RuntimeError(f'Invalid patch file: "{patch_path}"')
+    if not patch_set.apply(strip=0, root=root, fuzz=True):
+        raise RuntimeError(f'Applying patch "{patch_path}" failed')
+
+
 def create_svn_patch_for_new_file(file_path: str) -> str:
     """Create a svn patch for a new file."""
-    diff = unified_diff_new_file(Path(file_path))
-    return "" if not diff else "\n".join([f"Index: {file_path}", "=" * 67] + diff)
+    diff = _unified_diff_new_file(Path(file_path))
+    return (
+        "" if not diff else "".join([f"Index: {file_path}\n", "=" * 67 + "\n"] + diff)
+    )
 
 
 def create_git_patch_for_new_file(file_path: str) -> str:
     """Create a Git patch for a new untracked file, preserving file mode."""
     path = Path(file_path)
-    diff = unified_diff_new_file(path)
+    diff = _unified_diff_new_file(path)
 
     return (
         ""
         if not diff
-        else "\n".join(
+        else "".join(
             [
-                f"diff --git a/{file_path} b/{file_path}",
-                f"new file mode {_git_mode(path)}",
-                f"index 0000000..{_git_blob_sha1(path)[:7]}",
+                f"diff --git a/{file_path} b/{file_path}\n",
+                f"new file mode {_git_mode(path)}\n",
+                f"index 0000000..{_git_blob_sha1(path)[:7]}\n",
             ]
             + diff
         )
     )
 
 
-def unified_diff_new_file(path: Path) -> list[str]:
+def _unified_diff_new_file(path: Path) -> list[str]:
     """Create a unified diff for a new file."""
     with path.open("r", encoding="utf-8", errors="replace") as new_file:
         lines = new_file.readlines()
 
     return list(
         difflib.unified_diff(
-            [], lines, fromfile="/dev/null", tofile=str(path), lineterm=""
+            [], lines, fromfile="/dev/null", tofile=str(path), lineterm="\n"
         )
     )
 

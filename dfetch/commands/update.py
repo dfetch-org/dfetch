@@ -5,7 +5,15 @@ It tries to determine what kind of vcs it is: git, svn or something else.
 
 .. uml:: /static/uml/update.puml
 
-.. scenario-include:: ../features/fetch-git-repo.feature
+.. tabs::
+
+   .. tab:: Git
+
+      .. scenario-include:: ../features/fetch-git-repo.feature
+
+   .. tab:: SVN
+
+      .. scenario-include:: ../features/fetch-svn-repo.feature
 
 Child-manifests
 ~~~~~~~~~~~~~~~
@@ -24,13 +32,11 @@ import os
 from pathlib import Path
 
 import dfetch.commands.command
-import dfetch.manifest.manifest
 import dfetch.manifest.project
-import dfetch.manifest.validate
-import dfetch.project.git
-import dfetch.project.svn
+import dfetch.project
 from dfetch.commands.common import check_child_manifests
 from dfetch.log import get_logger
+from dfetch.project.superproject import SuperProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -68,23 +74,27 @@ class Update(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the update."""
-        manifest = dfetch.manifest.manifest.get_manifest()
+        superproject = SuperProject()
 
         exceptions: list[str] = []
         destinations: list[str] = [
-            os.path.realpath(project.destination) for project in manifest.projects
+            os.path.realpath(project.destination)
+            for project in superproject.manifest.projects
         ]
-        with in_directory(os.path.dirname(manifest.path)):
-            for project in manifest.selected_projects(args.projects):
+        with in_directory(superproject.root_directory):
+            for project in superproject.manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     self._check_destination(project, destinations)
-                    dfetch.project.make(project).update(force=args.force)
+                    dfetch.project.make(project).update(
+                        force=args.force,
+                        files_to_ignore=superproject.ignored_files(project.destination),
+                    )
 
                     if not args.no_recommendations and os.path.isdir(
                         project.destination
                     ):
                         with in_directory(project.destination):
-                            check_child_manifests(manifest, project)
+                            check_child_manifests(superproject.manifest, project)
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))

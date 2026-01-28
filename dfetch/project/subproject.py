@@ -1,4 +1,4 @@
-"""Version Control system."""
+"""SubProject."""
 
 import fnmatch
 import os
@@ -8,7 +8,6 @@ from collections.abc import Sequence
 from typing import Optional
 
 from halo import Halo
-from patch_ng import fromfile
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
@@ -17,12 +16,13 @@ from dfetch.project.abstract_check_reporter import AbstractCheckReporter
 from dfetch.project.metadata import Metadata
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
+from dfetch.vcs.patch import apply_patch
 
 logger = get_logger(__name__)
 
 
-class VCS(ABC):
-    """Abstract Version Control System object.
+class SubProject(ABC):
+    """Abstract SubProject object.
 
     This object represents one Project entry in the Manifest.
     It can be updated.
@@ -32,7 +32,7 @@ class VCS(ABC):
     LICENSE_GLOBS = ["licen[cs]e*", "copying*", "copyright*"]
 
     def __init__(self, project: ProjectEntry) -> None:
-        """Create the VCS."""
+        """Create the subproject."""
         self.__project = project
         self.__metadata = Metadata.from_project_entry(self.__project)
 
@@ -92,19 +92,24 @@ class VCS(ABC):
         logger.debug(f"{self.__project.name} Current ({current}), Available ({wanted})")
         return wanted
 
-    def update(self, force: bool = False) -> None:
-        """Update this VCS if required.
+    def update(
+        self, force: bool = False, files_to_ignore: Optional[Sequence[str]] = None
+    ) -> None:
+        """Update this subproject if required.
 
         Args:
             force (bool, optional): Ignore if version is ok or any local changes were done.
                                     Defaults to False.
+            files_to_ignore (Sequence[str], optional): list of files that are ok to overwrite.
         """
         to_fetch = self.update_is_required(force)
 
         if not to_fetch:
             return
 
-        if not force and self._are_there_local_changes():
+        files_to_ignore = files_to_ignore or []
+
+        if not force and self._are_there_local_changes(files_to_ignore):
             self._log_project(
                 "skipped - local changes after last update (use --force to overwrite)"
             )
@@ -123,35 +128,45 @@ class VCS(ABC):
             actually_fetched = self._fetch_impl(to_fetch)
         self._log_project(f"Fetched {actually_fetched}")
 
-        applied_patch = ""
-        if self.__project.patch:
-            if os.path.exists(self.__project.patch):
-                self.apply_patch()
-                applied_patch = self.__project.patch
-            else:
-                logger.warning(f"Skipping non-existent patch {self.__project.patch}")
+        applied_patches = self._apply_patches()
 
         self.__metadata.fetched(
             actually_fetched,
             hash_=hash_directory(self.local_path, skiplist=[self.__metadata.FILENAME]),
-            patch_=applied_patch,
+            patch_=applied_patches,
         )
 
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
         self.__metadata.dump()
 
-    def apply_patch(self) -> None:
-        """Apply the specified patch to the destination."""
-        patch_set = fromfile(self.__project.patch)
+    def _apply_patches(self) -> list[str]:
+        """Apply the patches."""
+        cwd = pathlib.Path(".").resolve()
+        applied_patches = []
+        for patch in self.__project.patch:
 
-        if not patch_set:
-            raise RuntimeError(f'Invalid patch file: "{self.__project.patch}"')
-        if patch_set.apply(0, root=self.local_path, fuzz=True):
-            self._log_project(f'Applied patch "{self.__project.patch}"')
-        else:
-            raise RuntimeError(f'Applying patch "{self.__project.patch}" failed')
+            patch_path = (cwd / patch).resolve()
 
-    def check_for_update(self, reporters: Sequence[AbstractCheckReporter]) -> None:
+            try:
+                relative_patch_path = patch_path.relative_to(cwd)
+            except ValueError:
+                self._log_project(f'Skipping patch "{patch}" which is outside {cwd}.')
+                continue
+
+            if not patch_path.exists():
+                self._log_project(f"Skipping non-existent patch {patch}")
+                continue
+
+            normalized_patch_path = str(relative_patch_path.as_posix())
+
+            apply_patch(normalized_patch_path, root=self.local_path)
+            self._log_project(f'Applied patch "{normalized_patch_path}"')
+            applied_patches.append(normalized_patch_path)
+        return applied_patches
+
+    def check_for_update(
+        self, reporters: Sequence[AbstractCheckReporter], files_to_ignore: Sequence[str]
+    ) -> None:
         """Check if there is an update available."""
         on_disk_version = self.on_disk_version()
         with Halo(
@@ -177,7 +192,7 @@ class VCS(ABC):
 
             return
 
-        if self._are_there_local_changes():
+        if self._are_there_local_changes(files_to_ignore):
             for reporter in reporters:
                 reporter.local_changes(self.__project)
 
@@ -223,7 +238,7 @@ class VCS(ABC):
 
     @property
     def wanted_version(self) -> Version:
-        """Get the wanted version of this VCS."""
+        """Get the wanted version of this subproject."""
         return self.__metadata.version
 
     @property
@@ -233,17 +248,17 @@ class VCS(ABC):
 
     @property
     def remote(self) -> str:
-        """Get the remote URL of this VCS."""
+        """Get the remote URL of this subproject."""
         return self.__metadata.remote_url
 
     @property
     def source(self) -> str:
-        """Get the source folder of this VCS."""
+        """Get the source folder of this subproject."""
         return self.__project.source
 
     @property
     def ignore(self) -> Sequence[str]:
-        """Get the files/folders to ignore of this VCS."""
+        """Get the files/folders to ignore of this subproject."""
         return self.__project.ignore
 
     @abstractmethod
@@ -339,7 +354,7 @@ class VCS(ABC):
         revision = self._latest_revision_on_branch(branch)
         return Version(revision=revision, branch=branch) if revision else None
 
-    def _are_there_local_changes(self) -> bool:
+    def _are_there_local_changes(self, files_to_ignore: Sequence[str]) -> bool:
         """Check if there are local changes.
 
         Returns:
@@ -349,12 +364,13 @@ class VCS(ABC):
         on_disk_hash = self._on_disk_hash()
 
         return bool(on_disk_hash) and on_disk_hash != hash_directory(
-            self.local_path, skiplist=[self.__metadata.FILENAME]
+            self.local_path,
+            skiplist=[self.__metadata.FILENAME] + list(files_to_ignore),
         )
 
     @abstractmethod
     def _fetch_impl(self, version: Version) -> Version:
-        """Fetch the given version of the VCS, should be implemented by the child class."""
+        """Fetch the given version of the subproject, should be implemented by the child class."""
 
     @abstractmethod
     def metadata_revision(self) -> str:
@@ -362,13 +378,16 @@ class VCS(ABC):
 
     @abstractmethod
     def current_revision(self) -> str:
-        """Get the revision of the metadata file."""
+        """Get the last revision of the repository."""
 
     @abstractmethod
-    def get_diff(
-        self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
-    ) -> str:  # noqa
-        """Get the diff of two revisions."""
+    def _diff_impl(
+        self,
+        old_revision: str,  # noqa
+        new_revision: Optional[str],  # noqa
+        ignore: Sequence[str],
+    ) -> str:
+        """Get the diff of two revisions, should be implemented by the child class."""
 
     @abstractmethod
     def get_default_branch(self) -> str:
@@ -378,5 +397,17 @@ class VCS(ABC):
     def is_license_file(filename: str) -> bool:
         """Check if the given filename is a license file."""
         return any(
-            fnmatch.fnmatch(filename.lower(), pattern) for pattern in VCS.LICENSE_GLOBS
+            fnmatch.fnmatch(filename.lower(), pattern)
+            for pattern in SubProject.LICENSE_GLOBS
         )
+
+    def diff(self, old_revision: str, new_revision: str) -> str:
+        """Generate a relative diff for a subproject."""
+        if not old_revision:
+            raise RuntimeError(
+                "When not providing any revisions, dfetch starts from"
+                f" the last revision to {Metadata.FILENAME} in {self.local_path}."
+                " Please either commit this, or specify a revision to start from with --revs"
+            )
+
+        return self._diff_impl(old_revision, new_revision, ignore=(Metadata.FILENAME,))

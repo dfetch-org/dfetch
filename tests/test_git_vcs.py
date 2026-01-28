@@ -3,23 +3,33 @@
 # mypy: ignore-errors
 # flake8: noqa
 
-from unittest.mock import patch
+import os
+from subprocess import CompletedProcess
+from unittest.mock import Mock, patch
 
 import pytest
 
 from dfetch.util.cmdline import SubprocessCommandError
-from dfetch.vcs.git import GitLocalRepo, GitRemote
+from dfetch.vcs.git import (
+    GitLocalRepo,
+    GitRemote,
+    _build_git_ssh_command,
+)
 
 
 @pytest.mark.parametrize(
     "name, cmd_result, expectation",
     [
-        ("git repo", ["Yep!"], True),
+        ("git repo", [CompletedProcess(args=[], returncode=0, stdout="Yep!")], True),
         ("not a git repo", [SubprocessCommandError()], False),
         ("no git", [RuntimeError()], False),
+        ("somewhere.git", [], True),
     ],
 )
 def test_remote_check(name, cmd_result, expectation):
+
+    os.environ["GIT_SSH_COMMAND"] = "ssh"  # prevents additional subprocess call
+
     with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
         run_on_cmdline_mock.side_effect = cmd_result
 
@@ -104,3 +114,49 @@ def test_ls_remote():
         }
 
         assert info == expected
+
+
+@pytest.mark.parametrize(
+    "name, env_ssh, git_config_ssh, expected",
+    [
+        (
+            "env var present",
+            "ssh -i keyfile",
+            None,
+            "ssh -i keyfile -o BatchMode=yes",
+        ),
+        (
+            "git config",
+            None,
+            "ssh -F configfile",
+            "ssh -F configfile -o BatchMode=yes",
+        ),
+        ("no env or git config", None, None, "ssh -o BatchMode=yes"),
+        (
+            "env with batchmode",
+            "ssh -o BatchMode=yes",
+            None,
+            "ssh -o BatchMode=yes",
+        ),
+    ],
+)
+def test_build_git_ssh_command(name, env_ssh, git_config_ssh, expected):
+
+    with patch.dict(
+        os.environ, {"GIT_SSH_COMMAND": env_ssh} if env_ssh else {}, clear=True
+    ):
+        mock_run_git_config = Mock()
+        if git_config_ssh is not None:
+            mock_run_git_config.return_value.stdout = git_config_ssh.encode()
+        else:
+            mock_run_git_config.side_effect = SubprocessCommandError()
+
+        with patch("dfetch.vcs.git.run_on_cmdline", mock_run_git_config):
+            with patch("dfetch.vcs.git.logger") as mock_logger:
+                result = _build_git_ssh_command()
+                assert result == expected
+
+                if "BatchMode=" in (env_ssh or git_config_ssh or ""):
+                    mock_logger.debug.assert_called_once()
+                else:
+                    mock_logger.debug.assert_not_called()

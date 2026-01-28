@@ -7,7 +7,15 @@ import tomllib as toml
 import xml.etree.ElementTree as ET  # nosec (only used for XML generation, not parsing untrusted input)
 from pathlib import Path
 
-from dfetch import __version__
+from setuptools_scm import get_version
+
+from dfetch import __version__ as __digit_only_version__  # Used inside the installers
+
+__version__ = get_version(  # Used to name the installers
+    root=".",
+    version_scheme="guess-next-dev",
+    local_scheme="no-local-version",
+)
 
 # Configuration loading
 with open("pyproject.toml", "rb") as pyproject_file:
@@ -19,6 +27,9 @@ PACKAGE_NAME = project_info.get("name")
 MAINTAINER = project_info.get("authors", [{}])[0].get("name", "")
 DESCRIPTION = project_info.get("description", "")
 URL = project_info.get("urls", {}).get("Homepage", "")
+DOCS_URL = project_info.get("urls", {}).get("Documentation", "")
+ISSUES_URL = project_info.get("urls", {}).get("Issues", "")
+CHANGELOG_URL = project_info.get("urls", {}).get("Changelog", "")
 LICENSE = project_info.get("license", "")
 
 INSTALL_PREFIX = (
@@ -27,6 +38,26 @@ INSTALL_PREFIX = (
 BUILD_DIR = Path("build", f"{PACKAGE_NAME}.dist")
 OUTPUT_DIR = Path("build", f"{PACKAGE_NAME}-package")
 UPGRADE_CODE = "BDC7DA0D-70C1-4189-BE88-F1BD2DEE3E33"  #: Fixed UUID for WiX installer, must be unique and stable
+
+tools = pyproject.get("tool", {})
+nuitka_info = tools.get("nuitka", {})
+
+WINDOWS_ICO = nuitka_info.get("windows-icon-from-ico", "")
+WINDOWS_ICO_PATH = Path(WINDOWS_ICO).resolve() if WINDOWS_ICO else None
+
+
+PLATFORM_MAPPING = {
+    "darwin": "osx",
+    "win": "win",
+}
+PLATFORM_NAME = next(
+    (
+        name
+        for prefix, name in PLATFORM_MAPPING.items()
+        if sys.platform.startswith(prefix)
+    ),
+    "nix",
+)
 
 
 def run_command(command: list[str]) -> None:
@@ -44,7 +75,7 @@ def run_command(command: list[str]) -> None:
 def package_linux() -> None:
     """Package the build directory into .deb and .rpm installers."""
     for target in ("deb", "rpm"):
-        output = f"{OUTPUT_DIR}/{PACKAGE_NAME}_{__version__}.{target}"
+        output = f"{OUTPUT_DIR}/{PACKAGE_NAME}-{__version__}-{PLATFORM_NAME}.{target}"
         cmd = [
             "fpm",
             "-s",
@@ -54,7 +85,7 @@ def package_linux() -> None:
             "-n",
             PACKAGE_NAME,
             "-v",
-            __version__,
+            __digit_only_version__,
             "-C",
             str(BUILD_DIR),
             "--prefix",
@@ -85,7 +116,7 @@ def package_macos() -> None:
         "-n",
         PACKAGE_NAME,
         "-v",
-        __version__,
+        __digit_only_version__,
         "-C",
         str(BUILD_DIR),
         # https://github.com/jordansissel/fpm/issues/1996 This prefix results in /opt/dfetch/opt/dfetch
@@ -100,7 +131,7 @@ def package_macos() -> None:
         "--license",
         LICENSE,
         "-p",
-        f"{OUTPUT_DIR}/{PACKAGE_NAME}_{__version__}.pkg",
+        f"{OUTPUT_DIR}/{PACKAGE_NAME}-{__version__}-{PLATFORM_NAME}.pkg",
         ".",
     ]
     run_command(cmd)
@@ -126,7 +157,7 @@ def generate_wix_xml(build_dir: Path, output_wxs: Path) -> None:
         "Package",
         Name=PACKAGE_NAME,
         Manufacturer=MAINTAINER,
-        Version=__version__,
+        Version=__digit_only_version__,
         UpgradeCode=UPGRADE_CODE,
     )
 
@@ -188,7 +219,20 @@ def generate_wix_xml(build_dir: Path, output_wxs: Path) -> None:
     )
     ET.SubElement(feature, "Files", Include=str(build_dir.resolve() / "**"))
 
+    # Add / Remove programs info (ARP)
     ET.SubElement(package, "Property", Id="ARPCOMMENTS", Value=DESCRIPTION)
+    ET.SubElement(package, "Property", Id="ARPURLINFOABOUT", Value=URL)
+    ET.SubElement(package, "Property", Id="ARPREADME", Value=DOCS_URL)
+    ET.SubElement(package, "Property", Id="ARPHELPLINK", Value=ISSUES_URL)
+    ET.SubElement(package, "Property", Id="ARPURLUPDATEINFO", Value=CHANGELOG_URL)
+
+    if WINDOWS_ICO_PATH:
+        ET.SubElement(package, "Icon", Id="AppIcon", SourceFile=str(WINDOWS_ICO_PATH))
+        ET.SubElement(package, "Property", Id="ARPPRODUCTICON", Value="AppIcon")
+
+    # Don't show modify & repair buttons, only remove
+    ET.SubElement(package, "Property", Id="ARPNOMODIFY", Value="1")
+    ET.SubElement(package, "Property", Id="ARPNOREPAIR", Value="1")
 
     tree = ET.ElementTree(wix)
     tree.write(output_wxs, encoding="utf-8", xml_declaration=True)
@@ -210,7 +254,7 @@ def package_windows() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     wix_file = OUTPUT_DIR / f"{PACKAGE_NAME}.wxs"
     wix_proj = OUTPUT_DIR / f"{PACKAGE_NAME}.wixproj"
-    msi_file = OUTPUT_DIR / f"{PACKAGE_NAME}_{__version__}.msi"
+    msi_file = OUTPUT_DIR / f"{PACKAGE_NAME}-{__version__}-{PLATFORM_NAME}.msi"
 
     generate_wix_xml(BUILD_DIR, wix_file)
     generate_wix_proj(wix_proj, wix_file)
@@ -220,6 +264,8 @@ def package_windows() -> None:
     run_command(
         ["dotnet", "build", str(wix_proj), "-c", "Release", "-o", str(OUTPUT_DIR)]
     )
+
+    shutil.move(OUTPUT_DIR / "dfetch.msi", msi_file)
 
     print(f"MSI generated at {msi_file}")
 

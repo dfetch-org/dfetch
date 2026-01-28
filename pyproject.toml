@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm", "wheel"]
+requires = ["setuptools", "setuptools-scm==9.2.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -41,7 +41,7 @@ classifiers = [
 dependencies = [
     "PyYAML==6.0.3",
     "coloredlogs==15.0.1",
-    "pykwalify==1.8.0",
+    "strictyaml==1.7.3",
     "halo==0.0.31",
     "colorama==0.4.6",
     "typing-extensions==4.15.0",
@@ -67,8 +67,8 @@ Changelog = "https://github.com/dfetch-org/dfetch/blob/main/CHANGELOG.rst"
 [project.optional-dependencies]
 development = [
     # Quality dependencies
-    'black==25.11.0',
-    'doc8==1.1.2',
+    'black==25.12.0',
+    'doc8==2.0.0',
     'pydocstyle==6.3.0',
     'radon==6.0.1',
     'xenon==0.9.3',
@@ -76,16 +76,17 @@ development = [
     'codespell==2.4.1',
     'mypy==1.19.1',
     #'flake8==5.0.4', # version 6.x.x requires python >= 3.8.1 (but 3.7 support window is until 2023-06-27)
-    'bandit==1.8.6',
+    'bandit==1.9.2',
     'vulture==2.14',
     'pyroma==5.0.1',
-    'isort==6.1.0',
-    'pylint==3.3.9',
-    'pyright==1.1.407',
-    'pyupgrade==3.21.0',
+    'isort==7.0.0',
+    'pylint==4.0.4',
+    'pyright==1.1.408',
+    'pyupgrade==3.21.2',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml
-    'pre-commit==4.3.0',
-    'ruff==0.14.10',
+    'pre-commit==4.5.1',
+    'ruff==0.14.14',
+    'hypothesis==6.150.0',
 ]
 docs = [
     'sphinx==8.2.3',
@@ -95,13 +96,19 @@ docs = [
     'sphinx_design==0.6.1',
     'sphinxcontrib-details-directive==0.1.0',
     'sphinx-sitemap==2.9.0',
+    'sphinx-jsonschema==1.19.2',
+    'sphinxcontrib-programoutput==0.18',
+    'sphinx-tabs==3.4.7',
+    'sphinx-autoissues==0.0.1',
 ]
-test = ['pytest==8.4.2', 'pytest-cov==7.0.0', 'behave==1.3.3']
+test = ['pytest==9.0.2', 'pytest-cov==7.0.0', 'behave==1.3.3']
 casts = ['asciinema==2.4.0']
 build = [
-    'nuitka==2.8.9',
+    'nuitka==2.8.10',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml]
+    "setuptools-scm==9.2.2", # For determining version
 ]
+sbom = ["cyclonedx-bom==7.2.1"]
 
 [project.scripts]
 dfetch = "dfetch.__main__:main"
@@ -164,10 +171,10 @@ ignore-paths = [
 convention = "google"
 
 [tool.pytest]
-filterwarnings = """
-    ignore:.*Using or importing the ABCs.*is deprecated:DeprecationWarning
-    ignore:.*the imp module.*is deprecated:DeprecationWarning
-"""
+filterwarnings = [
+    "ignore:.*Using or importing the ABCs.*is deprecated:DeprecationWarning",
+    "ignore:.*the imp module.*is deprecated:DeprecationWarning",
+]
 
 [tool.coverage.run]
 branch = true
@@ -183,8 +190,8 @@ skip = "*.cast,./venv,**/plantuml-c4/**,./example,.mypy_cache,./doc/_build/**,./
 "features/steps/*" = ["F811"]
 
 [tool.pyright]
-exclude = ["doc/static/uml/generate_diagram.py", "./doc/_ext/sphinxcontrib_asciinema/", "./doc/_build"]
-standard = ["dfetch", "features"]
+exclude = ["doc/static/uml/generate_diagram.py", "./doc/_ext/sphinxcontrib_asciinema/", "./doc/_build", "**/node_modules", "**/__pycache__", "**/.*", "venv"]
+# standard = ["dfetch", "features"]
 reportMissingImports = false
 reportMissingModuleSource = false
 pythonVersion = "3.9"
@@ -196,9 +203,11 @@ mode = "standalone"
 # show-progress = true
 assume-yes-for-downloads = true
 
+lto = "auto" # Use link time optimizations if available and usable
+
 include-data-dir="dfetch/resources=resources"
 include-package-data="infer_license"
-include-module="infer_license.licenses"
+include-module="infer_license.licenses" # Explicitly add module to let nuitka discover the data
 
 # python-flag = ["-OO"] # Cannot optimize (yet) commands rely on __doc__ being present
 
@@ -207,5 +216,11 @@ output-filename-win = "dfetch.exe"
 output-filename-linux = "dfetch"
 output-filename-macos = "dfetch"
 
-# windows-icon-from-ico = "static/favicon.ico"
-# windows-company-name = "dfetch-org"
+windows-icon-from-ico = "doc/images/favicon.ico"
+linux-icon = "doc/images/dfetch_logo_only.png"
+
+company-name = "dfetch-org"
+product-version = "{VERSION}"
+file-version = "{VERSION}"
+product-name = "dfetch"
+file-description = "A vendoring tool for fetching and managing external dependencies."

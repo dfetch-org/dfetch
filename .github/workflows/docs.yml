@@ -1,31 +1,65 @@
 name: "Docs"
+
 on:
-- pull_request
+  workflow_call:
 
 permissions:
   contents: read
 
 jobs:
   docs:
+    name: Documentation
     runs-on: ubuntu-latest
     steps:
     - name: Harden the runner (Audit all outbound calls)
-      uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+      uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
       with:
         egress-policy: audit
 
-    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v5.0.0
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
     - name: Install Python
-      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
-        python-version: '3.x'
+        python-version: '3.13'
 
     - name: Install documentation requirements
-      run: "pip install .[docs] && pip install sphinx_design"
+      run: |
+          pip install .[docs]
+          pip install sphinx_design
 
     - name: Build docs
       run: "make -C doc html"
 
-    - name: Build landing-page
-      run: "make -C doc/landing-page html"
+  landing-page:
+    name: Landing page
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          pip install .[docs]
+          pip install sphinx_design
+
+      - name: Build landing-page
+        run: "make -C doc/landing-page html"
+
+      - name: Publish
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+        with:
+          publish_dir: ./doc/landing-page/_build/html
+          external_repository: dfetch-org/dfetch-org.github.io
+          publish_branch: main
+          deploy_key: ${{ secrets.GH_DFETCH_ORG_DEPLOY }}

@@ -5,7 +5,15 @@ the available version. If there are new versions available this will be shown.
 
 .. uml:: /static/uml/check.puml
 
-.. scenario-include:: ../features/check-git-repo.feature
+.. tabs::
+
+   .. tab:: Git
+
+      .. scenario-include:: ../features/check-git-repo.feature
+
+   .. tab:: SVN
+
+      .. scenario-include:: ../features/check-svn-repo.feature
 
 Child-manifests
 ~~~~~~~~~~~~~~~
@@ -23,12 +31,11 @@ import argparse
 import os
 
 import dfetch.commands.command
-import dfetch.manifest.manifest
-import dfetch.manifest.validate
 import dfetch.project
 from dfetch.commands.common import check_child_manifests
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
+from dfetch.project.superproject import SuperProject
 from dfetch.reporting.check.code_climate_reporter import CodeClimateReporter
 from dfetch.reporting.check.jenkins_reporter import JenkinsReporter
 from dfetch.reporting.check.reporter import CheckReporter
@@ -83,18 +90,21 @@ class Check(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
-        manifest = dfetch.manifest.manifest.get_manifest()
-        reporters = self._get_reporters(args, manifest)
+        superproject = SuperProject()
+        reporters = self._get_reporters(args, superproject.manifest)
 
-        with in_directory(os.path.dirname(manifest.path)):
+        with in_directory(superproject.root_directory):
             exceptions: list[str] = []
-            for project in manifest.selected_projects(args.projects):
+            for project in superproject.manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    dfetch.project.make(project).check_for_update(reporters)
+                    dfetch.project.make(project).check_for_update(
+                        reporters,
+                        files_to_ignore=superproject.ignored_files(project.destination),
+                    )
 
                 if not args.no_recommendations and os.path.isdir(project.destination):
                     with in_directory(project.destination):
-                        check_child_manifests(manifest, project)
+                        check_child_manifests(superproject.manifest, project)
 
             for reporter in reporters:
                 reporter.dump_to_file()

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+  # Allows to run this workflow manually
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prep-release:
+    uses: ./.github/workflows/release.yml
+    permissions:
+      contents: write
+      security-events: write
+
+  build:
+    needs: prep-release
+    uses: ./.github/workflows/build.yml
+    permissions:
+      contents: write
+      security-events: write
+    with:
+      release_id: ${{ needs.prep-release.outputs.release_id }}
+
+  run:
+    uses: ./.github/workflows/run.yml
+    permissions:
+      contents: read
+      security-events: write
+
+  test:
+    uses: ./.github/workflows/test.yml
+    permissions:
+      contents: read
+
+  docs:
+    uses: ./.github/workflows/docs.yml
+    permissions:
+      contents: read
+    secrets: inherit

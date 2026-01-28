@@ -1,4 +1,18 @@
-Release 0.11.0 (unreleased)
+Release 0.12.0 (unreleased)
+====================================
+
+* Internal refactoring: introduce superproject & subproject (#896)
+* Switch from pykwalify to StrictYAML (#922)
+* Show line number when manifest validation fails (#36)
+* Add Fuzzing (#819)
+* Don't allow NULL or control characters in manifest (#114)
+* Allow multiple patches in manifest (#897)
+* Fallback and warn if patch is not UTF-8 encoded (#941)
+* Skip patches outside manifest dir (#942)
+* Make patch path in metadata platform independent (#937)
+* Fix extra newlines in patch for new files (#945)
+
+Release 0.11.0 (released 2026-01-03)
 ====================================
 
 * Support python 3.14
@@ -18,6 +32,11 @@ Release 0.11.0 (unreleased)
 * Don't make metadata file part of diff (#267)
 * Fix unneeded project prefix in SVN diffs (#888)
 * Add more tests and documentation for patching (#888)
+* Restrict ``src`` to string only in schema (#888)
+* Don't consider ignored files for determining local changes (#350)
+* Avoid waiting for user input in ``git`` & ``svn`` commands (#570)
+* Extend git ssh command to run in BatchMode (#570)
+* Use native line breaks in ``dfetch freeze`` & ``dfetch import`` (#327)
 
 Release 0.10.0 (released 2025-03-12)
 ====================================

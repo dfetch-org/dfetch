@@ -27,7 +27,7 @@ Feature: List dependencies
         When I run "dfetch report"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               project             : ext/test-repo-tag
                   remote          : <none>
                   remote url      : https://github.com/dfetch-org/test-repo
@@ -67,7 +67,7 @@ Feature: List dependencies
         When I run "dfetch report"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               project             : cutter-svn-tag
                   remote          : <none>
                   remote url      : svn://svn.code.sf.net/p/cutter/svn/cutter
@@ -79,12 +79,12 @@ Feature: List dependencies
                   licenses        : <none>
             """
 
-    Scenario: Git repo with applied patch
-        Given MyProject with applied patch 'diff.patch'
+    Scenario: Git repo with applied patches
+        Given MyProject with applied patches "001-diff.patch, 002-diff.patch"
         When I run "dfetch report"
         Then the output shows
             """
-            Dfetch (0.10.0)
+            Dfetch (0.11.0)
               project             : ext/test-repo-tag
                   remote          : github-com-dfetch-org
                   remote url      : https://github.com/dfetch-org/test-repo
@@ -92,6 +92,6 @@ Feature: List dependencies
                   tag             : v2.0
                   last fetch      : 02/07/2021, 20:25:56
                   revision        : <none>
-                  patch           : diff.patch
+                  patch           : 001-diff.patch, 002-diff.patch
                   licenses        : MIT License
             """

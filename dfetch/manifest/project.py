@@ -20,7 +20,7 @@ A project name **must** be unique and each manifest must have at least one proje
 
 Revision/Branch/Tag
 ###################
-When no version is provided the latest version of the default branch (e.g. `trunk`, `master`) of
+When no version is provided the latest version of the default branch (e.g. `trunk`, `master`, `main`) of
 a project will be chosen. Since we want more control on what project is retrieved the
 ``revision:``, ``branch:`` and ``tag:`` attributes can help.
 Below manifest will download tag ``v1.13`` of ``mymodule``.
@@ -142,7 +142,15 @@ The following manifest will only checkout files in folder ``src`` with the ``*.h
           src: src/*.h
           repo-path: cpputest/cpputest
 
-.. scenario-include:: ../features/fetch-file-pattern-git.feature
+.. tabs::
+
+   .. tab:: Git
+
+      .. scenario-include:: ../features/fetch-file-pattern-git.feature
+
+   .. tab:: SVN
+
+      .. scenario-include:: ../features/fetch-file-pattern-svn.feature
 
 Ignore
 ######
@@ -172,13 +180,21 @@ root of the repository.
           And the ignores will be applied *after* the ``src:`` pattern was applied.
           License files will never be excluded, since you likely shouldn't be doing that.
 
-.. scenario-include:: ../features/fetch-with-ignore-git.feature
+.. tabs::
+
+   .. tab:: Git
+
+      .. scenario-include:: ../features/fetch-with-ignore-git.feature
+
+   .. tab:: SVN
+
+      .. scenario-include:: ../features/fetch-with-ignore-svn.feature
 
 VCS type
 ########
-*DFetch* does it best to find out what type of version control system (vcs) the remote url is,
-but sometimes both is possible. For example, GitHub provides an `svn and git interface at
-the same url`_.
+*DFetch* does its best to find out what type of version control system (vcs) the remote url is, for
+instance by trying a simple call to the remote repository. But sometimes both are possible, for example,
+in the past GitHub provided an `svn and git interface at the same url`_.
 
 .. _`svn and git interface at the same url`:
    https://docs.github.com/en/github/importing-your-projects-to-github/support-for-subversion-clients
@@ -207,9 +223,11 @@ from trunk for svn and master from git.
 
 Patch
 #####
-*DFetch* promotes upstreaming changes, but also allows local changes. These changes can be managed with a local patch
-file. *DFetch* will apply the patch file every time a new upstream version is fetched. The patch file can be specified
-with the ``patch:`` attribute.
+*DFetch* promotes upstreaming changes, but also allows local changes. These changes can be managed with local patch
+files. *DFetch* will apply the patch files in order every time a new upstream version is fetched. The patch file can
+be specified with the ``patch:`` attribute. This can be a single patch file or multiple. Patch files should be UTF-8
+encoded files and using forward slashes is encouraged for cross-platform support. The path should be relative to the
+directory of the manifest.
 
 .. code-block:: yaml
 
@@ -224,25 +242,33 @@ with the ``patch:`` attribute.
         - name: cpputest
           vcs: git
           repo-path: cpputest/cpputest
-          patch: local_changes.patch
+          patch: patches/local_changes.patch
 
-The patch can be generated using the *Dfetch* :ref:`Diff` command.
-Alternately the patch can be generated manually as such. Note that it should be *relative*.
+The patch should be generated using the *Dfetch* :ref:`Diff` command.
+Alternately the patch can be generated manually as such and should be
+a *relative* patch, relative to the fetched projects root.
 
-.. code-block:: sh
+.. tabs::
 
-    # For git repo's
-    git diff --relative=path/to/project HEAD > my_patch.patch
+    .. tab:: Git
 
-    # For svn repo's
-    svn diff -r HEAD path/to/my_project > my_patch.patch
+        .. code-block:: sh
 
-For more details see the `git-diff`_ or `svn-diff`_ documentation.
+            git diff --relative=path/to/project HEAD > my_patch.patch
 
-.. _`git-diff`: https://git-scm.com/docs/git-diff
-.. _`svn-diff`: http://svnbook.red-bean.com/en/1.7/svn.ref.svn.c.diff.html
+        For more details see the `git-diff <https://git-scm.com/docs/git-diff>`_ documentation.
 
-.. scenario-include:: ../features/diff-in-git.feature
+        .. scenario-include:: ../features/diff-in-git.feature
+
+    .. tab:: SVN
+
+        .. code-block:: sh
+
+            svn diff -r HEAD path/to/my_project > my_patch.patch
+
+        For more details see the `svn-diff <http://svnbook.red-bean.com/en/1.7/svn.ref.svn.c.diff.html>`_ documentation.
+
+        .. scenario-include:: ../features/diff-in-svn.feature
 
 """
 
@@ -250,21 +276,22 @@ import copy
 from collections.abc import Sequence
 from typing import Optional, Union
 
-from typing_extensions import TypedDict
+from typing_extensions import Required, TypedDict
 
 from dfetch.manifest.remote import Remote
 from dfetch.manifest.version import Version
+from dfetch.util.util import always_str_list, str_if_possible
 
 ProjectEntryDict = TypedDict(
     "ProjectEntryDict",
     {
-        "name": str,
+        "name": Required[str],
         "revision": str,
         "remote": str,
         "src": str,
         "dst": str,
         "url": str,
-        "patch": str,
+        "patch": Union[str, list[str]],
         "repo": str,
         "branch": str,
         "tag": str,
@@ -292,7 +319,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._src: str = kwargs.get("src", "")  # noqa
         self._dst: str = kwargs.get("dst", self._name)
         self._url: str = kwargs.get("url", "")
-        self._patch: str = kwargs.get("patch", "")  # noqa
+        self._patch: list[str] = always_str_list(kwargs.get("patch", []))
         self._repo_path: str = kwargs.get("repo-path", "")
         self._branch: str = kwargs.get("branch", "")
         self._tag: str = kwargs.get("tag", "")
@@ -305,7 +332,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
     @classmethod
     def from_yaml(
         cls,
-        yamldata: Union[dict[str, str], ProjectEntryDict],
+        yamldata: Union[dict[str, Union[str, list[str]]], ProjectEntryDict],
         default_remote: str = "",
     ) -> "ProjectEntry":
         """Create a Project Entry from yaml data.
@@ -313,7 +340,9 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         Returns:
             ProjectEntry:  An immutable ProjectEntry
         """
-        kwargs: ProjectEntryDict = {}
+        kwargs: ProjectEntryDict = (
+            {}  # type: ignore # the Required name key is checked in __init__
+        )
         for key in ProjectEntryDict.__annotations__.keys():  # pylint: disable=no-member
             try:
                 kwargs[str(key)] = yamldata[key]  # type: ignore
@@ -383,8 +412,8 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         return self._dst
 
     @property
-    def patch(self) -> str:
-        """Get the patch that should be applied."""
+    def patch(self) -> list[str]:
+        """Get the patches that should be applied."""
         return self._patch
 
     @property
@@ -425,14 +454,14 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         """Get a copy that can be used as recommendation."""
         recommendation = self.copy(self)
         recommendation._dst = ""  # pylint: disable=protected-access
-        recommendation._patch = ""  # pylint: disable=protected-access
+        recommendation._patch = []  # pylint: disable=protected-access
         recommendation._url = self.remote_url  # pylint: disable=protected-access
         recommendation._remote = ""  # pylint: disable=protected-access
         recommendation._remote_obj = None  # pylint: disable=protected-access
         recommendation._repo_path = ""  # pylint: disable=protected-access
         return recommendation
 
-    def as_yaml(self) -> dict[str, str]:
+    def as_yaml(self) -> dict[str, Union[str, list[str]]]:
         """Get this project as yaml dictionary."""
         yamldata = {
             "name": self._name,
@@ -441,7 +470,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             "src": self._src,
             "dst": self._dst if self._dst != self._name else None,
             "url": self._url,
-            "patch": self._patch,
+            "patch": str_if_possible(self._patch),
             "branch": self._branch,
             "tag": self._tag,
             "repo-path": self._repo_path,

@@ -1,12 +1,15 @@
-.. Dfetch documentation master file
+
 
 Alternatives
 ============
 The problem *Dfetch* tries to solve isn't new. There are other tools doing the same.
 In making a proper choice, see the below alternatives.
 
-These alternatives could all be used to use *source* code from another project as part
-of your project.
+There are many alternatives, each with slightly different approaches or focuses: some are designed to manage
+multiple repositories together, some are specialized in :ref:`vendoring` code into your project, and others provide
+build-system or version-control-specific helpers.
+
+Below is a list of notable tools along with their supported version control systems, platforms, and compatibility.
 
 ========================= ===== ===== ========= ======= =================== =======================
  Name                      Git   SVN   Windows   Linux   Language Agnostic   Build System Agnostic
@@ -39,8 +42,10 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 `Hemlock`_                  ✔    ✘       ✔        ✔             ✔                   ✔
 `josh`_                     ✔    ✘       ✔        ✔             ✔                   ✔
 `Kitenet mr`_               ✔    ✔       ?         ✔             ✔                   ✔
+`LsiGitCheckout`_           ✔    ✘       ✔        ✘             ✔                   ✔
 `mdlr`_                     ✔    ✘       Beta      ✔             ✔                   ✔
 `myrepos`_                  ✔    ✘       ✘        ✔             ✔                   ✔
+`multi_repo`_               ✔    ✘       ✔        ✔             ✔                   ✔
 `OpenTitan-vendor.py`_      ✔    ✘       ✘        ✔             ✔                   ✔
 `pasta`_                    ✔    ✘       ✔        ✔             ✔                   ✔
 `peru`_                     ✔    ✘       ✔        ✔             ✔                   ✔
@@ -65,7 +70,7 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 
 .. _`Braid`: https://github.com/cristibalan/braid
 .. _`CGet`: https://github.com/pfultz2/cget
-.. _`CMAke ExternalProject`: https://cmake.org/cmake/help/latest/module/ExternalProject.html
+.. _`CMake ExternalProject`: https://cmake.org/cmake/help/latest/module/ExternalProject.html
 .. _`Combo-layer`: https://wiki.yoctoproject.org/wiki/Combo-layer
 .. _`CPM.cmake`: https://github.com/cpm-cmake/CPM.cmake
 .. _`CPPAN`: https://github.com/cppan/cppan
@@ -89,8 +94,10 @@ Dfetch_                     ✔    ✔       ✔        ✔             ✔     
 .. _`Hemlock`: https://github.com/MadL1me/hemlock
 .. _`josh`: https://github.com/josh-project/josh
 .. _`Kitenet mr`: https://github.com/toddr/kitenet-mr
+.. _`LsiGitCheckout`: https://github.com/LS-Instruments/LsiGitCheckout
 .. _`mdlr`: https://github.com/exlinc/mdlr
 .. _`myrepos`: http://myrepos.branchable.com/
+.. _`multi_repo`: https://github.com/ManageIQ/multi_repo
 .. _`OpenTitan-vendor.py`: https://github.com/lowRISC/opentitan/blob/master/util/vendor.py
 .. _`pasta`: https://github.com/audiotool/pasta
 .. _`peru`: https://github.com/buildinspace/peru

@@ -63,14 +63,14 @@ def safe_rmtree(path: str) -> None:
 
 
 @contextmanager
-def in_directory(path: str) -> Generator[str, None, None]:
+def in_directory(path: Union[str, Path]) -> Generator[str, None, None]:
     """Work temporarily in a given directory."""
     pwd = os.getcwd()
     if not os.path.isdir(path):
         path = os.path.dirname(path)
     os.chdir(path)
     try:
-        yield path
+        yield str(path)
     finally:
         os.chdir(pwd)
 
@@ -134,3 +134,41 @@ def hash_file(file_path: str, digest: HASH) -> HASH:
                 buf = f_obj.read(1024 * 1024)
 
     return digest
+
+
+def always_str_list(data: Union[str, list[str]]) -> list[str]:
+    """Convert a string or list of strings into a list of strings.
+
+    Args:
+        data: A string or list of strings.
+
+    Returns:
+        A list of strings. Empty strings are converted to empty lists.
+    """
+    return data if not isinstance(data, str) else [data] if data else []
+
+
+def str_if_possible(data: list[str]) -> Union[str, list[str]]:
+    """Convert a single-element list to a string, otherwise keep as list.
+
+    Args:
+        data: A list of strings.
+
+    Returns:
+        A single string if the list has exactly one element, an empty string
+        if the list is empty, otherwise the original list.
+    """
+    return "" if not data else data[0] if len(data) == 1 else data
+
+
+def resolve_absolute_path(path: Union[str, Path]) -> Path:
+    """Return a guaranteed absolute Path, resolving symlinks.
+
+    Args:
+        path: A string or Path to resolve.
+
+    Notes:
+        - Uses os.path.realpath for reliable absolute paths across platforms.
+        - Handles Windows drive-relative paths and expands '~'.
+    """
+    return Path(os.path.realpath(Path(path).expanduser()))

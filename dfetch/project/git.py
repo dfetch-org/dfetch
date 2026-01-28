@@ -9,20 +9,20 @@ from typing import Optional
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
-from dfetch.project.vcs import VCS
+from dfetch.project.subproject import SubProject
 from dfetch.util.util import safe_rmtree
 from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
 
 logger = get_logger(__name__)
 
 
-class GitRepo(VCS):
-    """A git repository."""
+class GitSubProject(SubProject):
+    """A git subproject."""
 
     NAME = "git"
 
     def __init__(self, project: ProjectEntry):
-        """Create a Git project."""
+        """Create a Git subproject."""
         super().__init__(project)
         self._remote_repo = GitRemote(self.remote)
         self._local_repo = GitLocalRepo(self.local_path)
@@ -48,10 +48,10 @@ class GitRepo(VCS):
         return str(self._local_repo.get_last_file_hash(self.metadata_path))
 
     def current_revision(self) -> str:
-        """Get the revision of the metadata file."""
+        """Get the last revision of the repository."""
         return str(self._local_repo.get_current_hash())
 
-    def get_diff(
+    def _diff_impl(
         self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
     ) -> str:
         """Get the diff of two revisions."""
@@ -83,12 +83,12 @@ class GitRepo(VCS):
         """Print out version information."""
         try:
             tool, version = get_git_version()
-            VCS._log_tool(tool, version)
+            SubProject._log_tool(tool, version)
         except RuntimeError as exc:
             logger.debug(
                 f"Something went wrong trying to get the version of git: {exc}"
             )
-            VCS._log_tool("git", "<not found in PATH>")
+            SubProject._log_tool("git", "<not found in PATH>")
 
     def _fetch_impl(self, version: Version) -> Version:
         """Get the revision of the remote and place it at the local path."""

@@ -15,28 +15,28 @@ from features.steps.manifest_steps import generate_manifest
 
 
 def create_repo():
-    subprocess.call(
+    subprocess.check_call(
         ["git", "init", "--initial-branch=master", "--quiet"]
     )  # Be quiet about using master as the default branch
 
-    subprocess.call(["git", "config", "user.email", "you@example.com"])
-    subprocess.call(["git", "config", "user.name", "John Doe"])
+    subprocess.check_call(["git", "config", "user.email", "you@example.com"])
+    subprocess.check_call(["git", "config", "user.name", "John Doe"])
 
     if os.name == "nt":
         # Creates zombie fsmonitor-daemon process that holds files
         # (see https://github.com/git-for-windows/git/issues/3326)
-        subprocess.call(
+        subprocess.check_call(
             ["git", "config", "--global", "core.usebuiltinfsmonitor", "false"]
         )
 
 
 def commit_all(msg):
-    subprocess.call(["git", "add", "-A"])
-    subprocess.call(["git", "commit", "-m", f'"{msg}"'])
+    subprocess.check_call(["git", "add", "-A"])
+    subprocess.check_call(["git", "commit", "-m", f'"{msg}"'])
 
 
 def tag(name: str):
-    subprocess.call(["git", "tag", "-a", name, "-m", "'Some tag'"])
+    subprocess.check_call(["git", "tag", "-a", name, "-m", "'Some tag'"])
 
 
 @given("a git repo with the following submodules")
@@ -44,12 +44,12 @@ def step_impl(context):
     create_repo()
 
     for submodule in context.table:
-        subprocess.call(
+        subprocess.check_call(
             ["git", "submodule", "add", submodule["url"], submodule["path"]]
         )
 
         with in_directory(submodule["path"]):
-            subprocess.call(["git", "checkout", submodule["revision"]])
+            subprocess.check_call(["git", "checkout", submodule["revision"]])
     commit_all("Added submodules")
 
 
@@ -93,39 +93,6 @@ def step_impl(context, name):
 
         commit_all("Initial commit")
         tag("v1")
-
-
-@given('MyProject with dependency "SomeProject.git" that must be updated')
-def step_impl(context):
-
-    manifest = """
-manifest:
-    version: 0.0
-    projects:
-        - name: SomeProject
-          url: some-remote-server/SomeProject.git
-          tag: v1
-"""
-
-    generate_manifest(
-        context,
-        "dfetch.yaml",
-        contents=manifest,
-        path="MyProject",
-    )
-    context.execute_steps(
-        """
-        Given a git repository "SomeProject.git"
-        And all projects are updated in MyProject
-        And a new tag "v2" is added to git-repository "SomeProject.git"
-        """
-    )
-    generate_manifest(
-        context,
-        "dfetch.yaml",
-        contents=manifest.replace("v1", "v2"),
-        path="MyProject",
-    )
 
 
 @given("a fetched and committed MyProject with the manifest")
@@ -180,7 +147,7 @@ def step_impl(context, directory, path):
         commit_all("A change")
 
 
-@given("MyProject with applied patch 'diff.patch'")
+@given('MyProject with applied patches "001-diff.patch, 002-diff.patch"')
 def step_impl(context):
     manifest = """
 manifest:
@@ -194,7 +161,9 @@ manifest:
     - name: ext/test-repo-tag
       tag: v2.0
       dst: ext/test-repo-tag
-      patch: diff.patch
+      patch:
+        - 001-diff.patch
+        - 002-diff.patch
 """
 
     generate_manifest(
@@ -202,7 +171,7 @@ manifest:
         "dfetch.yaml",
         contents=manifest,
     )
-    patch_file = """
+    patch_file1 = """
 diff --git a/README.md b/README.md
 index 32d9fad..62248b7 100644
 --- a/README.md
@@ -212,5 +181,19 @@ index 32d9fad..62248b7 100644
 -A test repo for testing dfetch.
 +A test repo for testing patch.
 """
-    generate_file(os.path.join(os.getcwd(), "diff.patch"), patch_file)
+
+    patch_file2 = """
+diff --git a/README.md b/README.md
+index 62248b7..32d9fad 100644
+--- a/README.md
++++ b/README.md
+@@ -1,2 +1,2 @@
+    # Test-repo
+-A test repo for testing patch.
++A test repo for testing dfetch.
+"""
+
+    generate_file(os.path.join(os.getcwd(), "001-diff.patch"), patch_file1)
+    generate_file(os.path.join(os.getcwd(), "002-diff.patch"), patch_file2)
+
     call_command(context, ["update"])

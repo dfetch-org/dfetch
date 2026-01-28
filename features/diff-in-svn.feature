@@ -29,7 +29,7 @@ Feature: Diff in svn
             --- README.md
             +++ README.md
             @@ -1,1 +1,2 @@
-             some content
+             Generated file for SomeProject
             +An important sentence for the README!
             """
 
@@ -62,7 +62,7 @@ Feature: Diff in svn
         When I run "dfetch diff SomeProject" in MySvnProject
         Then the output shows
         """
-        Dfetch (0.10.0)
+        Dfetch (0.11.0)
           SomeProject         : No diffs found since 1
         """
 
@@ -79,7 +79,7 @@ Feature: Diff in svn
             --- README.md
             +++ README.md
             @@ -1,1 +1,2 @@
-             some content
+             Generated file for SomeProject
             +An important sentence for the README!
             """
 
@@ -88,6 +88,6 @@ Feature: Diff in svn
         When I run "dfetch diff SomeProject" in MySvnProject
         Then the output shows
         """
-        Dfetch (0.10.0)
+        Dfetch (0.11.0)
           SomeProject         : No diffs found since 1
         """

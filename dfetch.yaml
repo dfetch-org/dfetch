@@ -20,4 +20,6 @@ manifest:
     repo-path: divi255/sphinxcontrib.asciinema.git
     dst: doc/_ext/sphinxcontrib_asciinema
     src: sphinxcontrib/asciinema
-    patch: doc/_ext/sphinxcontrib_asciinema.patch
+    patch:
+     - doc/_ext/patches/001-autoformat-sphinxcontrib.asciinema.patch
+     - doc/_ext/patches/002-fix-options-sphinxcontrib.asciinema.patch

@@ -9,7 +9,7 @@
 [![GitHub](https://img.shields.io/github/license/dfetch-org/dfetch)](https://github.com/dfetch-org/dfetch/blob/main/LICENSE)
 [![Gitter](https://badges.gitter.im/dfetch-org/community.svg)](https://gitter.im/dfetch-org/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/dfetch-org/dfetch)](https://libraries.io/github/dfetch-org/dfetch)
-![Maintenance](https://img.shields.io/maintenance/yes/2025)
+![Maintenance](https://img.shields.io/maintenance/yes/2026)
 [![GitHub issues](https://img.shields.io/github/issues/dfetch-org/dfetch)](https://github.com/dfetch-org/dfetch/issues)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dfetch)
 [![PyPI](https://img.shields.io/pypi/v/dfetch)](https://pypi.org/project/dfetch/)
@@ -19,13 +19,15 @@
 
 **DFetch can manage dependencies**
 
-We needed a dependency manager that was flexible enough to retrieve dependencies as plain text
+We make products that can last 15+ years; because of this we want to be able to have all sources available
+to build the entire project from source without depending on external resources.
+For this, we needed a dependency manager that was flexible enough to retrieve dependencies as plain text
 from various sources. `svn externals`, `git submodules` and `git subtrees` solve a similar
-problem, but not in a VCS agnostic way or completely user friendly way.
+problem, but not in a VCS-agnostic way or completely user-friendly way.
 We want self-contained code repositories without any hassle for end-users.
 Dfetch must promote upstreaming changes, but allow for local customizations.
-The problem is described thoroughly [here](https://embeddedartistry.com/blog/2020/06/22/qa-on-managing-external-dependencies/) and sometimes
-is also known as [*vendoring*](https://stackoverflow.com/questions/26217488/what-is-vendoring).
+The problem is described thoroughly in [managing external dependencies](https://embeddedartistry.com/blog/2020/06/22/qa-on-managing-external-dependencies/) and sometimes
+is also known as [*vendoring*](https://dfetch.readthedocs.io/en/latest/vendoring.html).
 
 Other tools that do similar things are ``Zephyr's West``, ``CMake ExternalProject`` and other meta tools.
 See [alternatives](https://dfetch.readthedocs.io/en/latest/alternatives.html) for a complete list.
@@ -34,6 +36,15 @@ See [alternatives](https://dfetch.readthedocs.io/en/latest/alternatives.html) fo
 [**Manual**](https://dfetch.readthedocs.io/en/latest/manual.html) |
 [**Troubleshooting**](https://dfetch.readthedocs.io/en/latest/troubleshooting.html)  |
 [**Contributing**](https://dfetch.readthedocs.io/en/latest/contributing.html)
+
+## Problems DFetch Solves
+
+* Declarative code reuse across projects ([inner sourcing](https://about.gitlab.com/topics/version-control/what-is-innersource/))
+* Compose multi-repo code bases into a single working tree
+* Vendoring dependencies for reproducible builds
+* Apply local patches while keeping upstream syncable
+* VCS-agnostic dependency management
+* Self-contained exports for releases or audits
 
 ## Install
 
@@ -51,8 +62,7 @@ pip install git+https://github.com/dfetch-org/dfetch.git#egg=dfetch
 
 ### Binary distributions
 
-The [build.yml](https://github.com/dfetch-org/dfetch/actions/workflows/build.yml) produces installers for all major platforms.
-See the artifacts in the run.
+Each release on the [releases page](https://github.com/dfetch-org/dfetch/releases) provides installers for all major platforms.
 
 - Linux `.deb` & `.rpm`
 - macOS `.pkg`
