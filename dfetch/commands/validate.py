@@ -35,4 +35,4 @@ class Validate(dfetch.commands.command.Command):
         manifest_path = find_manifest()
         parse(manifest_path)
         manifest_path = os.path.relpath(manifest_path, os.getcwd())
-        logger.print_info_line(manifest_path, "valid")
+        logger.print_report_line(manifest_path, "valid")

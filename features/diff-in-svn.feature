@@ -63,7 +63,8 @@ Feature: Diff in svn
         Then the output shows
         """
         Dfetch (0.11.0)
-          SomeProject         : No diffs found since 1
+          SomeProject:
+          > No diffs found since 1
         """
 
     Scenario: A patch file is generated on uncommitted changes
@@ -89,5 +90,6 @@ Feature: Diff in svn
         Then the output shows
         """
         Dfetch (0.11.0)
-          SomeProject         : No diffs found since 1
+          SomeProject:
+          > No diffs found since 1
         """

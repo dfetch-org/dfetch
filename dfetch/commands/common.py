@@ -44,23 +44,20 @@ def _make_recommendation(
         recommendations (List[ProjectEntry]): List of recommendations
         childmanifest_path (str): Path to the source of recommendations
     """
-    logger.warning(
-        "\n".join(
-            [
-                "",
-                f'"{project.name}" depends on the following project(s) '
-                "which are not part of your manifest:",
-                f"(found in {childmanifest_path})",
-            ]
-        )
-    )
-
     recommendation_json = yaml.dump(
         [proj.as_yaml() for proj in recommendations],
         indent=4,
         sort_keys=False,
     )
-    logger.warning("")
-    for line in recommendation_json.splitlines():
-        logger.warning(line)
-    logger.warning("")
+    logger.print_warning_line(
+        project.name,
+        "\n".join(
+            [
+                f'"{project.name}" depends on the following project(s) which are not part of your manifest:',
+                f"(found in {childmanifest_path})",
+                "",
+                recommendation_json,
+                "",
+            ]
+        ),
+    )

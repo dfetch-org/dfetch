@@ -11,6 +11,9 @@ Release 0.12.0 (unreleased)
 * Skip patches outside manifest dir (#942)
 * Make patch path in metadata platform independent (#937)
 * Fix extra newlines in patch for new files (#945)
+* Replace colored-logs and Halo with Rich (#960)
+* Respect `NO_COLOR <https://no-color.org/>`_ (#960)
+* Group logging under a project name header (#953)
 
 Release 0.11.0 (released 2026-01-03)
 ====================================

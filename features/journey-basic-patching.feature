@@ -56,6 +56,7 @@ Feature: Basic patch journey
         Then the output shows
             """
             Dfetch (0.11.0)
-              test-repo           : Fetched v1
-              test-repo           : Applied patch "test-repo.patch"
+              test-repo:
+              > Fetched v1
+              > Applying patch "test-repo.patch"
             """

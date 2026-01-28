@@ -6,6 +6,9 @@ https://dfetch.rtfd.org
 import argparse
 import sys
 from collections.abc import Sequence
+from typing import Optional
+
+from rich.console import Console
 
 import dfetch.commands.check
 import dfetch.commands.diff
@@ -18,8 +21,7 @@ import dfetch.commands.update
 import dfetch.commands.validate
 import dfetch.log
 import dfetch.util.cmdline
-
-logger = dfetch.log.setup_root(__name__)
+from dfetch.log import DLogger
 
 
 class DfetchFatalException(Exception):
@@ -33,6 +35,9 @@ def create_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Increase verbosity"
+    )
+    parser.add_argument(
+        "--no-color", action="store_true", help="Disable colored output"
     )
     parser.set_defaults(func=_help)
     subparsers = parser.add_subparsers(help="commands")
@@ -50,15 +55,20 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _help(args: argparse.Namespace) -> None:
-    """Show the help."""
-    raise RuntimeError("Select a function")
+def _help(_: argparse.Namespace) -> None:
+    """Show help if no subcommand was selected."""
+    parser = create_parser()
+    parser.print_help()
 
 
-def run(argv: Sequence[str]) -> None:
+def run(argv: Sequence[str], console: Optional[Console] = None) -> None:
     """Start dfetch."""
-    logger.print_title()
     args = create_parser().parse_args(argv)
+
+    console = console or dfetch.log.make_console(no_color=args.no_color)
+    logger: DLogger = dfetch.log.setup_root(__name__, console=console)
+
+    logger.print_title()
 
     if args.verbose:
         dfetch.log.increase_verbosity()

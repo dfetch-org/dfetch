@@ -22,7 +22,8 @@ Feature: Fetch single file from svn repo
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProjectWithAnInterestingFile: Fetched trunk - 1
+              SomeProjectWithAnInterestingFile:
+              > Fetched trunk - 1
             """
         And 'MyProject' looks like:
             """

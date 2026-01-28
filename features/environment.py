@@ -4,6 +4,7 @@ import os
 import tempfile
 
 from behave import fixture, use_fixture
+from rich.console import Console
 
 from dfetch.util.util import safe_rmtree
 
@@ -27,6 +28,12 @@ def tmpdir(context):
 def before_scenario(context, _):
     """Hook called before scenario is executed."""
     use_fixture(tmpdir, context)
+
+    context.console = Console(
+        record=True,
+        force_terminal=True,
+        width=1024,
+    )
 
 
 def before_all(context):

@@ -29,7 +29,8 @@ Feature: Basic usage journey
         Then the output shows
             """
             Dfetch (0.11.0)
-              ext/test-repo-tag   : wanted & current (v1), available (v2.0)
+              ext/test-repo-tag:
+              > wanted & current (v1), available (v2.0)
             """
         When the manifest 'dfetch.yaml' is changed to
             """

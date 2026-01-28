@@ -7,8 +7,6 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from typing import Optional
 
-from halo import Halo
-
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
@@ -119,10 +117,9 @@ class SubProject(ABC):
             logger.debug(f"Clearing destination {self.local_path}")
             safe_rm(self.local_path)
 
-        with Halo(
-            text=f"Fetching {self.__project.name} {to_fetch}",
-            spinner="dots",
-            text_color="green",
+        with logger.status(
+            self.__project.name,
+            f"Fetching {to_fetch}",
             enabled=self._show_animations,
         ):
             actually_fetched = self._fetch_impl(to_fetch)
@@ -159,8 +156,15 @@ class SubProject(ABC):
 
             normalized_patch_path = str(relative_patch_path.as_posix())
 
-            apply_patch(normalized_patch_path, root=self.local_path)
-            self._log_project(f'Applied patch "{normalized_patch_path}"')
+            self._log_project(f'Applying patch "{normalized_patch_path}"')
+            result = apply_patch(normalized_patch_path, root=self.local_path)
+
+            if result.encoding_warning:
+                self._log_project(
+                    f'After retrying found that patch-file "{normalized_patch_path}" '
+                    "is not UTF-8 encoded, consider saving it with UTF-8 encoding."
+                )
+
             applied_patches.append(normalized_patch_path)
         return applied_patches
 
@@ -169,11 +173,8 @@ class SubProject(ABC):
     ) -> None:
         """Check if there is an update available."""
         on_disk_version = self.on_disk_version()
-        with Halo(
-            text=f"Checking {self.__project.name}",
-            spinner="dots",
-            text_color="green",
-            enabled=self._show_animations,
+        with logger.status(
+            self.__project.name, "Checking", enabled=self._show_animations
         ):
             latest_version = self._check_for_newer_version()
 
@@ -229,7 +230,7 @@ class SubProject(ABC):
 
     @staticmethod
     def _log_tool(name: str, msg: str) -> None:
-        logger.print_info_line(name, msg.strip())
+        logger.print_report_line(name, msg.strip())
 
     @property
     def local_path(self) -> str:
@@ -299,9 +300,10 @@ class SubProject(ABC):
         try:
             return Metadata.from_file(self.__metadata.path).version
         except TypeError:
-            logger.warning(
+            logger.print_warning_line(
+                self.__project.name,
                 f"{pathlib.Path(self.__metadata.path).relative_to(os.getcwd()).as_posix()}"
-                " is an invalid metadata file, not checking on disk version!"
+                " is an invalid metadata file, not checking on disk version!",
             )
             return None
 
@@ -317,9 +319,10 @@ class SubProject(ABC):
         try:
             return Metadata.from_file(self.__metadata.path).hash
         except TypeError:
-            logger.warning(
+            logger.print_warning_line(
+                self.__project.name,
                 f"{pathlib.Path(self.__metadata.path).relative_to(os.getcwd()).as_posix()}"
-                " is an invalid metadata file, not checking local hash!"
+                " is an invalid metadata file, not checking local hash!",
             )
             return None
 

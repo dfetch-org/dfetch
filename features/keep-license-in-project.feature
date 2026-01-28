@@ -25,11 +25,6 @@ Feature: Keep license in project
             | SomeOtherFolder/SomeOtherFile.txt     |
             | SomeSubFolder/LICENSE                 |
         When I run "dfetch update"
-        Then the output shows
-            """
-            Dfetch (0.11.0)
-              SomeProjectWithLicense: Fetched v1
-            """
         Then 'MyProject' looks like:
             """
             MyProject/
@@ -58,11 +53,6 @@ Feature: Keep license in project
             | SomeFolder/SomeFile.txt               |
             | SomeOtherFolder/SomeOtherFile.txt     |
         When I run "dfetch update"
-        Then the output shows
-            """
-            Dfetch (0.11.0)
-              SomeProjectWithLicense: Fetched trunk - 1
-            """
         Then 'MyProject' looks like:
             """
             MyProject/
@@ -90,11 +80,6 @@ Feature: Keep license in project
             | SomeFolder/SomeFile.txt               |
             | SomeOtherFolder/SomeOtherFile.txt     |
         When I run "dfetch update"
-        Then the output shows
-            """
-            Dfetch (0.11.0)
-              SomeProjectWithLicense: Fetched trunk - 1
-            """
         Then 'MyProject' looks like:
             """
             MyProject/

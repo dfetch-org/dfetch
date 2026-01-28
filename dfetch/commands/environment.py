@@ -23,6 +23,8 @@ class Environment(dfetch.commands.command.Command):
 
     def __call__(self, _: argparse.Namespace) -> None:
         """Perform listing the environment."""
-        logger.print_info_line("platform", f"{platform.system()} {platform.release()}")
+        logger.print_report_line(
+            "platform", f"{platform.system()} {platform.release()}"
+        )
         for project_type in SUPPORTED_PROJECT_TYPES:
             project_type.list_tool_info()

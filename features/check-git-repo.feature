@@ -27,8 +27,10 @@ Feature: Checking dependencies from a git repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              ext/test-repo-rev-only: wanted (e1fda19a57b873eb8e6ae37780594cbb77b70f1a), available (e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
-              ext/test-rev-and-branch: wanted (main - 8df389d0524863b85f484f15a91c5f2c40aefda1), available (main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
+              ext/test-repo-rev-only:
+              > wanted (e1fda19a57b873eb8e6ae37780594cbb77b70f1a), available (e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
+              ext/test-rev-and-branch:
+              > wanted (main - 8df389d0524863b85f484f15a91c5f2c40aefda1), available (main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
             """
 
     Scenario: A newer tag is available than in manifest
@@ -51,7 +53,8 @@ Feature: Checking dependencies from a git repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              ext/test-repo-tag-v1: wanted (v1), available (v2.0)
+              ext/test-repo-tag-v1:
+              > wanted (v1), available (v2.0)
             """
 
    Scenario: Check is done after an update
@@ -80,8 +83,10 @@ Feature: Checking dependencies from a git repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              ext/test-repo-rev-only: up-to-date (e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
-              ext/test-rev-and-branch: wanted & current (main - 8df389d0524863b85f484f15a91c5f2c40aefda1), available (main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
+              ext/test-repo-rev-only:
+              > up-to-date (e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
+              ext/test-rev-and-branch:
+              > wanted & current (main - 8df389d0524863b85f484f15a91c5f2c40aefda1), available (main - e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
             """
 
     Scenario: Tag is updated in manifest
@@ -112,7 +117,8 @@ Feature: Checking dependencies from a git repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              ext/test-repo-tag   : wanted (v2.0), current (v1), available (v2.0)
+              ext/test-repo-tag:
+              > wanted (v2.0), current (v1), available (v2.0)
             """
 
     Scenario: A local change is reported
@@ -133,8 +139,9 @@ Feature: Checking dependencies from a git repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProject         : Local changes were detected, please generate a patch using 'dfetch diff SomeProject' and add it to your manifest using 'patch:'. Alternatively overwrite the local changes with 'dfetch update --force SomeProject'
-              SomeProject         : up-to-date (master - 90be799b58b10971691715bdc751fbe5237848a0)
+              SomeProject:
+              > Local changes were detected, please generate a patch using 'dfetch diff SomeProject' and add it to your manifest using 'patch:'. Alternatively overwrite the local changes with 'dfetch update --force SomeProject'
+              > up-to-date (master - 90be799b58b10971691715bdc751fbe5237848a0)
             """
 
     Scenario: Change to ignored files are not reported
@@ -153,7 +160,8 @@ Feature: Checking dependencies from a git repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProject         : up-to-date (master - 90be799b58b10971691715bdc751fbe5237848a0)
+              SomeProject:
+              > up-to-date (master - 90be799b58b10971691715bdc751fbe5237848a0)
             """
 
     Scenario: A non-existent remote is reported
@@ -201,9 +209,12 @@ Feature: Checking dependencies from a git repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProjectMissingTag: wanted (i-dont-exist), but not available at the upstream.
-              SomeProjectNonExistentBranch: wanted (i-dont-exist), but not available at the upstream.
-              SomeProjectNonExistentRevision: wanted (0123112321234123512361236123712381239123), but not available at the upstream.
+              SomeProjectMissingTag:
+              > wanted (i-dont-exist), but not available at the upstream.
+              SomeProjectNonExistentBranch:
+              > wanted (i-dont-exist), but not available at the upstream.
+              SomeProjectNonExistentRevision:
+              > wanted (0123112321234123512361236123712381239123), but not available at the upstream.
             """
 
     Scenario: Credentials required for remote

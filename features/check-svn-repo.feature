@@ -30,8 +30,10 @@ Feature: Checking dependencies from a svn repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              cunit-svn-rev-only  : wanted (170), available (trunk - 170)
-              cunit-svn-rev-and-branch: wanted (mingw64 - 156), available (mingw64 - 170)
+              cunit-svn-rev-only:
+              > wanted (170), available (trunk - 170)
+              cunit-svn-rev-and-branch:
+              > wanted (mingw64 - 156), available (mingw64 - 170)
             """
 
     Scenario: A newer tag is available than in manifest
@@ -55,7 +57,8 @@ Feature: Checking dependencies from a svn repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              cutter-svn-tag      : wanted (1.1.7), available (1.1.8)
+              cutter-svn-tag:
+              > wanted (1.1.7), available (1.1.8)
             """
 
     Scenario: Check is done after an update
@@ -92,9 +95,12 @@ Feature: Checking dependencies from a svn repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              cunit-svn-rev-only  : wanted (169), current (trunk - 169), available (trunk - 170)
-              cunit-svn-rev-and-branch: wanted & current (mingw64 - 156), available (mingw64 - 170)
-              ext/test-non-standard-svn: wanted (latest), current (1), available (1)
+              cunit-svn-rev-only:
+              > wanted (169), current (trunk - 169), available (trunk - 170)
+              cunit-svn-rev-and-branch:
+              > wanted & current (mingw64 - 156), available (mingw64 - 170)
+              ext/test-non-standard-svn:
+              > wanted (latest), current (1), available (1)
             """
 
     Scenario: A non-standard SVN repository can be checked
@@ -113,7 +119,8 @@ Feature: Checking dependencies from a svn repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProject         : wanted (latest), current (1), available (1)
+              SomeProject:
+              > wanted (latest), current (1), available (1)
             """
 
     Scenario: A non-existent remote is reported
@@ -156,7 +163,8 @@ Feature: Checking dependencies from a svn repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              cutter-svn-tag      : wanted (non-existent-tag), but not available at the upstream.
+              cutter-svn-tag:
+              > wanted (non-existent-tag), but not available at the upstream.
             """
 
     Scenario: Change to ignored files are not reported
@@ -176,5 +184,6 @@ Feature: Checking dependencies from a svn repository
         Then the output shows
             """
             Dfetch (0.11.0)
-              SomeProject         : up-to-date (v1)
+              SomeProject:
+              > up-to-date (v1)
             """

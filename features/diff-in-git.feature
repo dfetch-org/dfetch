@@ -66,7 +66,8 @@ Feature: Diff in git
         Then the output shows
         """
         Dfetch (0.11.0)
-          SomeProject         : No diffs found since 59efb91396fd369eb113b43382783294dc8ed6d2
+          SomeProject:
+          > No diffs found since 59efb91396fd369eb113b43382783294dc8ed6d2
         """
 
     Scenario: Diff is generated on uncommitted changes
@@ -92,5 +93,6 @@ Feature: Diff in git
         Then the output shows
         """
         Dfetch (0.11.0)
-          SomeProject         : No diffs found since 59efb91396fd369eb113b43382783294dc8ed6d2
+          SomeProject:
+          > No diffs found since 59efb91396fd369eb113b43382783294dc8ed6d2
         """

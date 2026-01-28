@@ -2,8 +2,8 @@
 # For more info see https://dfetch.rtfd.io/en/latest/getting_started.html
 dfetch:
   branch: master
-  hash: dcd1473e1a3ca613b804e3e51e7ee342
-  last_fetch: 07/01/2026, 21:38:48
+  hash: 5b0a3a18e1e83d363f9eb0ac4b3fca17
+  last_fetch: 26/01/2026, 23:40:59
   patch:
   - doc/_ext/patches/001-autoformat-sphinxcontrib.asciinema.patch
   - doc/_ext/patches/002-fix-options-sphinxcontrib.asciinema.patch
