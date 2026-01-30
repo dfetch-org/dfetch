@@ -44,9 +44,10 @@ Feature: Update an existing patch in svn
             --- README.md
             +++ README.md
             @@ -1,1 +1,2 @@
+            -Generated file for SomeProject
             +Patched file for SomeProject
             +Update to patched file for SomeProject
-            -Generated file for SomeProject
+
             """
         And the output shows
             """
@@ -74,5 +75,11 @@ Feature: Update an existing patch in svn
             @@ -1,1 +1,1 @@
             +Patched file for SomeProject
             -Generated file for SomeProject
+            Index: NEWFILE.md
+            ===================================================================
+            --- NEWFILE.md
+            +++ NEWFILE.md
+            @@ -0,0 +1,1 @@
+            +A completely new tracked file.
 
             """

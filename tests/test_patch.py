@@ -86,3 +86,34 @@ Index: README.md
 """
 
     assert reversed_patch == expected
+
+
+def test_reverse_patch_order():
+    """Check reversing a patch."""
+    patch = b"""
+Index: README.md
+===================================================================
+--- README.md
++++ README.md
+@@ -1,1 +1,2 @@
+-Patched file for SomeProject
+-Update to patched file for SomeProject
++Generated file for SomeProject
+
+"""
+
+    reversed_patch = reverse_patch(patch)
+
+    expected = """
+Index: README.md
+===================================================================
+--- README.md
++++ README.md
+@@ -1,1 +1,2 @@
+-Generated file for SomeProject
++Patched file for SomeProject
++Update to patched file for SomeProject
+
+"""
+
+    assert reversed_patch == expected
