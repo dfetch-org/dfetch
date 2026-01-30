@@ -13,16 +13,31 @@ cp -r ../update/* .
 git add .
 git commit -m "Initial commit"
 
-pe "ls -l cpputest/src/README.md"
-pe "sed -i 's/github/gitlab/g' cpputest/src/README.md"
-pe "dfetch diff cpputest"
-pe "mkdir -p patches"
-pe "mv cpputest.patch patches/cpputest.patch"
+sed -i 's/github/gitlab/g' cpputest/src/README.md
+dfetch diff cpputest
+mkdir -p patches
+mv cpputest.patch patches/cpputest.patch
 
-# Insert patch @ line 13 (fragile if init manifest ever changes, but hoping for add command)
-pe "sed -i '13i\    patch: patches/cpputest.patch' dfetch.yaml"
-pe "dfetch update -f cpputest"
-git commit -A -m 'Fix vcs host'
+cat > dfetch.yaml <<'EOF'
+manifest:
+  version: 0.0
+
+  remotes:
+  - name: github
+    url-base: https://github.com/
+
+  projects:
+  - name: cpputest
+    dst: cpputest/src/
+    repo-path: cpputest/cpputest.git
+    tag: v3.4
+    patch: patches/cpputest.patch
+
+EOF
+
+dfetch update -f cpputest
+git add .
+git commit -m 'Fix vcs host'
 
 clear
 # Run the command
@@ -32,7 +47,7 @@ pe "cat patches/cpputest.patch"
 pe "git status"
 pe "sed -i 's/gitlab/gitea/g' cpputest/src/README.md"
 pe "git add ."
-pe "git commit -A -m 'Fix vcs host'"
+pe "git commit -a -m 'Fix vcs host'"
 pe "dfetch update-patch cpputest"
 pe "cat patches/cpputest.patch"
 pe "git status"
