@@ -48,6 +48,16 @@ Feature: Update an existing patch in git
             +Update to patched file for SomeProject.git
 
             """
+        And the output shows
+            """
+            Dfetch (0.11.0)
+              SomeProject:
+              > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
+              > Updating patch "patches/SomeProject.patch"
+              > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
+              > Applying patch "patches/SomeProject.patch"
+                successfully patched 1/1:    b'README.md'
+            """
 
     Scenario: Patch is updated with new but not ignored files
         Given files as '*.tmp' are ignored in git in MyProject

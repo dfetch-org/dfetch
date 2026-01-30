@@ -48,6 +48,16 @@ Feature: Update an existing patch in svn
             +Update to patched file for SomeProject
             -Generated file for SomeProject
             """
+        And the output shows
+            """
+            Dfetch (0.11.0)
+              SomeProject:
+              > Fetched trunk - 1
+              > Updating patch "patches/SomeProject.patch"
+              > Fetched trunk - 1
+              > Applying patch "patches/SomeProject.patch"
+                successfully patched 1/1:    b'README.md'
+            """
 
     Scenario: Patch is updated with new but not ignored files
         Given files as '*.tmp' are ignored in 'MySvnProject/SomeProject' in svn
