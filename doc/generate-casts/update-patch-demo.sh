@@ -6,7 +6,7 @@ PROMPT_TIMEOUT=1
 
 # Copy example manifest
 mkdir update-patch
-pushd update-patch
+pushd update-patch || exit 1
 
 git init
 cp -r ../update/* .
@@ -58,5 +58,5 @@ wait
 
 pei ""
 
-popd
+popd || exit 1
 rm -rf update-patch

@@ -1,6 +1,6 @@
 Feature: Update an existing patch in svn
 
-    If working with external projects, local changes are can be tracked using
+    If working with external projects, local changes can be tracked using
     patch files. If those local changes evolve over time, *Dfetch* should allow
     the user to update an existing patch so that it reflects the current working
     copy of the project.

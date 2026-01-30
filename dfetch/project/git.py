@@ -12,6 +12,7 @@ from dfetch.manifest.version import Version
 from dfetch.project.subproject import SubProject
 from dfetch.util.util import safe_rmtree
 from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
+from dfetch.vcs.patch import reverse_patch
 
 logger = get_logger(__name__)
 
@@ -73,6 +74,10 @@ class GitSubProject(SubProject):
 
         untracked_files_patch = str(self._local_repo.untracked_files_patch(ignore))
         if untracked_files_patch:
+            if reverse:
+                untracked_files_patch = reverse_patch(
+                    untracked_files_patch.encode("utf-8")
+                )
             combined_diff += [untracked_files_patch]
 
         return "\n".join(combined_diff)
