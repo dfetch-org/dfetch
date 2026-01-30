@@ -35,6 +35,7 @@ The below statement will update the patch for ``some-project`` from your manifes
 import argparse
 import pathlib
 import shutil
+from typing import Optional
 
 import dfetch.commands.command
 import dfetch.manifest.project
@@ -129,20 +130,13 @@ class UpdatePatch(dfetch.commands.command.Command):
                     )
 
                     # Select patch to overwrite & make backup
-                    patch_to_update = subproject.patch[-1]
-
-                    if patch_text:
-                        shutil.move(patch_to_update, patch_to_update + ".backup")
-                        patch_path = pathlib.Path(patch_to_update)
-                        logger.print_info_line(
-                            project.name, f'Updating patch "{patch_to_update}"'
-                        )
-                        patch_path.write_text(patch_text, encoding="UTF-8")
-                    else:
-                        logger.print_info_line(
-                            project.name,
-                            f"No diffs found, kept patch {patch_to_update} unchanged",
-                        )
+                    if not self._update_patch(
+                        subproject.patch[-1],
+                        superproject.root_directory,
+                        project.name,
+                        patch_text,
+                    ):
+                        continue
 
                     # force update again to fetched version from metadata but with applying patch
                     subproject.update(
@@ -151,3 +145,33 @@ class UpdatePatch(dfetch.commands.command.Command):
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
+
+    def _update_patch(
+        self,
+        patch_to_update: str,
+        root: pathlib.Path,
+        project_name: str,
+        patch_text: str,
+    ) -> Optional[pathlib.Path]:
+        """Update the specified patch file with new patch text."""
+        patch_path = pathlib.Path(patch_to_update).resolve()
+
+        try:
+            patch_path.relative_to(root)
+        except ValueError:
+            logger.print_warning_line(
+                project_name,
+                f'No updating patch "{patch_to_update}" which is outside {root}',
+            )
+            return None
+
+        if patch_text:
+            shutil.move(patch_to_update, patch_to_update + ".backup")
+            logger.print_info_line(project_name, f'Updating patch "{patch_to_update}"')
+            patch_path.write_text(patch_text, encoding="UTF-8")
+        else:
+            logger.print_info_line(
+                project_name,
+                f"No diffs found, kept patch {patch_to_update} unchanged",
+            )
+        return patch_path

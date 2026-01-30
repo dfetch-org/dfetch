@@ -154,7 +154,7 @@ def reverse_patch(patch_text: bytes) -> str:
         return ""
 
     for file in patch.items:
-        reverse_patch_lines.extend(line.strip() for line in file.header)
+        reverse_patch_lines.extend(line.rstrip(b"\n") for line in file.header)
         reverse_patch_lines.append(b"--- " + file.target)
         reverse_patch_lines.append(b"+++ " + file.source)
         for hunk in file.hunks:
