@@ -160,14 +160,27 @@ def reverse_patch(patch_text: bytes) -> str:
         for hunk in file.hunks:
             # swap additions and deletions in the hunk
             hunk_lines: list[bytes] = []
+            additions: list[bytes] = []
+            deletions: list[bytes] = []
+
             for line in hunk.text:
                 line = line.rstrip(b"\n")
                 if line.startswith(b"+"):
-                    hunk_lines.append(b"-" + line[1:])
+                    additions.append(b"-" + line[1:])
                 elif line.startswith(b"-"):
-                    hunk_lines.append(b"+" + line[1:])
+                    deletions.append(b"+" + line[1:])
                 else:
+                    # flush accumulated lines before normal line
+                    hunk_lines.extend(additions)
+                    hunk_lines.extend(deletions)
+                    deletions.clear()
+                    additions.clear()
                     hunk_lines.append(line)
+
+            # flush leftovers at end
+            hunk_lines.extend(additions)
+            hunk_lines.extend(deletions)
+
             # Rebuild hunk header
             reverse_patch_lines.append(
                 f"@@ -{hunk.starttgt},{hunk.linestgt} +{hunk.startsrc},{hunk.linessrc} @@".encode(
