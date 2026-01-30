@@ -91,9 +91,10 @@ class UpdatePatch(dfetch.commands.command.Command):
                     if not subproject.patch:
                         logger.print_warning_line(
                             project.name,
-                            f'skipped - there is no patch file, use "dfetch diff {project.name}" instead',
+                            f'skipped - there is no patch file, use "dfetch diff {project.name}"'
+                            " to generate one instead",
                         )
-                        return
+                        continue
 
                     # Check if the project was ever fetched
                     on_disk_version = subproject.on_disk_version()
@@ -102,7 +103,7 @@ class UpdatePatch(dfetch.commands.command.Command):
                             project.name,
                             f'skipped - the project was never fetched before, use "dfetch update {project.name}"',
                         )
-                        return
+                        continue
 
                     # Make sure no uncommitted changes (don't care about ignored files)
                     if superproject.has_local_changes_in_dir(subproject.local_path):
@@ -110,7 +111,7 @@ class UpdatePatch(dfetch.commands.command.Command):
                             project.name,
                             f"skipped - Uncommitted changes in {subproject.local_path}",
                         )
-                        return
+                        continue
 
                     # force update to fetched version from metadata without applying patch
                     subproject.update(
@@ -134,7 +135,7 @@ class UpdatePatch(dfetch.commands.command.Command):
                         shutil.move(patch_to_update, patch_to_update + ".backup")
                         patch_path = pathlib.Path(patch_to_update)
                         logger.print_info_line(
-                            project.name, f"Updating patch {patch_to_update}"
+                            project.name, f'Updating patch "{patch_to_update}"'
                         )
                         patch_path.write_text(patch_text, encoding="UTF-8")
                     else:
