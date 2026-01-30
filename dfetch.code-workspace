@@ -63,7 +63,7 @@
 				"module": "dfetch.__main__",
 				"justMyCode": false,
 				"args": [
-					"update-patch", "sphinxcontrib.asciinema"
+					"update"
 				]
 			}
 		]
