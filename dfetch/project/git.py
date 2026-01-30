@@ -75,9 +75,12 @@ class GitSubProject(SubProject):
         untracked_files_patch = str(self._local_repo.untracked_files_patch(ignore))
         if untracked_files_patch:
             if reverse:
-                untracked_files_patch = reverse_patch(
-                    untracked_files_patch.encode("utf-8")
-                )
+                reversed_patch = reverse_patch(untracked_files_patch.encode("utf-8"))
+                if not reversed_patch:
+                    raise RuntimeError(
+                        "Failed to reverse untracked files patch; patch parsing returned empty."
+                    )
+                untracked_files_patch = reversed_patch
             combined_diff += [untracked_files_patch]
 
         return "\n".join(combined_diff)
