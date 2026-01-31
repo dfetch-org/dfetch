@@ -12,6 +12,7 @@ from dfetch.manifest.version import Version
 from dfetch.project.subproject import SubProject
 from dfetch.util.util import safe_rmtree
 from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
+from dfetch.vcs.patch import reverse_patch
 
 logger = get_logger(__name__)
 
@@ -52,11 +53,15 @@ class GitSubProject(SubProject):
         return str(self._local_repo.get_current_hash())
 
     def _diff_impl(
-        self, old_revision: str, new_revision: Optional[str], ignore: Sequence[str]
+        self,
+        old_revision: str,
+        new_revision: Optional[str],
+        ignore: Sequence[str],
+        reverse: bool = False,
     ) -> str:
         """Get the diff of two revisions."""
         diff_since_revision = str(
-            self._local_repo.create_diff(old_revision, new_revision, ignore)
+            self._local_repo.create_diff(old_revision, new_revision, ignore, reverse)
         )
 
         if new_revision:
@@ -69,6 +74,13 @@ class GitSubProject(SubProject):
 
         untracked_files_patch = str(self._local_repo.untracked_files_patch(ignore))
         if untracked_files_patch:
+            if reverse:
+                reversed_patch = reverse_patch(untracked_files_patch.encode("utf-8"))
+                if not reversed_patch:
+                    raise RuntimeError(
+                        "Failed to reverse untracked files patch; patch parsing returned empty."
+                    )
+                untracked_files_patch = reversed_patch
             combined_diff += [untracked_files_patch]
 
         return "\n".join(combined_diff)

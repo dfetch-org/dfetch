@@ -8,6 +8,7 @@ import json
 import os
 import pathlib
 import re
+import shutil
 from contextlib import contextmanager
 from itertools import zip_longest
 from typing import Iterable, List, Optional, Pattern, Tuple, Union
@@ -230,6 +231,12 @@ def step_impl(_, old: str, new: str, path: str):
     replace_in_file(path, old, new)
 
 
+@given('"{old_path}" in {directory} is renamed as "{new_path}"')
+def step_impl(_, old_path: str, new_path: str, directory: str):
+    with in_directory(directory):
+        shutil.move(old_path, new_path)
+
+
 @given("the patch file '{name}'")
 @given("the patch file '{name}' with '{encoding}' encoding")
 def step_impl(context, name, encoding="UTF-8"):
@@ -295,6 +302,7 @@ def step_impl(context, name):
 
 
 @then("the patch file '{name}' is generated")
+@then("the patch file '{name}' is updated")
 def step_impl(context, name):
     """Check a patch file."""
     if context.text:

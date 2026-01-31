@@ -113,6 +113,18 @@ Diff
 
 .. automodule:: dfetch.commands.diff
 
+Update patch
+------------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: update-patch
+
+.. asciinema:: asciicasts/update_patch.cast
+
+.. automodule:: dfetch.commands.update_patch
+
 Freeze
 ------
 .. argparse::
