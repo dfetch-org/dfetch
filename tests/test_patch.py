@@ -3,11 +3,16 @@
 # mypy: ignore-errors
 # flake8: noqa
 
+import difflib
+import random
 import textwrap
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from dfetch.vcs.patch import (
+    apply_patch,
     create_git_patch_for_new_file,
     create_svn_patch_for_new_file,
     reverse_patch,
@@ -265,3 +270,46 @@ def test_reverse_patch_zero_length_hunk():
     )
 
     assert reverse_patch(patch) == expected
+
+
+# Random small file: 5–15 lines, each line 5–20 chars
+st_file_lines = st.lists(st.text(min_size=5, max_size=20), min_size=5, max_size=15)
+
+
+@settings(max_examples=1000)
+@given(original_lines=st_file_lines)
+def test_reverse_patch_small_random(original_lines):
+    """Test patch generation and reversal on small random files."""
+    original = "\n".join(original_lines + [""])
+
+    # Decide randomly: line shuffle OR char shuffle
+    if random.choice([True, False]):
+        modified_lines = original_lines[:]
+        random.shuffle(modified_lines)
+    else:
+        modified_lines = []
+        for line in original_lines:
+            chars = list(line)
+            random.shuffle(chars)
+            modified_lines.append("".join(chars))
+
+    modified = "\n".join(modified_lines + [""])
+
+    # Generate forward and reverse patches
+    patch_forward = "\n".join(
+        difflib.unified_diff(
+            original.splitlines(keepends=True),
+            modified.splitlines(keepends=True),
+            fromfile="original",
+            tofile="modified",
+            lineterm="\n",
+        )
+    )
+    patch_reverse = reverse_patch(patch_forward.encode())
+
+    try:
+        restored = apply_patch(modified, patch_reverse)
+    except Exception as e:
+        assert False, f"Reverse patch failed: {e}"
+
+    assert restored == original, "Reverse patch did not restore original!"
