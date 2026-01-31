@@ -320,15 +320,15 @@ class SvnRepo:
         ignore: Sequence[str],
     ) -> str:
         """Generate a relative diff patch."""
-        cmd = [
-            "svn",
-            "diff",
-            "--non-interactive",
-            "--ignore-properties",
-            ".",
-            "-r",
-            f"{old_revision}:{new_revision}" if new_revision else old_revision,
-        ]
+        cmd = ["svn", "diff", "--non-interactive", "--ignore-properties", "."]
+
+        if old_revision:
+            cmd.extend(
+                [
+                    "-r",
+                    f"{old_revision}:{new_revision}" if new_revision else old_revision,
+                ]
+            )
 
         with in_directory(self._path):
             patch_text = run_on_cmdline(logger, cmd).stdout

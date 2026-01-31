@@ -80,6 +80,8 @@ class UpdatePatch(dfetch.commands.command.Command):
                 "The project containing the manifest is not under version control,"
                 " updating patches is not supported"
             )
+        if not superproject.is_git():
+            logger.warning("Update patch is only fully supported in git superprojects!")
 
         with in_directory(superproject.root_directory):
             for project in superproject.manifest.selected_projects(args.projects):
@@ -123,7 +125,7 @@ class UpdatePatch(dfetch.commands.command.Command):
 
                     # generate reverse patch
                     patch_text = subproject.diff(
-                        old_revision=superproject.current_revision(),
+                        old_revision="",
                         new_revision="",
                         # ignore=files_to_ignore,
                         reverse=True,

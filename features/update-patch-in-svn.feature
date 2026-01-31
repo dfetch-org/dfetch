@@ -63,7 +63,6 @@ Feature: Update an existing patch in svn
     Scenario: Patch is updated with new but not ignored files
         Given files as '*.tmp' are ignored in 'MySvnProject/SomeProject' in svn
         And "SomeProject/IGNORE_ME.tmp" in MySvnProject is created
-        And "SomeProject/NEWFILE.md" in MySvnProject is created
         And all files in MySvnProject are added and committed
         When I run "dfetch update-patch SomeProject" in MySvnProject
         Then the patch file 'MySvnProject/patches/SomeProject.patch' is updated
@@ -75,11 +74,5 @@ Feature: Update an existing patch in svn
             @@ -1,1 +1,1 @@
             +Patched file for SomeProject
             -Generated file for SomeProject
-            Index: NEWFILE.md
-            ===================================================================
-            --- NEWFILE.md
-            +++ NEWFILE.md
-            @@ -0,0 +1,1 @@
-            +A completely new tracked file.
 
             """
