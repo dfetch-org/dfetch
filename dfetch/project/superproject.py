@@ -87,6 +87,10 @@ class SuperProject:
             or SvnRepo(self.root_directory).is_svn()
         )
 
+    def is_git(self) -> bool:
+        """Check if this superproject is a git repository."""
+        return GitLocalRepo(self.root_directory).is_git()
+
     def has_local_changes_in_dir(self, path: str) -> bool:
         """Check if the superproject has local changes."""
         if GitLocalRepo(self.root_directory).is_git():

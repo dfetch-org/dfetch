@@ -417,13 +417,6 @@ class SubProject(ABC):
 
     def diff(self, old_revision: str, new_revision: str, reverse: bool = False) -> str:
         """Generate a relative diff for a subproject."""
-        if not old_revision:
-            raise RuntimeError(
-                "When not providing any revisions, dfetch starts from"
-                f" the last revision to {Metadata.FILENAME} in {self.local_path}."
-                " Please either commit this, or specify a revision to start from with --revs"
-            )
-
         return self._diff_impl(
             old_revision, new_revision, ignore=(Metadata.FILENAME,), reverse=reverse
         )

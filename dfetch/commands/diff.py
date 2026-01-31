@@ -70,6 +70,7 @@ import pathlib
 
 import dfetch.commands.command
 from dfetch.log import get_logger
+from dfetch.project.metadata import Metadata
 from dfetch.project.superproject import SuperProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
@@ -129,6 +130,12 @@ class Diff(dfetch.commands.command.Command):
                             "Can only create patch if your project is an SVN or Git repo",
                         )
                     old_rev = old_rev or subproject.metadata_revision()
+                    if not old_rev:
+                        raise RuntimeError(
+                            "When not providing any revisions, dfetch starts from"
+                            f" the last revision to {Metadata.FILENAME} in {subproject.local_path}."
+                            " Please either commit this, or specify a revision to start from with --revs"
+                        )
                     patch = subproject.diff(old_rev, new_rev)
 
                     msg = self._rev_msg(old_rev, new_rev)
