@@ -15,6 +15,7 @@ Release 0.12.0 (unreleased)
 * Respect `NO_COLOR <https://no-color.org/>`_ (#960)
 * Group logging under a project name header (#953)
 * Introduce new ``update-patch`` command (#614)
+* Introduce new ``format-patch`` command (#943)
 
 Release 0.11.0 (released 2026-01-03)
 ====================================

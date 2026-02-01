@@ -589,3 +589,27 @@ class GitLocalRepo:
         ]
 
         return "" if not branches else branches[0]
+
+    def get_username(self) -> str:
+        """Get the username of the local git repo."""
+        try:
+            with in_directory(self._path):
+                result = run_on_cmdline(
+                    logger,
+                    ["git", "config", "user.name"],
+                )
+            return str(result.stdout.decode().strip())
+        except SubprocessCommandError:
+            return ""
+
+    def get_useremail(self) -> str:
+        """Get the user email of the local git repo."""
+        try:
+            with in_directory(self._path):
+                result = run_on_cmdline(
+                    logger,
+                    ["git", "config", "user.email"],
+                )
+            return str(result.stdout.decode().strip())
+        except SubprocessCommandError:
+            return ""

@@ -24,6 +24,9 @@ ansi_escape = re.compile(r"\[/?[a-z\_ ]+\]")
 dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
 timestamp = re.compile(r"\d+\/\d+\/\d+, \d+:\d+:\d+")
 git_hash = re.compile(r"(\s?)[a-f0-9]{40}(\s?)")
+git_timestamp = re.compile(
+    r"[A-Za-z]{3},\s+\d{2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}:\d{2}\s+\+0000\n?"
+)
 iso_timestamp = re.compile(r'"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}\+\d{2}:\d{2}')
 urn_uuid = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 bom_ref = re.compile(r"BomRef\.[0-9]+\.[0-9]+")
@@ -103,6 +106,7 @@ def check_content(
             patterns=[
                 (git_hash, r"\1[commit-hash]\2"),
                 (iso_timestamp, "[timestamp]"),
+                (git_timestamp, "[git-timestamp]"),
                 (urn_uuid, "[urn-uuid]"),
                 (bom_ref, "[bom-ref]"),
             ],
@@ -113,6 +117,7 @@ def check_content(
             patterns=[
                 (git_hash, r"\1[commit-hash]\2"),
                 (iso_timestamp, "[timestamp]"),
+                (git_timestamp, "[git-timestamp]"),
                 (urn_uuid, "[urn-uuid]"),
                 (bom_ref, "[bom-ref]"),
             ],

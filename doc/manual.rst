@@ -125,6 +125,18 @@ Update patch
 
 .. automodule:: dfetch.commands.update_patch
 
+Format patch
+------------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: format-patch
+
+.. asciinema:: asciicasts/format_patch.cast
+
+.. automodule:: dfetch.commands.format_patch
+
 Freeze
 ------
 .. argparse::

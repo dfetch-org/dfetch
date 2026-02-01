@@ -1,5 +1,6 @@
 """Various patch utilities for VCS systems."""
 
+import datetime
 import difflib
 import hashlib
 import stat
@@ -191,3 +192,87 @@ def reverse_patch(patch_text: bytes) -> str:
         reverse_patch_lines.append(b"")  # blank line between files
 
     return (b"\n".join(reverse_patch_lines)).decode(encoding="UTF-8")
+
+
+@dataclass
+class PatchAuthor:
+    """Information about a patch author."""
+
+    name: str
+    email: str
+
+
+@dataclass
+class PatchInfo:
+    """Information about a patch file."""
+
+    author: PatchAuthor
+    subject: str
+    total_patches: int = 1
+    current_patch_idx: int = 1
+    revision: str = ""
+    date: datetime.datetime = datetime.datetime.now(tz=datetime.timezone.utc)
+    description: str = ""
+
+    def to_string(self) -> str:
+        """Convert patch info to a string."""
+        subject_line = (
+            f"[PATCH {self.current_patch_idx}/{self.total_patches}] {self.subject}"
+            if self.total_patches > 1
+            else f"[PATCH] {self.subject}"
+        )
+        return (
+            f"From {self.revision or '0000000000000000000000000000000000000000'} Mon Sep 17 00:00:00 2001\n"
+            f"From: {self.author.name} <{self.author.email}>\n"
+            f"Date: {self.date:%a, %d %b %Y %H:%M:%S +0000}\n"
+            f"Subject: {subject_line}\n"
+            "\n"
+            f"{self.description if self.description else self.subject}\n"
+        )
+
+
+def format_patch_with_prefix(
+    patch_text: bytes, patch_info: PatchInfo, path_prefix: str
+) -> str:
+    """Rewrite a patch to prefix file paths and add a mail-style header."""
+    patch = patch_ng.fromstring(patch_text)
+
+    if not patch:
+        return ""
+
+    out: list[bytes] = patch_info.to_string().encode("utf-8").splitlines()
+
+    for file in patch.items:
+        # normalize prefix (no leading/trailing slash surprises)
+        prefix = path_prefix.strip("/").encode()
+        prefix = prefix + b"/" if prefix else b""
+
+        src = file.source
+        tgt = file.target
+
+        # strip a/ b/ if present
+        if src.startswith(b"a/"):
+            src = src[2:]
+        if tgt.startswith(b"b/"):
+            tgt = tgt[2:]
+
+        new_src = b"a/" + prefix + src
+        new_tgt = b"b/" + prefix + tgt
+
+        # diff header
+        out.append(b"")
+        out.append(b"diff --git " + new_src + b" " + new_tgt)
+        out.append(b"--- " + new_src)
+        out.append(b"+++ " + new_tgt)
+
+        for hunk in file.hunks:
+            out.append(
+                f"@@ -{hunk.startsrc},{hunk.linessrc} "
+                f"+{hunk.starttgt},{hunk.linestgt} @@".encode()
+            )
+            for line in hunk.text:
+                out.append(line.rstrip(b"\n"))
+
+        out.append(b"")  # blank line between files
+
+    return b"\n".join(out).decode("utf-8")
