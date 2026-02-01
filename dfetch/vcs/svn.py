@@ -206,7 +206,7 @@ class SvnRepo:
     def get_last_changed_revision(target: Union[str, Path]) -> str:
         """Get the last changed revision of the given target."""
         target_str = str(target).strip()
-        if os.path.isdir(target):
+        if os.path.isdir(target_str):
             last_digits = re.compile(r"(?P<digits>\d+)(?!.*\d)")
             version = run_on_cmdline(logger, ["svnversion", target_str]).stdout.decode()
 
