@@ -32,35 +32,9 @@ The below statement will generate a patch for ``some-project`` from your manifes
 Using the generated patch
 =========================
 The patch can be used in the manifest; see the :ref:`patch` attribute for more information.
-It can also be sent to the upstream maintainer in case of bug fixes.
 
-The generated patch is a relative patch and should be by applied specifying the base directory of the *git repo*.
-See below for the version control specifics. The patch will also contain the content of binary files.
-
-.. tabs::
-
-    .. tab:: Git
-
-        .. code-block:: sh
-
-            git apply --verbose --directory='some-project' some-project.patch
-
-    .. tab:: SVN
-
-        .. code-block:: sh
-
-            svn patch some-project.patch
-
-.. warning::
-
-   The path given to ``--directory`` when applying the patch in a git repo, *must* be relative to the base
-   directory of the repo, i.e. the folder where the ``.git`` folder is located.
-
-   For example if you have the patch ``Core/MyModule/MySubmodule.patch``
-   for files in the directory ``Core/MyModule/MySubmodule/`` and your current working directory is ``Core/MyModule/``.
-   The correct command would be:
-
-   ``git apply --verbose --directory='Core/MyModule/MySubmodule' MySubmodule.patch``
+Because the patch is generated relative to the project's directory, you should use the :ref:`format-patch`
+command to reformat the patch for upstream use.
 
 """
 

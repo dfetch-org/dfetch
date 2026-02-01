@@ -8,6 +8,7 @@ it's a git or svn repository).
 
 from __future__ import annotations
 
+import getpass
 import os
 import pathlib
 from collections.abc import Sequence
@@ -110,3 +111,32 @@ class SuperProject:
             return SvnRepo.get_last_changed_revision(self.root_directory)
 
         return ""
+
+    def get_username(self) -> str:
+        """Get the username of the superproject VCS."""
+        username = ""
+        if GitLocalRepo(self.root_directory).is_git():
+            username = GitLocalRepo(self.root_directory).get_username()
+
+        elif SvnRepo(self.root_directory).is_svn():
+            username = SvnRepo(self.root_directory).get_username()
+
+        username = username or getpass.getuser()
+        if not username:
+            try:
+                username = os.getlogin()
+            except OSError:
+                username = "unknown"
+        return username
+
+    def get_useremail(self) -> str:
+        """Get the user email of the superproject VCS."""
+        email = ""
+        if GitLocalRepo(self.root_directory).is_git():
+            email = GitLocalRepo(self.root_directory).get_useremail()
+
+        elif SvnRepo(self.root_directory).is_svn():
+            email = SvnRepo(self.root_directory).get_useremail()
+
+        username = self.get_username() or "unknown"
+        return email or f"{username}@example.com"

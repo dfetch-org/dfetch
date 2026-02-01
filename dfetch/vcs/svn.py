@@ -334,3 +334,26 @@ class SvnRepo:
             patch_text = run_on_cmdline(logger, cmd).stdout
 
         return filter_patch(patch_text, ignore)
+
+    def get_username(self) -> str:
+        """Get the username of the local svn repo."""
+        try:
+            result = run_on_cmdline(
+                logger,
+                [
+                    "svn",
+                    "info",
+                    "--non-interactive",
+                    "--show-item",
+                    "author",
+                    self._path,
+                ],
+            )
+            return str(result.stdout.decode().strip())
+        except SubprocessCommandError:
+            return ""
+
+    def get_useremail(self) -> str:
+        """Get the user email of the local svn repo."""
+        # SVN does not have user email concept
+        return ""

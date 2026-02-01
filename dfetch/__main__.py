@@ -13,6 +13,7 @@ from rich.console import Console
 import dfetch.commands.check
 import dfetch.commands.diff
 import dfetch.commands.environment
+import dfetch.commands.format_patch
 import dfetch.commands.freeze
 import dfetch.commands.import_
 import dfetch.commands.init
@@ -46,6 +47,7 @@ def create_parser() -> argparse.ArgumentParser:
     dfetch.commands.check.Check.create_menu(subparsers)
     dfetch.commands.diff.Diff.create_menu(subparsers)
     dfetch.commands.environment.Environment.create_menu(subparsers)
+    dfetch.commands.format_patch.FormatPatch.create_menu(subparsers)
     dfetch.commands.freeze.Freeze.create_menu(subparsers)
     dfetch.commands.import_.Import.create_menu(subparsers)
     dfetch.commands.init.Init.create_menu(subparsers)
