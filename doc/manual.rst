@@ -121,7 +121,7 @@ Update patch
    :prog: dfetch
    :path: update-patch
 
-.. asciinema:: asciicasts/update_patch.cast
+.. asciinema:: asciicasts/update-patch.cast
 
 .. automodule:: dfetch.commands.update_patch
 
