@@ -22,7 +22,7 @@ from dfetch.vcs.patch import (
 
 def _normalize(patch: str) -> str:
     """Normalize patch text for stable comparisons."""
-    return textwrap.dedent(patch).lstrip("\n").rstrip() + "\n"
+    return textwrap.dedent(patch).lstrip("\r\n").rstrip() + "\n"
 
 
 def test_create_git_patch_for_new_file(tmp_path):

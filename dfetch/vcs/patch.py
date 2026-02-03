@@ -56,7 +56,7 @@ def dump_patch(patch_set: patch_ng.PatchSet) -> str:
     patch_lines: list[str] = []
     for p in patch_set.items:
         for headline in p.header:
-            patch_lines.append(headline.rstrip(b"\n").decode("utf-8"))
+            patch_lines.append(headline.rstrip(b"\r\n").decode("utf-8"))
         patch_lines.append(f"--- {p.source.decode('utf-8')}")
         patch_lines.append(f"+++ {p.target.decode('utf-8')}")
         for h in p.hunks:
@@ -64,7 +64,7 @@ def dump_patch(patch_set: patch_ng.PatchSet) -> str:
                 f"@@ -{h.startsrc},{h.linessrc} +{h.starttgt},{h.linestgt} @@"
             )
             for line in h.text:
-                patch_lines.append(line.rstrip(b"\n").decode("utf-8"))
+                patch_lines.append(line.rstrip(b"\r\n").decode("utf-8"))
     return "\n".join(patch_lines) + "\n" if patch_lines else ""
 
 
@@ -155,7 +155,7 @@ def reverse_patch(patch_text: bytes) -> str:
         return ""
 
     for file in patch.items:
-        reverse_patch_lines.extend(line.rstrip(b"\n") for line in file.header)
+        reverse_patch_lines.extend(line.rstrip(b"\r\n") for line in file.header)
         reverse_patch_lines.append(b"--- " + file.target)
         reverse_patch_lines.append(b"+++ " + file.source)
         for hunk in file.hunks:
@@ -165,7 +165,7 @@ def reverse_patch(patch_text: bytes) -> str:
             deletions: list[bytes] = []
 
             for line in hunk.text:
-                line = line.rstrip(b"\n")
+                line = line.rstrip(b"\r\n")
                 if line.startswith(b"+"):
                     additions.append(b"-" + line[1:])
                 elif line.startswith(b"-"):
@@ -271,7 +271,7 @@ def format_patch_with_prefix(
                 f"+{hunk.starttgt},{hunk.linestgt} @@".encode()
             )
             for line in hunk.text:
-                out.append(line.rstrip(b"\n"))
+                out.append(line.rstrip(b"\r\n"))
 
         out.append(b"")  # blank line between files
 
