@@ -50,7 +50,7 @@ Feature: Formatting a patch for git repositories
         Then the patch file 'patches/001-diff.patch' is generated
             """
             From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-            From: ben <ben@example.com>
+            From: John Doe <john@dfetch.io>
             Date: Mon, 02 Feb 2026 20:57:35 +0000
             Subject: [PATCH 1/2] Patch for ext/test-repo-tag
 
@@ -68,7 +68,7 @@ Feature: Formatting a patch for git repositories
         And the patch file 'patches/002-diff.patch' is generated
             """
             From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-            From: ben <ben@example.com>
+            From: John Doe <john@dfetch.io>
             Date: Mon, 02 Feb 2026 21:02:42 +0000
             Subject: [PATCH 2/2] Patch for ext/test-repo-tag
 
