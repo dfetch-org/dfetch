@@ -41,7 +41,7 @@ classifiers = [
 dependencies = [
     "PyYAML==6.0.3",
     "strictyaml==1.7.3",
-    "rich==14.2.0",
+    "rich==14.3.2",
     "typing-extensions==4.15.0",
     "tldextract==5.3.0",
     "sarif-om==1.0.4",
