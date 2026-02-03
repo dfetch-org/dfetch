@@ -17,6 +17,7 @@ from dfetch.util.util import (
     safe_rm,
 )
 from dfetch.vcs.patch import (
+    PatchInfo,
     combine_patches,
     create_svn_patch_for_new_file,
     reverse_patch,
@@ -189,10 +190,6 @@ class SvnSubProject(SubProject):
         """Get the revision of the metadata file."""
         return SvnRepo.get_last_changed_revision(self.metadata_path)
 
-    def current_revision(self) -> str:
-        """Get the last revision of the repository."""
-        return SvnRepo.get_last_changed_revision(self.local_path)
-
     def _diff_impl(
         self,
         old_revision: str,
@@ -228,3 +225,7 @@ class SvnSubProject(SubProject):
     def get_default_branch(self) -> str:
         """Get the default branch of this repository."""
         return self._repo.DEFAULT_BRANCH
+
+    def create_formatted_patch_header(self, patch_info: PatchInfo) -> str:
+        """Create a formatted patch header for the given patch info."""
+        return patch_info.to_svn_header()

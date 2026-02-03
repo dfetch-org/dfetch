@@ -14,7 +14,7 @@ from dfetch.project.abstract_check_reporter import AbstractCheckReporter
 from dfetch.project.metadata import Metadata
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
-from dfetch.vcs.patch import apply_patch
+from dfetch.vcs.patch import PatchInfo, apply_patch
 
 logger = get_logger(__name__)
 
@@ -390,10 +390,6 @@ class SubProject(ABC):
         """Get the revision of the metadata file."""
 
     @abstractmethod
-    def current_revision(self) -> str:
-        """Get the last revision of the repository."""
-
-    @abstractmethod
     def _diff_impl(
         self,
         old_revision: str,  # noqa
@@ -420,3 +416,7 @@ class SubProject(ABC):
         return self._diff_impl(
             old_revision, new_revision, ignore=(Metadata.FILENAME,), reverse=reverse
         )
+
+    @abstractmethod
+    def create_formatted_patch_header(self, patch_info: PatchInfo) -> str:
+        """Create a formatted patch header for the given patch info."""

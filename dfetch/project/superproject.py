@@ -102,16 +102,6 @@ class SuperProject:
 
         return True
 
-    def current_revision(self) -> str:
-        """Get the last revision of the superproject."""
-        if GitLocalRepo(self.root_directory).is_git():
-            return GitLocalRepo(self.root_directory).get_current_hash()
-
-        if SvnRepo(self.root_directory).is_svn():
-            return SvnRepo.get_last_changed_revision(self.root_directory)
-
-        return ""
-
     def get_username(self) -> str:
         """Get the username of the superproject VCS."""
         username = ""
