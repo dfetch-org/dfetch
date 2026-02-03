@@ -12,7 +12,15 @@ to make them usable for the upstream project.
 
    dfetch format-patch some-project
 
-.. scenario-include:: ../features/format-patch-in-git.feature
+.. tabs::
+
+   .. tab:: Git
+
+        .. scenario-include:: ../features/format-patch-in-git.feature
+
+   .. tab:: SVN
+
+      .. scenario-include:: ../features/format-patch-in-svn.feature
 
 """
 
@@ -24,6 +32,7 @@ import dfetch.commands.command
 import dfetch.manifest.project
 import dfetch.project
 from dfetch.log import get_logger
+from dfetch.project.git import GitSubProject
 from dfetch.project.superproject import SuperProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 from dfetch.vcs.patch import PatchAuthor, PatchInfo, add_prefix_to_patch
@@ -108,11 +117,13 @@ class FormatPatch(dfetch.commands.command.Command):
                             path_prefix=re.split(r"\*", subproject.source, 1)[0].rstrip(
                                 "/"
                             ),
+                            is_git=isinstance(subproject, GitSubProject),
                         )
 
                         output_patch_file = output_dir_path / pathlib.Path(patch).name
                         output_patch_file.write_text(
-                            patch_info.to_string() + patch_text
+                            subproject.create_formatted_patch_header(patch_info)
+                            + patch_text
                         )
 
                         logger.print_info_line(

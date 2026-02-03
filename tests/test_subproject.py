@@ -43,9 +43,6 @@ class ConcreteSubProject(SubProject):
     def _list_of_tags(self):
         return []
 
-    def current_revision(self):
-        return "1"
-
     def metadata_revision(self):
         return "1"
 
@@ -59,6 +56,9 @@ class ConcreteSubProject(SubProject):
         return ""
 
     def get_default_branch(self):
+        return ""
+
+    def create_formatted_patch_header(self, patch_info):
         return ""
 
 

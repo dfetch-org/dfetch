@@ -214,7 +214,7 @@ class PatchInfo:
     date: datetime.datetime = datetime.datetime.now(tz=datetime.timezone.utc)
     description: str = ""
 
-    def to_string(self) -> str:
+    def to_git_header(self) -> str:
         """Convert patch info to a string."""
         subject_line = (
             f"[PATCH {self.current_patch_idx}/{self.total_patches}] {self.subject}"
@@ -230,8 +230,12 @@ class PatchInfo:
             f"{self.description if self.description else self.subject}\n"
         )
 
+    def to_svn_header(self) -> str:
+        """Convert patch info to a string."""
+        return ""
 
-def add_prefix_to_patch(file_path: str, path_prefix: str) -> str:
+
+def add_prefix_to_patch(file_path: str, path_prefix: str, is_git: bool = True) -> str:
     """Rewrite a patch to prefix file paths."""
     patch = patch_ng.fromfile(file_path)
 
@@ -259,7 +263,11 @@ def add_prefix_to_patch(file_path: str, path_prefix: str) -> str:
 
         # diff header
         out.append(b"")
-        out.append(b"diff --git " + new_src + b" " + new_tgt)
+        if is_git:
+            out.append(b"diff --git " + new_src + b" " + new_tgt)
+        else:
+            out.append(b"Index: " + new_src)
+            out.append(b"=" * 67)
         out.append(b"--- " + new_src)
         out.append(b"+++ " + new_tgt)
 

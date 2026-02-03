@@ -12,7 +12,7 @@ from dfetch.manifest.version import Version
 from dfetch.project.subproject import SubProject
 from dfetch.util.util import safe_rmtree
 from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
-from dfetch.vcs.patch import reverse_patch
+from dfetch.vcs.patch import PatchInfo, reverse_patch
 
 logger = get_logger(__name__)
 
@@ -47,10 +47,6 @@ class GitSubProject(SubProject):
     def metadata_revision(self) -> str:
         """Get the revision of the metadata file."""
         return str(self._local_repo.get_last_file_hash(self.metadata_path))
-
-    def current_revision(self) -> str:
-        """Get the last revision of the repository."""
-        return str(self._local_repo.get_current_hash())
 
     def _diff_impl(
         self,
@@ -155,3 +151,7 @@ class GitSubProject(SubProject):
     def get_default_branch(self) -> str:  # type:ignore
         """Get the default branch of this repository."""
         return self._remote_repo.get_default_branch()
+
+    def create_formatted_patch_header(self, patch_info: PatchInfo) -> str:
+        """Create a formatted patch header for the given patch info."""
+        return patch_info.to_git_header()
