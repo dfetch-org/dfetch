@@ -52,9 +52,9 @@ Feature: Formatting a patch for git repositories
             From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
             From: ben <ben@example.com>
             Date: Mon, 02 Feb 2026 20:57:35 +0000
-            Subject: [PATCH 1/2] Fixes made
+            Subject: [PATCH 1/2] Patch for ext/test-repo-tag
 
-            Fixes made
+            Patch for ext/test-repo-tag
 
             diff --git a/README.md b/README.md
             --- a/README.md
@@ -70,9 +70,9 @@ Feature: Formatting a patch for git repositories
             From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
             From: ben <ben@example.com>
             Date: Mon, 02 Feb 2026 21:02:42 +0000
-            Subject: [PATCH 2/2] Fixes made
+            Subject: [PATCH 2/2] Patch for ext/test-repo-tag
 
-            Fixes made
+            Patch for ext/test-repo-tag
 
             diff --git a/README.md b/README.md
             --- a/README.md
