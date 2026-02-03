@@ -231,16 +231,14 @@ class PatchInfo:
         )
 
 
-def format_patch_with_prefix(
-    patch_text: bytes, patch_info: PatchInfo, path_prefix: str
-) -> str:
-    """Rewrite a patch to prefix file paths and add a mail-style header."""
-    patch = patch_ng.fromstring(patch_text)
+def add_prefix_to_patch(file_path: str, path_prefix: str) -> str:
+    """Rewrite a patch to prefix file paths."""
+    patch = patch_ng.fromfile(file_path)
 
     if not patch:
         return ""
 
-    out: list[bytes] = patch_info.to_string().encode("utf-8").splitlines()
+    out: list[bytes] = []
 
     for file in patch.items:
         # normalize prefix (no leading/trailing slash surprises)

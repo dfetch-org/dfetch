@@ -26,7 +26,7 @@ import dfetch.project
 from dfetch.log import get_logger
 from dfetch.project.superproject import SuperProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
-from dfetch.vcs.patch import PatchAuthor, PatchInfo, format_patch_with_prefix
+from dfetch.vcs.patch import PatchAuthor, PatchInfo, add_prefix_to_patch
 
 logger = get_logger(__name__)
 
@@ -92,25 +92,28 @@ class FormatPatch(dfetch.commands.command.Command):
 
                         version = subproject.on_disk_version()
 
-                        patch_text = format_patch_with_prefix(
-                            patch_text=pathlib.Path(patch).read_bytes(),
-                            patch_info=PatchInfo(
-                                author=PatchAuthor(
-                                    name=superproject.get_username(),
-                                    email=superproject.get_useremail(),
-                                ),
-                                subject=f"Patch for {project.name}",
-                                total_patches=len(subproject.patch),
-                                current_patch_idx=idx,
-                                revision="" if not version else version.revision,
+                        patch_info = PatchInfo(
+                            author=PatchAuthor(
+                                name=superproject.get_username(),
+                                email=superproject.get_useremail(),
                             ),
+                            subject=f"Patch for {project.name}",
+                            total_patches=len(subproject.patch),
+                            current_patch_idx=idx,
+                            revision="" if not version else version.revision,
+                        )
+
+                        patch_text = add_prefix_to_patch(
+                            patch,
                             path_prefix=re.split(r"\*", subproject.source, 1)[0].rstrip(
                                 "/"
                             ),
                         )
 
                         output_patch_file = output_dir_path / pathlib.Path(patch).name
-                        output_patch_file.write_text(patch_text)
+                        output_patch_file.write_text(
+                            patch_info.to_string() + patch_text
+                        )
 
                         logger.print_info_line(
                             project.name,
