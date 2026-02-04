@@ -111,7 +111,11 @@ class SuperProject:
         elif SvnRepo(self.root_directory).is_svn():
             username = SvnRepo(self.root_directory).get_username()
 
-        username = username or getpass.getuser()
+        if not username:
+            try:
+                username = getpass.getuser()
+            except Exception:
+                username = ""
         if not username:
             try:
                 username = os.getlogin()

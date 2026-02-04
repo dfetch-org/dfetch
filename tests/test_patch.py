@@ -13,6 +13,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from dfetch.vcs.patch import (
+    add_prefix_to_patch,
     apply_patch,
     create_git_patch_for_new_file,
     create_svn_patch_for_new_file,
@@ -337,3 +338,46 @@ def test_reverse_patch_small_random(original_lines, rng):
 
         restored = target_file.read_text()
         assert restored == original, "Reverse patch did not restore original!"
+
+
+def test_patch_prefix_new_file(tmp_path):
+    """Test adding prefix to new file."""
+    original_patch = "\n".join(
+        [
+            "diff --git a/test.txt b/test.txt",
+            "new file mode 100644",
+            "index 0000000..8029fa5",
+            "--- /dev/null",
+            "+++ b/test.txt",
+            "@@ -0,0 +1,3 @@",
+            "+Hello World",
+            "+",
+            "+Line above is empty",
+            "",
+        ]
+    )
+
+    original_patch_file = tmp_path / "original.patch"
+    original_patch_file.write_text(original_patch)
+
+    expected_patch = "\n".join(
+        [
+            "diff --git a/src/test.txt b/src/test.txt",
+            "new file mode 100644",
+            "index 0000000..8029fa5",
+            "--- /dev/null",
+            "+++ b/src/test.txt",
+            "@@ -0,0 +1,3 @@",
+            "+Hello World",
+            "+",
+            "+Line above is empty",
+            "",
+        ]
+    )
+
+    prefixed_patch = add_prefix_to_patch(
+        original_patch_file,
+        path_prefix="src",
+    )
+
+    assert prefixed_patch == expected_patch
