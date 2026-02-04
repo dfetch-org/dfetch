@@ -6,7 +6,9 @@ Feature: Formatting a patch for svn repositories
     be kept up to date with local changes.
 
     Scenario: All patch files are formatted
-        Given a svn-server "SomeProject"
+        Given a svn-server "SomeProject" with the files
+            | path                                     |
+            | SomeFolder/SomeSubFolder/README.md       |
         And the patch file 'MySvnProject/patches/001-diff.patch'
             """
             Index: README.md
@@ -34,6 +36,7 @@ Feature: Formatting a patch for svn repositories
                 projects:
                   - name: SomeProject
                     url: some-remote-server/SomeProject
+                    src: SomeFolder/SomeSubFolder
                     patch:
                       -  patches/001-diff.patch
                       -  patches/002-diff.patch
@@ -43,11 +46,10 @@ Feature: Formatting a patch for svn repositories
         When I run "dfetch format-patch SomeProject --output-directory formatted-patches" in MySvnProject
         Then the patch file 'MySvnProject/formatted-patches/001-diff.patch' is generated
             """
-
-            Index: a/README.md
+            Index: SomeFolder/SomeSubFolder/README.md
             ===================================================================
-            --- a/README.md
-            +++ b/README.md
+            --- SomeFolder/SomeSubFolder/README.md
+            +++ SomeFolder/SomeSubFolder/README.md
             @@ -1,1 +1,1 @@
             -Generated file for SomeProject
             +Patched file for SomeProject
@@ -55,11 +57,10 @@ Feature: Formatting a patch for svn repositories
             """
         And the patch file 'MySvnProject/formatted-patches/002-diff.patch' is generated
             """
-
-            Index: a/README.md
+            Index: SomeFolder/SomeSubFolder/README.md
             ===================================================================
-            --- a/README.md
-            +++ b/README.md
+            --- SomeFolder/SomeSubFolder/README.md
+            +++ SomeFolder/SomeSubFolder/README.md
             @@ -1,1 +1,1 @@
             -Generated file for SomeProject
             +Patched file for formatted patch of SomeProject

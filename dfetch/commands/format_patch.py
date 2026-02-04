@@ -32,7 +32,6 @@ import dfetch.commands.command
 import dfetch.manifest.project
 import dfetch.project
 from dfetch.log import get_logger
-from dfetch.project.git import GitSubProject
 from dfetch.project.superproject import SuperProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 from dfetch.vcs.patch import PatchAuthor, PatchInfo, add_prefix_to_patch
@@ -117,7 +116,6 @@ class FormatPatch(dfetch.commands.command.Command):
                             path_prefix=re.split(r"\*", subproject.source, 1)[0].rstrip(
                                 "/"
                             ),
-                            is_git=isinstance(subproject, GitSubProject),
                         )
 
                         output_patch_file = output_dir_path / pathlib.Path(patch).name

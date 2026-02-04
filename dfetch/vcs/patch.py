@@ -3,9 +3,10 @@
 import datetime
 import difflib
 import hashlib
+import re
 import stat
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import patch_ng
@@ -54,11 +55,20 @@ def filter_patch(patch_text: bytes, ignore: Sequence[str]) -> str:
 def dump_patch(patch_set: patch_ng.PatchSet) -> str:
     """Dump a patch to string."""
     patch_lines: list[str] = []
+
     for p in patch_set.items:
         for headline in p.header:
             patch_lines.append(headline.rstrip(b"\r\n").decode("utf-8"))
-        patch_lines.append(f"--- {p.source.decode('utf-8')}")
-        patch_lines.append(f"+++ {p.target.decode('utf-8')}")
+
+        source, target = p.source.decode("utf-8"), p.target.decode("utf-8")
+        if p.type == patch_ng.GIT:
+            if source != "/dev/null":
+                source = "a/" + source
+            if target != "/dev/null":
+                target = "b/" + target
+
+        patch_lines.append(f"--- {source}")
+        patch_lines.append(f"+++ {target}")
         for h in p.hunks:
             patch_lines.append(
                 f"@@ -{h.startsrc},{h.linessrc} +{h.starttgt},{h.linestgt} @@"
@@ -211,7 +221,9 @@ class PatchInfo:
     total_patches: int = 1
     current_patch_idx: int = 1
     revision: str = ""
-    date: datetime.datetime = datetime.datetime.now(tz=datetime.timezone.utc)
+    date: datetime.datetime = field(
+        default_factory=lambda: datetime.datetime.now(tz=datetime.timezone.utc)
+    )
     description: str = ""
 
     def to_git_header(self) -> str:
@@ -228,6 +240,7 @@ class PatchInfo:
             f"Subject: {subject_line}\n"
             "\n"
             f"{self.description if self.description else self.subject}\n"
+            "\n"
         )
 
     def to_svn_header(self) -> str:
@@ -235,50 +248,49 @@ class PatchInfo:
         return ""
 
 
-def add_prefix_to_patch(file_path: str, path_prefix: str, is_git: bool = True) -> str:
-    """Rewrite a patch to prefix file paths."""
+def add_prefix_to_patch(file_path: str, path_prefix: str) -> str:
+    """Add a prefix to all file paths in the given patch file."""
     patch = patch_ng.fromfile(file_path)
-
-    if not patch:
+    if not patch or not patch.items:
         return ""
 
-    out: list[bytes] = []
+    prefix = path_prefix.strip("/").encode()
+    if prefix:
+        prefix += b"/"
+
+    def rewrite_path(path: bytes) -> bytes:
+        if path == b"/dev/null":
+            return b"/dev/null"
+        return prefix + path
+
+    diff_git = re.compile(
+        r"^diff --git (?:(?P<a>a/))?(?P<old>.+) (?:(?P<b>b/))?(?P<new>.+)$"
+    )
+    svn_index = re.compile(rb"^Index: (.+)$")
 
     for file in patch.items:
-        # normalize prefix (no leading/trailing slash surprises)
-        prefix = path_prefix.strip("/").encode()
-        prefix = prefix + b"/" if prefix else b""
+        file.source = rewrite_path(file.source)
+        file.target = rewrite_path(file.target)
 
-        src = file.source
-        tgt = file.target
+        for line in file.header:
 
-        # strip a/ b/ if present
-        if src.startswith(b"a/"):
-            src = src[2:]
-        if tgt.startswith(b"b/"):
-            tgt = tgt[2:]
+            git_match = diff_git.match(line.decode("utf-8", errors="replace"))
+            if git_match:
+                file.header[file.header.index(line)] = (
+                    b"diff --git "
+                    + (git_match.group("a").encode() if git_match.group("a") else b"")
+                    + rewrite_path(git_match.group("old").encode())
+                    + b" "
+                    + (git_match.group("b").encode() if git_match.group("b") else b"")
+                    + rewrite_path(git_match.group("new").encode())
+                )
+                break
 
-        new_src = b"a/" + prefix + src
-        new_tgt = b"b/" + prefix + tgt
+            svn_match = svn_index.match(line)
+            if svn_match:
+                file.header[file.header.index(line)] = b"Index: " + rewrite_path(
+                    svn_match.group(1)
+                )
+                break
 
-        # diff header
-        out.append(b"")
-        if is_git:
-            out.append(b"diff --git " + new_src + b" " + new_tgt)
-        else:
-            out.append(b"Index: " + new_src)
-            out.append(b"=" * 67)
-        out.append(b"--- " + new_src)
-        out.append(b"+++ " + new_tgt)
-
-        for hunk in file.hunks:
-            out.append(
-                f"@@ -{hunk.startsrc},{hunk.linessrc} "
-                f"+{hunk.starttgt},{hunk.linestgt} @@".encode()
-            )
-            for line in hunk.text:
-                out.append(line.rstrip(b"\r\n"))
-
-        out.append(b"")  # blank line between files
-
-    return b"\n".join(out).decode("utf-8")
+    return dump_patch(patch)
