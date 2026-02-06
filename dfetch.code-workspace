@@ -39,6 +39,8 @@
 		"black-formatter.importStrategy": "fromEnvironment",
 		"editor.renderWhitespace": "all",
 		"files.trimTrailingWhitespace": true,
+		"behave-vsc.justMyCode": false,
+		"debugpy.debugJustMyCode": false,
 	},
 	"launch": {
 		"version": "0.2.0",
