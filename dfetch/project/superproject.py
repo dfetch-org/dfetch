@@ -114,7 +114,7 @@ class SuperProject:
         if not username:
             try:
                 username = getpass.getuser()
-            except Exception:
+            except (ImportError, KeyError, OSError):
                 username = ""
         if not username:
             try:
