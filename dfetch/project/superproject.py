@@ -17,9 +17,9 @@ from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.parse import find_manifest, parse
 from dfetch.manifest.project import ProjectEntry
-from dfetch.project.git import GitSubProject
+from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.subproject import SubProject
-from dfetch.project.svn import SvnSubProject
+from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.util.util import resolve_absolute_path
 from dfetch.vcs.git import GitLocalRepo
 from dfetch.vcs.svn import SvnRepo
