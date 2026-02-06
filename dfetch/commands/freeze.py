@@ -70,7 +70,7 @@ class Freeze(dfetch.commands.command.Command):
         """Perform the freeze."""
         del args  # unused
 
-        superproject = SuperProject()
+        superproject = SuperProject.create()
 
         exceptions: list[str] = []
         projects: list[ProjectEntry] = []

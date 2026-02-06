@@ -11,6 +11,7 @@ from __future__ import annotations
 import getpass
 import os
 import pathlib
+from abc import ABC, abstractmethod
 from collections.abc import Sequence
 
 from dfetch.log import get_logger
@@ -27,7 +28,7 @@ from dfetch.vcs.svn import SvnRepo
 logger = get_logger(__name__)
 
 
-class SuperProject:
+class SuperProject(ABC):
     """Representation of the project containing the manifest.
 
     A SuperProject is the repository/directory that contains the dfetch
@@ -35,16 +36,28 @@ class SuperProject:
     managed by git, svn, or is unversioned.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, manifest: Manifest, root_directory: pathlib.Path) -> None:
+        """Create a SuperProject by looking for a manifest file."""
+        self._manifest = manifest
+        self._root_directory = root_directory
+
+    @staticmethod
+    def create() -> SuperProject:
         """Create a SuperProject by looking for a manifest file."""
         logger.debug("Looking for manifest")
         manifest_path = find_manifest()
 
         logger.debug(f"Using manifest {manifest_path}")
-        self._manifest = parse(manifest_path)
-        self._root_directory = resolve_absolute_path(
-            os.path.dirname(self._manifest.path)
-        )
+        manifest = parse(manifest_path)
+        root_directory = resolve_absolute_path(os.path.dirname(manifest.path))
+
+        if GitLocalRepo(root_directory).is_git():
+            return GitSuperProject(manifest, root_directory)
+
+        if SvnRepo(root_directory).is_svn():
+            return SvnSuperProject(manifest, root_directory)
+
+        return NoVcsSuperProject(manifest, root_directory)
 
     @property
     def root_directory(self) -> pathlib.Path:
@@ -56,14 +69,41 @@ class SuperProject:
         """The manifest of the super project."""
         return self._manifest
 
+    @abstractmethod
     def get_sub_project(self, project: ProjectEntry) -> SubProject | None:
         """Get the subproject in the same vcs type as the superproject."""
-        if GitLocalRepo(self.root_directory).is_git():
-            return GitSubProject(project)
-        if SvnRepo(self.root_directory).is_svn():
-            return SvnSubProject(project)
 
-        return None
+    @abstractmethod
+    def ignored_files(self, path: str) -> Sequence[str]:
+        """Return a list of files that can be ignored in a given path."""
+
+    @abstractmethod
+    def in_vcs(self) -> bool:
+        """Check if this superproject is under version control."""
+
+    @abstractmethod
+    def is_git(self) -> bool:
+        """Check if this superproject is a git repository."""
+
+    @abstractmethod
+    def has_local_changes_in_dir(self, path: str) -> bool:
+        """Check if the superproject has local changes."""
+
+    @abstractmethod
+    def get_username(self) -> str:
+        """Get the username of the superproject VCS."""
+
+    @abstractmethod
+    def get_useremail(self) -> str:
+        """Get the user email of the superproject VCS."""
+
+
+class GitSuperProject(SuperProject):
+    """A git specific superproject."""
+
+    def get_sub_project(self, project: ProjectEntry) -> SubProject | None:
+        """Get the subproject in the same vcs type as the superproject."""
+        return GitSubProject(project)
 
     def ignored_files(self, path: str) -> Sequence[str]:
         """Return a list of files that can be ignored in a given path."""
@@ -74,42 +114,23 @@ class SuperProject:
                 f"{resolved_path} not in superproject {self.root_directory}!"
             )
 
-        if GitLocalRepo(self.root_directory).is_git():
-            return GitLocalRepo.ignored_files(path)
-        if SvnRepo(self.root_directory).is_svn():
-            return SvnRepo.ignored_files(path)
-
-        return []
+        return GitLocalRepo.ignored_files(path)
 
     def in_vcs(self) -> bool:
         """Check if this superproject is under version control."""
-        return (
-            GitLocalRepo(self.root_directory).is_git()
-            or SvnRepo(self.root_directory).is_svn()
-        )
+        return True
 
     def is_git(self) -> bool:
         """Check if this superproject is a git repository."""
-        return GitLocalRepo(self.root_directory).is_git()
+        return True
 
     def has_local_changes_in_dir(self, path: str) -> bool:
         """Check if the superproject has local changes."""
-        if GitLocalRepo(self.root_directory).is_git():
-            return GitLocalRepo.any_changes_or_untracked(path)
-
-        if SvnRepo(self.root_directory).is_svn():
-            return SvnRepo.any_changes_or_untracked(path)
-
-        return True
+        return GitLocalRepo.any_changes_or_untracked(path)
 
     def get_username(self) -> str:
         """Get the username of the superproject VCS."""
-        username = ""
-        if GitLocalRepo(self.root_directory).is_git():
-            username = GitLocalRepo(self.root_directory).get_username()
-
-        elif SvnRepo(self.root_directory).is_svn():
-            username = SvnRepo(self.root_directory).get_username()
+        username = GitLocalRepo(self.root_directory).get_username()
 
         if not username:
             try:
@@ -125,12 +146,111 @@ class SuperProject:
 
     def get_useremail(self) -> str:
         """Get the user email of the superproject VCS."""
-        email = ""
-        if GitLocalRepo(self.root_directory).is_git():
-            email = GitLocalRepo(self.root_directory).get_useremail()
-
-        elif SvnRepo(self.root_directory).is_svn():
-            email = SvnRepo(self.root_directory).get_useremail()
+        email = GitLocalRepo(self.root_directory).get_useremail()
 
         username = self.get_username() or "unknown"
         return email or f"{username}@example.com"
+
+
+class SvnSuperProject(SuperProject):
+    """A SVN specific superproject."""
+
+    def get_sub_project(self, project: ProjectEntry) -> SubProject | None:
+        """Get the subproject in the same vcs type as the superproject."""
+        return SvnSubProject(project)
+
+    def ignored_files(self, path: str) -> Sequence[str]:
+        """Return a list of files that can be ignored in a given path."""
+        resolved_path = resolve_absolute_path(path)
+
+        if not resolved_path.is_relative_to(self.root_directory):
+            raise RuntimeError(
+                f"{resolved_path} not in superproject {self.root_directory}!"
+            )
+
+        return SvnRepo.ignored_files(path)
+
+    def in_vcs(self) -> bool:
+        """Check if this superproject is under version control."""
+        return True
+
+    def is_git(self) -> bool:
+        """Check if this superproject is a git repository."""
+        return False
+
+    def has_local_changes_in_dir(self, path: str) -> bool:
+        """Check if the superproject has local changes."""
+        return SvnRepo.any_changes_or_untracked(path)
+
+    def get_username(self) -> str:
+        """Get the username of the superproject VCS."""
+        username = SvnRepo(self.root_directory).get_username()
+
+        if not username:
+            try:
+                username = getpass.getuser()
+            except (ImportError, KeyError, OSError):
+                username = ""
+        if not username:
+            try:
+                username = os.getlogin()
+            except OSError:
+                username = "unknown"
+        return username
+
+    def get_useremail(self) -> str:
+        """Get the user email of the superproject VCS."""
+        username = self.get_username() or "unknown"
+        return f"{username}@example.com"
+
+
+class NoVcsSuperProject(SuperProject):
+    """A superproject without any version control."""
+
+    def get_sub_project(self, project: ProjectEntry) -> SubProject | None:
+        """Get the subproject in the same vcs type as the superproject."""
+        return None
+
+    def ignored_files(self, path: str) -> Sequence[str]:
+        """Return a list of files that can be ignored in a given path."""
+        resolved_path = resolve_absolute_path(path)
+
+        if not resolved_path.is_relative_to(self.root_directory):
+            raise RuntimeError(
+                f"{resolved_path} not in superproject {self.root_directory}!"
+            )
+
+        return []
+
+    def in_vcs(self) -> bool:
+        """Check if this superproject is under version control."""
+        return False
+
+    def is_git(self) -> bool:
+        """Check if this superproject is a git repository."""
+        return False
+
+    def has_local_changes_in_dir(self, path: str) -> bool:
+        """Check if the superproject has local changes."""
+        return True
+
+    def get_username(self) -> str:
+        """Get the username of the superproject VCS."""
+        username = ""
+
+        if not username:
+            try:
+                username = getpass.getuser()
+            except (ImportError, KeyError, OSError):
+                username = ""
+        if not username:
+            try:
+                username = os.getlogin()
+            except OSError:
+                username = "unknown"
+        return username
+
+    def get_useremail(self) -> str:
+        """Get the user email of the superproject VCS."""
+        username = self.get_username() or "unknown"
+        return f"{username}@example.com"

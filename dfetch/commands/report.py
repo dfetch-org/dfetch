@@ -63,7 +63,7 @@ class Report(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Generate the report."""
-        superproject = SuperProject()
+        superproject = SuperProject.create()
 
         with dfetch.util.util.in_directory(superproject.root_directory):
             reporter = REPORTERS[args.type](superproject.manifest)

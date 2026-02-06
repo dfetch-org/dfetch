@@ -90,7 +90,7 @@ class Check(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
-        superproject = SuperProject()
+        superproject = SuperProject.create()
         reporters = self._get_reporters(args, superproject.manifest)
 
         with in_directory(superproject.root_directory):
