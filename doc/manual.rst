@@ -133,7 +133,7 @@ Format patch
    :prog: dfetch
    :path: format-patch
 
-.. asciinema:: asciicasts/format_patch.cast
+.. asciinema:: asciicasts/format-patch.cast
 
 .. automodule:: dfetch.commands.format_patch
 

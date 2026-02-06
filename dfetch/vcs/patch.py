@@ -7,6 +7,7 @@ import re
 import stat
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from email.utils import format_datetime
 from pathlib import Path
 
 import patch_ng
@@ -236,7 +237,7 @@ class PatchInfo:
         return (
             f"From {self.revision or '0000000000000000000000000000000000000000'} Mon Sep 17 00:00:00 2001\n"
             f"From: {self.author.name} <{self.author.email}>\n"
-            f"Date: {self.date:%a, %d %b %Y %H:%M:%S +0000}\n"
+            f"Date: {format_datetime(self.date)}\n"
             f"Subject: {subject_line}\n"
             "\n"
             f"{self.description if self.description else self.subject}\n"
@@ -252,7 +253,7 @@ def add_prefix_to_patch(file_path: str, path_prefix: str) -> str:
     """Add a prefix to all file paths in the given patch file."""
     patch = patch_ng.fromfile(file_path)
     if not patch or not patch.items:
-        return ""
+        raise RuntimeError(f'Failed to parse patch file: "{file_path}"')
 
     prefix = path_prefix.strip("/").encode()
     if prefix:
@@ -264,7 +265,7 @@ def add_prefix_to_patch(file_path: str, path_prefix: str) -> str:
         return prefix + path
 
     diff_git = re.compile(
-        r"^diff --git (?:(?P<a>a/))?(?P<old>.+) (?:(?P<b>b/))?(?P<new>.+)$"
+        r"^diff --git (?:(?P<a>a/))?(?P<old>.+) (?:(?P<b>b/))?(?P<new>.+?)[\r\n]*$"
     )
     svn_index = re.compile(rb"^Index: (.+)$")
 
@@ -272,11 +273,11 @@ def add_prefix_to_patch(file_path: str, path_prefix: str) -> str:
         file.source = rewrite_path(file.source)
         file.target = rewrite_path(file.target)
 
-        for line in file.header:
+        for idx, line in enumerate(file.header):
 
             git_match = diff_git.match(line.decode("utf-8", errors="replace"))
             if git_match:
-                file.header[file.header.index(line)] = (
+                file.header[idx] = (
                     b"diff --git "
                     + (git_match.group("a").encode() if git_match.group("a") else b"")
                     + rewrite_path(git_match.group("old").encode())
@@ -288,9 +289,7 @@ def add_prefix_to_patch(file_path: str, path_prefix: str) -> str:
 
             svn_match = svn_index.match(line)
             if svn_match:
-                file.header[file.header.index(line)] = b"Index: " + rewrite_path(
-                    svn_match.group(1)
-                )
+                file.header[idx] = b"Index: " + rewrite_path(svn_match.group(1))
                 break
 
     return dump_patch(patch)

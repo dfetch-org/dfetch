@@ -34,7 +34,22 @@ Using the generated patch
 The patch can be used in the manifest; see the :ref:`patch` attribute for more information.
 
 Because the patch is generated relative to the project's directory, you should use the :ref:`format-patch`
-command to reformat the patch for upstream use.
+command to reformat the patch for upstream use. This will make the patch relative to the root of the project,
+which is usually expected by upstream projects.
+
+.. tabs::
+
+    .. tab:: Git
+
+        .. code-block:: sh
+
+            git apply --check formatted-some-project.patch
+
+    .. tab:: SVN
+
+        .. code-block:: sh
+
+            svn patch formatted-some-project.patch
 
 """
 

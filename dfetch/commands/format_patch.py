@@ -2,7 +2,7 @@
 
 *Dfetch* allows you to keep local changes to external projects in the form of
 patch files. These patch files should be created with the `dfetch diff` command.
-However, these patch files are relative the :ref:`source directory <source-dir>`
+However, these patch files are relative to the :ref:`source directory <source-dir>`
 of the project inside the superproject. This makes it hard to apply these patches
 upstream, as upstream projects usually expect patches to be relative to their
 root directory. The ``format-patch`` command reformats all patches of a project
@@ -14,17 +14,18 @@ to make them usable for the upstream project.
 
 .. tabs::
 
-   .. tab:: Git
+    .. tab:: Git
 
         .. scenario-include:: ../features/format-patch-in-git.feature
 
-   .. tab:: SVN
+    .. tab:: SVN
 
-      .. scenario-include:: ../features/format-patch-in-svn.feature
+        .. scenario-include:: ../features/format-patch-in-svn.feature
 
 """
 
 import argparse
+import os
 import pathlib
 import re
 
@@ -96,9 +97,8 @@ class FormatPatch(dfetch.commands.command.Command):
                         )
                         continue
 
+                    version = subproject.on_disk_version()
                     for idx, patch in enumerate(subproject.patch, start=1):
-
-                        version = subproject.on_disk_version()
 
                         patch_info = PatchInfo(
                             author=PatchAuthor(
@@ -126,7 +126,7 @@ class FormatPatch(dfetch.commands.command.Command):
 
                         logger.print_info_line(
                             project.name,
-                            f"formatted patch written to {output_patch_file}",
+                            f"formatted patch written to {output_patch_file.relative_to(os.getcwd())}",
                         )
 
         if exceptions:
