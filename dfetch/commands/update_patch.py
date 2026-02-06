@@ -34,7 +34,6 @@ The below statement will update the patch for ``some-project`` from your manifes
 
 import argparse
 import pathlib
-import shutil
 from typing import Optional
 
 import dfetch.commands.command
@@ -168,7 +167,6 @@ class UpdatePatch(dfetch.commands.command.Command):
             return None
 
         if patch_text:
-            shutil.move(patch_to_update, patch_to_update + ".backup")
             logger.print_info_line(project_name, f'Updating patch "{patch_to_update}"')
             patch_path.write_text(patch_text, encoding="UTF-8")
         else:
