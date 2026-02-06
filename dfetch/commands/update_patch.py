@@ -70,7 +70,7 @@ class UpdatePatch(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the update patch."""
-        superproject = SuperProject()
+        superproject = SuperProject.create()
 
         exceptions: list[str] = []
 

@@ -352,8 +352,3 @@ class SvnRepo:
             return str(result.stdout.decode().strip())
         except SubprocessCommandError:
             return ""
-
-    def get_useremail(self) -> str:
-        """Get the user email of the local svn repo."""
-        # SVN does not have user email concept
-        return ""

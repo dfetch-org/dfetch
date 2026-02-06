@@ -96,7 +96,7 @@ class Diff(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the diff."""
-        superproject = SuperProject()
+        superproject = SuperProject.create()
         old_rev, new_rev = self._parse_revs(args.revs)
 
         with in_directory(superproject.root_directory):

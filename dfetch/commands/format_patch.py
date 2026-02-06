@@ -69,7 +69,7 @@ class FormatPatch(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the format patch."""
-        superproject = SuperProject()
+        superproject = SuperProject.create()
 
         exceptions: list[str] = []
 

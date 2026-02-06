@@ -9,7 +9,7 @@ from unittest.mock import patch
 import pytest
 
 from dfetch.manifest.project import ProjectEntry
-from dfetch.project.svn import SvnSubProject
+from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.util.cmdline import SubprocessCommandError
 from dfetch.vcs.svn import External, SvnRemote, SvnRepo
 
