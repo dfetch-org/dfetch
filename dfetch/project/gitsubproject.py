@@ -44,10 +44,6 @@ class GitSubProject(SubProject):
         """Get list of all available tags."""
         return [str(tag) for tag in self._remote_repo.list_of_tags()]
 
-    def metadata_revision(self) -> str:
-        """Get the revision of the metadata file."""
-        return str(self._local_repo.get_last_file_hash(self.metadata_path))
-
     def _diff_impl(
         self,
         old_revision: str,

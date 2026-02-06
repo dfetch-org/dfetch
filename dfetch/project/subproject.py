@@ -386,10 +386,6 @@ class SubProject(ABC):
         """Fetch the given version of the subproject, should be implemented by the child class."""
 
     @abstractmethod
-    def metadata_revision(self) -> str:
-        """Get the revision of the metadata file."""
-
-    @abstractmethod
     def _diff_impl(
         self,
         old_revision: str,  # noqa
