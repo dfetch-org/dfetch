@@ -104,7 +104,7 @@ jobs:
 
       - name: Upload installer to release
         if: ${{ inputs.release_id }}
-        uses: softprops/action-gh-release@78237c54eb15310cb292a15480c4be010be47aeb # v2.5.0
+        uses: softprops/action-gh-release@e798e6a1ede8d07b74ac4cdac6bdfa4cc1653907 # v2.5.0
         with:
           tag_name: ${{ inputs.release_id }}
           files: |
@@ -214,7 +214,7 @@ jobs:
         name: python-package-distributions
         path: dist/
     - name: Upload artifacts to release
-      uses: softprops/action-gh-release@78237c54eb15310cb292a15480c4be010be47aeb # v2.5.0
+      uses: softprops/action-gh-release@e798e6a1ede8d07b74ac4cdac6bdfa4cc1653907 # v2.5.0
       with:
         tag_name: ${{ inputs.release_id }}
         files: dist/*
