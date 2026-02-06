@@ -43,9 +43,6 @@ class ConcreteSubProject(SubProject):
     def _list_of_tags(self):
         return []
 
-    def metadata_revision(self):
-        return "1"
-
     def _diff_impl(
         self,
         old_revision,

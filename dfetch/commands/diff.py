@@ -118,7 +118,9 @@ class Diff(dfetch.commands.command.Command):
                         raise RuntimeError(
                             "Can only create patch if your project is an SVN or Git repo",
                         )
-                    old_rev = old_rev or subproject.metadata_revision()
+                    old_rev = old_rev or superproject.get_file_revision(
+                        subproject.metadata_path
+                    )
                     if not old_rev:
                         raise RuntimeError(
                             "When not providing any revisions, dfetch starts from"

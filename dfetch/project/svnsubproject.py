@@ -186,10 +186,6 @@ class SvnSubProject(SubProject):
     def _get_revision(self, branch: str) -> str:
         return self._get_info(branch)["Revision"]
 
-    def metadata_revision(self) -> str:
-        """Get the revision of the metadata file."""
-        return SvnRepo.get_last_changed_revision(self.metadata_path)
-
     def _diff_impl(
         self,
         old_revision: str,

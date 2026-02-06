@@ -89,6 +89,10 @@ class SuperProject(ABC):
     def get_useremail(self) -> str:
         """Get the user email of the superproject VCS."""
 
+    @abstractmethod
+    def get_file_revision(self, path: str | pathlib.Path) -> str:
+        """Get the revision of the given file."""
+
 
 class GitSuperProject(SuperProject):
     """A git specific superproject."""
@@ -135,6 +139,10 @@ class GitSuperProject(SuperProject):
         username = self.get_username() or "unknown"
         return email or f"{username}@example.com"
 
+    def get_file_revision(self, path: str | pathlib.Path) -> str:
+        """Get the revision of the given file."""
+        return str(GitLocalRepo(self.root_directory).get_last_file_hash(str(path)))
+
 
 class SvnSuperProject(SuperProject):
     """A SVN specific superproject."""
@@ -179,6 +187,10 @@ class SvnSuperProject(SuperProject):
         username = self.get_username() or "unknown"
         return f"{username}@example.com"
 
+    def get_file_revision(self, path: str | pathlib.Path) -> str:
+        """Get the revision of the given file."""
+        return str(SvnRepo(self.root_directory).get_last_changed_revision(str(path)))
+
 
 class NoVcsSuperProject(SuperProject):
     """A superproject without any version control."""
@@ -222,3 +234,7 @@ class NoVcsSuperProject(SuperProject):
         """Get the user email of the superproject VCS."""
         username = self.get_username() or "unknown"
         return f"{username}@example.com"
+
+    def get_file_revision(self, path: str | pathlib.Path) -> str:
+        """Get the revision of the given file."""
+        return ""
