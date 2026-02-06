@@ -78,14 +78,6 @@ class SuperProject(ABC):
         """Return a list of files that can be ignored in a given path."""
 
     @abstractmethod
-    def in_vcs(self) -> bool:
-        """Check if this superproject is under version control."""
-
-    @abstractmethod
-    def is_git(self) -> bool:
-        """Check if this superproject is a git repository."""
-
-    @abstractmethod
     def has_local_changes_in_dir(self, path: str) -> bool:
         """Check if the superproject has local changes."""
 
@@ -115,14 +107,6 @@ class GitSuperProject(SuperProject):
             )
 
         return GitLocalRepo.ignored_files(path)
-
-    def in_vcs(self) -> bool:
-        """Check if this superproject is under version control."""
-        return True
-
-    def is_git(self) -> bool:
-        """Check if this superproject is a git repository."""
-        return True
 
     def has_local_changes_in_dir(self, path: str) -> bool:
         """Check if the superproject has local changes."""
@@ -170,14 +154,6 @@ class SvnSuperProject(SuperProject):
 
         return SvnRepo.ignored_files(path)
 
-    def in_vcs(self) -> bool:
-        """Check if this superproject is under version control."""
-        return True
-
-    def is_git(self) -> bool:
-        """Check if this superproject is a git repository."""
-        return False
-
     def has_local_changes_in_dir(self, path: str) -> bool:
         """Check if the superproject has local changes."""
         return SvnRepo.any_changes_or_untracked(path)
@@ -221,14 +197,6 @@ class NoVcsSuperProject(SuperProject):
             )
 
         return []
-
-    def in_vcs(self) -> bool:
-        """Check if this superproject is under version control."""
-        return False
-
-    def is_git(self) -> bool:
-        """Check if this superproject is a git repository."""
-        return False
 
     def has_local_changes_in_dir(self, path: str) -> bool:
         """Check if the superproject has local changes."""

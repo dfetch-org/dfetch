@@ -40,7 +40,7 @@ import dfetch.commands.command
 import dfetch.manifest.project
 import dfetch.project
 from dfetch.log import get_logger
-from dfetch.project.superproject import SuperProject
+from dfetch.project.superproject import GitSuperProject, SuperProject, SvnSuperProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -74,12 +74,12 @@ class UpdatePatch(dfetch.commands.command.Command):
 
         exceptions: list[str] = []
 
-        if not superproject.in_vcs():
+        if not isinstance(superproject, (GitSuperProject, SvnSuperProject)):
             raise RuntimeError(
                 "The project containing the manifest is not under version control,"
                 " updating patches is not supported"
             )
-        if not superproject.is_git():
+        if not isinstance(superproject, GitSuperProject):
             logger.warning("Update patch is only fully supported in git superprojects!")
 
         with in_directory(superproject.root_directory):
