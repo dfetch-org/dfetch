@@ -24,7 +24,6 @@ class GitSubProject(SubProject):
         """Create a Git subproject."""
         super().__init__(project)
         self._remote_repo = GitRemote(self.remote)
-        self._local_repo = GitLocalRepo(self.local_path)
 
     def check(self) -> bool:
         """Check if is GIT."""
@@ -70,7 +69,8 @@ class GitSubProject(SubProject):
             f"/{name.upper()}" for name in self.LICENSE_GLOBS
         ]
 
-        fetched_sha = self._local_repo.checkout_version(
+        local_repo = GitLocalRepo(self.local_path)
+        fetched_sha = local_repo.checkout_version(
             remote=self.remote,
             version=rev_or_branch_or_tag,
             src=self.source,
@@ -78,7 +78,7 @@ class GitSubProject(SubProject):
             ignore=self.ignore,
         )
 
-        safe_rmtree(os.path.join(self.local_path, self._local_repo.METADATA_DIR))
+        safe_rmtree(os.path.join(self.local_path, local_repo.METADATA_DIR))
 
         return self._determine_fetched_version(version, fetched_sha)
 
