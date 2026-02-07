@@ -2,9 +2,7 @@
 
 import os
 import pathlib
-from collections.abc import Sequence
 from functools import lru_cache
-from typing import Optional
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
@@ -12,7 +10,7 @@ from dfetch.manifest.version import Version
 from dfetch.project.subproject import SubProject
 from dfetch.util.util import safe_rmtree
 from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
-from dfetch.vcs.patch import PatchInfo, reverse_patch
+from dfetch.vcs.patch import PatchInfo
 
 logger = get_logger(__name__)
 
@@ -43,39 +41,6 @@ class GitSubProject(SubProject):
     def _list_of_tags(self) -> list[str]:
         """Get list of all available tags."""
         return [str(tag) for tag in self._remote_repo.list_of_tags()]
-
-    def _diff_impl(
-        self,
-        old_revision: str,
-        new_revision: Optional[str],
-        ignore: Sequence[str],
-        reverse: bool = False,
-    ) -> str:
-        """Get the diff of two revisions."""
-        diff_since_revision = str(
-            self._local_repo.create_diff(old_revision, new_revision, ignore, reverse)
-        )
-
-        if new_revision:
-            return diff_since_revision
-
-        combined_diff = []
-
-        if diff_since_revision:
-            combined_diff += [diff_since_revision]
-
-        untracked_files_patch = str(self._local_repo.untracked_files_patch(ignore))
-        if untracked_files_patch:
-            if reverse:
-                reversed_patch = reverse_patch(untracked_files_patch.encode("utf-8"))
-                if not reversed_patch:
-                    raise RuntimeError(
-                        "Failed to reverse untracked files patch; patch parsing returned empty."
-                    )
-                untracked_files_patch = reversed_patch
-            combined_diff += [untracked_files_patch]
-
-        return "\n".join(combined_diff)
 
     @staticmethod
     def revision_is_enough() -> bool:

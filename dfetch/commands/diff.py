@@ -60,7 +60,7 @@ import pathlib
 import dfetch.commands.command
 from dfetch.log import get_logger
 from dfetch.project.metadata import Metadata
-from dfetch.project.superproject import SuperProject
+from dfetch.project.superproject import NoVcsSuperProject, RevisionRange, SuperProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -99,6 +99,11 @@ class Diff(dfetch.commands.command.Command):
         superproject = SuperProject.create()
         old_rev, new_rev = self._parse_revs(args.revs)
 
+        if isinstance(superproject, NoVcsSuperProject):
+            raise RuntimeError(
+                "Can only create patch if your project is an SVN or Git repo",
+            )
+
         with in_directory(superproject.root_directory):
             exceptions: list[str] = []
             projects = superproject.manifest.selected_projects(args.projects)
@@ -114,10 +119,9 @@ class Diff(dfetch.commands.command.Command):
                         )
                     subproject = superproject.get_sub_project(project)
 
-                    if subproject is None:
-                        raise RuntimeError(
-                            "Can only create patch if your project is an SVN or Git repo",
-                        )
+                    if not subproject:
+                        raise RuntimeError("No subproject!")
+
                     old_rev = old_rev or superproject.get_file_revision(
                         subproject.metadata_path
                     )
@@ -127,7 +131,11 @@ class Diff(dfetch.commands.command.Command):
                             f" the last revision to {Metadata.FILENAME} in {subproject.local_path}."
                             " Please either commit this, or specify a revision to start from with --revs"
                         )
-                    patch = subproject.diff(old_rev, new_rev)
+                    patch = superproject.diff(
+                        project.destination,
+                        revisions=RevisionRange(old_rev, new_rev),
+                        ignore=(Metadata.FILENAME,),
+                    )
 
                     msg = self._rev_msg(old_rev, new_rev)
                     if patch:

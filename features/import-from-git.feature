@@ -4,7 +4,6 @@ Feature: Importing submodules from an existing git repository
     as easy as possible, a user should be able to generate a manifest that
     is filled with the submodules and their pinned versions.
 
-    @wip
     Scenario: Multiple submodules are imported
         Given a git repo with the following submodules
             | path           | url                                     | revision                                 |

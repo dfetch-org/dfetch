@@ -40,7 +40,13 @@ import dfetch.commands.command
 import dfetch.manifest.project
 import dfetch.project
 from dfetch.log import get_logger
-from dfetch.project.superproject import GitSuperProject, SuperProject, SvnSuperProject
+from dfetch.project.metadata import Metadata
+from dfetch.project.superproject import (
+    GitSuperProject,
+    NoVcsSuperProject,
+    RevisionRange,
+    SuperProject,
+)
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -74,7 +80,7 @@ class UpdatePatch(dfetch.commands.command.Command):
 
         exceptions: list[str] = []
 
-        if not isinstance(superproject, (GitSuperProject, SvnSuperProject)):
+        if isinstance(superproject, NoVcsSuperProject):
             raise RuntimeError(
                 "The project containing the manifest is not under version control,"
                 " updating patches is not supported"
@@ -123,10 +129,10 @@ class UpdatePatch(dfetch.commands.command.Command):
                     )
 
                     # generate reverse patch
-                    patch_text = subproject.diff(
-                        old_revision="",
-                        new_revision="",
-                        # ignore=files_to_ignore,
+                    patch_text = superproject.diff(
+                        subproject.local_path,
+                        revisions=RevisionRange("", ""),
+                        ignore=[Metadata.FILENAME],
                         reverse=True,
                     )
 

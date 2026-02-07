@@ -386,16 +386,6 @@ class SubProject(ABC):
         """Fetch the given version of the subproject, should be implemented by the child class."""
 
     @abstractmethod
-    def _diff_impl(
-        self,
-        old_revision: str,  # noqa
-        new_revision: Optional[str],  # noqa
-        ignore: Sequence[str],
-        reverse: bool = False,
-    ) -> str:
-        """Get the diff of two revisions, should be implemented by the child class."""
-
-    @abstractmethod
     def get_default_branch(self) -> str:
         """Get the default branch of this repository."""
 
@@ -405,12 +395,6 @@ class SubProject(ABC):
         return any(
             fnmatch.fnmatch(filename.lower(), pattern)
             for pattern in SubProject.LICENSE_GLOBS
-        )
-
-    def diff(self, old_revision: str, new_revision: str, reverse: bool = False) -> str:
-        """Generate a relative diff for a subproject."""
-        return self._diff_impl(
-            old_revision, new_revision, ignore=(Metadata.FILENAME,), reverse=reverse
         )
 
     @abstractmethod
