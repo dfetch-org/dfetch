@@ -28,7 +28,6 @@ class SvnSubProject(SubProject):
         """Create a Svn subproject."""
         super().__init__(project)
         self._remote_repo = SvnRemote(self.remote)
-        self._repo = SvnRepo(self.local_path)
 
     def check(self) -> bool:
         """Check if is SVN."""
@@ -41,7 +40,7 @@ class SvnSubProject(SubProject):
 
     def _latest_revision_on_branch(self, branch: str) -> str:
         """Get the latest revision on a branch."""
-        if branch not in (self._repo.DEFAULT_BRANCH, "", " "):
+        if branch not in (SvnRepo.DEFAULT_BRANCH, "", " "):
             branch = f"branches/{branch}"
         return self._get_revision(branch)
 
@@ -86,11 +85,11 @@ class SvnSubProject(SubProject):
             branch_path = ""
             branch = " "
         else:
-            branch = version.branch or self._repo.DEFAULT_BRANCH
+            branch = version.branch or SvnRepo.DEFAULT_BRANCH
             branch_path = (
                 f"branches/{branch}"
-                if branch != self._repo.DEFAULT_BRANCH
-                else self._repo.DEFAULT_BRANCH
+                if branch != SvnRepo.DEFAULT_BRANCH
+                else SvnRepo.DEFAULT_BRANCH
             )
 
         branch_path = urllib.parse.quote(branch_path)
@@ -180,7 +179,7 @@ class SvnSubProject(SubProject):
 
     def get_default_branch(self) -> str:
         """Get the default branch of this repository."""
-        return self._repo.DEFAULT_BRANCH
+        return SvnRepo.DEFAULT_BRANCH
 
     def create_formatted_patch_header(self, patch_info: PatchInfo) -> str:
         """Create a formatted patch header for the given patch info."""

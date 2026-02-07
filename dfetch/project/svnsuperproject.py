@@ -11,6 +11,7 @@ import pathlib
 from collections.abc import Sequence
 
 from dfetch.log import get_logger
+from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import RevisionRange, SuperProject
@@ -31,6 +32,11 @@ logger = get_logger(__name__)
 
 class SvnSuperProject(SuperProject):
     """A SVN specific superproject."""
+
+    def __init__(self, manifest: Manifest, root_directory: pathlib.Path) -> None:
+        """Create a Svn Super project."""
+        super().__init__(manifest, root_directory)
+        self._repo = SvnRepo(root_directory)
 
     @staticmethod
     def check(path: str | pathlib.Path) -> bool:
@@ -58,7 +64,7 @@ class SvnSuperProject(SuperProject):
 
     def get_username(self) -> str:
         """Get the username of the superproject VCS."""
-        username = SvnRepo(self.root_directory).get_username()
+        username = self._repo.get_username()
 
         if username:
             return username
@@ -71,7 +77,7 @@ class SvnSuperProject(SuperProject):
 
     def get_file_revision(self, path: str | pathlib.Path) -> str:
         """Get the revision of the given file."""
-        return str(SvnRepo(self.root_directory).get_last_changed_revision(str(path)))
+        return str(self._repo.get_last_changed_revision(str(path)))
 
     @staticmethod
     def import_projects() -> Sequence[ProjectEntry]:

@@ -11,6 +11,7 @@ import pathlib
 from collections.abc import Sequence
 
 from dfetch.log import get_logger
+from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.subproject import SubProject
@@ -24,6 +25,11 @@ logger = get_logger(__name__)
 
 class GitSuperProject(SuperProject):
     """A git specific superproject."""
+
+    def __init__(self, manifest: Manifest, root_directory: pathlib.Path) -> None:
+        """Create a Git Super project."""
+        super().__init__(manifest, root_directory)
+        self._repo = GitLocalRepo(root_directory)
 
     @staticmethod
     def check(path: str | pathlib.Path) -> bool:
@@ -51,7 +57,7 @@ class GitSuperProject(SuperProject):
 
     def get_username(self) -> str:
         """Get the username of the superproject VCS."""
-        username = GitLocalRepo(self.root_directory).get_username()
+        username = self._repo.get_username()
 
         if username:
             return username
@@ -60,7 +66,7 @@ class GitSuperProject(SuperProject):
 
     def get_useremail(self) -> str:
         """Get the user email of the superproject VCS."""
-        email = GitLocalRepo(self.root_directory).get_useremail()
+        email = self._repo.get_useremail()
 
         if email:
             return email
@@ -68,7 +74,7 @@ class GitSuperProject(SuperProject):
 
     def get_file_revision(self, path: str | pathlib.Path) -> str:
         """Get the revision of the given file."""
-        return str(GitLocalRepo(self.root_directory).get_last_file_hash(str(path)))
+        return str(self._repo.get_last_file_hash(str(path)))
 
     @staticmethod
     def import_projects() -> Sequence[ProjectEntry]:
@@ -131,7 +137,7 @@ class GitSuperProject(SuperProject):
         if diff_since_revision:
             combined_diff += [diff_since_revision]
 
-        untracked_files_patch = str(local_repo.untracked_files_patch(ignore))
+        untracked_files_patch = local_repo.untracked_files_patch(ignore)
         if untracked_files_patch:
             if reverse:
                 reversed_patch = reverse_patch(untracked_files_patch.encode("utf-8"))
