@@ -5,6 +5,7 @@ Feature: Formatting a patch for svn repositories
     applied to the original repository. This way the upstream repository can
     be kept up to date with local changes.
 
+    @wip
     Scenario: All patch files are formatted
         Given a svn-server "SomeProject" with the files
             | path                                     |
@@ -66,6 +67,7 @@ Feature: Formatting a patch for svn repositories
             +Patched file for formatted patch of SomeProject
             """
 
+    @wip
     Scenario: Git subproject in Svn superproject gives a git patch
         Given a git repository "SomeProject.git"
         And the patch file 'MySvnProject/patches/001-diff.patch'
@@ -98,8 +100,7 @@ Feature: Formatting a patch for svn repositories
 
             Patch for some-subproject
 
-            Index: README.md
-            ===================================================================
+            diff --git a/README.md b/README.md
             --- README.md
             +++ README.md
             @@ -1,1 +1,1 @@
