@@ -92,8 +92,7 @@ from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.remote import Remote
-from dfetch.vcs.git import GitLocalRepo
-from dfetch.vcs.svn import SvnRepo
+from dfetch.project.superproject import SuperProject
 
 logger = get_logger(__name__)
 
@@ -112,7 +111,7 @@ class Import(dfetch.commands.command.Command):
 
     def __call__(self, _: argparse.Namespace) -> None:
         """Perform the import."""
-        projects = _import_projects()
+        projects = SuperProject.type_from_path(".").import_projects()
 
         if not projects:
             raise RuntimeError(f"No submodules found in {os.getcwd()}!")
@@ -133,81 +132,6 @@ class Import(dfetch.commands.command.Command):
 
         manifest.dump(DEFAULT_MANIFEST_NAME)
         logger.info(f"Created manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}")
-
-
-def _import_projects() -> Sequence[ProjectEntry]:
-    """Find out what type of VCS is used and import projects."""
-    if GitLocalRepo().is_git():
-        projects = _import_from_git()
-    elif SvnRepo().is_svn():
-        projects = _import_from_svn()
-    else:
-        raise RuntimeError(
-            "Only git or SVN projects can be imported.",
-            "Run this command within either a git or SVN repository",
-        )
-    return projects
-
-
-def _import_from_svn() -> Sequence[ProjectEntry]:
-    projects: list[ProjectEntry] = []
-
-    for external in SvnRepo(os.getcwd()).externals():
-        projects.append(
-            ProjectEntry(
-                {
-                    "name": external.name,
-                    "revision": external.revision,
-                    "url": external.url,
-                    "dst": external.path,
-                    "branch": external.branch,
-                    "tag": external.tag,
-                    "src": external.src,
-                }
-            )
-        )
-        logger.info(f"Found {external.name}")
-
-    return projects
-
-
-def _import_from_git() -> Sequence[ProjectEntry]:
-    projects: list[ProjectEntry] = []
-    toplevel: str = ""
-    for submodule in GitLocalRepo.submodules():
-        projects.append(
-            ProjectEntry(
-                {
-                    "name": submodule.name,
-                    "revision": submodule.sha,
-                    "url": submodule.url,
-                    "dst": submodule.path,
-                    "branch": submodule.branch,
-                    "tag": submodule.tag,
-                }
-            )
-        )
-        logger.info(f"Found {submodule.name}")
-
-        if not toplevel:
-            toplevel = submodule.toplevel
-        elif toplevel != submodule.toplevel:
-            raise RuntimeError(
-                "Recursive submodules not (yet) supported. Check manifest!"
-            )
-
-    if os.path.realpath(toplevel) != os.getcwd():
-        logger.warning(
-            "\n".join(
-                (
-                    f'The toplevel directory is in "{toplevel}"',
-                    f'"dfetch import" was called from "{os.getcwd()}"',
-                    "All projects paths will be relative to the current directory dfetch is running!",
-                )
-            )
-        )
-
-    return projects
 
 
 def _create_remotes(projects: Sequence[ProjectEntry]) -> Sequence[Remote]:

@@ -50,14 +50,18 @@ class SuperProject(ABC):
         logger.debug(f"Using manifest {manifest_path}")
         manifest = parse(manifest_path)
         root_directory = resolve_absolute_path(os.path.dirname(manifest.path))
+        return SuperProject.type_from_path(root_directory)(manifest, root_directory)
 
-        if GitLocalRepo(root_directory).is_git():
-            return GitSuperProject(manifest, root_directory)
+    @staticmethod
+    def type_from_path(path: str | pathlib.Path) -> type[SuperProject]:
+        """Determine correct VCS type of the superproject in the given path."""
+        if GitLocalRepo(path).is_git():
+            return GitSuperProject
 
-        if SvnRepo(root_directory).is_svn():
-            return SvnSuperProject(manifest, root_directory)
+        if SvnRepo(path).is_svn():
+            return SvnSuperProject
 
-        return NoVcsSuperProject(manifest, root_directory)
+        return NoVcsSuperProject
 
     @property
     def root_directory(self) -> pathlib.Path:
@@ -92,6 +96,11 @@ class SuperProject(ABC):
     @abstractmethod
     def get_file_revision(self, path: str | pathlib.Path) -> str:
         """Get the revision of the given file."""
+
+    @staticmethod
+    @abstractmethod
+    def import_projects() -> Sequence[ProjectEntry]:
+        """Import projects from underlying superproject."""
 
 
 class GitSuperProject(SuperProject):
@@ -143,6 +152,46 @@ class GitSuperProject(SuperProject):
         """Get the revision of the given file."""
         return str(GitLocalRepo(self.root_directory).get_last_file_hash(str(path)))
 
+    @staticmethod
+    def import_projects() -> Sequence[ProjectEntry]:
+        """Import projects from underlying superproject."""
+        projects: list[ProjectEntry] = []
+        toplevel: str = ""
+        for submodule in GitLocalRepo.submodules():
+            projects.append(
+                ProjectEntry(
+                    {
+                        "name": submodule.name,
+                        "revision": submodule.sha,
+                        "url": submodule.url,
+                        "dst": submodule.path,
+                        "branch": submodule.branch,
+                        "tag": submodule.tag,
+                    }
+                )
+            )
+            logger.info(f"Found {submodule.name}")
+
+            if not toplevel:
+                toplevel = submodule.toplevel
+            elif toplevel != submodule.toplevel:
+                raise RuntimeError(
+                    "Recursive submodules not (yet) supported. Check manifest!"
+                )
+
+        if os.path.realpath(toplevel) != os.getcwd():
+            logger.warning(
+                "\n".join(
+                    (
+                        f'The toplevel directory is in "{toplevel}"',
+                        f'Import was done from "{os.getcwd()}"',
+                        "All projects paths will be relative to the current directory dfetch is running!",
+                    )
+                )
+            )
+
+        return projects
+
 
 class SvnSuperProject(SuperProject):
     """A SVN specific superproject."""
@@ -191,6 +240,29 @@ class SvnSuperProject(SuperProject):
         """Get the revision of the given file."""
         return str(SvnRepo(self.root_directory).get_last_changed_revision(str(path)))
 
+    @staticmethod
+    def import_projects() -> Sequence[ProjectEntry]:
+        """Import projects from underlying superproject."""
+        projects: list[ProjectEntry] = []
+
+        for external in SvnRepo(os.getcwd()).externals():
+            projects.append(
+                ProjectEntry(
+                    {
+                        "name": external.name,
+                        "revision": external.revision,
+                        "url": external.url,
+                        "dst": external.path,
+                        "branch": external.branch,
+                        "tag": external.tag,
+                        "src": external.src,
+                    }
+                )
+            )
+            logger.info(f"Found {external.name}")
+
+        return projects
+
 
 class NoVcsSuperProject(SuperProject):
     """A superproject without any version control."""
@@ -238,3 +310,11 @@ class NoVcsSuperProject(SuperProject):
     def get_file_revision(self, path: str | pathlib.Path) -> str:
         """Get the revision of the given file."""
         return ""
+
+    @staticmethod
+    def import_projects() -> Sequence[ProjectEntry]:
+        """Import projects from underlying superproject."""
+        raise RuntimeError(
+            "Only git or SVN projects can be imported.",
+            "Run this command within either a git or SVN repository",
+        )
