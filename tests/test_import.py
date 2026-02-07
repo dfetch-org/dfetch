@@ -48,27 +48,33 @@ SECOND_SUBMODULE = Submodule(
 def test_git_import(name, submodules):
     import_ = Import()
 
-    with patch(
-        "dfetch.project.superproject.GitLocalRepo.submodules"
-    ) as mocked_submodules:
-        with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
-            mocked_submodules.return_value = submodules
+    with patch("dfetch.project.superproject.SvnRepo.is_svn") as is_svn:
+        with patch(
+            "dfetch.project.superproject.GitLocalRepo.submodules"
+        ) as mocked_submodules:
+            with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
+                mocked_submodules.return_value = submodules
+                with patch("dfetch.project.superproject.GitLocalRepo.is_git") as is_git:
+                    is_git.return_value = True
+                    is_svn.return_value = False
 
-            if len(submodules) == 0:
-                with pytest.raises(RuntimeError):
-                    import_(argparse.Namespace())
-            else:
-                import_(argparse.Namespace())
+                    if len(submodules) == 0:
+                        with pytest.raises(RuntimeError):
+                            import_(argparse.Namespace())
+                    else:
+                        import_(argparse.Namespace())
 
-                mocked_manifest.assert_called()
+                        mocked_manifest.assert_called()
 
-                args = mocked_manifest.call_args_list[0][0][0]
+                        args = mocked_manifest.call_args_list[0][0][0]
 
-                for project_entry in args["projects"]:
-                    assert project_entry.name in [subm.name for subm in submodules]
+                        for project_entry in args["projects"]:
+                            assert project_entry.name in [
+                                subm.name for subm in submodules
+                            ]
 
-                # Manifest should have been dumped
-                mocked_manifest.return_value.dump.assert_called()
+                        # Manifest should have been dumped
+                        mocked_manifest.return_value.dump.assert_called()
 
 
 FIRST_EXTERNAL = External(
