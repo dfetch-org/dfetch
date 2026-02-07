@@ -12,9 +12,9 @@ import dfetch.manifest.manifest
 import dfetch.util.util
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
+from dfetch.project import create_super_project
 from dfetch.project.metadata import Metadata
 from dfetch.project.subproject import SubProject
-from dfetch.project.superproject import SuperProject
 from dfetch.reporting import REPORTERS, ReportTypes
 from dfetch.util.license import License, guess_license_in_file
 
@@ -63,7 +63,7 @@ class Report(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Generate the report."""
-        superproject = SuperProject.create()
+        superproject = create_super_project()
 
         with dfetch.util.util.in_directory(superproject.root_directory):
             reporter = REPORTERS[args.type](superproject.manifest)

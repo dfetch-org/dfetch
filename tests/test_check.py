@@ -34,12 +34,12 @@ def test_check(name, projects):
     fake_superproject.root_directory = Path("/tmp")
 
     with patch(
-        "dfetch.commands.check.SuperProject.create", return_value=fake_superproject
+        "dfetch.commands.check.create_super_project", return_value=fake_superproject
     ):
         with patch(
             "dfetch.manifest.parse.get_childmanifests"
         ) as mocked_get_childmanifests:
-            with patch("dfetch.project.make") as mocked_make:
+            with patch("dfetch.project.create_sub_project") as mocked_create:
                 with patch("os.path.exists"):
                     with patch("dfetch.commands.check.in_directory"):
                         with patch("dfetch.commands.check.CheckStdoutReporter"):
@@ -48,4 +48,4 @@ def test_check(name, projects):
                             check(DEFAULT_ARGS)
 
                             for _ in projects:
-                                mocked_make.return_value.check_for_update.assert_called()
+                                mocked_create.return_value.check_for_update.assert_called()

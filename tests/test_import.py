@@ -48,13 +48,15 @@ SECOND_SUBMODULE = Submodule(
 def test_git_import(name, submodules):
     import_ = Import()
 
-    with patch("dfetch.project.superproject.SvnRepo.is_svn") as is_svn:
+    with patch("dfetch.project.svnsuperproject.SvnRepo.is_svn") as is_svn:
         with patch(
-            "dfetch.project.superproject.GitLocalRepo.submodules"
+            "dfetch.project.gitsuperproject.GitLocalRepo.submodules"
         ) as mocked_submodules:
             with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
                 mocked_submodules.return_value = submodules
-                with patch("dfetch.project.superproject.GitLocalRepo.is_git") as is_git:
+                with patch(
+                    "dfetch.project.gitsuperproject.GitLocalRepo.is_git"
+                ) as is_git:
                     is_git.return_value = True
                     is_svn.return_value = False
 
@@ -113,10 +115,14 @@ SECOND_EXTERNAL = External(
 def test_svn_import(name, externals):
     import_ = Import()
 
-    with patch("dfetch.project.superproject.SvnRepo.is_svn") as is_svn:
-        with patch("dfetch.project.superproject.SvnRepo.externals") as mocked_externals:
+    with patch("dfetch.project.svnsuperproject.SvnRepo.is_svn") as is_svn:
+        with patch(
+            "dfetch.project.svnsuperproject.SvnRepo.externals"
+        ) as mocked_externals:
             with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
-                with patch("dfetch.project.superproject.GitLocalRepo.is_git") as is_git:
+                with patch(
+                    "dfetch.project.gitsuperproject.GitLocalRepo.is_git"
+                ) as is_git:
                     is_git.return_value = False
                     is_svn.return_value = True
                     mocked_externals.return_value = externals

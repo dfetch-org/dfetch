@@ -92,7 +92,7 @@ from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.remote import Remote
-from dfetch.project.superproject import SuperProject
+from dfetch.project import determine_superproject_vcs
 
 logger = get_logger(__name__)
 
@@ -111,7 +111,7 @@ class Import(dfetch.commands.command.Command):
 
     def __call__(self, _: argparse.Namespace) -> None:
         """Perform the import."""
-        projects = SuperProject.type_from_path(".").import_projects()
+        projects = determine_superproject_vcs(".").import_projects()
 
         if not projects:
             raise RuntimeError(f"No submodules found in {os.getcwd()}!")

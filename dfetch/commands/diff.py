@@ -59,8 +59,9 @@ import pathlib
 
 import dfetch.commands.command
 from dfetch.log import get_logger
+from dfetch.project import create_super_project
 from dfetch.project.metadata import Metadata
-from dfetch.project.superproject import NoVcsSuperProject, RevisionRange, SuperProject
+from dfetch.project.superproject import NoVcsSuperProject, RevisionRange
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -96,7 +97,7 @@ class Diff(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the diff."""
-        superproject = SuperProject.create()
+        superproject = create_super_project()
         old_rev, new_rev = self._parse_revs(args.revs)
 
         if isinstance(superproject, NoVcsSuperProject):

@@ -35,7 +35,7 @@ import dfetch.project
 from dfetch.commands.common import check_child_manifests
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
-from dfetch.project.superproject import SuperProject
+from dfetch.project import create_super_project
 from dfetch.reporting.check.code_climate_reporter import CodeClimateReporter
 from dfetch.reporting.check.jenkins_reporter import JenkinsReporter
 from dfetch.reporting.check.reporter import CheckReporter
@@ -90,14 +90,14 @@ class Check(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
-        superproject = SuperProject.create()
+        superproject = create_super_project()
         reporters = self._get_reporters(args, superproject.manifest)
 
         with in_directory(superproject.root_directory):
             exceptions: list[str] = []
             for project in superproject.manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    dfetch.project.make(project).check_for_update(
+                    dfetch.project.create_sub_project(project).check_for_update(
                         reporters,
                         files_to_ignore=superproject.ignored_files(project.destination),
                     )
