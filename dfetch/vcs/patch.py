@@ -249,12 +249,18 @@ class PatchInfo:
         return ""
 
 
-def add_prefix_to_patch(file_path: str, path_prefix: str) -> str:
-    """Add a prefix to all file paths in the given patch file."""
+def parse_patch(file_path: str) -> patch_ng.PatchSet:
+    """Parse the patch from file_path."""
     patch = patch_ng.fromfile(file_path)
     if not patch or not patch.items:
         raise RuntimeError(f'Failed to parse patch file: "{file_path}"')
+    return patch
 
+
+def add_prefix_to_patch(
+    patch: patch_ng.PatchSet, path_prefix: str
+) -> patch_ng.PatchSet:
+    """Add a prefix to all file paths in the given patch file."""
     prefix = path_prefix.strip("/").encode()
     if prefix:
         prefix += b"/"
@@ -292,4 +298,24 @@ def add_prefix_to_patch(file_path: str, path_prefix: str) -> str:
                 file.header[idx] = b"Index: " + rewrite_path(svn_match.group(1))
                 break
 
-    return dump_patch(patch)
+    return patch
+
+
+def convert_patch_to(patch: patch_ng.PatchSet, required_type: str) -> patch_ng.PatchSet:
+    """Convert the patch to the required type."""
+    if required_type == patch.type:
+        return patch
+
+    if required_type == patch_ng.GIT:
+        for file in patch.items:
+            file.header = [
+                b"diff --git a/" + file.source + b" b/" + file.target + b"\n"
+            ]
+            file.type = required_type
+    if required_type == patch_ng.SVN:
+        for file in patch.items:
+            file.header = [b"Index: " + file.target + b"\n", b"=" * 67 + b"\n"]
+            file.type = required_type
+    patch.type = required_type
+
+    return patch

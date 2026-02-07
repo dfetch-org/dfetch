@@ -98,10 +98,9 @@ Feature: Formatting a patch for svn repositories
 
             Patch for some-subproject
 
-            Index: README.md
-            ===================================================================
-            --- README.md
-            +++ README.md
+            diff --git a/README.md b/README.md
+            --- a/README.md
+            +++ b/README.md
             @@ -1,1 +1,1 @@
             -Generated file for SomeProject
             +Patched file for SomeProject

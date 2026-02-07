@@ -17,6 +17,8 @@ from dfetch.vcs.patch import (
     apply_patch,
     create_git_patch_for_new_file,
     create_svn_patch_for_new_file,
+    dump_patch,
+    parse_patch,
     reverse_patch,
 )
 
@@ -360,6 +362,8 @@ def test_patch_prefix_new_file(tmp_path):
     original_patch_file = tmp_path / "original.patch"
     original_patch_file.write_text(original_patch)
 
+    parsed_patch = parse_patch(original_patch_file)
+
     expected_patch = "\n".join(
         [
             "diff --git a/src/test.txt b/src/test.txt",
@@ -376,8 +380,8 @@ def test_patch_prefix_new_file(tmp_path):
     )
 
     prefixed_patch = add_prefix_to_patch(
-        original_patch_file,
+        parsed_patch,
         path_prefix="src",
     )
 
-    assert prefixed_patch == expected_patch
+    assert dump_patch(prefixed_patch) == expected_patch
