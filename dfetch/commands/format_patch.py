@@ -29,13 +29,25 @@ import os
 import pathlib
 import re
 
+import patch_ng
+
 import dfetch.commands.command
 import dfetch.manifest.project
 import dfetch.project
 from dfetch.log import get_logger
 from dfetch.project import create_super_project
+from dfetch.project.gitsubproject import GitSubProject
+from dfetch.project.subproject import SubProject
+from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
-from dfetch.vcs.patch import PatchAuthor, PatchInfo, add_prefix_to_patch
+from dfetch.vcs.patch import (
+    PatchAuthor,
+    PatchInfo,
+    add_prefix_to_patch,
+    convert_patch_to,
+    dump_patch,
+    parse_patch,
+)
 
 logger = get_logger(__name__)
 
@@ -111,8 +123,11 @@ class FormatPatch(dfetch.commands.command.Command):
                             revision="" if not version else version.revision,
                         )
 
-                        patch_text = add_prefix_to_patch(
-                            patch,
+                        corrected_patch = convert_patch_to(
+                            parse_patch(patch), _determine_target_patch_type(subproject)
+                        )
+                        prefixed_patch = add_prefix_to_patch(
+                            corrected_patch,
                             path_prefix=re.split(r"\*", subproject.source, 1)[0].rstrip(
                                 "/"
                             ),
@@ -121,7 +136,7 @@ class FormatPatch(dfetch.commands.command.Command):
                         output_patch_file = output_dir_path / pathlib.Path(patch).name
                         output_patch_file.write_text(
                             subproject.create_formatted_patch_header(patch_info)
-                            + patch_text
+                            + dump_patch(prefixed_patch)
                         )
 
                         logger.print_info_line(
@@ -131,3 +146,15 @@ class FormatPatch(dfetch.commands.command.Command):
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
+
+
+def _determine_target_patch_type(subproject: SubProject) -> str:
+    """Determine the subproject type for the patch."""
+    if isinstance(subproject, GitSubProject):
+        required_type = patch_ng.GIT
+    elif isinstance(subproject, SvnSubProject):
+        required_type = patch_ng.SVN
+    else:
+        required_type = patch_ng.PLAIN
+
+    return str(required_type)
