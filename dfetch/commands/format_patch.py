@@ -29,13 +29,24 @@ import os
 import pathlib
 import re
 
+import patch_ng
+
 import dfetch.commands.command
 import dfetch.manifest.project
 import dfetch.project
 from dfetch.log import get_logger
 from dfetch.project import create_super_project
+from dfetch.project.gitsubproject import GitSubProject
+from dfetch.project.subproject import SubProject
+from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
-from dfetch.vcs.patch import PatchAuthor, PatchInfo, add_prefix_to_patch
+from dfetch.vcs.patch import (
+    PatchAuthor,
+    PatchInfo,
+    add_prefix_to_patch,
+    convert_patch_to,
+    dump_patch,
+)
 
 logger = get_logger(__name__)
 
@@ -111,12 +122,17 @@ class FormatPatch(dfetch.commands.command.Command):
                             revision="" if not version else version.revision,
                         )
 
-                        patch_text = add_prefix_to_patch(
+                        # TODO: convert header to subproject type
+                        prefixed_patch = add_prefix_to_patch(
                             patch,
                             path_prefix=re.split(r"\*", subproject.source, 1)[0].rstrip(
                                 "/"
                             ),
                         )
+                        corrected_patch = _ensure_correct_patch_header(
+                            prefixed_patch, subproject
+                        )
+                        patch_text = dump_patch(corrected_patch)
 
                         output_patch_file = output_dir_path / pathlib.Path(patch).name
                         output_patch_file.write_text(
@@ -131,3 +147,17 @@ class FormatPatch(dfetch.commands.command.Command):
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))
+
+
+def _ensure_correct_patch_header(
+    patch: patch_ng.PatchSet, subproject: SubProject
+) -> patch_ng.PatchSet:
+    """Make sure the patch is correct for the subproject type."""
+    if isinstance(subproject, GitSubProject):
+        required_type = "GIT"
+    elif isinstance(subproject, SvnSubProject):
+        required_type = "SVN"
+    else:
+        required_type = "plain"
+
+    return convert_patch_to(patch, required_type)

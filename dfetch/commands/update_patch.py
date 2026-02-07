@@ -13,8 +13,6 @@ that the manifest itself is located inside a version-controlled repository
 (the *superproject*). The version control system of the superproject is used to
 calculate and regenerate the patch.
 
-The existing patch is backed up before being overwritten.
-
 The below statement will update the patch for ``some-project`` from your manifest.
 
 .. code-block:: sh
