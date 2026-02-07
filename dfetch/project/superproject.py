@@ -106,6 +106,22 @@ class SuperProject(ABC):
     def get_username(self) -> str:
         """Get the username of the superproject VCS."""
 
+    def _get_username_fallback(self) -> str:
+        """Get the username of the superproject VCS."""
+        username = ""
+
+        if not username:
+            try:
+                username = getpass.getuser()
+            except (ImportError, KeyError, OSError):
+                username = ""
+        if not username:
+            try:
+                username = os.getlogin()
+            except OSError:
+                username = "unknown"
+        return username
+
     @abstractmethod
     def get_useremail(self) -> str:
         """Get the user email of the superproject VCS."""
@@ -156,17 +172,10 @@ class GitSuperProject(SuperProject):
         """Get the username of the superproject VCS."""
         username = GitLocalRepo(self.root_directory).get_username()
 
-        if not username:
-            try:
-                username = getpass.getuser()
-            except (ImportError, KeyError, OSError):
-                username = ""
-        if not username:
-            try:
-                username = os.getlogin()
-            except OSError:
-                username = "unknown"
-        return username
+        if username:
+            return username
+
+        return self._get_username_fallback()
 
     def get_useremail(self) -> str:
         """Get the user email of the superproject VCS."""
@@ -280,17 +289,10 @@ class SvnSuperProject(SuperProject):
         """Get the username of the superproject VCS."""
         username = SvnRepo(self.root_directory).get_username()
 
-        if not username:
-            try:
-                username = getpass.getuser()
-            except (ImportError, KeyError, OSError):
-                username = ""
-        if not username:
-            try:
-                username = os.getlogin()
-            except OSError:
-                username = "unknown"
-        return username
+        if username:
+            return username
+
+        return self._get_username_fallback()
 
     def get_useremail(self) -> str:
         """Get the user email of the superproject VCS."""
@@ -333,13 +335,14 @@ class SvnSuperProject(SuperProject):
     ) -> str:
         """Get the diff between two revisions."""
         repo = SvnRepo(path)
+        new, old = revisions.new, revisions.old
         if reverse:
-            if revisions.new:
-                revisions.new, revisions.old = revisions.old, revisions.new
+            if new:
+                new, old = old, new
 
-        filtered = repo.create_diff(revisions.old, revisions.new, ignore)
+        filtered = repo.create_diff(old, new, ignore)
 
-        if revisions.new:
+        if new:
             return filtered
 
         patches: list[bytes] = [filtered.encode("utf-8")] if filtered else []
@@ -352,7 +355,7 @@ class SvnSuperProject(SuperProject):
         patch_str = combine_patches(patches)
 
         # SVN has no way of producing a reverse working copy patch, reverse ourselves
-        if reverse and not revisions.new:
+        if reverse and not new:
             patch_str = reverse_patch(patch_str.encode("UTF-8"))
 
         return patch_str
@@ -382,19 +385,7 @@ class NoVcsSuperProject(SuperProject):
 
     def get_username(self) -> str:
         """Get the username of the superproject VCS."""
-        username = ""
-
-        if not username:
-            try:
-                username = getpass.getuser()
-            except (ImportError, KeyError, OSError):
-                username = ""
-        if not username:
-            try:
-                username = os.getlogin()
-            except OSError:
-                username = "unknown"
-        return username
+        return self._get_username_fallback()
 
     def get_useremail(self) -> str:
         """Get the user email of the superproject VCS."""
@@ -409,7 +400,7 @@ class NoVcsSuperProject(SuperProject):
     def import_projects() -> Sequence[ProjectEntry]:
         """Import projects from underlying superproject."""
         raise RuntimeError(
-            "Only git or SVN projects can be imported.",
+            "Only git or SVN projects can be imported."
             "Run this command within either a git or SVN repository",
         )
 
