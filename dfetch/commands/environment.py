@@ -5,7 +5,7 @@ import platform
 
 import dfetch.commands.command
 from dfetch.log import get_logger
-from dfetch.project import SUPPORTED_PROJECT_TYPES
+from dfetch.project import SUPPORTED_SUBPROJECT_TYPES
 
 logger = get_logger(__name__)
 
@@ -26,5 +26,5 @@ class Environment(dfetch.commands.command.Command):
         logger.print_report_line(
             "platform", f"{platform.system()} {platform.release()}"
         )
-        for project_type in SUPPORTED_PROJECT_TYPES:
+        for project_type in SUPPORTED_SUBPROJECT_TYPES:
             project_type.list_tool_info()

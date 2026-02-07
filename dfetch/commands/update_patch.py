@@ -40,13 +40,10 @@ import dfetch.commands.command
 import dfetch.manifest.project
 import dfetch.project
 from dfetch.log import get_logger
+from dfetch.project import create_super_project
+from dfetch.project.gitsuperproject import GitSuperProject
 from dfetch.project.metadata import Metadata
-from dfetch.project.superproject import (
-    GitSuperProject,
-    NoVcsSuperProject,
-    RevisionRange,
-    SuperProject,
-)
+from dfetch.project.superproject import NoVcsSuperProject, RevisionRange
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -76,7 +73,7 @@ class UpdatePatch(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the update patch."""
-        superproject = SuperProject.create()
+        superproject = create_super_project()
 
         exceptions: list[str] = []
 
@@ -91,7 +88,7 @@ class UpdatePatch(dfetch.commands.command.Command):
         with in_directory(superproject.root_directory):
             for project in superproject.manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    subproject = dfetch.project.make(project)
+                    subproject = dfetch.project.create_sub_project(project)
 
                     files_to_ignore = superproject.ignored_files(project.destination)
 

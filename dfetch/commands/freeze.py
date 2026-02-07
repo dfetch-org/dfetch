@@ -49,7 +49,7 @@ from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
-from dfetch.project.superproject import SuperProject
+from dfetch.project import create_super_project
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -70,7 +70,7 @@ class Freeze(dfetch.commands.command.Command):
         """Perform the freeze."""
         del args  # unused
 
-        superproject = SuperProject.create()
+        superproject = create_super_project()
 
         exceptions: list[str] = []
         projects: list[ProjectEntry] = []
@@ -78,7 +78,9 @@ class Freeze(dfetch.commands.command.Command):
         with in_directory(superproject.root_directory):
             for project in superproject.manifest.projects:
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    on_disk_version = dfetch.project.make(project).on_disk_version()
+                    on_disk_version = dfetch.project.create_sub_project(
+                        project
+                    ).on_disk_version()
 
                     if project.version == on_disk_version:
                         logger.print_info_line(

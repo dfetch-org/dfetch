@@ -34,7 +34,7 @@ def test_report(name, projects):
     fake_superproject.root_directory = Path("/tmp")
 
     with patch(
-        "dfetch.commands.report.SuperProject.create", return_value=fake_superproject
+        "dfetch.commands.report.create_super_project", return_value=fake_superproject
     ):
         with patch("dfetch.log.DLogger.print_report_line") as mocked_print_report_line:
 

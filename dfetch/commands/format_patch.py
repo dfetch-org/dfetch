@@ -33,7 +33,7 @@ import dfetch.commands.command
 import dfetch.manifest.project
 import dfetch.project
 from dfetch.log import get_logger
-from dfetch.project.superproject import SuperProject
+from dfetch.project import create_super_project
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 from dfetch.vcs.patch import PatchAuthor, PatchInfo, add_prefix_to_patch
 
@@ -69,7 +69,7 @@ class FormatPatch(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the format patch."""
-        superproject = SuperProject.create()
+        superproject = create_super_project()
 
         exceptions: list[str] = []
 
@@ -86,7 +86,7 @@ class FormatPatch(dfetch.commands.command.Command):
         with in_directory(superproject.root_directory):
             for project in superproject.manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    subproject = dfetch.project.make(project)
+                    subproject = dfetch.project.create_sub_project(project)
 
                     # Check if the project has a patch, maybe suggest creating one?
                     if not subproject.patch:
