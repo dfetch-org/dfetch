@@ -13,6 +13,7 @@ import os
 import pathlib
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
@@ -21,11 +22,27 @@ from dfetch.manifest.project import ProjectEntry
 from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.svnsubproject import SvnSubProject
-from dfetch.util.util import resolve_absolute_path
+from dfetch.util.util import (
+    in_directory,
+    resolve_absolute_path,
+)
 from dfetch.vcs.git import GitLocalRepo
+from dfetch.vcs.patch import (
+    combine_patches,
+    create_svn_patch_for_new_file,
+    reverse_patch,
+)
 from dfetch.vcs.svn import SvnRepo
 
 logger = get_logger(__name__)
+
+
+@dataclass
+class RevisionRange:
+    """A revision pair."""
+
+    old: str
+    new: str | None
 
 
 class SuperProject(ABC):
@@ -101,6 +118,16 @@ class SuperProject(ABC):
     @abstractmethod
     def import_projects() -> Sequence[ProjectEntry]:
         """Import projects from underlying superproject."""
+
+    @abstractmethod
+    def diff(
+        self,
+        path: str | pathlib.Path,
+        revisions: RevisionRange,
+        ignore: Sequence[str],
+        reverse: bool = False,
+    ) -> str:
+        """Get the diff of two revisions."""
 
 
 class GitSuperProject(SuperProject):
@@ -192,6 +219,40 @@ class GitSuperProject(SuperProject):
 
         return projects
 
+    def diff(
+        self,
+        path: str | pathlib.Path,
+        revisions: RevisionRange,
+        ignore: Sequence[str],
+        reverse: bool = False,
+    ) -> str:
+        """Get the diff of two revisions in the given path."""
+        local_repo = GitLocalRepo(path)
+        diff_since_revision = str(
+            local_repo.create_diff(revisions.old, revisions.new, ignore, reverse)
+        )
+
+        if revisions.new:
+            return diff_since_revision
+
+        combined_diff = []
+
+        if diff_since_revision:
+            combined_diff += [diff_since_revision]
+
+        untracked_files_patch = str(local_repo.untracked_files_patch(ignore))
+        if untracked_files_patch:
+            if reverse:
+                reversed_patch = reverse_patch(untracked_files_patch.encode("utf-8"))
+                if not reversed_patch:
+                    raise RuntimeError(
+                        "Failed to reverse untracked files patch; patch parsing returned empty."
+                    )
+                untracked_files_patch = reversed_patch
+            combined_diff += [untracked_files_patch]
+
+        return "\n".join(combined_diff)
+
 
 class SvnSuperProject(SuperProject):
     """A SVN specific superproject."""
@@ -263,6 +324,39 @@ class SvnSuperProject(SuperProject):
 
         return projects
 
+    def diff(
+        self,
+        path: str | pathlib.Path,
+        revisions: RevisionRange,
+        ignore: Sequence[str],
+        reverse: bool = False,
+    ) -> str:
+        """Get the diff between two revisions."""
+        repo = SvnRepo(path)
+        if reverse:
+            if revisions.new:
+                revisions.new, revisions.old = revisions.old, revisions.new
+
+        filtered = repo.create_diff(revisions.old, revisions.new, ignore)
+
+        if revisions.new:
+            return filtered
+
+        patches: list[bytes] = [filtered.encode("utf-8")] if filtered else []
+        with in_directory(path):
+            for file_path in repo.untracked_files(".", ignore):
+                patch = create_svn_patch_for_new_file(file_path)
+                if patch:
+                    patches.append(patch.encode("utf-8"))
+
+        patch_str = combine_patches(patches)
+
+        # SVN has no way of producing a reverse working copy patch, reverse ourselves
+        if reverse and not revisions.new:
+            patch_str = reverse_patch(patch_str.encode("UTF-8"))
+
+        return patch_str
+
 
 class NoVcsSuperProject(SuperProject):
     """A superproject without any version control."""
@@ -318,3 +412,13 @@ class NoVcsSuperProject(SuperProject):
             "Only git or SVN projects can be imported.",
             "Run this command within either a git or SVN repository",
         )
+
+    def diff(
+        self,
+        path: str | pathlib.Path,
+        revisions: RevisionRange,
+        ignore: Sequence[str],
+        reverse: bool = False,
+    ) -> str:
+        """Get the diff between two revisions."""
+        return ""

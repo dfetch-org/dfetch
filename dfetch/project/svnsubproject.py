@@ -3,8 +3,6 @@
 import os
 import pathlib
 import urllib.parse
-from collections.abc import Sequence
-from typing import Optional
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
@@ -13,15 +11,9 @@ from dfetch.project.subproject import SubProject
 from dfetch.util.util import (
     find_matching_files,
     find_non_matching_files,
-    in_directory,
     safe_rm,
 )
-from dfetch.vcs.patch import (
-    PatchInfo,
-    combine_patches,
-    create_svn_patch_for_new_file,
-    reverse_patch,
-)
+from dfetch.vcs.patch import PatchInfo
 from dfetch.vcs.svn import SvnRemote, SvnRepo, get_svn_version
 
 logger = get_logger(__name__)
@@ -185,38 +177,6 @@ class SvnSubProject(SubProject):
 
     def _get_revision(self, branch: str) -> str:
         return self._get_info(branch)["Revision"]
-
-    def _diff_impl(
-        self,
-        old_revision: str,
-        new_revision: Optional[str],
-        ignore: Sequence[str],
-        reverse: bool = False,
-    ) -> str:
-        """Get the diff between two revisions."""
-        if reverse:
-            if new_revision:
-                new_revision, old_revision = old_revision, new_revision
-
-        filtered = self._repo.create_diff(old_revision, new_revision, ignore)
-
-        if new_revision:
-            return filtered
-
-        patches: list[bytes] = [filtered.encode("utf-8")] if filtered else []
-        with in_directory(self.local_path):
-            for file_path in self._repo.untracked_files(".", ignore):
-                patch = create_svn_patch_for_new_file(file_path)
-                if patch:
-                    patches.append(patch.encode("utf-8"))
-
-        patch_str = combine_patches(patches)
-
-        # SVN has no way of producing a reverse working copy patch, reverse ourselves
-        if reverse and not new_revision:
-            patch_str = reverse_patch(patch_str.encode("UTF-8"))
-
-        return patch_str
 
     def get_default_branch(self) -> str:
         """Get the default branch of this repository."""

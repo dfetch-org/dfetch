@@ -43,15 +43,6 @@ class ConcreteSubProject(SubProject):
     def _list_of_tags(self):
         return []
 
-    def _diff_impl(
-        self,
-        old_revision,
-        new_revision,
-        ignore,
-        reverse=False,
-    ):
-        return ""
-
     def get_default_branch(self):
         return ""
 
