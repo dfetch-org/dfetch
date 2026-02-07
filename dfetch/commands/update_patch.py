@@ -129,7 +129,7 @@ class UpdatePatch(dfetch.commands.command.Command):
                     patch_text = superproject.diff(
                         subproject.local_path,
                         revisions=RevisionRange("", ""),
-                        ignore=[Metadata.FILENAME],
+                        ignore=(Metadata.FILENAME,),
                         reverse=True,
                     )
 

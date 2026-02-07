@@ -24,7 +24,7 @@ from dfetch.util.util import resolve_absolute_path
 logger = get_logger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class RevisionRange:
     """A revision pair."""
 
@@ -78,13 +78,11 @@ class SuperProject(ABC):
 
     def _get_username_fallback(self) -> str:
         """Get the username of the superproject VCS."""
-        username = ""
+        try:
+            username = getpass.getuser()
+        except (ImportError, KeyError, OSError):
+            username = ""
 
-        if not username:
-            try:
-                username = getpass.getuser()
-            except (ImportError, KeyError, OSError):
-                username = ""
         if not username:
             try:
                 username = os.getlogin()
@@ -165,7 +163,7 @@ class NoVcsSuperProject(SuperProject):
     def import_projects() -> Sequence[ProjectEntry]:
         """Import projects from underlying superproject."""
         raise RuntimeError(
-            "Only git or SVN projects can be imported."
+            "Only git or SVN projects can be imported. "
             "Run this command within either a git or SVN repository",
         )
 

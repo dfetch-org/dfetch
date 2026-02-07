@@ -119,8 +119,8 @@ class GitSuperProject(SuperProject):
     ) -> str:
         """Get the diff of two revisions in the given path."""
         local_repo = GitLocalRepo(path)
-        diff_since_revision = str(
-            local_repo.create_diff(revisions.old, revisions.new, ignore, reverse)
+        diff_since_revision = local_repo.create_diff(
+            revisions.old, revisions.new, ignore, reverse
         )
 
         if revisions.new:
