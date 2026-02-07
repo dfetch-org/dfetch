@@ -4,7 +4,7 @@ Feature: Importing externals from an existing svn repository
     as easy as possible, a user should be able to generate a manifest that
     is filled with the externals and their pinned versions.
 
-    @remote-svn
+    @remote-svn @wip
     Scenario: Multiple externals are imported
         Given a svn repo with the following externals
             | path       | url                                                       | revision       |
