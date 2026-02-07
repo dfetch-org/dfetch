@@ -95,6 +95,7 @@ def step_impl(context, name):
         tag("v1")
 
 
+@given('a fetched and committed git-repo "MyProject" with the manifest:')
 @given("a fetched and committed MyProject with the manifest")
 def step_impl(context):
     pathlib.Path("MyProject").mkdir(parents=True, exist_ok=True)

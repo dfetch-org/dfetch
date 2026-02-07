@@ -114,3 +114,42 @@ Feature: Formatting a patch for git repositories
             +This is a new file.
 
             """
+
+    Scenario: Svn subproject in Git superproject gives a svn patch
+        Given a svn-server "SomeProject" with the files
+            | path                                     |
+            | SomeFolder/SomeSubFolder/README.md       |
+        And the patch file 'MyProject/patches/001-diff.patch'
+            """
+            Index: README.md
+            ===================================================================
+            --- README.md
+            +++ README.md
+            @@ -1,1 +1,1 @@
+            -Generated file for SomeProject
+            +Patched file for SomeProject
+            """
+        And a fetched and committed git-repo "MyProject" with the manifest:
+            """
+            manifest:
+                version: 0.0
+                projects:
+                  - name: SomeProject
+                    url: some-remote-server/SomeProject
+                    src: SomeFolder/SomeSubFolder
+                    patch:
+                      -  patches/001-diff.patch
+                    vcs: svn
+            """
+        When I run "dfetch format-patch ext/test-repo-tag --output-directory MyProject/patches"
+        Then the patch file 'MyProject/patches/001-diff.patch' is generated
+            """
+            Index: README.md
+            ===================================================================
+            --- README.md
+            +++ README.md
+            @@ -1,1 +1,1 @@
+            -Generated file for SomeProject
+            +Patched file for SomeProject
+
+            """
