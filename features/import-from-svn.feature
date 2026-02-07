@@ -4,11 +4,11 @@ Feature: Importing externals from an existing svn repository
     as easy as possible, a user should be able to generate a manifest that
     is filled with the externals and their pinned versions.
 
-    @remote-svn @wip
+    @remote-svn
     Scenario: Multiple externals are imported
         Given a svn repo with the following externals
             | path       | url                                                       | revision       |
-            | ext/cunit1 | https://svn.code.sf.net/p/cunit/code/trunk/Man            | 170            |
+            | ext/cunit1 | https://svn.code.sf.net/p/cunit/code/trunk/Man            | 172            |
             | ext/cunit2 | https://svn.code.sf.net/p/cunit/code/branches/mingw64/Man | 150            |
             | ext/cunit3 | https://svn.code.sf.net/p/cunit/code                      |                |
         When I run "dfetch import"
@@ -23,7 +23,7 @@ Feature: Importing externals from an existing svn repository
 
                 projects:
                 - name: ext/cunit1
-                  revision: '170'
+                  revision: '172'
                   src: Man
                   dst: ./ext/cunit1
                   repo-path: code
