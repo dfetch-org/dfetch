@@ -25,7 +25,7 @@ Feature: Fetching dependencies from a svn repository
 
               projects:
                 - name: cunit-svn-rev-only
-                  revision: '172'
+                  revision: '176'
                   vcs: svn
                   dst: ext/cunit-svn-rev-only
 

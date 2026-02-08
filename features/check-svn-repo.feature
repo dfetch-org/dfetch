@@ -15,7 +15,7 @@ Feature: Checking dependencies from a svn repository
 
               projects:
                 - name: cunit-svn-rev-only
-                  revision: '172'
+                  revision: '176'
                   vcs: svn
                   dst: ext/cunit-svn-rev-only
 
@@ -31,9 +31,9 @@ Feature: Checking dependencies from a svn repository
             """
             Dfetch (0.11.0)
               cunit-svn-rev-only:
-              > wanted (172), available (trunk - 172)
+              > wanted (176), available (trunk - 176)
               cunit-svn-rev-and-branch:
-              > wanted (mingw64 - 156), available (mingw64 - 172)
+              > wanted (mingw64 - 156), available (mingw64 - 176)
             """
 
     Scenario: A newer tag is available than in manifest
@@ -96,9 +96,9 @@ Feature: Checking dependencies from a svn repository
             """
             Dfetch (0.11.0)
               cunit-svn-rev-only:
-              > wanted (169), current (trunk - 169), available (trunk - 172)
+              > wanted (169), current (trunk - 169), available (trunk - 176)
               cunit-svn-rev-and-branch:
-              > wanted & current (mingw64 - 156), available (mingw64 - 172)
+              > wanted & current (mingw64 - 156), available (mingw64 - 176)
               ext/test-non-standard-svn:
               > wanted (latest), current (1), available (1)
             """
