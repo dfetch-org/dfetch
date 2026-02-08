@@ -36,7 +36,6 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinxarg.ext",
     "sphinxcontrib_asciinema",
-    "sphinxcontrib.details.directive",
     "sphinx-jsonschema",
     "sphinxcontrib.programoutput",
     "sphinx_tabs.tabs",
