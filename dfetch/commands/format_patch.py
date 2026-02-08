@@ -2,7 +2,7 @@
 
 *Dfetch* allows you to keep local changes to external projects in the form of
 patch files. These patch files should be created with the `dfetch diff` command.
-However, these patch files are relative to the :ref:`source directory <source-dir>`
+However, these patch files are relative to the :ref:`source directory <Source>`
 of the project inside the superproject. This makes it hard to apply these patches
 upstream, as upstream projects usually expect patches to be relative to their
 root directory. The ``format-patch`` command reformats all patches of a project
