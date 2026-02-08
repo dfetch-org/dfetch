@@ -21,6 +21,7 @@ The directive automatically detects Scenario: and Scenario Outline: titles.
 
 """
 
+import html
 import os
 import re
 from typing import Tuple
@@ -81,7 +82,7 @@ class ScenarioIncludeDirective(Directive):
 .. raw:: html
 
    <details>
-   <summary><strong>Example</strong>: {scenario_title}</summary>
+   <summary><strong>Example</strong>: {html.escape(scenario_title)}</summary>
 
     .. literalinclude:: {feature_file}
         :language: gherkin
