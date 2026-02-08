@@ -55,7 +55,7 @@ Feature: Freeze dependencies
 
               projects:
               - name: cunit-svn
-                revision: '172'
+                revision: '176'
                 url: svn://svn.code.sf.net/p/cunit/code
                 branch: trunk
                 vcs: svn
