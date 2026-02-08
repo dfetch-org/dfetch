@@ -9,6 +9,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from email.utils import format_datetime
 from pathlib import Path
+from typing import Union
 
 import patch_ng
 
@@ -249,12 +250,19 @@ class PatchInfo:
         return ""
 
 
-def parse_patch(file_path: str) -> patch_ng.PatchSet:
+def parse_patch(file_path: Union[str, Path]) -> patch_ng.PatchSet:
     """Parse the patch from file_path."""
-    patch = patch_ng.fromfile(file_path)
+    patch = patch_ng.fromfile(str(file_path))
     if not patch or not patch.items:
         raise RuntimeError(f'Failed to parse patch file: "{file_path}"')
     return patch
+
+
+def _rewrite_path(prefix: bytes, path: bytes) -> bytes:
+    """Add prefix if a real path."""
+    if path == b"/dev/null":
+        return b"/dev/null"
+    return prefix + path
 
 
 def add_prefix_to_patch(
@@ -265,19 +273,14 @@ def add_prefix_to_patch(
     if prefix:
         prefix += b"/"
 
-    def rewrite_path(path: bytes) -> bytes:
-        if path == b"/dev/null":
-            return b"/dev/null"
-        return prefix + path
-
     diff_git = re.compile(
         r"^diff --git (?:(?P<a>a/))?(?P<old>.+) (?:(?P<b>b/))?(?P<new>.+?)[\r\n]*$"
     )
     svn_index = re.compile(rb"^Index: (.+)$")
 
     for file in patch.items:
-        file.source = rewrite_path(file.source)
-        file.target = rewrite_path(file.target)
+        file.source = _rewrite_path(prefix, file.source)
+        file.target = _rewrite_path(prefix, file.target)
 
         for idx, line in enumerate(file.header):
 
@@ -286,16 +289,18 @@ def add_prefix_to_patch(
                 file.header[idx] = (
                     b"diff --git "
                     + (git_match.group("a").encode() if git_match.group("a") else b"")
-                    + rewrite_path(git_match.group("old").encode())
+                    + _rewrite_path(prefix, git_match.group("old").encode())
                     + b" "
                     + (git_match.group("b").encode() if git_match.group("b") else b"")
-                    + rewrite_path(git_match.group("new").encode())
+                    + _rewrite_path(prefix, git_match.group("new").encode())
                 )
                 break
 
             svn_match = svn_index.match(line)
             if svn_match:
-                file.header[idx] = b"Index: " + rewrite_path(svn_match.group(1))
+                file.header[idx] = b"Index: " + _rewrite_path(
+                    prefix, svn_match.group(1)
+                )
                 break
 
     return patch
@@ -309,10 +314,14 @@ def convert_patch_to(patch: patch_ng.PatchSet, required_type: str) -> patch_ng.P
     if required_type == patch_ng.GIT:
         for file in patch.items:
             file.header = [
-                b"diff --git a/" + file.source + b" b/" + file.target + b"\n"
+                b"diff --git "
+                + _rewrite_path(b"a/", file.source)
+                + b" "
+                + _rewrite_path(b"b/", file.target)
+                + b"\n"
             ]
             file.type = required_type
-    if required_type == patch_ng.SVN:
+    elif required_type == patch_ng.SVN:
         for file in patch.items:
             file.header = [b"Index: " + file.target + b"\n", b"=" * 67 + b"\n"]
             file.type = required_type
