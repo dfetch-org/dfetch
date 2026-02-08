@@ -53,10 +53,12 @@ logger = get_logger(__name__)
 
 
 class FormatPatch(dfetch.commands.command.Command):
-    """Format a patch to reflect the last changes.
+    """Format a patch to upstream any changes.
 
-    The ``format-patch`` reformats all patches of a project to make
-    them usable for the upstream project.
+    The ``format-patch`` command reformats all patches of
+    the given subprojects to make the patches usable for the
+    upstream project. The patches are converted to the upstream
+    vcs system if required and they are made absolute again.
     """
 
     @staticmethod
