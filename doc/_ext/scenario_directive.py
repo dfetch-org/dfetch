@@ -78,7 +78,10 @@ class ScenarioIncludeDirective(Directive):
             )
 
             directive_rst = f"""
-.. details:: **Example**: {scenario_title}
+.. raw:: html
+
+   <details>
+   <summary><strong>Example</strong>: {scenario_title}</summary>
 
     .. literalinclude:: {feature_file}
         :language: gherkin
@@ -87,6 +90,10 @@ class ScenarioIncludeDirective(Directive):
         :dedent:
         :start-after: Scenario: {scenario_title}
         {end_before}
+
+.. raw:: html
+
+   </details>
 """
             viewlist = StringList()
             for i, line in enumerate(directive_rst.splitlines()):
