@@ -84,13 +84,13 @@ class ScenarioIncludeDirective(Directive):
    <details>
    <summary><strong>Example</strong>: {html.escape(scenario_title)}</summary>
 
-    .. literalinclude:: {feature_file}
-        :language: gherkin
-        :caption: {feature_file}
-        :force:
-        :dedent:
-        :start-after: Scenario: {scenario_title}
-        {end_before}
+.. literalinclude:: {feature_file}
+    :language: gherkin
+    :caption: {feature_file}
+    :force:
+    :dedent:
+    :start-after: Scenario: {scenario_title}
+    {end_before}
 
 .. raw:: html
 
