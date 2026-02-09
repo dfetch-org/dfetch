@@ -246,9 +246,10 @@ def step_impl(_, old_path: str, new_path: str, directory: str):
 
 
 @given("the patch file '{name}'")
+@given("the patch file '{name}' in {directory}")
 @given("the patch file '{name}' with '{encoding}' encoding")
-def step_impl(context, name, encoding="UTF-8"):
-    generate_file(os.path.join(os.getcwd(), name), context.text, encoding)
+def step_impl(context, name, encoding="UTF-8", directory="."):
+    generate_file(os.path.join(directory, name), context.text, encoding)
 
 
 @given('"{path}" in {directory} is created')
