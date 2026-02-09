@@ -260,7 +260,7 @@ a *relative* patch, relative to the fetched projects root.
 
         .. scenario-include:: ../features/diff-in-git.feature
         .. scenario-include:: ../features/patch-after-fetch-git.feature
-        .. scenario-include:: ../features/patch-fuzzy-matching.feature
+        .. scenario-include:: ../features/patch-fuzzy-matching-git.feature
 
     .. tab:: SVN
 
@@ -272,7 +272,6 @@ a *relative* patch, relative to the fetched projects root.
 
         .. scenario-include:: ../features/diff-in-svn.feature
         .. scenario-include:: ../features/patch-after-fetch-svn.feature
-        .. scenario-include:: ../features/patch-fuzzy-matching.feature
 
 """
 
