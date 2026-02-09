@@ -46,7 +46,7 @@ Feature: Patch application tolerates small upstream changes
             Generated file for SomeProject
             This repository is used for testing.
             """
-        And the patch file 'SomeProject.patch' in SomeProject
+        And the patch file 'SomeProject.patch' in MyProject
             """
             diff --git a/README.md b/README.md
             index 1e65bd6..faa3b21 100644
