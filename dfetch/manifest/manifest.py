@@ -24,7 +24,7 @@ import os
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import IO, Any, Optional, Union
+from typing import IO, Any
 
 import yaml
 from typing_extensions import NotRequired, TypedDict
@@ -95,11 +95,9 @@ class RequestedProjectNotFoundError(RuntimeError):
 class ManifestDict(TypedDict, total=True):  # pylint: disable=too-many-ancestors
     """Serialized dict types."""
 
-    version: Union[int, str]
-    remotes: NotRequired[Sequence[Union[RemoteDict, Remote]]]
-    projects: Sequence[
-        Union[ProjectEntryDict, ProjectEntry, dict[str, Union[str, list[str]]]]
-    ]
+    version: int | str
+    remotes: NotRequired[Sequence[RemoteDict | Remote]]
+    projects: Sequence[ProjectEntryDict | ProjectEntry | dict[str, str | list[str]]]
 
 
 class Manifest:
@@ -113,8 +111,8 @@ class Manifest:
     def __init__(
         self,
         manifest: ManifestDict,
-        text: Optional[str] = None,
-        path: Optional[Union[str, os.PathLike[str]]] = None,
+        text: str | None = None,
+        path: str | os.PathLike[str] | None = None,
     ) -> None:
         """Create the manifest."""
         self.__version: str = str(manifest.get("version", self.CURRENT_VERSION))
@@ -142,7 +140,7 @@ class Manifest:
     def _init_projects(
         self,
         projects: Sequence[
-            Union[ProjectEntryDict, ProjectEntry, dict[str, Union[str, list[str]]]]
+            ProjectEntryDict | ProjectEntry | dict[str, str | list[str]]
         ],
     ) -> dict[str, ProjectEntry]:
         """Iterate over projects from manifest and initialize ProjectEntries from it.
@@ -189,7 +187,7 @@ class Manifest:
 
     @staticmethod
     def _determine_remotes(
-        remotes_from_manifest: Sequence[Union[RemoteDict, Remote]],
+        remotes_from_manifest: Sequence[RemoteDict | Remote],
     ) -> tuple[dict[str, Remote], list[Remote]]:
         default_remotes: list[Remote] = []
         remotes: dict[str, Remote] = {}
@@ -208,8 +206,8 @@ class Manifest:
 
     @staticmethod
     def from_yaml(
-        text: Union[io.TextIOWrapper, str, IO[str]],
-        path: Optional[Union[str, os.PathLike[str]]] = None,
+        text: io.TextIOWrapper | str | IO[str],
+        path: str | os.PathLike[str] | None = None,
     ) -> "Manifest":
         """Create a manifest from a file like object."""
         if isinstance(text, (io.TextIOWrapper, IO)):
@@ -228,7 +226,7 @@ class Manifest:
         return Manifest(manifest, text=text, path=path)
 
     @staticmethod
-    def _load_yaml(text: Union[io.TextIOWrapper, str, IO[str]]) -> Any:
+    def _load_yaml(text: io.TextIOWrapper | str | IO[str]) -> Any:
         try:
             return yaml.safe_load(text)
         except yaml.YAMLError as exc:
@@ -306,9 +304,9 @@ class Manifest:
         if len(remotes) == 1:
             remotes[0].pop("default", None)
 
-        projects: list[dict[str, Union[str, list[str]]]] = []
+        projects: list[dict[str, str | list[str]]] = []
         for project in self.projects:
-            project_yaml: dict[str, Union[str, list[str]]] = project.as_yaml()
+            project_yaml: dict[str, str | list[str]] = project.as_yaml()
             if len(remotes) == 1:
                 project_yaml.pop("remote", None)
             projects.append(project_yaml)

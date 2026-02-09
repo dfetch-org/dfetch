@@ -2,7 +2,6 @@
 
 import re
 from collections import defaultdict
-from typing import Optional
 
 from semver.version import Version
 
@@ -20,7 +19,7 @@ BASEVERSION = re.compile(
 )
 
 
-def coerce(version: str) -> tuple[str, Optional[Version], str]:
+def coerce(version: str) -> tuple[str, Version | None, str]:
     """Convert an incomplete version string into a semver-compatible Version object.
 
     * Tries to detect a "basic" version string (``major.minor.patch``).

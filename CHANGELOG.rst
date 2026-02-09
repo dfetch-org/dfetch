@@ -16,6 +16,7 @@ Release 0.12.0 (unreleased)
 * Group logging under a project name header (#953)
 * Introduce new ``update-patch`` command (#614)
 * Introduce new ``format-patch`` command (#943)
+* Drop python 3.9 support (#988)
 
 Release 0.11.0 (released 2026-01-03)
 ====================================

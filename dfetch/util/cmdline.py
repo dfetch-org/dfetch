@@ -4,7 +4,7 @@ import logging
 import os
 import subprocess  # nosec
 from collections.abc import Mapping
-from typing import Any, Optional
+from typing import Any
 
 
 class SubprocessCommandError(Exception):
@@ -16,7 +16,7 @@ class SubprocessCommandError(Exception):
 
     def __init__(
         self,
-        cmd: Optional[list[str]] = None,
+        cmd: list[str] | None = None,
         stdout: str = "",
         stderr: str = "",
         returncode: int = 0,
@@ -39,7 +39,7 @@ class SubprocessCommandError(Exception):
 def run_on_cmdline(
     logger: logging.Logger,
     cmd: list[str],
-    env: Optional[Mapping[str, str]] = None,
+    env: Mapping[str, str] | None = None,
 ) -> "subprocess.CompletedProcess[Any]":
     """Run a command and log the output, and raise if something goes wrong."""
     logger.debug(f"Running {cmd}")

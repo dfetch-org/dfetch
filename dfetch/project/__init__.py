@@ -2,7 +2,6 @@
 
 import os
 import pathlib
-from typing import Union
 
 import dfetch.manifest.project
 from dfetch.log import get_logger
@@ -48,7 +47,7 @@ def create_super_project() -> SuperProject:
     return determine_superproject_vcs(root_directory)(manifest, root_directory)
 
 
-def determine_superproject_vcs(path: Union[str, pathlib.Path]) -> type[SuperProject]:
+def determine_superproject_vcs(path: str | pathlib.Path) -> type[SuperProject]:
     """Determine correct VCS type of the superproject in the given path."""
     for project_type in SUPPORTED_SUPERPROJECT_TYPES:
         if project_type.check(path):

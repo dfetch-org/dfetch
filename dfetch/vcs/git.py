@@ -7,7 +7,7 @@ import shutil
 import tempfile
 from collections.abc import Generator, Sequence
 from pathlib import Path, PurePath
-from typing import NamedTuple, Optional, Union
+from typing import NamedTuple
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -234,7 +234,7 @@ class GitLocalRepo:
 
     METADATA_DIR = ".git"
 
-    def __init__(self, path: Union[str, Path] = ".") -> None:
+    def __init__(self, path: str | Path = ".") -> None:
         """Create a local git repo."""
         self._path = str(path)
 
@@ -255,9 +255,9 @@ class GitLocalRepo:
         *,
         remote: str,
         version: str,
-        src: Optional[str] = None,
-        must_keeps: Optional[list[str]] = None,
-        ignore: Optional[Sequence[str]] = None,
+        src: str | None = None,
+        must_keeps: list[str] | None = None,
+        ignore: Sequence[str] | None = None,
     ) -> str:
         """Checkout a specific version from a given remote.
 
@@ -332,7 +332,7 @@ class GitLocalRepo:
 
     @staticmethod
     def _determine_ignore_paths(
-        src: Optional[str], ignore: Sequence[str]
+        src: str | None, ignore: Sequence[str]
     ) -> Generator[str, None, None]:
         """Determine the ignore patterns relative to the given src."""
         if not src:
@@ -380,9 +380,9 @@ class GitLocalRepo:
 
     def create_diff(
         self,
-        old_hash: Optional[str],
-        new_hash: Optional[str],
-        ignore: Optional[Sequence[str]] = None,
+        old_hash: str | None,
+        new_hash: str | None,
+        ignore: Sequence[str] | None = None,
         reverse: bool = False,
     ) -> str:
         """Generate a relative diff patch."""
@@ -457,7 +457,7 @@ class GitLocalRepo:
                 .splitlines()
             )
 
-    def untracked_files_patch(self, ignore: Optional[Sequence[str]] = None) -> str:
+    def untracked_files_patch(self, ignore: Sequence[str] | None = None) -> str:
         """Create a diff for untracked files."""
         with in_directory(self._path):
             untracked_files = (

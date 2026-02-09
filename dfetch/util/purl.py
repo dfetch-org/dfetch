@@ -4,7 +4,6 @@ Supports: GitHub, Bitbucket, SVN, SSH paths, and more.
 """
 
 import re
-from typing import Optional
 from urllib.parse import urlparse
 
 from packageurl import PackageURL
@@ -54,8 +53,8 @@ def _namespace_and_name_from_domain_and_path(domain: str, path: str) -> tuple[st
 
 
 def _known_purl_types(
-    remote_url: str, version: Optional[str] = None, subpath: Optional[str] = None
-) -> Optional[PackageURL]:
+    remote_url: str, version: str | None = None, subpath: str | None = None
+) -> PackageURL | None:
     match = GITHUB_REGEX.match(remote_url)
     if match:
         return PackageURL(
@@ -79,7 +78,7 @@ def _known_purl_types(
 
 
 def remote_url_to_purl(
-    remote_url: str, version: Optional[str] = None, subpath: Optional[str] = None
+    remote_url: str, version: str | None = None, subpath: str | None = None
 ) -> PackageURL:
     """Convert a remote URL to a valid PackageURL object.
 

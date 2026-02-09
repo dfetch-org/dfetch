@@ -32,7 +32,6 @@ The below statement will update the patch for ``some-project`` from your manifes
 
 import argparse
 import pathlib
-from typing import Optional
 
 import dfetch.commands.command
 import dfetch.manifest.project
@@ -154,7 +153,7 @@ class UpdatePatch(dfetch.commands.command.Command):
         root: pathlib.Path,
         project_name: str,
         patch_text: str,
-    ) -> Optional[pathlib.Path]:
+    ) -> pathlib.Path | None:
         """Update the specified patch file with new patch text."""
         patch_path = pathlib.Path(patch_to_update).resolve()
 

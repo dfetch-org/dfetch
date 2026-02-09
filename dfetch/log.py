@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 from contextlib import nullcontext
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 
 from rich.console import Console
 from rich.highlighter import NullHighlighter
@@ -23,7 +23,7 @@ def make_console(no_color: bool = False) -> Console:
     )
 
 
-def configure_root_logger(console: Optional[Console] = None) -> None:
+def configure_root_logger(console: Console | None = None) -> None:
     """Configure the root logger with RichHandler using the provided Console."""
     console = console or make_console()
 
@@ -94,10 +94,10 @@ class DLogger(logging.Logger):
 
     def status(
         self, name: str, message: str, spinner: str = "dots", enabled: bool = True
-    ) -> Union[Status, nullcontext[None]]:
+    ) -> Status | nullcontext[None]:
         """Show status message with spinner if enabled."""
         rich_console = None
-        logger: Optional[logging.Logger] = self
+        logger: logging.Logger | None = self
         while logger:
             for handler in getattr(logger, "handlers", []):
                 if isinstance(handler, RichHandler):
@@ -143,7 +143,7 @@ class ExtLogFilter(logging.Filter):  # pylint: disable=too-few-public-methods
         return True
 
 
-def setup_root(name: str, console: Optional[Console] = None) -> DLogger:
+def setup_root(name: str, console: Console | None = None) -> DLogger:
     """Create and return the root logger."""
     logging.setLoggerClass(DLogger)
     configure_root_logger(console)
@@ -173,7 +173,7 @@ def increase_verbosity() -> None:
     logger_.setLevel(new_level)
 
 
-def get_logger(name: str, console: Optional[Console] = None) -> DLogger:
+def get_logger(name: str, console: Console | None = None) -> DLogger:
     """Get logger for a module, optionally configuring console colors."""
     logging.setLoggerClass(DLogger)
     logger = logging.getLogger(name)

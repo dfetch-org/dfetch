@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from os import PathLike
-from typing import Optional, Union
 
 import infer_license
 from infer_license.types import License as InferredLicense
@@ -21,7 +20,7 @@ class License:
 
     name: str  #: SPDX Full name
     spdx_id: str  #: SPDX Identifier
-    trove_classifier: Optional[str]  #: Python package classifier
+    trove_classifier: str | None  #: Python package classifier
     probability: float  #: Confidence level of the license inference
 
     @staticmethod
@@ -46,8 +45,8 @@ class License:
 
 
 def guess_license_in_file(
-    filename: Union[str, PathLike[str]],
-) -> Optional[License]:
+    filename: str | PathLike[str],
+) -> License | None:
     """Attempt to identify the license of a given file.
 
     Tries UTF-8 encoding first, falling back to Latin-1 for legacy license files.
