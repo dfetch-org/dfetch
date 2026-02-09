@@ -10,25 +10,29 @@ System_Boundary(DFetch, "Dfetch") {
         Component(compCommon, "Common", "python", "Does stuff")
         Component(compCommand, "Command", "python", "Does stuff")
 
-        Component(compCheck, "Check", "python", "Does stuff")
-        Component(compDiff, "Diff", "python", "Does stuff")
-        Component(compEnv, "Environment", "python", "Does stuff")
-        Component(compFreeze, "Freeze", "python", "Does stuff")
-        Component(compImport, "Import", "python", "Does stuff")
-        Component(compInit, "Init", "python", "Does stuff")
-        Component(compReport, "Report", "python", "Does stuff")
-        Component(compUpdate, "Update", "python", "Does stuff")
-        Component(compValidate, "Validate", "python", "Does stuff")
+        Component(compCheck, "Check", "python", "Checks for updates")
+        Component(compDiff, "Diff", "python", "Creates patch of local changes")
+        Component(compEnv, "Environment", "python", "Shows local tools")
+        Component(compFormatPatch, "FormatPatch", "python", "Format patch for export")
+        Component(compFreeze, "Freeze", "python", "Pins all projects")
+        Component(compImport, "Import", "python", "Imports from VCS")
+        Component(compInit, "Init", "python", "Initializes a manifest")
+        Component(compReport, "Report", "python", "Reports status")
+        Component(compUpdate, "Update", "python", "Updates all projects")
+        Component(compUpdatePatch, "UpdatePatch", "python", "Updates patch")
+        Component(compValidate, "Validate", "python", "Validates manifest")
 
-        Rel_U(compValidate, compCommand, "Extends")
         Rel_U(compCheck, compCommand, "Extends")
         Rel_U(compDiff, compCommand, "Extends")
         Rel_U(compEnv, compCommand, "Extends")
+        Rel_U(compFormatPatch, compCommand, "Extends")
         Rel_U(compFreeze, compCommand, "Extends")
         Rel_U(compImport, compCommand, "Extends")
         Rel_U(compInit, compCommand, "Extends")
         Rel_U(compReport, compCommand, "Extends")
         Rel_U(compUpdate, compCommand, "Extends")
+        Rel_U(compUpdatePatch, compCommand, "Extends")
+        Rel_U(compValidate, compCommand, "Extends")
 
         Rel_U(compUpdate, compCommon, "Uses")
         Rel_U(compCheck, compCommon, "Uses")
@@ -48,6 +52,10 @@ System_Boundary(DFetch, "Dfetch") {
 
     Rel(compEnv, contProject, "Uses")
 
+    Rel(compFormatPatch, contManifest, "Uses")
+    Rel(compFormatPatch, contProject, "Uses")
+    Rel(compFormatPatch, contVcs, "Uses")
+
     Rel(compFreeze, contManifest, "Uses")
     Rel(compFreeze, contProject, "Uses")
 
@@ -61,6 +69,10 @@ System_Boundary(DFetch, "Dfetch") {
 
     Rel(compUpdate, contManifest, "Uses")
     Rel(compUpdate, contProject, "Uses")
+
+    Rel(compUpdatePatch, contManifest, "Uses")
+    Rel(compUpdatePatch, contProject, "Uses")
+    Rel(compUpdatePatch, contVcs, "Uses")
 
     Rel(compValidate, contManifest, "Uses")
 
