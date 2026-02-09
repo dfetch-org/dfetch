@@ -1,6 +1,3 @@
-
-
-
 Installation
 ============
 
@@ -17,7 +14,7 @@ Or install the latest version from the main branch:
 
 .. code-block:: bash
 
-   pip install git+https://github.com/dfetch-org/dfetch.git#egg=dfetch
+   pip install git+https://github.com/dfetch-org/dfetch.git@main#egg=dfetch
 
 Binary distributions
 --------------------
