@@ -198,6 +198,7 @@ def check_output(context, line_count=None):
     """
     expected_text = multisub(
         patterns=[
+            (dfetch_title, "Dfetch (x.x.x)"),
             (git_hash, r"\1[commit-hash]\2"),
             (timestamp, "[timestamp]"),
             (ansi_escape, ""),
@@ -208,6 +209,7 @@ def check_output(context, line_count=None):
 
     actual_text = multisub(
         patterns=[
+            (dfetch_title, "Dfetch (x.x.x)"),
             (git_hash, r"\1[commit-hash]\2"),
             (timestamp, "[timestamp]"),
             (ansi_escape, ""),
