@@ -135,6 +135,14 @@ def step_impl(context, directory, path):
         commit_all("A change")
 
 
+@given('"{path}" in git-repository "{name}" is changed to:')
+def step_impl(context, path, name):
+    remote_path = os.path.join(context.remotes_dir, name)
+    with in_directory(remote_path):
+        generate_file(path, context.text)
+        commit_all("A change")
+
+
 @given("all files in {directory} are committed")
 @when("all files in {directory} are committed")
 def step_impl(_, directory):
