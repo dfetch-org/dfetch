@@ -12,31 +12,39 @@ System_Boundary(DFetch, "Dfetch") {
     Boundary(DfetchProject, "Project", "python", "Main project that has a manifest.") {
 
         Component(compAbstractCheckReporter, "AbstractCheckReporter", "python", "Abstract interface for generating a check report.")
-        Component(compGit, "Git", "python", "A subproject based on git.")
+        Component(compGitSub, "GitSubproject", "python", "A subproject based on git.")
         Component(compMetadata, "Metadata", "python", "A file containing metadata about a project.")
-        Component(compSvn, "Svn", "python", "A subproject based on svn.")
+        Component(compSvnSub, "SvnSubproject", "python", "A subproject based on svn.")
         Component(compSubProject, "SubProject", "python", "An abstract subproject.")
+        Component(compSuperProject, "SuperProject", "python", "An abstract superproject.")
+        Component(compGitSuper, "GitSuperProject", "python", "A superproject based on git.")
+        Component(compSvnSuper, "SvnSuperProject", "python", "A superproject based on svn.")
+        Component(compNoVcsSuper, "NoVcsSuperProject", "python", "A superproject without VCS.")
 
-        Rel_U(compGit, compSubProject, "Implements")
-        Rel_U(compSvn, compSubProject, "Implements")
+        Rel_U(compGitSub, compSubProject, "Implements")
+        Rel_U(compSvnSub, compSubProject, "Implements")
         Rel(compSubProject, compAbstractCheckReporter, "Uses")
         Rel_L(compSubProject, compMetadata, "Uses")
-    }
 
+        Rel_U(compGitSuper, compSuperProject, "Implements")
+        Rel_U(compSvnSuper, compSuperProject, "Implements")
+        Rel_U(compNoVcsSuper, compSuperProject, "Implements")
+    }
 
     Container(contVcs, "Vcs", "python", "Abstraction of various Version Control Systems.")
     Container(contReporting, "Reporting", "python", "Output formatters for various reporting formats.")
 
+    Rel(contCommands, compSuperProject, "Uses")
     Rel(contCommands, compSubProject, "Uses")
-    Rel(contCommands, compGit, "Uses")
-    Rel(contCommands, compSvn, "Uses")
     Rel(contReporting, compAbstractCheckReporter, "Implements")
     Rel_R(contReporting, compMetadata, "Uses")
     Rel_R(compMetadata, contManifest, "Has")
-    Rel(compSubProject, contManifest, "Has")
+    Rel(compSuperProject, contManifest, "Has")
     Rel(contReporting, contManifest, "Uses")
-    Rel(compGit, contVcs, "Uses")
-    Rel(compSvn, contVcs, "Uses")
+    Rel(compGitSub, contVcs, "Uses")
+    Rel(compSvnSub, contVcs, "Uses")
+    Rel(compGitSuper, contVcs, "Uses")
+    Rel(compSvnSuper, contVcs, "Uses")
 }
 
 Rel(user, contCommands, "Uses")
