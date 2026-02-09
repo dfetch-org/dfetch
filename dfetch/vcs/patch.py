@@ -9,7 +9,6 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from email.utils import format_datetime
 from pathlib import Path
-from typing import Union
 
 import patch_ng
 
@@ -250,7 +249,7 @@ class PatchInfo:
         return ""
 
 
-def parse_patch(file_path: Union[str, Path]) -> patch_ng.PatchSet:
+def parse_patch(file_path: str | Path) -> patch_ng.PatchSet:
     """Parse the patch from file_path."""
     patch = patch_ng.fromfile(str(file_path))
     if not patch or not patch.items:

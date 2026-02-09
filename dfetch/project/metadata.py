@@ -2,7 +2,6 @@
 
 import datetime
 import os
-from typing import Optional, Union
 
 import yaml
 from typing_extensions import TypedDict
@@ -27,7 +26,7 @@ class Options(TypedDict):  # pylint: disable=too-many-ancestors
     remote_url: str
     destination: str
     hash: str
-    patch: Union[str, list[str]]
+    patch: str | list[str]
 
 
 class Metadata:
@@ -78,7 +77,7 @@ class Metadata:
             return cls(data)
 
     def fetched(
-        self, version: Version, hash_: str = "", patch_: Optional[list[str]] = None
+        self, version: Version, hash_: str = "", patch_: list[str] | None = None
     ) -> None:
         """Update metadata."""
         self._last_fetch = datetime.datetime.now()

@@ -18,8 +18,6 @@ If multiple remotes are marked as default, the first marked as default is chosen
           url-base: https://github.com/
 """
 
-from typing import Optional, Union
-
 from typing_extensions import TypedDict
 
 _MandatoryRemoteDict = TypedDict("_MandatoryRemoteDict", {"name": str, "url-base": str})
@@ -28,7 +26,7 @@ _MandatoryRemoteDict = TypedDict("_MandatoryRemoteDict", {"name": str, "url-base
 class RemoteDict(_MandatoryRemoteDict, total=False):
     """Class representing data types of Remote class construction."""
 
-    default: Optional[bool]
+    default: bool | None
 
 
 class Remote:
@@ -41,7 +39,7 @@ class Remote:
         self._default: bool = bool(kwargs.get("default", False))
 
     @classmethod
-    def from_yaml(cls, yamldata: Union[dict[str, str], RemoteDict]) -> "Remote":
+    def from_yaml(cls, yamldata: dict[str, str] | RemoteDict) -> "Remote":
         """Create a remote entry in the manifest from yaml data.
 
         Returns:

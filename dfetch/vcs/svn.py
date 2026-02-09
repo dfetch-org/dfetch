@@ -5,7 +5,7 @@ import pathlib
 import re
 from collections.abc import Sequence
 from pathlib import Path
-from typing import NamedTuple, Optional, Union
+from typing import NamedTuple
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -77,7 +77,7 @@ class SvnRepo:
 
     def __init__(
         self,
-        path: Union[str, pathlib.Path] = ".",
+        path: str | pathlib.Path = ".",
     ) -> None:
         """Create a svn repo."""
         self._path = str(path)
@@ -111,7 +111,7 @@ class SvnRepo:
             # Pattern matches: "path - ..." where path is the local directory
             path_pattern = r"([^\s^-]+)\s+-"
             for entry in result.stdout.decode().split(os.linesep * 2):
-                match: Optional[re.Match[str]] = None
+                match: re.Match[str] | None = None
                 local_path: str = ""
                 for match in re.finditer(path_pattern, entry):
                     pass
@@ -203,7 +203,7 @@ class SvnRepo:
         }
 
     @staticmethod
-    def get_last_changed_revision(target: Union[str, Path]) -> str:
+    def get_last_changed_revision(target: str | Path) -> str:
         """Get the last changed revision of the given target."""
         target_str = str(target).strip()
         if os.path.isdir(target_str):
@@ -316,7 +316,7 @@ class SvnRepo:
     def create_diff(
         self,
         old_revision: str,
-        new_revision: Optional[str],
+        new_revision: str | None,
         ignore: Sequence[str],
     ) -> str:
         """Generate a relative diff patch."""

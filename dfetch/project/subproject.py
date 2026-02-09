@@ -5,7 +5,6 @@ import os
 import pathlib
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import Optional
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
@@ -42,7 +41,7 @@ class SubProject(ABC):
         ci_env_var = os.getenv("CI", "")
         return bool(ci_env_var) and ci_env_var[0].lower() in ("t", "1", "y")
 
-    def check_wanted_with_local(self) -> tuple[Optional[Version], Optional[Version]]:
+    def check_wanted_with_local(self) -> tuple[Version | None, Version | None]:
         """Given the project entry in the manifest, get the relevant version from disk.
 
         Returns:
@@ -74,7 +73,7 @@ class SubProject(ABC):
             Version(revision=on_disk.revision, branch=on_disk_branch),
         )
 
-    def update_is_required(self, force: bool = False) -> Optional[Version]:
+    def update_is_required(self, force: bool = False) -> Version | None:
         """Check if this project should be upgraded.
 
         Args:
@@ -93,7 +92,7 @@ class SubProject(ABC):
     def update(
         self,
         force: bool = False,
-        files_to_ignore: Optional[Sequence[str]] = None,
+        files_to_ignore: Sequence[str] | None = None,
         patch_count: int = -1,
     ) -> None:
         """Update this subproject if required.
@@ -298,7 +297,7 @@ class SubProject(ABC):
     def list_tool_info() -> None:
         """Print out version information."""
 
-    def on_disk_version(self) -> Optional[Version]:
+    def on_disk_version(self) -> Version | None:
         """Get the version of the project on disk.
 
         Returns:
@@ -317,7 +316,7 @@ class SubProject(ABC):
             )
             return None
 
-    def _on_disk_hash(self) -> Optional[str]:
+    def _on_disk_hash(self) -> str | None:
         """Get the hash of the project on disk.
 
         Returns:
@@ -336,7 +335,7 @@ class SubProject(ABC):
             )
             return None
 
-    def _check_for_newer_version(self) -> Optional[Version]:
+    def _check_for_newer_version(self) -> Version | None:
         """Check if a newer version is available on the given branch.
 
         In case wanted_version does not exist (anymore) on the remote return None.
@@ -400,3 +399,5 @@ class SubProject(ABC):
     @abstractmethod
     def create_formatted_patch_header(self, patch_info: PatchInfo) -> str:
         """Create a formatted patch header for the given patch info."""
+        del patch_info
+        return ""

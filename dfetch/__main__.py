@@ -6,7 +6,6 @@ https://dfetch.rtfd.org
 import argparse
 import sys
 from collections.abc import Sequence
-from typing import Optional
 
 from rich.console import Console
 
@@ -65,7 +64,7 @@ def _help(_: argparse.Namespace) -> None:
     parser.print_help()
 
 
-def run(argv: Sequence[str], console: Optional[Console] = None) -> None:
+def run(argv: Sequence[str], console: Console | None = None) -> None:
     """Start dfetch."""
     args = create_parser().parse_args(argv)
 

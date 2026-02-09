@@ -8,7 +8,7 @@ import stat
 from collections.abc import Generator, Iterator, Sequence
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 from _hashlib import HASH
 
@@ -42,7 +42,7 @@ def find_matching_files(directory: str, patterns: Sequence[str]) -> Iterator[Pat
             yield Path(path)
 
 
-def safe_rm(path: Union[str, Path]) -> None:
+def safe_rm(path: str | Path) -> None:
     """Delete an file or directory safely."""
     if os.path.isdir(path):
         safe_rmtree(str(path))
@@ -63,7 +63,7 @@ def safe_rmtree(path: str) -> None:
 
 
 @contextmanager
-def in_directory(path: Union[str, Path]) -> Generator[str, None, None]:
+def in_directory(path: str | Path) -> Generator[str, None, None]:
     """Work temporarily in a given directory."""
     pwd = os.getcwd()
     if not os.path.isdir(path):
@@ -77,7 +77,7 @@ def in_directory(path: Union[str, Path]) -> Generator[str, None, None]:
 
 @contextmanager
 def catch_runtime_exceptions(
-    exc_list: Optional[list[str]] = None,
+    exc_list: list[str] | None = None,
 ) -> Generator[list[str], None, None]:
     """Catch all runtime errors and add it to list of strings."""
     exc_list = exc_list or []
@@ -105,7 +105,7 @@ def find_file(name: str, path: str = ".") -> list[str]:
     ]
 
 
-def hash_directory(path: str, skiplist: Optional[list[str]]) -> str:
+def hash_directory(path: str, skiplist: list[str] | None) -> str:
     """Hash a directory with all its files."""
     digest = hashlib.md5(usedforsecurity=False)
     skiplist = skiplist or []
@@ -136,7 +136,7 @@ def hash_file(file_path: str, digest: HASH) -> HASH:
     return digest
 
 
-def always_str_list(data: Union[str, list[str]]) -> list[str]:
+def always_str_list(data: str | list[str]) -> list[str]:
     """Convert a string or list of strings into a list of strings.
 
     Args:
@@ -148,7 +148,7 @@ def always_str_list(data: Union[str, list[str]]) -> list[str]:
     return data if not isinstance(data, str) else [data] if data else []
 
 
-def str_if_possible(data: list[str]) -> Union[str, list[str]]:
+def str_if_possible(data: list[str]) -> str | list[str]:
     """Convert a single-element list to a string, otherwise keep as list.
 
     Args:
@@ -161,7 +161,7 @@ def str_if_possible(data: list[str]) -> Union[str, list[str]]:
     return "" if not data else data[0] if len(data) == 1 else data
 
 
-def resolve_absolute_path(path: Union[str, Path]) -> Path:
+def resolve_absolute_path(path: str | Path) -> Path:
     """Return a guaranteed absolute Path, resolving symlinks.
 
     Args:

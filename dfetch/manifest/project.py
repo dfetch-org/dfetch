@@ -274,7 +274,6 @@ a *relative* patch, relative to the fetched projects root.
 
 import copy
 from collections.abc import Sequence
-from typing import Optional, Union
 
 from typing_extensions import Required, TypedDict
 
@@ -291,7 +290,7 @@ ProjectEntryDict = TypedDict(
         "src": str,
         "dst": str,
         "url": str,
-        "patch": Union[str, list[str]],
+        "patch": str | list[str],
         "repo": str,
         "branch": str,
         "tag": str,
@@ -315,7 +314,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._revision: str = kwargs.get("revision", "")
 
         self._remote: str = kwargs.get("remote", "")
-        self._remote_obj: Optional[Remote] = None
+        self._remote_obj: Remote | None = None
         self._src: str = kwargs.get("src", "")  # noqa
         self._dst: str = kwargs.get("dst", self._name)
         self._url: str = kwargs.get("url", "")
@@ -332,7 +331,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
     @classmethod
     def from_yaml(
         cls,
-        yamldata: Union[dict[str, Union[str, list[str]]], ProjectEntryDict],
+        yamldata: dict[str, str | list[str]] | ProjectEntryDict,
         default_remote: str = "",
     ) -> "ProjectEntry":
         """Create a Project Entry from yaml data.
@@ -461,7 +460,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         recommendation._repo_path = ""  # pylint: disable=protected-access
         return recommendation
 
-    def as_yaml(self) -> dict[str, Union[str, list[str]]]:
+    def as_yaml(self) -> dict[str, str | list[str]]:
         """Get this project as yaml dictionary."""
         yamldata = {
             "name": self._name,

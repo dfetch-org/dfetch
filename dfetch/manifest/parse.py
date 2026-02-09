@@ -2,7 +2,7 @@
 
 import os
 import pathlib
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 from strictyaml import StrictYAMLError, YAMLValidationError, load
 
@@ -82,7 +82,7 @@ def find_manifest() -> str:
     return os.path.realpath(paths[0])
 
 
-def get_childmanifests(skip: Optional[list[str]] = None) -> list[Manifest]:
+def get_childmanifests(skip: list[str] | None = None) -> list[Manifest]:
     """Parse & validate any manifest file in cwd and return a list of all valid manifests."""
     skip = skip or []
     logger.debug("Looking for sub-manifests")
