@@ -259,6 +259,8 @@ a *relative* patch, relative to the fetched projects root.
         For more details see the `git-diff <https://git-scm.com/docs/git-diff>`_ documentation.
 
         .. scenario-include:: ../features/diff-in-git.feature
+        .. scenario-include:: ../features/patch-after-fetch-git.feature
+        .. scenario-include:: ../features/patch-fuzzy-matching.feature
 
     .. tab:: SVN
 
@@ -269,6 +271,8 @@ a *relative* patch, relative to the fetched projects root.
         For more details see the `svn-diff <http://svnbook.red-bean.com/en/1.7/svn.ref.svn.c.diff.html>`_ documentation.
 
         .. scenario-include:: ../features/diff-in-svn.feature
+        .. scenario-include:: ../features/patch-after-fetch-svn.feature
+        .. scenario-include:: ../features/patch-fuzzy-matching.feature
 
 """
 
