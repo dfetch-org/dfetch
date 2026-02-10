@@ -7,8 +7,8 @@ Person(user, "Developer")
 System_Boundary(DFetch, "Dfetch") {
 
     Boundary(DFetchCommands, "Commands") {
-        Component(compCommon, "Common", "python", "Does stuff")
-        Component(compCommand, "Command", "python", "Does stuff")
+        Component(compCommon, "Common", "python", "Common actions for commands")
+        Component(compCommand, "Command", "python", "Base class for commands")
 
         Component(compCheck, "Check", "python", "Checks for updates")
         Component(compDiff, "Diff", "python", "Creates patch of local changes")
