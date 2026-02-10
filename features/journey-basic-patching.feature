@@ -37,7 +37,7 @@ Feature: Basic patch journey
             index 0000000..0ee3895
             --- /dev/null
             +++ my-new-file.md
-            @@ -0,0 +1 @@
+            @@ -0,0 +1,1 @@
             +Some content
             """
         When the manifest 'dfetch.yaml' in MyPatchExample is changed to

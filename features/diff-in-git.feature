@@ -56,7 +56,7 @@ Feature: Diff in git
             index 0000000..0ee3895
             --- /dev/null
             +++ NEW_UNCOMMITTED_FILE.md
-            @@ -0,0 +1 @@
+            @@ -0,0 +1,1 @@
             +Some content
 
             """

@@ -18,7 +18,6 @@ from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import RevisionRange, SuperProject
 from dfetch.util.util import resolve_absolute_path
 from dfetch.vcs.git import GitLocalRepo
-from dfetch.vcs.patch import reverse_patch
 
 logger = get_logger(__name__)
 
@@ -138,14 +137,9 @@ class GitSuperProject(SuperProject):
             combined_diff += [diff_since_revision]
 
         untracked_files_patch = local_repo.untracked_files_patch(ignore)
-        if untracked_files_patch:
+        if not untracked_files_patch.is_empty():
             if reverse:
-                reversed_patch = reverse_patch(untracked_files_patch.encode("utf-8"))
-                if not reversed_patch:
-                    raise RuntimeError(
-                        "Failed to reverse untracked files patch; patch parsing returned empty."
-                    )
-                untracked_files_patch = reversed_patch
-            combined_diff += [untracked_files_patch]
+                untracked_files_patch.reverse()
+            combined_diff += [untracked_files_patch.dump()]
 
         return "\n".join(combined_diff)

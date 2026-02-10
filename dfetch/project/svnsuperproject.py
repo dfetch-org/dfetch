@@ -20,11 +20,7 @@ from dfetch.util.util import (
     in_directory,
     resolve_absolute_path,
 )
-from dfetch.vcs.patch import (
-    combine_patches,
-    create_svn_patch_for_new_file,
-    reverse_patch,
-)
+from dfetch.vcs.patch import Patch, PatchType
 from dfetch.vcs.svn import SvnRepo
 
 logger = get_logger(__name__)
@@ -116,22 +112,18 @@ class SvnSuperProject(SuperProject):
             if new:
                 new, old = old, new
 
-        filtered = repo.create_diff(old, new, ignore)
+        patch = repo.create_diff(old, new, ignore)
 
         if new:
-            return filtered
+            return patch.dump()
 
-        patches: list[bytes] = [filtered.encode("utf-8")] if filtered else []
         with in_directory(path):
-            for file_path in repo.untracked_files(".", ignore):
-                patch = create_svn_patch_for_new_file(file_path)
-                if patch:
-                    patches.append(patch.encode("utf-8"))
-
-        patch_str = combine_patches(patches)
+            patch.extend(
+                Patch.for_new_files(repo.untracked_files(".", ignore), PatchType.SVN)
+            )
 
         # SVN has no way of producing a reverse working copy patch, reverse ourselves
-        if reverse and not new:
-            patch_str = reverse_patch(patch_str.encode("UTF-8"))
+        if reverse:
+            patch.reverse()
 
-        return patch_str
+        return patch.dump()

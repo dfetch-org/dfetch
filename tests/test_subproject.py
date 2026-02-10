@@ -46,9 +46,6 @@ class ConcreteSubProject(SubProject):
     def get_default_branch(self):
         return ""
 
-    def create_formatted_patch_header(self, patch_info):
-        return ""
-
 
 @pytest.mark.parametrize(
     "name, given_on_disk, given_wanted, expect_wanted, expect_have",

@@ -10,7 +10,6 @@ from dfetch.manifest.version import Version
 from dfetch.project.subproject import SubProject
 from dfetch.util.util import safe_rmtree
 from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
-from dfetch.vcs.patch import PatchInfo
 
 logger = get_logger(__name__)
 
@@ -112,7 +111,3 @@ class GitSubProject(SubProject):
     def get_default_branch(self) -> str:  # type: ignore
         """Get the default branch of this repository."""
         return self._remote_repo.get_default_branch()
-
-    def create_formatted_patch_header(self, patch_info: PatchInfo) -> str:
-        """Create a formatted patch header for the given patch info."""
-        return patch_info.to_git_header()

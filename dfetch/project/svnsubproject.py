@@ -13,7 +13,6 @@ from dfetch.util.util import (
     find_non_matching_files,
     safe_rm,
 )
-from dfetch.vcs.patch import PatchInfo
 from dfetch.vcs.svn import SvnRemote, SvnRepo, get_svn_version
 
 logger = get_logger(__name__)
@@ -180,7 +179,3 @@ class SvnSubProject(SubProject):
     def get_default_branch(self) -> str:
         """Get the default branch of this repository."""
         return SvnRepo.DEFAULT_BRANCH
-
-    def create_formatted_patch_header(self, patch_info: PatchInfo) -> str:
-        """Create a formatted patch header for the given patch info."""
-        return patch_info.to_svn_header()
