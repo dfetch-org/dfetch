@@ -258,7 +258,7 @@ class SarifSerializer:
             value is None
             or (field.default == value and field.name != "level")
             or (
-                isinstance(field.default, attr.Factory)  # type:ignore
+                isinstance(field.default, attr.Factory)  # type: ignore
                 and field.default.factory() == value
             )
         )

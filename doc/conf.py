@@ -3,6 +3,7 @@
 """
 Documentation build configuration file.
 """
+
 # pylint: disable=invalid-name
 
 # If extensions (or modules to document with autodoc) are in another directory,

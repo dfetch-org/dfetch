@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """This script packages the dfetch build directory into OS-specific installers using fpm & wix."""
+
 import shutil
 import subprocess  # nosec
 import sys
