@@ -79,8 +79,7 @@ def test_create_svn_patch_for_new_file(tmp_path):
 
 def test_reverse_patch_simple_addition():
     """Test reversing a simple addition patch."""
-    patch = _normalize(
-        """
+    patch = _normalize("""
         Index: README.md
         ===================================================================
         --- README.md
@@ -88,11 +87,9 @@ def test_reverse_patch_simple_addition():
         @@ -1,1 +1,2 @@
          Patched file for SomeProject
         +Update to patched file for SomeProject
-    """
-    ).encode()
+    """).encode()
 
-    expected = _normalize(
-        """
+    expected = _normalize("""
         Index: README.md
         ===================================================================
         --- README.md
@@ -100,16 +97,14 @@ def test_reverse_patch_simple_addition():
         @@ -1,2 +1,1 @@
          Patched file for SomeProject
         -Update to patched file for SomeProject
-    """
-    )
+    """)
 
     assert reverse_patch(patch) == expected
 
 
 def test_reverse_patch_replacement_order():
     """Test reversing a replacement patch."""
-    patch = _normalize(
-        """
+    patch = _normalize("""
         Index: README.md
         ===================================================================
         --- README.md
@@ -118,11 +113,9 @@ def test_reverse_patch_replacement_order():
         -Patched file for SomeProject
         -Update to patched file for SomeProject
         +Generated file for SomeProject
-    """
-    ).encode()
+    """).encode()
 
-    expected = _normalize(
-        """
+    expected = _normalize("""
         Index: README.md
         ===================================================================
         --- README.md
@@ -131,16 +124,14 @@ def test_reverse_patch_replacement_order():
         -Generated file for SomeProject
         +Patched file for SomeProject
         +Update to patched file for SomeProject
-    """
-    )
+    """)
 
     assert reverse_patch(patch) == expected
 
 
 def test_reverse_patch_mixed_context():
     """Test reversing a patch with mixed additions and deletions."""
-    patch = _normalize(
-        """
+    patch = _normalize("""
         --- a/file.txt
         +++ b/file.txt
         @@ -1,4 +1,4 @@
@@ -149,11 +140,9 @@ def test_reverse_patch_mixed_context():
         +line TWO
          line three
          line four
-    """
-    ).encode()
+    """).encode()
 
-    expected = _normalize(
-        """
+    expected = _normalize("""
         --- b/file.txt
         +++ a/file.txt
         @@ -1,4 +1,4 @@
@@ -162,16 +151,14 @@ def test_reverse_patch_mixed_context():
         +line two
          line three
          line four
-    """
-    )
+    """)
 
     assert reverse_patch(patch) == expected
 
 
 def test_reverse_patch_multiple_hunks():
     """Test reversing a patch with multiple hunks."""
-    patch = _normalize(
-        """
+    patch = _normalize("""
         --- a/file.txt
         +++ b/file.txt
         @@ -1,2 +1,2 @@
@@ -182,11 +169,9 @@ def test_reverse_patch_multiple_hunks():
          context
         +added line
          more context
-    """
-    ).encode()
+    """).encode()
 
-    expected = _normalize(
-        """
+    expected = _normalize("""
         --- b/file.txt
         +++ a/file.txt
         @@ -1,2 +1,2 @@
@@ -197,81 +182,68 @@ def test_reverse_patch_multiple_hunks():
          context
         -added line
          more context
-    """
-    )
+    """)
 
     assert reverse_patch(patch) == expected
 
 
 def test_reverse_patch_file_creation():
     """Test reversing a file creation patch."""
-    patch = _normalize(
-        """
+    patch = _normalize("""
         --- /dev/null
         +++ b/newfile.txt
         @@ -0,0 +1,2 @@
         +hello
         +world
-    """
-    ).encode()
+    """).encode()
 
-    expected = _normalize(
-        """
+    expected = _normalize("""
         --- b/newfile.txt
         +++ /dev/null
         @@ -1,2 +0,0 @@
         -hello
         -world
-    """
-    )
+    """)
 
     assert reverse_patch(patch) == expected
 
 
 def test_reverse_patch_file_deletion():
     """Test reversing a file deletion patch."""
-    patch = _normalize(
-        """
+    patch = _normalize("""
         --- a/oldfile.txt
         +++ /dev/null
         @@ -1,2 +0,0 @@
         -goodbye
         -cruel world
-    """
-    ).encode()
+    """).encode()
 
-    expected = _normalize(
-        """
+    expected = _normalize("""
         --- /dev/null
         +++ a/oldfile.txt
         @@ -0,0 +1,2 @@
         +goodbye
         +cruel world
-    """
-    )
+    """)
 
     assert reverse_patch(patch) == expected
 
 
 def test_reverse_patch_zero_length_hunk():
     """Test reversing a patch with a zero-length hunk (insertion)."""
-    patch = _normalize(
-        """
+    patch = _normalize("""
         --- a/file.txt
         +++ b/file.txt
         @@ -3,0 +3,1 @@
         +inserted
-    """
-    ).encode()
+    """).encode()
 
-    expected = _normalize(
-        """
+    expected = _normalize("""
         --- b/file.txt
         +++ a/file.txt
         @@ -3,1 +3,0 @@
         -inserted
-    """
-    )
+    """)
 
     assert reverse_patch(patch) == expected
 

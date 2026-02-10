@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Generate an sbom of the tool."""
+
 import contextlib
 import logging
 import subprocess  # nosec

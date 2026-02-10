@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """This script builds the dfetch executable using Nuitka."""
+
 import subprocess  # nosec
 import sys
 import tomllib as toml
