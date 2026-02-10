@@ -12,14 +12,11 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from dfetch.util.util import in_directory
 from dfetch.vcs.patch import (
-    add_prefix_to_patch,
-    apply_patch,
-    create_git_patch_for_new_file,
-    create_svn_patch_for_new_file,
-    dump_patch,
-    parse_patch,
-    reverse_patch,
+    Patch,
+    PatchType,
+    _reverse_patch,
 )
 
 
@@ -30,10 +27,11 @@ def _normalize(patch: str) -> str:
 
 def test_create_git_patch_for_new_file(tmp_path):
     """Check basic patch generation for new files."""
-    test_file = tmp_path / "test.txt"
-    test_file.write_text("Hello World\n\nLine above is empty\n")
+    test_file = Path("test.txt")
 
-    actual_patch = create_git_patch_for_new_file(str(test_file))
+    with in_directory(tmp_path):
+        test_file.write_text("Hello World\n\nLine above is empty\n")
+        actual_patch = Patch._for_new_file(str(test_file), PatchType.GIT)
 
     expected_patch = "\n".join(
         [
@@ -50,15 +48,16 @@ def test_create_git_patch_for_new_file(tmp_path):
         ]
     )
 
-    assert actual_patch == expected_patch
+    assert actual_patch.dump() == expected_patch
 
 
 def test_create_svn_patch_for_new_file(tmp_path):
     """Check basic patch generation for new files."""
-    test_file = tmp_path / "test.txt"
-    test_file.write_text("Hello World\n\nLine above is empty\n")
+    test_file = Path("test.txt")
 
-    actual_patch = create_svn_patch_for_new_file(str(test_file))
+    with in_directory(tmp_path):
+        test_file.write_text("Hello World\n\nLine above is empty\n")
+        actual_patch = Patch._for_new_file(str(test_file), PatchType.SVN)
 
     expected_patch = "\n".join(
         [
@@ -74,7 +73,7 @@ def test_create_svn_patch_for_new_file(tmp_path):
         ]
     )
 
-    assert actual_patch == expected_patch
+    assert actual_patch.dump() == expected_patch
 
 
 def test_reverse_patch_simple_addition():
@@ -87,7 +86,7 @@ def test_reverse_patch_simple_addition():
         @@ -1,1 +1,2 @@
          Patched file for SomeProject
         +Update to patched file for SomeProject
-    """).encode()
+    """)
 
     expected = _normalize("""
         Index: README.md
@@ -99,7 +98,7 @@ def test_reverse_patch_simple_addition():
         -Update to patched file for SomeProject
     """)
 
-    assert reverse_patch(patch) == expected
+    assert _reverse_patch(patch) == expected
 
 
 def test_reverse_patch_replacement_order():
@@ -113,7 +112,7 @@ def test_reverse_patch_replacement_order():
         -Patched file for SomeProject
         -Update to patched file for SomeProject
         +Generated file for SomeProject
-    """).encode()
+    """)
 
     expected = _normalize("""
         Index: README.md
@@ -126,7 +125,7 @@ def test_reverse_patch_replacement_order():
         +Update to patched file for SomeProject
     """)
 
-    assert reverse_patch(patch) == expected
+    assert _reverse_patch(patch) == expected
 
 
 def test_reverse_patch_mixed_context():
@@ -140,7 +139,7 @@ def test_reverse_patch_mixed_context():
         +line TWO
          line three
          line four
-    """).encode()
+    """)
 
     expected = _normalize("""
         --- b/file.txt
@@ -153,7 +152,7 @@ def test_reverse_patch_mixed_context():
          line four
     """)
 
-    assert reverse_patch(patch) == expected
+    assert _reverse_patch(patch) == expected
 
 
 def test_reverse_patch_multiple_hunks():
@@ -169,7 +168,7 @@ def test_reverse_patch_multiple_hunks():
          context
         +added line
          more context
-    """).encode()
+    """)
 
     expected = _normalize("""
         --- b/file.txt
@@ -184,7 +183,7 @@ def test_reverse_patch_multiple_hunks():
          more context
     """)
 
-    assert reverse_patch(patch) == expected
+    assert _reverse_patch(patch) == expected
 
 
 def test_reverse_patch_file_creation():
@@ -195,7 +194,7 @@ def test_reverse_patch_file_creation():
         @@ -0,0 +1,2 @@
         +hello
         +world
-    """).encode()
+    """)
 
     expected = _normalize("""
         --- b/newfile.txt
@@ -205,7 +204,7 @@ def test_reverse_patch_file_creation():
         -world
     """)
 
-    assert reverse_patch(patch) == expected
+    assert _reverse_patch(patch) == expected
 
 
 def test_reverse_patch_file_deletion():
@@ -216,7 +215,7 @@ def test_reverse_patch_file_deletion():
         @@ -1,2 +0,0 @@
         -goodbye
         -cruel world
-    """).encode()
+    """)
 
     expected = _normalize("""
         --- /dev/null
@@ -226,7 +225,7 @@ def test_reverse_patch_file_deletion():
         +cruel world
     """)
 
-    assert reverse_patch(patch) == expected
+    assert _reverse_patch(patch) == expected
 
 
 def test_reverse_patch_zero_length_hunk():
@@ -236,7 +235,7 @@ def test_reverse_patch_zero_length_hunk():
         +++ b/file.txt
         @@ -3,0 +3,1 @@
         +inserted
-    """).encode()
+    """)
 
     expected = _normalize("""
         --- b/file.txt
@@ -245,7 +244,7 @@ def test_reverse_patch_zero_length_hunk():
         -inserted
     """)
 
-    assert reverse_patch(patch) == expected
+    assert _reverse_patch(patch) == expected
 
 
 # Random small file: 5–15 lines, each line 5–20 chars (filtered to exclude control chars)
@@ -292,7 +291,7 @@ def test_reverse_patch_small_random(original_lines, rng):
         )
     )
 
-    patch_reverse = reverse_patch(patch_forward.encode())
+    patch_reverse = _reverse_patch(patch_forward)
 
     if not patch_forward:
         # No changes detected; skip
@@ -306,9 +305,9 @@ def test_reverse_patch_small_random(original_lines, rng):
         patch_file.write_text(patch_reverse)
 
         try:
-            apply_patch(str(patch_file), root=str(tmp_path))
+            Patch.from_file(patch_file).apply(root=str(tmp_path))
         except Exception as e:
-            assert False, f"Reverse patch failed: {e}"
+            pytest.fail(reason=f"Reverse patch failed: {e}")
 
         restored = target_file.read_text()
         assert restored == original, "Reverse patch did not restore original!"
@@ -334,8 +333,6 @@ def test_patch_prefix_new_file(tmp_path):
     original_patch_file = tmp_path / "original.patch"
     original_patch_file.write_text(original_patch)
 
-    parsed_patch = parse_patch(original_patch_file)
-
     expected_patch = "\n".join(
         [
             "diff --git a/src/test.txt b/src/test.txt",
@@ -351,9 +348,8 @@ def test_patch_prefix_new_file(tmp_path):
         ]
     )
 
-    prefixed_patch = add_prefix_to_patch(
-        parsed_patch,
+    prefixed_patch = Patch.from_file(original_patch_file).add_prefix(
         path_prefix="src",
     )
 
-    assert dump_patch(prefixed_patch) == expected_patch
+    assert prefixed_patch.dump() == expected_patch

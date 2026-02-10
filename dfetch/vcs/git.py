@@ -12,7 +12,7 @@ from typing import NamedTuple
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import in_directory, safe_rmtree
-from dfetch.vcs.patch import create_git_patch_for_new_file
+from dfetch.vcs.patch import Patch, PatchType
 
 logger = get_logger(__name__)
 
@@ -457,7 +457,7 @@ class GitLocalRepo:
                 .splitlines()
             )
 
-    def untracked_files_patch(self, ignore: Sequence[str] | None = None) -> str:
+    def untracked_files_patch(self, ignore: Sequence[str] | None = None) -> Patch:
         """Create a diff for untracked files."""
         with in_directory(self._path):
             untracked_files = (
@@ -476,10 +476,9 @@ class GitLocalRepo:
                 ]
 
             if untracked_files:
-                return "\n".join(
-                    [create_git_patch_for_new_file(file) for file in untracked_files]
-                )
-            return ""
+                return Patch.for_new_files(untracked_files, PatchType.GIT)
+
+            return Patch.empty()
 
     @staticmethod
     def submodules() -> list[Submodule]:
