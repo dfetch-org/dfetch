@@ -38,7 +38,7 @@ See `gitlab code quality reports`_ for more information.
 .. code-block:: yaml
 
     dfetch:
-      image: "python:3.13"
+      image: "python:3.14"
       script:
       - pip install dfetch
       - dfetch check --code-climate dfetch.json
