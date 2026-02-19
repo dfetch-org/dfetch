@@ -104,7 +104,7 @@ build = [
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml]
     "setuptools-scm==9.2.2", # For determining version
 ]
-sbom = ["cyclonedx-bom==7.2.1"]
+sbom = ["cyclonedx-bom==7.2.2"]
 
 [project.scripts]
 dfetch = "dfetch.__main__:main"
