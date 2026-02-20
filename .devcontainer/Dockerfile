@@ -40,7 +40,7 @@ ENV PYTHONUSERBASE="/home/dev/.local"
 
 COPY --chown=dev:dev . .
 
-RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip==25.3 \
+RUN pip install --no-cache-dir --root-user-action=ignore --upgrade pip==26.0.1 \
     && pip install --no-cache-dir --root-user-action=ignore -e .[development,docs,test,casts,build] \
     && pre-commit install --install-hooks
 
