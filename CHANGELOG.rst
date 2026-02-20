@@ -17,6 +17,7 @@ Release 0.12.0 (released 2026-02-21)
 * Introduce new ``update-patch`` command (#614)
 * Introduce new ``format-patch`` command (#943)
 * Drop python 3.9 support (#988)
+* Use python 3.14 for development (#890)
 
 Release 0.11.0 (released 2026-01-03)
 ====================================
