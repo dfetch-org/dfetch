@@ -74,13 +74,11 @@ if __name__ == "__main__":
     replace_pattern_in_files(
         file_path_pattern=f"{base_dir}/doc/contributing.rst",
         search_pattern=r"\d+\.\d+\.\d+",
-        replacement=f"{major}.{minor + 1}.0",
-        flags=re.DOTALL,
+        replacement=__version__,
     )
 
     replace_pattern_in_files(
         file_path_pattern=f"{base_dir}/doc/contributing.rst",
         search_pattern=r"\d+\.\d+\.\d+ \(unreleased\)",
-        replacement=f"{major}.{minor + 2}.0 (unreleased)",
-        flags=re.DOTALL,
+        replacement=f"{major}.{minor + 1}.0 (unreleased)",
     )
