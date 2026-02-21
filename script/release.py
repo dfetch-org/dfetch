@@ -55,9 +55,9 @@ if __name__ == "__main__":
         replacement=f"Dfetch ({__version__})",
     )
 
-    # replace_pattern_in_files(
-    #     file_path_pattern=f"{base_dir}/features/report-sbom.feature",
-    #     search_pattern=r'("name":\s*"dfetch",\s*"version":\s*")\d+\.\d+\.\d+(")',
-    #     replacement=r"\1" + __version__ + r"\2",
-    #     flags=re.DOTALL,
-    # )
+    replace_pattern_in_files(
+        file_path_pattern=f"{base_dir}/features/report-sbom.feature",
+        search_pattern=r"0\.\d+\.\d+",
+        replacement=__version__,
+        flags=re.DOTALL,
+    )
