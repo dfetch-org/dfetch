@@ -20,7 +20,7 @@ Feature: Validate a manifest
         When I run "dfetch validate"
         Then the output shows
             """
-            Dfetch (0.11.0)
+            Dfetch (0.12.0)
               dfetch.yaml         : valid
             """
 
@@ -42,7 +42,7 @@ Feature: Validate a manifest
         When I run "dfetch validate"
         Then the output shows
             """
-            Dfetch (0.11.0)
+            Dfetch (0.12.0)
             Schema validation failed:
 
                 manifest-wrong:
@@ -66,7 +66,7 @@ Feature: Validate a manifest
         When I run "dfetch validate"
         Then the output shows
             """
-            Dfetch (0.11.0)
+            Dfetch (0.12.0)
             Schema validation failed:
             Duplicate manifest.projects.name value(s): ext/test-repo-rev-only
             """
