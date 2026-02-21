@@ -22,7 +22,7 @@ See `gitlab dependency scanning`_ for more information.
 .. code-block:: yaml
 
     dfetch:
-      image: "python:3.13"
+      image: "python:3.14"
       script:
       - pip install dfetch
       - dfetch report -t sbom -o dfetch.cdx.json
@@ -50,7 +50,7 @@ A SBoM report can be generated in a github action as such:
         - uses: actions/checkout@v5
         - uses: actions/setup-python@v6
           with:
-            python-version: '3.13'
+            python-version: '3.14'
         - name: Install dfetch from GitHub
           run: pip install git+https://github.com/dfetch-org/dfetch.git@main#egg=dfetch
           shell: bash

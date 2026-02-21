@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/python:3.13-trixie@sha256:c3a082525f51bb81e3d952d5ec12c2bed3525179a45ef3a09d48993ebc871133
+FROM mcr.microsoft.com/devcontainers/python:3.14-trixie@sha256:77238990f09e14b9baecb21c620bb919a6293fdb7a539d19f53996860b47a00a
 
 # Remove yarn source to avoid conflicts (https://github.com/devcontainers/images/issues/1752)
 RUN rm -f /etc/apt/sources.list.d/yarn.list \
@@ -35,7 +35,7 @@ RUN useradd -m dev && chown -R dev:dev /workspaces/dfetch
 USER dev
 
 ENV PATH="/home/dev/.local/bin:${PATH}"
-ENV PYTHONPATH="/home/dev/.local/lib/python3.13"
+ENV PYTHONPATH="/home/dev/.local/lib/python3.14"
 ENV PYTHONUSERBASE="/home/dev/.local"
 
 COPY --chown=dev:dev . .
