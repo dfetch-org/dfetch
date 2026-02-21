@@ -24,7 +24,7 @@
 !pragma teoz true
 
 
-' Legend redefintion
+' Legend redefinition
 ' ##################################
 ' sequence has no dashed boxes
 !if ($LEGEND_DASHED_BOUNDARY == "dashed")
@@ -127,6 +127,10 @@ sequenceDiagram {
 !endif
 ' ======= if no theme is defined hide foot box and activate C4_blue styles
 
+!if (ROUNDED_STYLE == 1)
+skinparam participantRoundCorner $ROUNDED_BOX_SIZE
+!endif
+
 ' Elements redefinition
 ' ##################################
 
@@ -202,6 +206,7 @@ sequenceDiagram {
   !$calcTech = "//<size:" + $TECHN_FONT_SIZE + ">[" + $breakNewLineTechn($techn) + "]</size>//"
   !$calcDescr = $breakNewLineDescr($descr)
   !$calcLink = $getLink($link)
+  !$props = $getProps()
 
 participant $alias $stereo $calcLink [
 !if ($sprite != "")

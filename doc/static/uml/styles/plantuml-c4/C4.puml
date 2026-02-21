@@ -1,18 +1,29 @@
 ' C4-PlantUML
- 
+
 ' Global pre-settings
 ' ##################################
 ' NEW_C4_STYLE
 '   If NEW_C4_STYLE is set BEFORE the first C4_* file is loaded, new C4 layout style is used
-'   NEW_C4_STYLE can be set via 
+'   NEW_C4_STYLE can be set via
 '     !NEW_C4_STYLE = 1
 '   or with additional command line argument -DNEW_C4_STYLE=1
 !global NEW_C4_STYLE ?= 0
 
+' ROUNDED_STYLE
+'   If ROUNDED_STYLE is set BEFORE the first C4_* file is loaded, rectangles with rounded corners are used as default shape
+'   ROUNDED_STYLE can be set via
+'     !ROUNDED_STYLE = 1
+'   or with additional command line argument -DROUNDED_STYLE=1
+!if (NEW_C4_STYLE == 1)
+  !global ROUNDED_STYLE ?= 1
+!else
+  !global ROUNDED_STYLE ?= 0
+!endif
+
 ' ENABLE_ALL_PLANT_ELEMENTS
 '   If ENABLE_ALL_PLANT_ELEMENTS is set BEFORE the first C4_* file is loaded, nearly "all" PlantUML elements can be used like
 '     Component(StorageA, "Storage A ", $baseShape="storage")
-'   ENABLE_ALL_PLANT_ELEMENTS can be set via 
+'   ENABLE_ALL_PLANT_ELEMENTS can be set via
 '     !ENABLE_ALL_PLANT_ELEMENTS = 1
 '   or with additional command line argument -DENABLE_ALL_PLANT_ELEMENTS=1
 
@@ -21,7 +32,7 @@
 ' (details see https://github.com/plantuml-stdlib/C4-PlantUML/issues/376)
 ' If older diagrams should remain unchanged the bugfix can be deactivated with following statement
 '     !NO_LAY_ROTATE = 1
-' or with follwing additional command line argument 
+' or with follwing additional command line argument
 '     -DNO_LAY_ROTATE=1
 ' like
 '    java -jar plantuml.jar -DNO_LAY_ROTATE=1 ...
@@ -31,7 +42,7 @@
 ' ##################################
 !function C4Version()
   ' 2 spaces and ' are used as unique marker, that the release scripts makes the correct version update
-  !$c4Version  =  "2.13.0beta1"
+  !$c4Version  =  "2.14.0beta1"
   !return $c4Version
 !end function
 
@@ -64,7 +75,7 @@ rectangle C4VersionDetailsArea <<legendArea>> [
 !$LEGEND_DARK_COLOR ?= "#66622E"
 !$LEGEND_LIGHT_COLOR ?= "#khaki"
 
-!$SKETCH_BG_COLOR ?= "#EEEBDC" 
+!$SKETCH_BG_COLOR ?= "#EEEBDC"
 !$SKETCH_FONT_COLOR ?= ""
 !$SKETCH_WARNING_COLOR ?= "red"
 !$SKETCH_FONT_NAME ?= "Comic Sans MS"
@@ -135,13 +146,13 @@ rectangle C4VersionDetailsArea <<legendArea>> [
 !$REL_TECHN_MAX_CHAR_WIDTH ?= 35
 !$REL_DESCR_MAX_CHAR_WIDTH ?= 32
 
-' internal 
+' internal
 ' ##################################
 
 !global $SHARP_CORNER = "sharpCorner"
 !global $ROUNDED_BOX = "roundedBox"
 !global $EIGHT_SIDED = "eightSided"
-!if (NEW_C4_STYLE == 1)
+!if (ROUNDED_STYLE == 1)
   !$DEFAULT_SHAPE ?= $ROUNDED_BOX
 !else
   !$DEFAULT_SHAPE ?= $SHARP_CORNER
@@ -316,7 +327,7 @@ skinparam package {
   !return $stereos
 !endfunction
 
-' if $sprite/$techn is an empty argument, try to calculate it via the defined $tag 
+' if $sprite/$techn is an empty argument, try to calculate it via the defined $tag
 !unquoted function $toRelArg($arg, $tags, $varPostfix)
   !if ($arg > "")
     !return $arg
@@ -383,7 +394,7 @@ skinparam package {
   !return $stereos
 !endfunction
 
-' if $sprite/$techn is an empty argument, try to calculate it via the defined $tag 
+' if $sprite/$techn is an empty argument, try to calculate it via the defined $tag
 !unquoted function $toElementArg($arg, $tags, $varPostfix, $elementType)
   !if ($arg > "")
     !return $arg
@@ -773,7 +784,7 @@ $elementSkin
     !endif
     !if ($fontColor == "" && $bgColor == "")
       !$tagDetails = $tagDetails + $LEGEND_NO_FONT_BG_TEXT + ", "
-    !else 
+    !else
       !if ($fontColor == "")
         !$tagDetails = $tagDetails + $LEGEND_NO_FONT_TEXT + ", "
       !endif
@@ -806,7 +817,7 @@ $elementSkin
     !else
       !$tagDetails = %substr($tagDetails, 0, %strlen($tagDetails)-2)
       !$tagDetails = $tagDetails + ")</size>"
-    !endif 
+    !endif
   !else
     !$brPos = %strpos($legendText, "\n")
     !if ($brPos > 0)
@@ -884,7 +895,7 @@ $elementSkin
     !else
       !$tagDetails = %substr($tagDetails, 0, %strlen($tagDetails)-2)
       !$tagDetails = $tagDetails + ")</size>"
-    !endif 
+    !endif
   !else
     !$brPos = %strpos($legendText, "\n")
     !if ($brPos > 0)
@@ -997,7 +1008,6 @@ $line
   !$swap=$bgColor
   !$bgColor=$fontColor
   !$fontColor=$swap
-  !$borderColor=$swap
 !endif
 
 $defineSkinparams($tagStereo, $bgColor, $fontColor, $borderColor, $shadowing, $shape, $borderStyle, $borderThickness)
@@ -1020,7 +1030,6 @@ $addTagToLegend($tagStereo, $bgColor, $fontColor, $borderColor, $shadowing, $sha
   !$swap=$bgColor
   !$bgColor=$fontColor
   !$fontColor=$swap
-  !$borderColor=$swap
 !endif
 
   !$bgColor=$restoreEmpty($elementName, "bgColor", $bgColor, %false())
@@ -1041,7 +1050,6 @@ $addTagToLegend($tagStereo, $bgColor, $fontColor, $borderColor, $shadowing, $sha
   !$swap=$bgColor
   !$bgColor=$fontColor
   !$fontColor=$swap
-  !$borderColor=$swap
 !endif
 
   AddElementTag($tagStereo, $bgColor, $fontColor, $borderColor, $shadowing, $shape, $sprite, $techn, $legendText, $legendSprite, $borderStyle, $borderThickness)
@@ -1070,7 +1078,6 @@ $addRelTagToLegend($tagStereo, $textColor, $lineColor, $lineStyle, $legendText, 
   !$swap=$bgColor
   !$bgColor=$fontColor
   !$fontColor=$swap
-  !$borderColor=$swap
 !endif
 
 !$bgColor=$restoreEmpty($elementName, "bgColor", $bgColor, %true())
@@ -1147,7 +1154,7 @@ $elementSkin
     !if ($brPos > 0)
       !$multiLine = $multiLine + %substr($text, 0, $brPos) + $usedNewLine
     !else
-      ' <U+00A0> non breaking change that newLine breaks with formats can be used with \n\n 
+      ' <U+00A0> non breaking change that newLine breaks with formats can be used with \n\n
       !$multiLine = $multiLine + "<U+00A0>" + $usedNewLine
     !endif
     !$text = %substr($text, $brPos+2)
@@ -1230,7 +1237,7 @@ $elementSkin
   !$baseProp = $getElementBase($label, $techn, $descr, $sprite) + $getProps()
   !$stereo = $toStereos($elementType,$tags)
   !$calcLink = $getLink($link)
-  
+
   !$line = $umlShape + " " + %chr(34) + $baseProp + %chr(34) +" " + $stereo + " as " + $alias + " " + $calcLink
   !return $line
 !endfunction
@@ -1251,24 +1258,24 @@ $elementSkin
   !if ($col == "" && $colNext != "")
     !return " "
   !endif
-  !return $col 
+  !return $col
 !endfunction
 
 !function $updatePropColumns($colIdx)
   !if ($isFirstProp == 1 && $colIdx > $firstPropCol)
     !$firstPropCol = $colIdx
-  !endif    
+  !endif
   !if ($isFirstProp == 0 && $colIdx > $lastPropCol)
     !$lastPropCol = $colIdx
-  !endif    
-  !return "" 
+  !endif
+  !return ""
 !endfunction
 
 ' add missing header columns, if a following row has more columns
 ' (fixed in PlantUML v1.2025.1beta9; only required in older versions)
 !function $fixHeaderColumns()
   ' the number of displayed columns considers only the first row
-  ' if another row has more columns the first has to be filled with missing columns 
+  ' if another row has more columns the first has to be filled with missing columns
   !if ($lastPropCol > $firstPropCol)
     !$delta = $lastPropCol - $firstPropCol
     !$delta = $delta * 2
@@ -1276,9 +1283,9 @@ $elementSkin
 
     ' basically the line break \n should be the split
     ' but \n is not encoded (anymore?) therefore split only via
-    ' \ and remove the last obsolete  \ (changed order with add 
-    ' \ at the beginning is not working). 
-    ' "\n" would split \ and n ==> n would be an unwanted line break 
+    ' \ and remove the last obsolete  \ (changed order with add
+    ' \ at the beginning is not working).
+    ' "\n" would split \ and n ==> n would be an unwanted line break
     !$lines = %splitstr($propTable, "\")
     ' !$lines = %splitstr_regex($propTable, "(?=[\x000A])")
     !$first = 1
@@ -1290,18 +1297,18 @@ $elementSkin
       !endif
       !$newTab = $newTab + $item + "\"
     !endfor
-    
+
     !$fixLen = %strlen($newTab) - 1
     !$newTab = %substr($newTab, 0, $fixLen)
 
     !$propTable = $newTab
-  !endif    
+  !endif
 
   !$isFirstProp = 1
   !$firstPropCol = 1
   !$lastPropCol = 1
 
-  !return "" 
+  !return ""
 !endfunction
 
 !unquoted function SetPropertyHeader($col1Name, $col2Name = "", $col3Name = "", $col4Name = "")
@@ -1397,7 +1404,7 @@ SetPropertyHeader("Property","Value")
 !function $getLegendDetailsSize($detailsFormat)
   !if $detailsFormat == $LEGEND_DETAILS_NONE
     !$size = 0
-  !elseif $detailsFormat == $LEGEND_DETAILS_SMALL 
+  !elseif $detailsFormat == $LEGEND_DETAILS_SMALL
     !$size = $LEGEND_DETAILS_SMALL_SIZE
   !else
     !$size = $LEGEND_DETAILS_NORMAL_SIZE
@@ -1541,12 +1548,12 @@ hide stereotype
 top to bottom direction
 !endprocedure
 
-!procedure LAYOUT_LEFT_RIGHT() 
+!procedure LAYOUT_LEFT_RIGHT()
 !global $fix_direction = %false()
 left to right direction
 !endprocedure
 
-!procedure LAYOUT_LANDSCAPE() 
+!procedure LAYOUT_LANDSCAPE()
 !global $fix_direction = %true()
 left to right direction
 !endprocedure
@@ -1561,7 +1568,7 @@ left to right direction
 !endfunction
 
 !function Small()
-!return $LEGEND_DETAILS_SMALL 
+!return $LEGEND_DETAILS_SMALL
 !endfunction
 
 ' has to be last call in diagram
@@ -1598,7 +1605,6 @@ $getLegendArea($alias, $hideStereotype, $details)
   !$swap=$bgColor
   !$bgColor=$fontColor
   !$fontColor=$swap
-  !$borderColor=$swap
 !endif
 
   !if ($elementName != "")
