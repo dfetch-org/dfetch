@@ -27,7 +27,7 @@ Each installer package has a name in the format ``<version>-<platform>``.
 - ``<version>`` shows the software version:
 
     - If it includes ``dev``, it is a development release (for testing).
-    - If it is only numbers (e.g. ``0.11.0``), it is an official release.
+    - If it is only numbers (e.g. ``0.12.0``), it is an official release.
 
 - ``<platform>`` indicates the system the installer is for: ``nix`` (Linux), ``osx`` (Mac), or ``win`` (Windows).
 

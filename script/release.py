@@ -61,3 +61,26 @@ if __name__ == "__main__":
         replacement=__version__,
         flags=re.DOTALL,
     )
+
+    replace_pattern_in_files(
+        file_path_pattern=f"{base_dir}/doc/installation.rst",
+        search_pattern=r"``\d+\.\d+\.\d+``",
+        replacement=f"``{__version__}``",
+        flags=re.DOTALL,
+    )
+
+    major, minor, _ = map(int, __version__.split("."))
+
+    replace_pattern_in_files(
+        file_path_pattern=f"{base_dir}/doc/contributing.rst",
+        search_pattern=r"\d+\.\d+\.\d+",
+        replacement=f"{major}.{minor + 1}.0",
+        flags=re.DOTALL,
+    )
+
+    replace_pattern_in_files(
+        file_path_pattern=f"{base_dir}/doc/contributing.rst",
+        search_pattern=r"\d+\.\d+\.\d+ \(unreleased\)",
+        replacement=f"{major}.{minor + 2}.0 (unreleased)",
+        flags=re.DOTALL,
+    )
