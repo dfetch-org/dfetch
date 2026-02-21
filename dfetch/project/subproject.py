@@ -13,7 +13,7 @@ from dfetch.project.abstract_check_reporter import AbstractCheckReporter
 from dfetch.project.metadata import Metadata
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
-from dfetch.vcs.patch import PatchInfo, apply_patch
+from dfetch.vcs.patch import Patch
 
 logger = get_logger(__name__)
 
@@ -161,7 +161,7 @@ class SubProject(ABC):
             normalized_patch_path = str(relative_patch_path.as_posix())
 
             self._log_project(f'Applying patch "{normalized_patch_path}"')
-            result = apply_patch(normalized_patch_path, root=self.local_path)
+            result = Patch.from_file(normalized_patch_path).apply(root=self.local_path)
 
             if result.encoding_warning:
                 self._log_project(
@@ -395,9 +395,3 @@ class SubProject(ABC):
             fnmatch.fnmatch(filename.lower(), pattern)
             for pattern in SubProject.LICENSE_GLOBS
         )
-
-    @abstractmethod
-    def create_formatted_patch_header(self, patch_info: PatchInfo) -> str:
-        """Create a formatted patch header for the given patch info."""
-        del patch_info
-        return ""

@@ -10,7 +10,7 @@ from typing import NamedTuple
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import in_directory
-from dfetch.vcs.patch import filter_patch
+from dfetch.vcs.patch import Patch, PatchType
 
 logger = get_logger(__name__)
 
@@ -318,7 +318,7 @@ class SvnRepo:
         old_revision: str,
         new_revision: str | None,
         ignore: Sequence[str],
-    ) -> str:
+    ) -> Patch:
         """Generate a relative diff patch."""
         cmd = ["svn", "diff", "--non-interactive", "--ignore-properties", "."]
 
@@ -333,7 +333,9 @@ class SvnRepo:
         with in_directory(self._path):
             patch_text = run_on_cmdline(logger, cmd).stdout
 
-        return filter_patch(patch_text, ignore)
+        if not patch_text.strip():
+            return Patch.empty().convert_type(PatchType.SVN)
+        return Patch.from_bytes(patch_text).filter(ignore)
 
     def get_username(self) -> str:
         """Get the username of the local svn repo."""

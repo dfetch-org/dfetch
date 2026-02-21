@@ -29,8 +29,6 @@ import os
 import pathlib
 import re
 
-import patch_ng
-
 import dfetch.commands.command
 import dfetch.manifest.project
 import dfetch.project
@@ -40,14 +38,7 @@ from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
-from dfetch.vcs.patch import (
-    PatchAuthor,
-    PatchInfo,
-    add_prefix_to_patch,
-    convert_patch_to,
-    dump_patch,
-    parse_patch,
-)
+from dfetch.vcs.patch import Patch, PatchAuthor, PatchInfo, PatchType
 
 logger = get_logger(__name__)
 
@@ -112,7 +103,7 @@ class FormatPatch(dfetch.commands.command.Command):
                         continue
 
                     version = subproject.on_disk_version()
-                    for idx, patch in enumerate(subproject.patch, start=1):
+                    for idx, patch_file in enumerate(subproject.patch, start=1):
 
                         patch_info = PatchInfo(
                             author=PatchAuthor(
@@ -125,20 +116,19 @@ class FormatPatch(dfetch.commands.command.Command):
                             revision="" if not version else version.revision,
                         )
 
-                        corrected_patch = convert_patch_to(
-                            parse_patch(patch), _determine_target_patch_type(subproject)
+                        patch = Patch.from_file(patch_file).convert_type(
+                            _determine_target_patch_type(subproject)
                         )
-                        prefixed_patch = add_prefix_to_patch(
-                            corrected_patch,
-                            path_prefix=re.split(r"\*", subproject.source, 1)[0].rstrip(
-                                "/"
-                            ),
+                        patch.add_prefix(
+                            re.split(r"\*", subproject.source, 1)[0].rstrip("/")
                         )
 
-                        output_patch_file = output_dir_path / pathlib.Path(patch).name
+                        output_patch_file = (
+                            output_dir_path / pathlib.Path(patch_file).name
+                        )
                         output_patch_file.write_text(
-                            subproject.create_formatted_patch_header(patch_info)
-                            + dump_patch(prefixed_patch)
+                            patch.dump_header(patch_info) + patch.dump(),
+                            encoding="utf-8",
                         )
 
                         logger.print_info_line(
@@ -150,13 +140,13 @@ class FormatPatch(dfetch.commands.command.Command):
             raise RuntimeError("\n".join(exceptions))
 
 
-def _determine_target_patch_type(subproject: SubProject) -> str:
+def _determine_target_patch_type(subproject: SubProject) -> PatchType:
     """Determine the subproject type for the patch."""
     if isinstance(subproject, GitSubProject):
-        required_type = patch_ng.GIT
+        required_type = PatchType.GIT
     elif isinstance(subproject, SvnSubProject):
-        required_type = patch_ng.SVN
+        required_type = PatchType.SVN
     else:
-        required_type = patch_ng.PLAIN
+        required_type = PatchType.PLAIN
 
-    return str(required_type)
+    return required_type
