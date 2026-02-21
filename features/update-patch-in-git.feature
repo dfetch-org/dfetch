@@ -50,7 +50,7 @@ Feature: Update an existing patch in git
             """
         And the output shows
             """
-            Dfetch (0.11.0)
+            Dfetch (0.12.0)
               SomeProject:
               > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
               > Updating patch "patches/SomeProject.patch"

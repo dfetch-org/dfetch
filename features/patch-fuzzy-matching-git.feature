@@ -59,7 +59,7 @@ Feature: Patch application tolerates small upstream changes
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.11.0)
+            Dfetch (0.12.0)
               SomeProject:
               > Fetched master - f47d80c35e14dfa4f9c9c30c9865cbf0f8d50933
               > Applying patch "SomeProject.patch"

@@ -1,4 +1,4 @@
-Release 0.12.0 (unreleased)
+Release 0.12.0 (released 2026-02-21)
 ====================================
 
 * Internal refactoring: introduce superproject & subproject (#896)
