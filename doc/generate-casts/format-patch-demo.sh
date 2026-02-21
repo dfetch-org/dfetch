@@ -10,6 +10,8 @@ pushd format-patch || exit 1
 
 git init
 cp -r ../update/* .
+git config user.name "John Doe"
+git config user.email "john.doe@example.com"
 git add .
 git commit -m "Initial commit"
 
