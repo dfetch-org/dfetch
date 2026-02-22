@@ -12,6 +12,7 @@ Release 0.13.0 (unreleased)
 * Make ``dfetch report`` output more yaml-like (#1017)
 * Don't break when importing submodules with space in path (#1017)
 * Warn when ``src:`` glob pattern matches multiple directories (#1017)
+* Introduce new ``add`` command with optional interactive mode (``-i``) (#25)
 
 Release 0.12.1 (released 2026-02-24)
 ====================================
