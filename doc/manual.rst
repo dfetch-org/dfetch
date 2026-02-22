@@ -173,6 +173,18 @@ Validate
 
 .. automodule:: dfetch.commands.validate
 
+Add
+---
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: add
+
+.. asciinema:: asciicasts/add.cast
+
+.. automodule:: dfetch.commands.add
+
 
 CLI Cheatsheet
 --------------
