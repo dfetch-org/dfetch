@@ -26,22 +26,36 @@ class StdoutReporter(Reporter):
     ) -> None:
         """Add a project to the report."""
         del version
-        logger.print_info_field("project", project.name)
-        logger.print_info_field("    remote", project.remote)
+        logger.print_info_line(project.name, "")
+        logger.print_info_field("- remote", project.remote)
         try:
             metadata = Metadata.from_file(Metadata.from_project_entry(project).path)
-            logger.print_info_field("    remote url", metadata.remote_url)
-            logger.print_info_field("    branch", metadata.branch)
-            logger.print_info_field("    tag", metadata.tag)
-            logger.print_info_field("    last fetch", str(metadata.last_fetch))
-            logger.print_info_field("    revision", metadata.revision)
-            logger.print_info_field("    patch", ", ".join(metadata.patch))
+            logger.print_info_field("  remote url", metadata.remote_url)
+            logger.print_info_field("  branch", metadata.branch)
+            logger.print_info_field("  tag", metadata.tag)
+            logger.print_info_field("  last fetch", str(metadata.last_fetch))
+            logger.print_info_field("  revision", metadata.revision)
+            logger.print_info_field("  patch", ", ".join(metadata.patch))
             logger.print_info_field(
-                "    licenses", ",".join(license.name for license in licenses)
+                "  licenses", ",".join(license.name for license in licenses)
             )
 
+            if metadata.dependencies:
+                logger.info("")
+                logger.print_report_line("  dependencies", "")
+            for dependency in metadata.dependencies:
+                logger.print_info_field("  - path", dependency.get("destination", ""))
+                logger.print_info_field("    url", dependency.get("remote_url", ""))
+                logger.print_info_field("    branch", dependency.get("branch", ""))
+                logger.print_info_field("    tag", dependency.get("tag", ""))
+                logger.print_info_field("    revision", dependency.get("revision", ""))
+                logger.print_info_field(
+                    "    source-type", dependency.get("source_type", "")
+                )
+                logger.info("")
+
         except FileNotFoundError:
-            logger.print_info_field("    last fetch", "never")
+            logger.print_info_field("  last fetch", "never")
 
     def dump_to_file(self, outfile: str) -> bool:
         """Do nothing."""

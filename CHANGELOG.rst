@@ -1,8 +1,14 @@
+Release 0.13.0 (unreleased)
+====================================
+
+* Rename child-manifests to sub-manifests in documentation and code (#1027)
+* Fetch git submodules in git subproject at pinned revision (#1015)
+* Add nested projects in subprojects to project report (#1015)
+
 Release 0.12.1 (released 2026-02-24)
 ====================================
 
 * Fix missing unicode data in standalone binaries (#1014)
-* Rename child-manifests to sub-manifests in documentation and code (#1027)
 
 Release 0.12.0 (released 2026-02-21)
 ====================================

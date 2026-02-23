@@ -44,10 +44,11 @@ def find_matching_files(directory: str, patterns: Sequence[str]) -> Iterator[Pat
 
 def safe_rm(path: str | Path) -> None:
     """Delete an file or directory safely."""
-    if os.path.isdir(path):
-        safe_rmtree(str(path))
-    else:
-        os.remove(path)
+    if os.path.exists(path):
+        if os.path.isdir(path):
+            safe_rmtree(str(path))
+        else:
+            os.remove(path)
 
 
 def safe_rmtree(path: str) -> None:
