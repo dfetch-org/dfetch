@@ -7,8 +7,8 @@ from functools import lru_cache
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
-from dfetch.project.subproject import SubProject
-from dfetch.util.util import safe_rmtree
+from dfetch.project.subproject import SubProject, VcsDependency
+from dfetch.util.util import safe_rm, safe_rmtree
 from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
 
 logger = get_logger(__name__)
@@ -57,7 +57,7 @@ class GitSubProject(SubProject):
             )
             SubProject._log_tool("git", "<not found in PATH>")
 
-    def _fetch_impl(self, version: Version) -> Version:
+    def _fetch_impl(self, version: Version) -> tuple[Version, list[VcsDependency]]:
         """Get the revision of the remote and place it at the local path."""
         rev_or_branch_or_tag = self._determine_what_to_fetch(version)
 
@@ -69,17 +69,35 @@ class GitSubProject(SubProject):
         ]
 
         local_repo = GitLocalRepo(self.local_path)
-        fetched_sha = local_repo.checkout_version(
+        fetched_sha, submodules = local_repo.checkout_version(
             remote=self.remote,
             version=rev_or_branch_or_tag,
             src=self.source,
-            must_keeps=license_globs,
+            must_keeps=license_globs + [".gitmodules"],
             ignore=self.ignore,
         )
 
-        safe_rmtree(os.path.join(self.local_path, local_repo.METADATA_DIR))
+        vcs_deps = []
+        for submodule in submodules:
+            self._log_project(
+                f'Found & fetched submodule "./{submodule.path}" '
+                f" ({submodule.url} @ {Version(tag=submodule.tag, branch=submodule.branch, revision=submodule.sha)})",
+            )
+            vcs_deps.append(
+                VcsDependency(
+                    remote_url=submodule.url,
+                    destination=submodule.path,
+                    branch=submodule.branch,
+                    tag=submodule.tag,
+                    revision=submodule.sha,
+                    source_type="git-submodule",
+                )
+            )
 
-        return self._determine_fetched_version(version, fetched_sha)
+        safe_rmtree(os.path.join(self.local_path, local_repo.METADATA_DIR))
+        safe_rm(os.path.join(self.local_path, local_repo.GIT_MODULES_FILE))
+
+        return self._determine_fetched_version(version, fetched_sha), vcs_deps
 
     def _determine_what_to_fetch(self, version: Version) -> str:
         """Based on asked version, target to fetch."""

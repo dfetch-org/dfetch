@@ -28,24 +28,24 @@ Feature: List dependencies
         Then the output shows
             """
             Dfetch (0.12.1)
-              project             : ext/test-repo-tag
-                  remote          : <none>
-                  remote url      : https://github.com/dfetch-org/test-repo
-                  branch          : main
-                  tag             : <none>
-                  last fetch      : 02/07/2021, 20:25:56
-                  revision        : e1fda19a57b873eb8e6ae37780594cbb77b70f1a
-                  patch           : <none>
-                  licenses        : MIT License
-              project             : ext/test-rev-and-branch
-                  remote          : github-com-dfetch-org
-                  remote url      : https://github.com/dfetch-org/test-repo
-                  branch          : main
-                  tag             : v1
-                  last fetch      : 02/07/2021, 20:25:56
-                  revision        : <none>
-                  patch           : <none>
-                  licenses        : MIT License
+              ext/test-repo-tag:
+              - remote            : <none>
+                remote url        : https://github.com/dfetch-org/test-repo
+                branch            : main
+                tag               : <none>
+                last fetch        : 02/07/2021, 20:25:56
+                revision          : e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+                patch             : <none>
+                licenses          : MIT License
+              ext/test-rev-and-branch:
+              - remote            : github-com-dfetch-org
+                remote url        : https://github.com/dfetch-org/test-repo
+                branch            : main
+                tag               : v1
+                last fetch        : 02/07/2021, 20:25:56
+                revision          : <none>
+                patch             : <none>
+                licenses          : MIT License
             """
 
     @remote-svn
@@ -68,15 +68,15 @@ Feature: List dependencies
         Then the output shows
             """
             Dfetch (0.12.1)
-              project             : cutter-svn-tag
-                  remote          : <none>
-                  remote url      : svn://svn.code.sf.net/p/cutter/svn/cutter
-                  branch          : <none>
-                  tag             : 1.1.7
-                  last fetch      : 29/12/2024, 20:09:21
-                  revision        : 4007
-                  patch           : <none>
-                  licenses        : <none>
+              cutter-svn-tag:
+              - remote            : <none>
+                remote url        : svn://svn.code.sf.net/p/cutter/svn/cutter
+                branch            : <none>
+                tag               : 1.1.7
+                last fetch        : 29/12/2024, 20:09:21
+                revision          : 4007
+                patch             : <none>
+                licenses          : <none>
             """
 
     Scenario: Git repo with applied patches
@@ -85,13 +85,13 @@ Feature: List dependencies
         Then the output shows
             """
             Dfetch (0.12.1)
-              project             : ext/test-repo-tag
-                  remote          : github-com-dfetch-org
-                  remote url      : https://github.com/dfetch-org/test-repo
-                  branch          : main
-                  tag             : v2.0
-                  last fetch      : 02/07/2021, 20:25:56
-                  revision        : <none>
-                  patch           : 001-diff.patch, 002-diff.patch
-                  licenses        : MIT License
+              ext/test-repo-tag:
+              - remote            : github-com-dfetch-org
+                remote url        : https://github.com/dfetch-org/test-repo
+                branch            : main
+                tag               : v2.0
+                last fetch        : 02/07/2021, 20:25:56
+                revision          : <none>
+                patch             : 001-diff.patch, 002-diff.patch
+                licenses          : MIT License
             """
