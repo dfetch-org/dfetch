@@ -19,7 +19,7 @@ and install all runtime dependencies from ``pyproject.toml``.
 
     script/create_venv.py
 
-.. important :: *dfetch* is primarily developed with python 3.14
+.. important :: *dfetch* is primarily developed with python 3.13
 
 Running in Github Codespaces
 ----------------------------

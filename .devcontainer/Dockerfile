@@ -35,7 +35,7 @@ RUN useradd -m dev && chown -R dev:dev /workspaces/dfetch
 USER dev
 
 ENV PATH="/home/dev/.local/bin:${PATH}"
-ENV PYTHONPATH="/home/dev/.local/lib/python3.14"
+ENV PYTHONPATH="/home/dev/.local/lib/python3.13"
 ENV PYTHONUSERBASE="/home/dev/.local"
 
 COPY --chown=dev:dev . .
