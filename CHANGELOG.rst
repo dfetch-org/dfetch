@@ -1,3 +1,8 @@
+Release 0.12.1 (released 2026-02-24)
+====================================
+
+* Fix missing unicode data in standalone binaries (#1014)
+
 Release 0.12.0 (released 2026-02-21)
 ====================================
 

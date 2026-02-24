@@ -203,6 +203,7 @@ lto = "auto" # Use link time optimizations if available and usable
 
 include-data-dir="dfetch/resources=resources"
 include-package-data="infer_license"
+include-package="rich._unicode_data"
 include-module="infer_license.licenses" # Explicitly add module to let nuitka discover the data
 
 # python-flag = ["-OO"] # Cannot optimize (yet) commands rely on __doc__ being present
