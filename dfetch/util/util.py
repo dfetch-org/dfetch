@@ -1,12 +1,12 @@
 """Generic python utilities."""
 
-import contextlib
 import fnmatch
 import hashlib
 import os
 import shutil
 import stat
 from collections.abc import Generator, Iterator, Sequence
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -62,7 +62,7 @@ def safe_rmtree(path: str) -> None:
         ) from exc
 
 
-@contextlib.contextmanager
+@contextmanager
 def in_directory(path: str | Path) -> Generator[str, None, None]:
     """Work temporarily in a given directory."""
     pwd = os.getcwd()
@@ -75,7 +75,7 @@ def in_directory(path: str | Path) -> Generator[str, None, None]:
         os.chdir(pwd)
 
 
-@contextlib.contextmanager
+@contextmanager
 def catch_runtime_exceptions(
     exc_list: list[str] | None = None,
 ) -> Generator[list[str], None, None]:
@@ -87,7 +87,7 @@ def catch_runtime_exceptions(
         exc_list += [str(exc)]
 
 
-@contextlib.contextmanager
+@contextmanager
 def prefix_runtime_exceptions(
     prefix: str,
 ) -> Generator[None, None, None]:
