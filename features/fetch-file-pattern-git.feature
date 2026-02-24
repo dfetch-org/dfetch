@@ -22,7 +22,7 @@ Feature: Fetch file pattern from git repo
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.12.0)
+            Dfetch (0.12.1)
               SomeProjectWithAnInterestingFile:
               > Fetched v1
             """
