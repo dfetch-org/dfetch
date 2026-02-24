@@ -65,7 +65,7 @@ Feature: Diff in git
         When I run "dfetch diff SomeProject"
         Then the output shows
         """
-        Dfetch (0.12.0)
+        Dfetch (0.12.1)
           SomeProject:
           > No diffs found since 59efb91396fd369eb113b43382783294dc8ed6d2
         """
@@ -92,7 +92,7 @@ Feature: Diff in git
         When I run "dfetch diff SomeProject"
         Then the output shows
         """
-        Dfetch (0.12.0)
+        Dfetch (0.12.1)
           SomeProject:
           > No diffs found since 59efb91396fd369eb113b43382783294dc8ed6d2
         """

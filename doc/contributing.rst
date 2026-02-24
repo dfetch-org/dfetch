@@ -108,7 +108,7 @@ Releasing
 
     git checkout main
     git pull
-    git tag -a '0.13.0' -m "Release version 0.13.0"
+    git tag -a '0.12.1' -m "Release version 0.12.1"
     git push --tags
 
 - The ``ci.yml`` job will automatically create a draft release in `GitHub Releases <https://github.com/dfetch-org/dfetch/releases/>`_ with all artifacts.
@@ -118,5 +118,5 @@ Releasing
 
 .. code-block:: rst
 
-    Release 0.14.0 (unreleased)
+    Release 0.13.0 (unreleased)
     ====================================

@@ -22,7 +22,7 @@ Feature: Handle invalid metadata files
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.12.0)
+            Dfetch (0.12.1)
               ext/test-repo-tag:
               > ext/test-repo-tag/.dfetch_data.yaml is an invalid metadata file, not checking on disk version!
               > ext/test-repo-tag/.dfetch_data.yaml is an invalid metadata file, not checking local hash!

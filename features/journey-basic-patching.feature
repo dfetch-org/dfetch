@@ -55,7 +55,7 @@ Feature: Basic patch journey
         And I run "dfetch update -f test-repo"
         Then the output shows
             """
-            Dfetch (0.12.0)
+            Dfetch (0.12.1)
               test-repo:
               > Fetched v1
               > Applying patch "test-repo.patch"
