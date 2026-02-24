@@ -93,7 +93,7 @@ docs = [
     'sphinx_design==0.6.1',
     'sphinx-sitemap==2.9.0',
     'sphinx-jsonschema==1.19.2',
-    'sphinxcontrib-programoutput==0.18',
+    'sphinxcontrib-programoutput==0.19',
     'sphinx-tabs==3.4.7',
     'sphinx-autoissues==0.0.1',
 ]
