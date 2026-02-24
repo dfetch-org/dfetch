@@ -42,6 +42,8 @@ jobs:
       - run: dfetch check
       - run: dfetch update
       - run: dfetch update
+      - run: dfetch update-patch
+      - run: dfetch format-patch
       - run: dfetch report -t sbom
       - name: Dfetch SARIF Check
         uses: ./
@@ -113,6 +115,8 @@ jobs:
       - run: dfetch check
       - run: dfetch update
       - run: dfetch update
+      - run: dfetch update-patch
+      - run: dfetch format-patch
       - run: dfetch report -t sbom
 
       - name: Dfetch SARIF Check
