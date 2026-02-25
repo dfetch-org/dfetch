@@ -166,10 +166,8 @@ jobs:
        git init --initial-branch=main
        git config user.name "John Doe"
        git config user.email "john.doe@example.com"
+       git add -A
        git commit -m "Initial commit"
-       echo "An extra line" >> cpputest/src/README.md
-       git add cpputest/src/README.md
-       git commit -m "Update README.md"
     - run: dfetch init
     - run: dfetch environment
     - run: dfetch validate
