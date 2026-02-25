@@ -177,8 +177,8 @@ jobs:
     - run: |
        git add -A
        git commit -m "Fetched dependencies"
-       echo "An extra line" >> jsmn/src/README.md
-       git add jsmn/src/README.md
+       echo "An extra line" >> jsmn/README.md
+       git add jsmn/README.md
        git commit -m "Update README.md"
     - run: dfetch diff jsmn
     - run: |
