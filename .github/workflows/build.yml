@@ -175,9 +175,16 @@ jobs:
     - run: dfetch update
     - run: dfetch update
     - run: |
-       echo "An extra line" >> cpputest/src/README.md
-       git add cpputest/src/README.md
+       git add -A
+       git commit -m "Fetched dependencies"
+       echo "An extra line" >> jsmn/src/README.md
+       git add jsmn/src/README.md
        git commit -m "Update README.md"
+    - run: dfetch diff jsmn
+    - run: |
+       echo "    patch: jsmn.patch" >> dfetch.yaml
+       git add -A
+       git commit -m "Patch jsmn"
     - run: dfetch update-patch
     - run: dfetch format-patch
     - run: dfetch report -t sbom
