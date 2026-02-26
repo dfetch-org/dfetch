@@ -10,14 +10,16 @@ import pytest
 
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
+from dfetch.project.metadata import Options
 from dfetch.project.subproject import SubProject
 
 
 class ConcreteSubProject(SubProject):
     _wanted_version: Version
 
-    def _fetch_impl(self, version: Version) -> Version:
-        return Version()
+    def _fetch_impl(self, version: Version) -> tuple[Version, list[Options]]:
+        # Returns a tuple of (Version, list of nested Options)
+        return Version(), []
 
     def _latest_revision_on_branch(self, branch):
         return "latest"
@@ -158,3 +160,20 @@ def test_ci_enabled(
         monkeypatch.setenv("CI", str(ci_env_value))
 
     assert ConcreteSubProject._running_in_ci() == expected_result
+
+
+def test_fetch_impl_returns_tuple_with_nested():
+    """Test that _fetch_impl returns tuple of (Version, list[Options])."""
+    subproject = ConcreteSubProject(ProjectEntry({"name": "proj1"}))
+
+    result = subproject._fetch_impl(Version())
+
+    # Verify it returns a tuple
+    assert isinstance(result, tuple)
+    assert len(result) == 2
+
+    # Verify first element is Version
+    assert isinstance(result[0], Version)
+
+    # Verify second element is list
+    assert isinstance(result[1], list)
