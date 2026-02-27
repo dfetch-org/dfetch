@@ -10,16 +10,16 @@ Feature: Updated project has dependencies
             manifest:
                 version: 0.0
                 projects:
-                    - name: SomeProjectWithChild
-                      dst: third-party/SomeProjectWithChild
-                      url: some-remote-server/SomeProjectWithChild.git
+                    - name: SomeProjectWithManifest
+                      dst: third-party/SomeProjectWithManifest
+                      url: some-remote-server/SomeProjectWithManifest.git
                       tag: v1
-                    - name: SomeProjectWithoutChild
-                      dst: third-party/SomeProjectWithoutChild
-                      url: some-remote-server/SomeProjectWithoutChild.git
+                    - name: SomeProjectWithoutManifest
+                      dst: third-party/SomeProjectWithoutManifest
+                      url: some-remote-server/SomeProjectWithoutManifest.git
                       tag: v1
             """
-        And a git-repository "SomeProjectWithChild.git" with the manifest:
+        And a git-repository "SomeProjectWithManifest.git" with the manifest:
             """
             manifest:
                 version: 0.0
@@ -36,15 +36,15 @@ Feature: Updated project has dependencies
                     - name: ext/test-repo-tag-v1
                       tag: v1
             """
-        And a git repository "SomeProjectWithoutChild.git"
+        And a git repository "SomeProjectWithoutManifest.git"
         When I run "dfetch update" in MyProject
         Then the output shows
             """
             Dfetch (0.12.1)
-              SomeProjectWithChild:
+              SomeProjectWithManifest:
               > Fetched v1
-              > "SomeProjectWithChild" depends on the following project(s) which are not part of your manifest:
-                (found in third-party/SomeProjectWithChild/dfetch.yaml)
+              > "SomeProjectWithManifest" depends on the following project(s) which are not part of your manifest:
+                (found in third-party/SomeProjectWithManifest/dfetch.yaml)
 
                 -   name: SomeOtherProject
                     url: some-remote-server/SomeOtherProject.git
@@ -53,7 +53,7 @@ Feature: Updated project has dependencies
                     url: https://github.com/dfetch-org/test-repo
                     tag: v1
 
-              SomeProjectWithoutChild:
+              SomeProjectWithoutManifest:
               > Fetched v1
             """
         And 'MyProject' looks like:
@@ -61,16 +61,16 @@ Feature: Updated project has dependencies
             MyProject/
                 dfetch.yaml
                 third-party/
-                    SomeProjectWithChild/
+                    SomeProjectWithManifest/
                         .dfetch_data.yaml
                         README.md
                         dfetch.yaml
-                    SomeProjectWithoutChild/
+                    SomeProjectWithoutManifest/
                         .dfetch_data.yaml
                         README.md
             """
 
-    Scenario: A child-project has an invalid manifest
+    Scenario: A project from a submanifest has an invalid manifest
         Given the manifest 'dfetch.yaml' in MyProject
             """
             manifest:

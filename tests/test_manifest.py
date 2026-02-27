@@ -15,7 +15,7 @@ from dfetch.manifest.manifest import (
     ManifestEntryLocation,
     RequestedProjectNotFoundError,
 )
-from dfetch.manifest.parse import find_manifest, get_childmanifests
+from dfetch.manifest.parse import find_manifest, get_submanifests
 from dfetch.manifest.project import ProjectEntry
 
 BASIC_MANIFEST = """
@@ -123,29 +123,29 @@ def test_single_manifest_found() -> None:
     "name, manifest_paths",
     [
         (
-            "no-childmanifests",
+            "no-submanifests",
             [],
         ),
         (
-            "single-childmanifest",
+            "single-submanifest",
             ["some-manifest.yaml"],
         ),
         (
-            "multi-childmanifests",
+            "multi-submanifests",
             ["some-manifest.yaml", "some-other-manifest.yaml"],
         ),
     ],
 )
-def test_get_childmanifests(name, manifest_paths) -> None:
+def test_get_submanifests(name, manifest_paths) -> None:
     parent = ProjectEntry({"name": "name"})
 
     with patch("dfetch.manifest.parse.find_file") as find_file_mock:
         with patch("dfetch.manifest.parse.parse") as parse_mock:
             find_file_mock.return_value = manifest_paths
 
-            found_childmanifests = get_childmanifests([parent.name])
+            found_submanifests = get_submanifests([parent.name])
 
-            assert len(found_childmanifests) == len(manifest_paths)
+            assert len(found_submanifests) == len(manifest_paths)
 
             for path, call in zip(
                 manifest_paths,

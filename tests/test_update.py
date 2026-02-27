@@ -36,14 +36,12 @@ def test_update(name, projects):
     with patch(
         "dfetch.commands.update.create_super_project", return_value=fake_superproject
     ):
-        with patch(
-            "dfetch.manifest.parse.get_childmanifests"
-        ) as mocked_get_childmanifests:
+        with patch("dfetch.manifest.parse.get_submanifests") as mocked_get_submanifests:
             with patch("dfetch.project.create_sub_project") as mocked_create:
                 with patch("os.path.exists"):
                     with patch("dfetch.commands.update.in_directory"):
                         with patch("dfetch.commands.update.Update._check_destination"):
-                            mocked_get_childmanifests.return_value = []
+                            mocked_get_submanifests.return_value = []
 
                             update(DEFAULT_ARGS)
 
@@ -62,14 +60,12 @@ def test_forced_update():
     with patch(
         "dfetch.commands.update.create_super_project", return_value=fake_superproject
     ):
-        with patch(
-            "dfetch.manifest.parse.get_childmanifests"
-        ) as mocked_get_childmanifests:
+        with patch("dfetch.manifest.parse.get_submanifests") as mocked_get_submanifests:
             with patch("dfetch.project.create_sub_project") as mocked_create:
                 with patch("os.path.exists"):
                     with patch("dfetch.commands.update.in_directory"):
                         with patch("dfetch.commands.update.Update._check_destination"):
-                            mocked_get_childmanifests.return_value = []
+                            mocked_get_submanifests.return_value = []
 
                             args = argparse.Namespace(
                                 no_recommendations=False,

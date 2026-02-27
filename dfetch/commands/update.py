@@ -15,13 +15,13 @@ It tries to determine what kind of vcs it is: git, svn or something else.
 
       .. scenario-include:: ../features/fetch-svn-repo.feature
 
-Child-manifests
+Sub-manifests
 ~~~~~~~~~~~~~~~
 
 It is possible that fetched projects have manifests of their own.
 When these projects are fetched (with ``dfetch update``), the manifests are read as well
 and will be checked to look for further dependencies. If you don't what recommendations, you can prevent *Dfetch*
-checking child-manifests with ``--no-recommendations``.
+checking sub-manifests with ``--no-recommendations``.
 
 .. scenario-include:: ../features/updated-project-has-dependencies.feature
 
@@ -34,7 +34,7 @@ from pathlib import Path
 import dfetch.commands.command
 import dfetch.manifest.project
 import dfetch.project
-from dfetch.commands.common import check_child_manifests
+from dfetch.commands.common import check_sub_manifests
 from dfetch.log import get_logger
 from dfetch.project import create_super_project
 from dfetch.util.util import catch_runtime_exceptions, in_directory
@@ -94,7 +94,7 @@ class Update(dfetch.commands.command.Command):
                         project.destination
                     ):
                         with in_directory(project.destination):
-                            check_child_manifests(superproject.manifest, project)
+                            check_sub_manifests(superproject.manifest, project)
 
         if exceptions:
             raise RuntimeError("\n".join(exceptions))

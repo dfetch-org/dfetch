@@ -82,12 +82,12 @@ def find_manifest() -> str:
     return os.path.realpath(paths[0])
 
 
-def get_childmanifests(skip: list[str] | None = None) -> list[Manifest]:
+def get_submanifests(skip: list[str] | None = None) -> list[Manifest]:
     """Parse & validate any manifest file in cwd and return a list of all valid manifests."""
     skip = skip or []
     logger.debug("Looking for sub-manifests")
 
-    childmanifests: list[Manifest] = []
+    submanifests: list[Manifest] = []
     root_dir = os.getcwd()
     for path in find_file(DEFAULT_MANIFEST_NAME, root_dir):
         path = os.path.realpath(path)
@@ -97,10 +97,10 @@ def get_childmanifests(skip: list[str] | None = None) -> list[Manifest]:
             continue
 
         if path not in skip:
-            logger.debug(f"Found sub-manifests {path}")
+            logger.debug(f"Found sub-manifest {path}")
             with prefix_runtime_exceptions(
                 pathlib.Path(path).relative_to(os.path.dirname(os.getcwd())).as_posix()
             ):
-                childmanifests += [parse(path)]
+                submanifests += [parse(path)]
 
-    return childmanifests
+    return submanifests
