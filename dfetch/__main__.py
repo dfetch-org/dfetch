@@ -9,6 +9,7 @@ from collections.abc import Sequence
 
 from rich.console import Console
 
+import dfetch.commands.add
 import dfetch.commands.check
 import dfetch.commands.diff
 import dfetch.commands.environment
@@ -43,6 +44,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser.set_defaults(func=_help)
     subparsers = parser.add_subparsers(help="commands")
 
+    dfetch.commands.add.Add.create_menu(subparsers)
     dfetch.commands.check.Check.create_menu(subparsers)
     dfetch.commands.diff.Diff.create_menu(subparsers)
     dfetch.commands.environment.Environment.create_menu(subparsers)
