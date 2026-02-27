@@ -15,13 +15,13 @@ the available version. If there are new versions available this will be shown.
 
       .. scenario-include:: ../features/check-svn-repo.feature
 
-Child-manifests
-~~~~~~~~~~~~~~~
+Sub-manifests
+~~~~~~~~~~~~~
 
-It is possible that fetched projects have manifests of their own.
-After these projects are fetched (with ``dfetch update``), the manifests are read as well
+It is possible that fetched subprojects have manifests of their own.
+After these subprojects are fetched (with ``dfetch update``), the manifests are read as well
 and will be checked to look for further dependencies. If you don't want recommendations,
-you can prevent *Dfetch* from checking child-manifests with ``--no-recommendations``.
+you can prevent *Dfetch* from checking sub-manifests with ``--no-recommendations``.
 
 .. scenario-include:: ../features/checked-project-has-dependencies.feature
 
@@ -32,7 +32,7 @@ import os
 
 import dfetch.commands.command
 import dfetch.project
-from dfetch.commands.common import check_child_manifests
+from dfetch.commands.common import check_sub_manifests
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.project import create_super_project
@@ -104,7 +104,7 @@ class Check(dfetch.commands.command.Command):
 
                 if not args.no_recommendations and os.path.isdir(project.destination):
                     with in_directory(project.destination):
-                        check_child_manifests(superproject.manifest, project)
+                        check_sub_manifests(superproject.manifest, project)
 
             for reporter in reporters:
                 reporter.dump_to_file()

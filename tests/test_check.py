@@ -36,14 +36,12 @@ def test_check(name, projects):
     with patch(
         "dfetch.commands.check.create_super_project", return_value=fake_superproject
     ):
-        with patch(
-            "dfetch.manifest.parse.get_childmanifests"
-        ) as mocked_get_childmanifests:
+        with patch("dfetch.manifest.parse.get_submanifests") as mocked_get_submanifests:
             with patch("dfetch.project.create_sub_project") as mocked_create:
                 with patch("os.path.exists"):
                     with patch("dfetch.commands.check.in_directory"):
                         with patch("dfetch.commands.check.CheckStdoutReporter"):
-                            mocked_get_childmanifests.return_value = []
+                            mocked_get_submanifests.return_value = []
 
                             check(DEFAULT_ARGS)
 

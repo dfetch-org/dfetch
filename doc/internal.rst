@@ -22,10 +22,10 @@ Remote
     projects in a manifest. A single remote may contain multiple
     (sub-)projects to fetch.
 
-Child Manifest
+Sub-manifest
     Some subprojects can themselves contain a manifest. When
     fetching a subproject, dfetch can optionally check these
-    child manifests for additional dependencies or recommendations.
+    sub-manifests for additional dependencies or recommendations.
 
 Metadata
     A file created by *DFetch* to store some relevant information about
