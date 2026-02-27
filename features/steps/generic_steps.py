@@ -330,6 +330,11 @@ def step_impl(context, name):
         check_file(name, context.text)
 
 
+@then("'{name}' exists")
+def step_impl(_, name):
+    check_file_exists(name)
+
+
 def multisub(patterns: List[Tuple[Pattern[str], str]], text: str) -> str:
     """Apply a list of tuples that each contain a regex + replace string."""
     for pattern, replace in patterns:

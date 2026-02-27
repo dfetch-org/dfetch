@@ -7,7 +7,7 @@ import urllib.parse
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
-from dfetch.project.subproject import SubProject
+from dfetch.project.subproject import SubProject, VcsDependency
 from dfetch.util.util import (
     find_matching_files,
     find_non_matching_files,
@@ -106,7 +106,7 @@ class SvnSubProject(SubProject):
             if not (file_or_dir.is_file() and self.is_license_file(file_or_dir.name)):
                 safe_rm(file_or_dir)
 
-    def _fetch_impl(self, version: Version) -> Version:
+    def _fetch_impl(self, version: Version) -> tuple[Version, list[VcsDependency]]:
         """Get the revision of the remote and place it at the local path."""
         branch, branch_path, revision = self._determine_what_to_fetch(version)
         rev_arg = f"--revision {revision}" if revision else ""
@@ -147,7 +147,7 @@ class SvnSubProject(SubProject):
         if self.ignore:
             self._remove_ignored_files()
 
-        return Version(tag=version.tag, branch=branch, revision=revision)
+        return Version(tag=version.tag, branch=branch, revision=revision), []
 
     @staticmethod
     def _parse_file_pattern(complete_path: str) -> tuple[str, str]:
