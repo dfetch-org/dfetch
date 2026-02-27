@@ -19,12 +19,12 @@ def check_sub_manifests(manifest: Manifest, project: ProjectEntry) -> None:
         manifest (dfetch.manifest.manifest.Manifest): The parent manifest with projects.
         project (ProjectEntry): The parent project.
     """
+    manifest_remote_urls = {project.remote_url for project in manifest.projects}
+
     for submanifest in get_submanifests(skip=[manifest.path]):
         recommendations: list[ProjectEntry] = []
         for subproject in submanifest.projects:
-            if subproject.remote_url not in [
-                project.remote_url for project in manifest.projects
-            ]:
+            if subproject.remote_url not in manifest_remote_urls:
                 recommendations.append(subproject.as_recommendation())
 
         if recommendations:
