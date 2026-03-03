@@ -7,6 +7,7 @@ rm -rf ../asciicasts/*
 
 asciinema rec --overwrite -c "./basic-demo.sh" ../asciicasts/basic.cast
 asciinema rec --overwrite -c "./init-demo.sh" ../asciicasts/init.cast
+asciinema rec --overwrite -c "./add-demo.sh" ../asciicasts/add.cast
 asciinema rec --overwrite -c "./environment-demo.sh" ../asciicasts/environment.cast
 asciinema rec --overwrite -c "./validate-demo.sh" ../asciicasts/validate.cast
 asciinema rec --overwrite -c "./check-demo.sh" ../asciicasts/check.cast
