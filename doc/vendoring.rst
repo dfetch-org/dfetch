@@ -331,6 +331,8 @@ Here are some links to example projects using *Dfetch*.
 - `Dfetch`: https://github.com/dfetch-org/dfetch
 - `ModbusScope`: https://github.com/ModbusScope/ModbusScope
 - `Red Jackets Jazzband`: https://github.com/red-jackets-jazzband/website
+- `Example Yocto`: https://github.com/dfetch-org/example-yocto
+- `Example Zephyr`: https://github.com/dfetch-org/example-zephyr
 
 Internally we use *Dfetch* for various projects and uses.
 
