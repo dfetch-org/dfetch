@@ -68,6 +68,50 @@ Each release on the [releases page](https://github.com/dfetch-org/dfetch/release
 - macOS `.pkg`
 - Windows `.msi`
 
+## Example manifest
+
+```yaml
+manifest:
+  version: 0.0
+
+  remotes:                                                        # declare common sources in one place
+  - name: github
+    url-base: https://github.com/                                 # Allow git modules
+    default: true                                                 # Set it as default
+
+  - name: sourceforge
+    url-base: svn://svn.code.sf.net/p/
+
+  projects:
+
+  - name: cpputest-git-tag
+    dst: Tests/cpputest-git-tag
+    url: https://github.com/cpputest/cpputest.git                 # Use external git directly
+    tag: v3.4                                                     # revision can also be a tag
+
+  - name: tortoise-svn-branch-rev
+    dst: Tests/tortoise-svn-branch-rev/
+    remote: sourceforge
+    branch: 1.10.x
+    revision: '28553'
+    src: src/*
+    vcs: svn
+    repo-path: tortoisesvn/code
+
+  - name: tortoise-svn-tag
+    dst: Tests/tortoise-svn-tag/
+    remote: sourceforge
+    tag: version-1.13.1
+    src: src/*.txt
+    vcs: svn
+    repo-path: tortoisesvn/code
+
+  - name: cpputest-git-src
+    dst: Tests/cpputest-git-src
+    repo-path: cpputest/cpputest.git
+    src: src
+```
+
 ## Github Action
 
 You can use DFetch in your Github Actions workflow to check your dependencies.
