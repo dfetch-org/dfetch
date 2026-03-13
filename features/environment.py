@@ -42,3 +42,5 @@ def before_all(context):
     context.config.logging_format = "%(message)s"
 
     context.remotes_dir = "some-remote-server"
+
+    os.environ["GIT_ALLOW_PROTOCOL"] = "file:http:https:ssh"
