@@ -38,12 +38,10 @@ Feature: Fetch projects with nested VCS dependencies
                     README.md
                     ext/
                         test-repo1/
-                            .git/
                             .gitignore
                             LICENSE
                             README.md
                         test-repo2/
-                            .git/
                             .gitignore
                             LICENSE
                             README.md
