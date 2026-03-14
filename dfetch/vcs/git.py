@@ -12,7 +12,7 @@ from pathlib import Path, PurePath
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
-from dfetch.util.util import in_directory, safe_rmtree
+from dfetch.util.util import in_directory, safe_rm, safe_rmtree
 from dfetch.vcs.patch import Patch, PatchType
 
 logger = get_logger(__name__)
@@ -317,6 +317,10 @@ class GitLocalRepo:
                     submodule.path = self._rewrite_path(src, submodule.path)
 
                 self._move_src_folder_up(remote, src)
+
+            if submodules:
+                for ignore_path in ignore or []:
+                    safe_rm(glob.glob(ignore_path))
 
             return str(current_sha), submodules
 

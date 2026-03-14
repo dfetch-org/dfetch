@@ -42,13 +42,17 @@ def find_matching_files(directory: str, patterns: Sequence[str]) -> Iterator[Pat
             yield Path(path)
 
 
-def safe_rm(path: str | Path) -> None:
-    """Delete a file or directory safely."""
-    if os.path.lexists(path):
-        if os.path.isdir(path):
-            safe_rmtree(str(path))
-        else:
-            os.remove(path)
+def safe_rm(paths: str | Path | Sequence[str | Path]) -> None:
+    """Delete a file, directory or list of files/directories safely."""
+    paths_to_remove = [paths] if not isinstance(paths, Sequence) else paths
+    for path in paths_to_remove:
+        if os.path.lexists(path):
+            if not Path(path).is_relative_to("."):
+                raise RuntimeError(f"Trying to delete '{path}' outside cwd!")
+            if os.path.isdir(path):
+                safe_rmtree(str(path))
+            else:
+                os.remove(path)
 
 
 def safe_rmtree(path: str) -> None:

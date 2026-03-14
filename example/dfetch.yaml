@@ -54,3 +54,4 @@ manifest:
      - drivers
      - doxygen
      - docs
+     - framework/tests
