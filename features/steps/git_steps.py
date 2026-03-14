@@ -10,7 +10,12 @@ import subprocess
 from behave import given, when  # pylint: disable=no-name-in-module
 
 from dfetch.util.util import in_directory
-from features.steps.generic_steps import call_command, extend_file, generate_file
+from features.steps.generic_steps import (
+    call_command,
+    extend_file,
+    generate_file,
+    remote_server_path,
+)
 from features.steps.manifest_steps import generate_manifest
 
 
@@ -39,18 +44,28 @@ def tag(name: str):
     subprocess.check_call(["git", "tag", "-a", name, "-m", "'Some tag'"])
 
 
+@given('a git-repository "{name}" with the following submodules')
 @given("a git repo with the following submodules")
-def step_impl(context):
-    create_repo()
+def step_impl(context, name=None):
 
-    for submodule in context.table:
-        subprocess.check_call(
-            ["git", "submodule", "add", submodule["url"], submodule["path"]]
-        )
+    path = os.getcwd()
+    if name:
+        path = os.path.join(context.remotes_dir, name)
+        os.makedirs(path, exist_ok=True)
 
-        with in_directory(submodule["path"]):
-            subprocess.check_call(["git", "checkout", submodule["revision"]])
-    commit_all("Added submodules")
+    with in_directory(path):
+        create_repo()
+        generate_file("README.md", "some content")
+
+        for submodule in context.table:
+            url = submodule["url"].replace(
+                "some-remote-server", f"file:///{remote_server_path(context)}"
+            )
+            subprocess.check_call(["git", "submodule", "add", url, submodule["path"]])
+
+            with in_directory(submodule["path"]):
+                subprocess.check_call(["git", "checkout", submodule["revision"]])
+        commit_all("Added submodules")
 
 
 @given('a new tag "{tagname}" is added to git-repository "{name}"')

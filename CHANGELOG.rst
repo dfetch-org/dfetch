@@ -1,8 +1,17 @@
+Release 0.13.0 (unreleased)
+====================================
+
+* Rename child-manifests to sub-manifests in documentation and code (#1027)
+* Fetch git submodules in git subproject at pinned revision (#1013)
+* Add nested projects in subprojects to project report (#1017)
+* Make ``dfetch report`` output more yaml-like (#1017)
+* Don't break when importing submodules with space in path (#1017)
+* Warn when ``src:`` glob pattern matches multiple directories (#1017)
+
 Release 0.12.1 (released 2026-02-24)
 ====================================
 
 * Fix missing unicode data in standalone binaries (#1014)
-* Rename child-manifests to sub-manifests in documentation and code (#1027)
 
 Release 0.12.0 (released 2026-02-21)
 ====================================

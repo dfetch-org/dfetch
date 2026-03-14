@@ -1,23 +1,25 @@
 """Git specific implementation."""
 
 import functools
+import glob
 import os
 import re
 import shutil
 import tempfile
 from collections.abc import Generator, Sequence
+from dataclasses import dataclass
 from pathlib import Path, PurePath
-from typing import NamedTuple
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
-from dfetch.util.util import in_directory, safe_rmtree
+from dfetch.util.util import in_directory, safe_rm, safe_rmtree
 from dfetch.vcs.patch import Patch, PatchType
 
 logger = get_logger(__name__)
 
 
-class Submodule(NamedTuple):
+@dataclass
+class Submodule:
     """Information about a submodule."""
 
     name: str
@@ -233,6 +235,7 @@ class GitLocalRepo:
     """A git repository."""
 
     METADATA_DIR = ".git"
+    GIT_MODULES_FILE = ".gitmodules"
 
     def __init__(self, path: str | Path = ".") -> None:
         """Create a local git repo."""
@@ -258,7 +261,7 @@ class GitLocalRepo:
         src: str | None = None,
         must_keeps: list[str] | None = None,
         ignore: Sequence[str] | None = None,
-    ) -> str:
+    ) -> tuple[str, list[Submodule]]:
         """Checkout a specific version from a given remote.
 
         Args:
@@ -295,6 +298,14 @@ class GitLocalRepo:
             )
             run_on_cmdline(logger, ["git", "reset", "--hard", "FETCH_HEAD"])
 
+            run_on_cmdline(
+                logger,
+                ["git", "submodule", "update", "--init", "--recursive"],
+                env=_extend_env_for_non_interactive_mode(),
+            )
+
+            submodules = self.submodules()
+
             current_sha = (
                 run_on_cmdline(logger, ["git", "rev-parse", "HEAD"])
                 .stdout.decode()
@@ -302,33 +313,81 @@ class GitLocalRepo:
             )
 
             if src:
-                self.move_src_folder_up(remote, src)
+                for submodule in submodules:
+                    submodule.path = self._rewrite_path(src, submodule.path)
 
-            return str(current_sha)
+                self._move_src_folder_up(remote, src)
 
-    def move_src_folder_up(self, remote: str, src: str) -> None:
+            if submodules:
+                for ignore_path in ignore or []:
+                    safe_rm(glob.glob(ignore_path))
+
+            return str(current_sha), submodules
+
+    @staticmethod
+    def _rewrite_path(src: str, existing_path: str) -> str:
+        """Rewrites existing_path relative to src pattern.
+
+        Handles wildcards (*) and nested directories.
+        """
+        src_path = PurePath(src)
+        sub_path = PurePath(existing_path)
+
+        if sub_path.match(str(src_path)):
+            # Count fixed prefix parts (before any wildcard)
+            prefix_len = 0
+            for part in src_path.parts:
+                if "*" in part:
+                    break
+                prefix_len += 1
+            # Return path relative to fixed prefix
+            return str(Path(*sub_path.parts[prefix_len:]))
+
+        # Return unchanged if no match
+        return existing_path
+
+    @staticmethod
+    def _move_src_folder_up(remote: str, src: str) -> None:
         """Move the files from the src folder into the root of the project.
 
         Args:
             remote (str): Name of the root
             src (str): Src folder to move up
         """
-        full_src = src
-        if not os.path.isdir(src):
-            src = os.path.dirname(src)
+        matched_paths = glob.glob(src)
 
-        if not src:
+        if not matched_paths:
+            logger.warning(
+                f"The 'src:' filter '{src}' didn't match any files from '{remote}'"
+            )
             return
 
-        try:
-            for file_to_copy in os.listdir(src):
-                shutil.move(src + "/" + file_to_copy, ".")
-            safe_rmtree(PurePath(src).parts[0])
-        except FileNotFoundError:
+        dirs = []
+        for src_dir_path in matched_paths:
+            if os.path.isdir(src_dir_path):
+                dirs.append(src_dir_path)
+            else:
+                if dir_path := os.path.dirname(src_dir_path):
+                    dirs.append(dir_path)
+
+        unique_dirs = list(dict.fromkeys(dirs))
+
+        if len(unique_dirs) > 1:
             logger.warning(
-                f"The 'src:' filter '{full_src}' didn't match any files from '{remote}'"
+                f"The 'src:' filter '{src}' matches multiple directories from '{remote}'. "
+                f"Only considering files in '{unique_dirs[0]}'."
             )
-        return
+
+        for src_dir_path in unique_dirs[:1]:
+            try:
+                for file_to_copy in os.listdir(src_dir_path):
+                    shutil.move(src_dir_path + "/" + file_to_copy, ".")
+                safe_rmtree(PurePath(src_dir_path).parts[0])
+            except FileNotFoundError:
+                logger.warning(
+                    f"The 'src:' filter '{src_dir_path}' didn't match any files from '{remote}'"
+                )
+            continue
 
     @staticmethod
     def _determine_ignore_paths(
@@ -490,7 +549,7 @@ class GitLocalRepo:
                 "submodule",
                 "foreach",
                 "--quiet",
-                "echo $name $sm_path $sha1 $toplevel",
+                'printf "%s\\0%s\\0%s\\0%s\n" "$name" "$sm_path" "$sha1" "$toplevel"',
             ],
         )
 
@@ -498,7 +557,7 @@ class GitLocalRepo:
         urls: dict[str, str] = {}
         for line in result.stdout.decode().split("\n"):
             if line:
-                name, sm_path, sha, toplevel = line.split(" ")
+                name, sm_path, sha, toplevel = line.split("\0")
                 urls = urls or GitLocalRepo._get_submodule_urls(toplevel)
                 url = urls[name]
                 branch, tag = GitRemote(url).find_branch_tip_or_tag_from_sha(sha)

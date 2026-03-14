@@ -62,8 +62,9 @@ class DLogger(logging.Logger):
             self.info(f"  [bold][bright_green]{name}:[/bright_green][/bold]")
             DLogger._printed_projects.add(name)
 
-        line = info.replace("\n", "\n    ")
-        self.info(f"  [bold blue]> {line}[/bold blue]")
+        if info:
+            line = info.replace("\n", "\n    ")
+            self.info(f"  [bold blue]> {line}[/bold blue]")
 
     def print_warning_line(self, name: str, info: str) -> None:
         """Print a warning line: green name, yellow value."""
