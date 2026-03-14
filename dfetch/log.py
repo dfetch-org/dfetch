@@ -74,6 +74,13 @@ class DLogger(logging.Logger):
         line = info.replace("\n", "\n    ")
         self.info(f"  [bold bright_yellow]> {line}[/bold bright_yellow]")
 
+    def print_overview(self, name: str, title: str, info: dict[str, Any]) -> None:
+        """Print an overview of fields."""
+        self.print_info_line(name, title)
+        for key, value in info.items():
+            key += ":"
+            self.info(f"      [blue]{key:20s}[/blue][white] {value}[/white]")
+
     def print_title(self) -> None:
         """Print the DFetch tool title and version."""
         self.info(f"[bold blue]Dfetch ({__version__})[/bold blue]")

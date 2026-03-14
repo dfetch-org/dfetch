@@ -24,6 +24,7 @@ import os
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import IO, Any
 
 import yaml
@@ -385,3 +386,21 @@ class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
             super().write_line_break()  # type: ignore[unused-ignore, no-untyped-call]
 
         self._last_additional_break = len(self.indents)
+
+
+def append_entry_manifest_file(
+    manifest_path: str | Path,
+    project_entry: ProjectEntry,
+) -> None:
+    """Add the project entry to the manifest file."""
+    with Path(manifest_path).open("a", encoding="utf-8") as manifest_file:
+
+        new_entry = yaml.dump(
+            [project_entry.as_yaml()],
+            sort_keys=False,
+            line_break=os.linesep,
+            indent=2,
+        )
+        manifest_file.write("\n")
+        for line in new_entry.splitlines():
+            manifest_file.write(f"  {line}\n")
