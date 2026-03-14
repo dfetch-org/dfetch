@@ -536,7 +536,7 @@ class GitLocalRepo:
                 "submodule",
                 "foreach",
                 "--quiet",
-                "echo $name $sm_path $sha1 $toplevel",
+                'printf "%s\\0%s\\0%s\\0%s\n" "$name" "$sm_path" "$sha1" "$toplevel"',
             ],
         )
 
@@ -544,7 +544,7 @@ class GitLocalRepo:
         urls: dict[str, str] = {}
         for line in result.stdout.decode().split("\n"):
             if line:
-                name, sm_path, sha, toplevel = line.split(" ")
+                name, sm_path, sha, toplevel = line.split("\0")
                 urls = urls or GitLocalRepo._get_submodule_urls(toplevel)
                 url = urls[name]
                 branch, tag = GitRemote(url).find_branch_tip_or_tag_from_sha(sha)
