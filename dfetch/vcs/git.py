@@ -1,6 +1,7 @@
 """Git specific implementation."""
 
 import functools
+import glob
 import os
 import re
 import shutil
@@ -312,37 +313,68 @@ class GitLocalRepo:
             )
 
             if src:
-                if os.path.isdir(src):
-                    for submodule in submodules:
-                        submodule.path = str(Path(submodule.path).relative_to(src))
+                for submodule in submodules:
+                    submodule.path = self._rewrite_path(src, submodule.path)
 
-                self.move_src_folder_up(remote, src)
+                self._move_src_folder_up(remote, src)
 
             return str(current_sha), submodules
 
-    def move_src_folder_up(self, remote: str, src: str) -> None:
+    @staticmethod
+    def _rewrite_path(src: str, existing_path: str) -> str:
+        """Rewrites existing_path relative to src pattern.
+
+        Handles wildcards (*) and nested directories.
+        """
+        src_path = PurePath(src)
+        sub_path = PurePath(existing_path)
+
+        if sub_path.match(str(src_path)):
+            # Count fixed prefix parts (before any wildcard)
+            prefix_len = 0
+            for part in src_path.parts:
+                if "*" in part:
+                    break
+                prefix_len += 1
+            # Return path relative to fixed prefix
+            return str(Path(*sub_path.parts[prefix_len:]))
+
+        # Return unchanged if no match
+        return existing_path
+
+    @staticmethod
+    def _move_src_folder_up(remote: str, src: str) -> None:
         """Move the files from the src folder into the root of the project.
 
         Args:
             remote (str): Name of the root
             src (str): Src folder to move up
         """
-        full_src = src
-        if not os.path.isdir(src):
-            src = os.path.dirname(src)
+        matched_paths = glob.glob(src) or [src]
 
-        if not src:
-            return
-
-        try:
-            for file_to_copy in os.listdir(src):
-                shutil.move(src + "/" + file_to_copy, ".")
-            safe_rmtree(PurePath(src).parts[0])
-        except FileNotFoundError:
+        if not matched_paths:
             logger.warning(
-                f"The 'src:' filter '{full_src}' didn't match any files from '{remote}'"
+                f"The 'src:' filter '{src}' didn't match any files from '{remote}'"
             )
-        return
+
+        processed_dirs = set()
+        for src_path in matched_paths:
+            if not os.path.isdir(src_path):
+                src_path = os.path.dirname(src_path)
+
+            if not src_path or src_path in processed_dirs:
+                continue
+
+            try:
+                for file_to_copy in os.listdir(src_path):
+                    shutil.move(src_path + "/" + file_to_copy, ".")
+                safe_rmtree(PurePath(src_path).parts[0])
+                processed_dirs.add(src_path)
+            except FileNotFoundError:
+                logger.warning(
+                    f"The 'src:' filter '{src_path}' didn't match any files from '{remote}'"
+                )
+            continue
 
     @staticmethod
     def _determine_ignore_paths(
