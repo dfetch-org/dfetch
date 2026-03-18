@@ -12,7 +12,7 @@ from pathlib import Path, PurePath
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
-from dfetch.util.util import in_directory, safe_rmtree
+from dfetch.util.util import in_directory, safe_rm, safe_rmtree
 from dfetch.vcs.patch import Patch, PatchType
 
 logger = get_logger(__name__)
@@ -253,6 +253,26 @@ class GitLocalRepo:
         except (SubprocessCommandError, RuntimeError):
             return False
 
+    def _configure_sparse_checkout(
+        self,
+        src: str | None,
+        keeps: Sequence[str],
+        ignore: Sequence[str] | None = None,
+    ) -> None:
+        run_on_cmdline(logger, ["git", "config", "core.sparsecheckout", "true"])
+
+        with open(".git/info/sparse-checkout", "a", encoding="utf-8") as f:
+            patterns = list(keeps or [])
+            src_pattern = f"/{src or '*'}"
+
+            if src_pattern not in patterns:
+                patterns.append(src_pattern)
+
+            if ignore:
+                patterns += self._determine_ignore_paths(src, ignore)
+
+            f.write("\n".join(map(str, patterns)) + "\n")
+
     def checkout_version(  # pylint: disable=too-many-arguments
         self,
         *,
@@ -277,19 +297,11 @@ class GitLocalRepo:
             run_on_cmdline(logger, ["git", "checkout", "-b", "dfetch-local-branch"])
 
             if src or ignore:
-                run_on_cmdline(logger, ["git", "config", "core.sparsecheckout", "true"])
-                with open(
-                    ".git/info/sparse-checkout", "a", encoding="utf-8"
-                ) as sparse_checkout_file:
-                    sparse_checkout_file.write(
-                        "\n".join(list((must_keeps or []) + [f"/{src or '*'}"]))
-                    )
-
-                    if ignore:
-                        ignore_abs_paths = self._determine_ignore_paths(src, ignore)
-
-                        sparse_checkout_file.write("\n")
-                        sparse_checkout_file.write("\n".join(ignore_abs_paths))
+                self._configure_sparse_checkout(
+                    src,
+                    (must_keeps or []) + [f"/{src or '*'}"],
+                    ignore,
+                )
 
             run_on_cmdline(
                 logger,
@@ -317,6 +329,10 @@ class GitLocalRepo:
                     submodule.path = self._rewrite_path(src, submodule.path)
 
                 self._move_src_folder_up(remote, src)
+
+            if submodules:
+                for ignore_path in ignore or []:
+                    safe_rm(glob.glob(ignore_path))
 
             return str(current_sha), submodules
 
