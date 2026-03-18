@@ -10,7 +10,12 @@ import subprocess
 from behave import given, when  # pylint: disable=no-name-in-module
 
 from dfetch.util.util import in_directory
-from features.steps.generic_steps import call_command, extend_file, generate_file
+from features.steps.generic_steps import (
+    call_command,
+    extend_file,
+    generate_file,
+    remote_server_path,
+)
 from features.steps.manifest_steps import generate_manifest
 
 
@@ -53,9 +58,10 @@ def step_impl(context, name=None):
         generate_file("README.md", "some content")
 
         for submodule in context.table:
-            subprocess.check_call(
-                ["git", "submodule", "add", submodule["url"], submodule["path"]]
+            url = submodule["url"].replace(
+                "some-remote-server", f"file:///{remote_server_path(context)}"
             )
+            subprocess.check_call(["git", "submodule", "add", url, submodule["path"]])
 
             with in_directory(submodule["path"]):
                 subprocess.check_call(["git", "checkout", submodule["revision"]])

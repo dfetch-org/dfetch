@@ -47,6 +47,45 @@ Feature: Fetch projects with nested VCS dependencies
                             README.md
             """
 
+    Scenario: A project with a git submodule that itself has a nested submodule is fetched at the pinned revision
+        Given a git repository "LeafProject.git"
+        And a git-repository "MiddleProject.git" with the following submodules
+            | path     | url                                | revision |
+            | ext/leaf | some-remote-server/LeafProject.git | master   |
+        And a git-repository "OuterProject.git" with the following submodules
+            | path       | url                                  | revision |
+            | ext/middle | some-remote-server/MiddleProject.git | master   |
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: outer-project
+                      url: some-remote-server/OuterProject.git
+            """
+        When I run "dfetch update"
+        Then the output shows
+            """
+            Dfetch (0.12.1)
+              outer-project:
+              > Found & fetched submodule "./ext/middle"  (some-remote-server/MiddleProject.git @ master - [commit-hash])
+              > Fetched master - [commit-hash]
+            """
+        Then 'MyProject' looks like:
+            """
+            MyProject/
+                dfetch.yaml
+                outer-project/
+                    .dfetch_data.yaml
+                    README.md
+                    ext/
+                        middle/
+                            README.md
+                            ext/
+                                leaf/
+                                    README.md
+            """
+
     Scenario: Submodule changes are reported in the project report
         Given a fetched and committed MyProject with the manifest
             """
