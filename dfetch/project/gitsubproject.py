@@ -1,6 +1,5 @@
 """Git specific implementation."""
 
-import os
 import pathlib
 from functools import lru_cache
 
@@ -8,7 +7,7 @@ from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.subproject import SubProject, VcsDependency
-from dfetch.util.util import LICENSE_GLOBS, safe_rm, safe_rmtree
+from dfetch.util.util import LICENSE_GLOBS, safe_rm
 from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
 
 logger = get_logger(__name__)
@@ -94,8 +93,11 @@ class GitSubProject(SubProject):
                 )
             )
 
-        safe_rmtree(os.path.join(self.local_path, local_repo.METADATA_DIR))
-        safe_rm(os.path.join(self.local_path, local_repo.GIT_MODULES_FILE))
+        targets = {local_repo.METADATA_DIR, local_repo.GIT_MODULES_FILE}
+
+        for path in pathlib.Path(self.local_path).rglob("*"):
+            if path.name in targets:
+                safe_rm(path)
 
         return self._determine_fetched_version(version, fetched_sha), vcs_deps
 
