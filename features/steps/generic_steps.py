@@ -406,6 +406,11 @@ def step_impl(context, name):
         check_file(name, context.text)
 
 
+@then("'{name}' exists")
+def step_impl(_, name):
+    assert os.path.exists(name), f"Expected {name} to exist, but it didn't!"
+
+
 @then("the '{name}' json file includes")
 def step_impl(context, name):
     """Partial JSON match - the expected JSON must be a *subset* of the actual file."""

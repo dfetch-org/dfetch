@@ -4,17 +4,40 @@ import os
 import pathlib
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence
+from typing import NamedTuple
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.abstract_check_reporter import AbstractCheckReporter
-from dfetch.project.metadata import Metadata
+from dfetch.project.metadata import Dependency, Metadata
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
 from dfetch.vcs.patch import Patch
 
 logger = get_logger(__name__)
+
+
+class VcsDependency(NamedTuple):
+    """Information about a vcs dependency."""
+
+    destination: str
+    remote_url: str
+    branch: str
+    tag: str
+    revision: str
+    source_type: str
+
+    def to_dependency(self) -> Dependency:
+        """Convert this vcs dependency to a Dependency object."""
+        return Dependency(
+            destination=self.destination,
+            remote_url=self.remote_url,
+            branch=self.branch,
+            tag=self.tag,
+            revision=self.revision,
+            source_type=self.source_type,
+        )
 
 
 class SubProject(ABC):
@@ -129,7 +152,7 @@ class SubProject(ABC):
             f"Fetching {to_fetch}",
             enabled=self._show_animations,
         ):
-            actually_fetched = self._fetch_impl(to_fetch)
+            actually_fetched, dependency = self._fetch_impl(to_fetch)
         self._log_project(f"Fetched {actually_fetched}")
 
         applied_patches = self._apply_patches(patch_count)
@@ -145,6 +168,7 @@ class SubProject(ABC):
                 skiplist=[self.__metadata.FILENAME] + post_fetch_ignored,
             ),
             patch_=applied_patches,
+            dependencies=[dependency.to_dependency() for dependency in dependency],
         )
 
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
@@ -392,7 +416,7 @@ class SubProject(ABC):
         )
 
     @abstractmethod
-    def _fetch_impl(self, version: Version) -> Version:
+    def _fetch_impl(self, version: Version) -> tuple[Version, list[VcsDependency]]:
         """Fetch the given version of the subproject, should be implemented by the child class."""
 
     @abstractmethod

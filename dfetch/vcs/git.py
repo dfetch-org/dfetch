@@ -6,8 +6,8 @@ import re
 import shutil
 import tempfile
 from collections.abc import Generator, Sequence
+from dataclasses import dataclass
 from pathlib import Path, PurePath
-from typing import NamedTuple
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -17,7 +17,8 @@ from dfetch.vcs.patch import Patch, PatchType
 logger = get_logger(__name__)
 
 
-class Submodule(NamedTuple):
+@dataclass
+class Submodule:
     """Information about a submodule."""
 
     name: str
@@ -233,6 +234,7 @@ class GitLocalRepo:
     """A git repository."""
 
     METADATA_DIR = ".git"
+    GIT_MODULES_FILE = ".gitmodules"
 
     def __init__(self, path: str | Path = ".") -> None:
         """Create a local git repo."""
@@ -258,7 +260,7 @@ class GitLocalRepo:
         src: str | None = None,
         must_keeps: list[str] | None = None,
         ignore: Sequence[str] | None = None,
-    ) -> str:
+    ) -> tuple[str, list[Submodule]]:
         """Checkout a specific version from a given remote.
 
         Args:
@@ -295,6 +297,14 @@ class GitLocalRepo:
             )
             run_on_cmdline(logger, ["git", "reset", "--hard", "FETCH_HEAD"])
 
+            run_on_cmdline(
+                logger,
+                ["git", "submodule", "update", "--init", "--recursive"],
+                env=_extend_env_for_non_interactive_mode(),
+            )
+
+            submodules = self.submodules()
+
             current_sha = (
                 run_on_cmdline(logger, ["git", "rev-parse", "HEAD"])
                 .stdout.decode()
@@ -302,9 +312,12 @@ class GitLocalRepo:
             )
 
             if src:
+                for submodule in submodules:
+                    submodule.path = str(Path(submodule.path).relative_to(Path(src)))
+
                 self.move_src_folder_up(remote, src)
 
-            return str(current_sha)
+            return str(current_sha), submodules
 
     def move_src_folder_up(self, remote: str, src: str) -> None:
         """Move the files from the src folder into the root of the project.

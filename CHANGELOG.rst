@@ -1,16 +1,19 @@
-Unreleased
-==========
+Release 0.13.0 (unreleased)
+====================================
 
 * Add archive (``vcs: archive``) support for fetching dependencies from ``.tar.gz``, ``.tgz``, ``.tar.bz2``, ``.tar.xz`` and ``.zip`` files via HTTP, HTTPS or file URLs (#1058)
 * Fix path-traversal check using character-based prefix comparison instead of path-component comparison (#1058)
 * Fix directory hash being non-deterministic across filesystem traversal orders, causing false local-change detection (#1058)
 * Fix ``dfetch freeze`` not capturing branch information for SVN projects when only the revision matched (#1058)
+* Rename child-manifests to sub-manifests in documentation and code (#1027)
+* Fetch git submodules in git subproject at pinned revision (#1013)
+* Add nested projects in subprojects to project report (#1017)
+* Make `dfetch report` output more yaml-like (#1017)
 
 Release 0.12.1 (released 2026-02-24)
 ====================================
 
 * Fix missing unicode data in standalone binaries (#1014)
-* Rename child-manifests to sub-manifests in documentation and code (#1027)
 
 Release 0.12.0 (released 2026-02-21)
 ====================================

@@ -16,6 +16,17 @@ DONT_EDIT_WARNING = """\
 """
 
 
+class Dependency(TypedDict):
+    """Argument types for dependency class construction."""
+
+    branch: str
+    tag: str
+    revision: str
+    remote_url: str
+    destination: str
+    source_type: str
+
+
 class Options(TypedDict):  # pylint: disable=too-many-ancestors
     """Argument types for Metadata class construction."""
 
@@ -27,6 +38,7 @@ class Options(TypedDict):  # pylint: disable=too-many-ancestors
     destination: str
     hash: str
     patch: str | list[str]
+    dependencies: list["Dependency"]
 
 
 class Metadata:
@@ -54,6 +66,8 @@ class Metadata:
         # Historically only a single patch was allowed
         self._patch: list[str] = always_str_list(kwargs.get("patch", []))
 
+        self._dependencies: list[Dependency] = kwargs.get("dependencies", [])
+
     @classmethod
     def from_project_entry(cls, project: ProjectEntry) -> "Metadata":
         """Create a metadata object from a project entry."""
@@ -66,6 +80,7 @@ class Metadata:
             "last_fetch": datetime.datetime(2000, 1, 1, 0, 0, 0),
             "hash": "",
             "patch": project.patch,
+            "dependencies": [],
         }
         return cls(data)
 
@@ -77,13 +92,18 @@ class Metadata:
             return cls(data)
 
     def fetched(
-        self, version: Version, hash_: str = "", patch_: list[str] | None = None
+        self,
+        version: Version,
+        hash_: str = "",
+        patch_: list[str] | None = None,
+        dependencies: list[Dependency] | None = None,
     ) -> None:
         """Update metadata."""
         self._last_fetch = datetime.datetime.now()
         self._version = version
         self._hash = hash_
         self._patch = patch_ or []
+        self._dependencies = dependencies or []
 
     @property
     def version(self) -> Version:
@@ -130,6 +150,11 @@ class Metadata:
         return self._patch
 
     @property
+    def dependencies(self) -> list[Dependency]:
+        """The list of dependency projects as stored in the metadata."""
+        return self._dependencies
+
+    @property
     def path(self) -> str:
         """Path to metadata file."""
         if os.path.isdir(self._destination):
@@ -152,12 +177,13 @@ class Metadata:
                 other._version.revision == self._version.revision,
                 other.hash == self.hash,
                 other.patch == self.patch,
+                other.dependencies == self.dependencies,
             ]
         )
 
     def dump(self) -> None:
         """Dump metadata file to correct path."""
-        metadata = {
+        metadata: dict[str, dict[str, str | list[str] | list[Dependency]]] = {
             "dfetch": {
                 "remote_url": self.remote_url,
                 "branch": self._version.branch,
@@ -168,6 +194,9 @@ class Metadata:
                 "patch": str_if_possible(self.patch),
             }
         }
+
+        if self.dependencies:
+            metadata["dfetch"]["dependencies"] = self.dependencies
 
         with open(self.path, "w+", encoding="utf-8") as metadata_file:
             metadata_file.write(DONT_EDIT_WARNING)
