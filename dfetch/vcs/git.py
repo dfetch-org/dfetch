@@ -312,8 +312,9 @@ class GitLocalRepo:
             )
 
             if src:
-                for submodule in submodules:
-                    submodule.path = str(Path(submodule.path).relative_to(Path(src)))
+                if os.path.isdir(src):
+                    for submodule in submodules:
+                        submodule.path = str(Path(submodule.path).relative_to(src))
 
                 self.move_src_folder_up(remote, src)
 
