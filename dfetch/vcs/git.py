@@ -350,29 +350,38 @@ class GitLocalRepo:
             remote (str): Name of the root
             src (str): Src folder to move up
         """
-        matched_paths = glob.glob(src) or [src]
+        matched_paths = glob.glob(src)
 
         if not matched_paths:
             logger.warning(
                 f"The 'src:' filter '{src}' didn't match any files from '{remote}'"
             )
+            return
 
-        processed_dirs = set()
-        for src_path in matched_paths:
-            if not os.path.isdir(src_path):
-                src_path = os.path.dirname(src_path)
+        dirs = []
+        for src_dir_path in matched_paths:
+            if os.path.isdir(src_dir_path):
+                dirs.append(src_dir_path)
+            else:
+                if dir_path := os.path.dirname(src_dir_path):
+                    dirs.append(dir_path)
 
-            if not src_path or src_path in processed_dirs:
-                continue
+        unique_dirs = list(dict.fromkeys(dirs))
 
+        if len(unique_dirs) > 1:
+            logger.warning(
+                f"The 'src:' filter '{src}' matches multiple directories from '{remote}'. "
+                f"Only considering files in '{unique_dirs[0]}'."
+            )
+
+        for src_dir_path in unique_dirs[:1]:
             try:
-                for file_to_copy in os.listdir(src_path):
-                    shutil.move(src_path + "/" + file_to_copy, ".")
-                safe_rmtree(PurePath(src_path).parts[0])
-                processed_dirs.add(src_path)
+                for file_to_copy in os.listdir(src_dir_path):
+                    shutil.move(src_dir_path + "/" + file_to_copy, ".")
+                safe_rmtree(PurePath(src_dir_path).parts[0])
             except FileNotFoundError:
                 logger.warning(
-                    f"The 'src:' filter '{src_path}' didn't match any files from '{remote}'"
+                    f"The 'src:' filter '{src_dir_path}' didn't match any files from '{remote}'"
                 )
             continue
 
