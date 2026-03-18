@@ -9,6 +9,7 @@ Release 0.13.0 (unreleased)
 * Fetch git submodules in git subproject at pinned revision (#1013)
 * Add nested projects in subprojects to project report (#1017)
 * Make `dfetch report` output more yaml-like (#1017)
+* Don't break when importing submodules with space in path (#1017)
 
 Release 0.12.1 (released 2026-02-24)
 ====================================
