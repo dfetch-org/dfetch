@@ -107,6 +107,11 @@ def get_submanifests(skip: list[str] | None = None) -> list[Manifest]:
             with prefix_runtime_exceptions(
                 pathlib.Path(path).relative_to(os.path.dirname(os.getcwd())).as_posix()
             ):
-                submanifests += [parse(path)]
+                try:
+                    submanifests += [parse(path)]
+                except FileNotFoundError:
+                    logger.warning(
+                        f"Sub-manifest {path} was found but no longer exists"
+                    )
 
     return submanifests
