@@ -110,8 +110,9 @@ class Report(dfetch.commands.command.Command):
 
         For archive projects the sha256 hash (``sha256:<hex>``) stored in the
         metadata *revision* field is used as the version identifier.  When no
-        metadata is present yet, the ``hash:`` field from the manifest is used
-        as fallback so the SBOM can still be generated before the first fetch.
+        metadata is present yet, the ``integrity.hash`` field from the manifest
+        is used as fallback so the SBOM can still be generated before the first
+        fetch.
         """
         try:
             metadata = Metadata.from_file(Metadata.from_project_entry(project).path)

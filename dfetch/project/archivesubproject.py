@@ -227,40 +227,43 @@ class ArchiveSubProject(SubProject):
     # Freeze support
     # ------------------------------------------------------------------
 
-    def freeze_project(self, project: ProjectEntry) -> bool:
+    def freeze_project(self, project: ProjectEntry) -> str | None:
         """Pin *project* to a cryptographic hash of the archive.
 
         * If the archive was already fetched with a hash, the on-disk revision
-          (``sha256:<hex>``) is written to the manifest.
+          (``sha256:<hex>``) is written to ``integrity.hash`` in the manifest.
         * If the archive was fetched without a hash (URL-only), the archive is
           downloaded again, its SHA-256 is computed, and the result is written
-          to the manifest.  This ensures the manifest always ends up pinned to
-          a specific content fingerprint.
+          to ``integrity.hash``.  This ensures the manifest always ends up
+          pinned to a specific content fingerprint.
 
         Returns:
-            *True* when the manifest entry was modified, *False* otherwise.
+            The ``sha256:<hex>`` string written to *project*, or *None* if the
+            manifest was already up-to-date.
+
+        Raises:
+            RuntimeError: On download or hash-computation failure so the caller
+                can log a meaningful error rather than silently claiming the
+                project is already pinned.
         """
         on_disk = self.on_disk_version()
         if not on_disk:
-            return False
+            return None
 
         revision = on_disk.revision
 
         # Already hash-pinned – revision is "sha256:<hex>"
         if revision.startswith(tuple(f"{a}:" for a in SUPPORTED_HASH_ALGORITHMS)):
             if project.hash == revision:
-                return False
+                return None
             project.hash = revision
-            return True
+            return revision
 
         # URL-pinned: download the archive now and compute its hash.
-        try:
-            hex_value = self._download_and_compute_hash("sha256")
-        except RuntimeError:
-            return False
-
+        # Raises RuntimeError on failure so the caller (freeze.py) can log it.
+        hex_value = self._download_and_compute_hash("sha256")
         new_hash = f"sha256:{hex_value}"
         if project.hash == new_hash:
-            return False
+            return None
         project.hash = new_hash
-        return True
+        return new_hash

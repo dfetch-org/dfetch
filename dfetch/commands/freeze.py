@@ -36,10 +36,11 @@ In our above example this would for instance result in:
 
 .. scenario-include:: ../features/freeze-projects.feature
 
-For archive projects, ``dfetch freeze`` adds a ``hash: sha256:<hex>`` field
-to pin the exact archive content used.  This field acts as the version
-identifier: DFetch verifies the downloaded archive against it on every
-subsequent ``dfetch update``.
+For archive projects, ``dfetch freeze`` adds the hash under the nested
+``integrity.hash`` key (e.g. ``integrity.hash: sha256:<hex>``) to pin the
+exact archive content used.  This value acts as the version identifier:
+DFetch verifies the downloaded archive against it on every subsequent
+``dfetch update``.
 
 .. scenario-include:: ../features/freeze-archive.feature
 
@@ -88,7 +89,8 @@ class Freeze(dfetch.commands.command.Command):
                     sub_project = dfetch.project.create_sub_project(project)
                     on_disk_version = sub_project.on_disk_version()
 
-                    if not sub_project.freeze_project(project):
+                    new_version = sub_project.freeze_project(project)
+                    if new_version is None:
                         if on_disk_version:
                             logger.print_info_line(
                                 project.name,
@@ -102,7 +104,7 @@ class Freeze(dfetch.commands.command.Command):
                     else:
                         logger.print_info_line(
                             project.name,
-                            f"Freezing on version {on_disk_version}",
+                            f"Frozen on version {new_version}",
                         )
 
                     projects.append(project)
