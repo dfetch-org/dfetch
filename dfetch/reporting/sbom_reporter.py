@@ -115,6 +115,7 @@ from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
 from dfetch.util.license import License
 from dfetch.util.purl import DFETCH_TO_CDX_HASH_ALGORITHM
+from dfetch.vcs.archive import IntegrityHash
 
 # PyRight is pedantic with decorators see https://github.com/madpah/serializable/issues/8
 # It might be fixable with https://github.com/microsoft/pyright/discussions/4426, would prefer
@@ -291,14 +292,14 @@ class SbomReporter(Reporter):
                 url=XsUri(download_url),
             )
         )
-        if version and ":" in version:
-            algo_prefix, hex_value = version.split(":", 1)
-            cdx_algo_name = DFETCH_TO_CDX_HASH_ALGORITHM.get(algo_prefix)
+        integrity = IntegrityHash.parse(version) if version else None
+        if integrity:
+            cdx_algo_name = DFETCH_TO_CDX_HASH_ALGORITHM.get(integrity.algorithm)
             if cdx_algo_name:
                 component.hashes.add(
                     HashType(
                         alg=HashAlgorithm(cdx_algo_name),
-                        content=hex_value,
+                        content=integrity.hex_digest,
                     )
                 )
 
