@@ -196,6 +196,10 @@ def check_output(context, line_count=None):
         context: Behave context with cmd_output and expected text
         line_count: If set, compare only the first N lines of actual output
     """
+    expected_raw = context.text
+    if hasattr(context, "archive_sha256"):
+        expected_raw = expected_raw.replace("<archive-sha256>", context.archive_sha256)
+
     expected_text = multisub(
         patterns=[
             (dfetch_title, "Dfetch (x.x.x)"),
@@ -204,7 +208,7 @@ def check_output(context, line_count=None):
             (ansi_escape, ""),
             (svn_error, "svn: EXXXXXX: <some error text>"),
         ],
-        text=context.text,
+        text=expected_raw,
     )
 
     actual_text = multisub(

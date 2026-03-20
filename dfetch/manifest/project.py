@@ -300,6 +300,7 @@ ProjectEntryDict = TypedDict(
         "repo-path": str,
         "vcs": str,
         "ignore": Sequence[str],
+        "hash": str,
         "default_remote": str,
     },
     total=False,
@@ -327,6 +328,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._tag: str = kwargs.get("tag", "")
         self._vcs: str = kwargs.get("vcs", "")
         self._ignore: Sequence[str] = kwargs.get("ignore", [])
+        self._hash: str = kwargs.get("hash", "")
 
         if not self._remote and not self._url:
             self._remote = kwargs.get("default_remote", "")
@@ -443,6 +445,11 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         """Get the list of files/folders to ignore from this project (relative to src)."""
         return self._ignore
 
+    @property
+    def hash(self) -> str:
+        """Get the expected hash of the archive (format: 'algorithm:hex-value')."""
+        return self._hash
+
     def __repr__(self) -> str:
         """Get a string representation of this project entry."""
         version = (
@@ -477,6 +484,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             "tag": self._tag,
             "repo-path": self._repo_path,
             "vcs": self._vcs,
+            "hash": self._hash,
         }
 
         return {k: v for k, v in yamldata.items() if v}
