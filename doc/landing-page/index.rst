@@ -28,6 +28,12 @@
 Dfetch
 ######
 
+**Vendor dependencies without the pain.**
+
+**Dfetch** copies source code directly into your project — no Git submodules, no SVN externals,
+no hidden external links. Dependencies live as plain, readable files inside your own repository.
+You stay in full control of every line.
+
 .. grid:: 3
 
     .. grid-item::
@@ -57,15 +63,15 @@ Dfetch
 
          :material-regular:`article;2em` Source
 
-.. asciinema:: ../asciicasts/basic.cast
-
-**Dfetch** vendors source code directly into your project — no Git submodules, no SVN externals, no hidden external links.
-Dependencies live as plain, readable files inside your own repository. You stay in full control of every line.
-
-:bdg-primary-line:`Git` :bdg-primary-line:`SVN` :bdg-secondary-line:`MIT License` :bdg-success-line:`Zero lock-in` :bdg-info-line:`CI/CD ready` :bdg-warning-line:`Supply-chain safe`
-
 
 .. div:: band-tint
+
+   :material-regular:`play_circle;2em;sd-text-primary` **See it in action**
+
+   .. asciinema:: ../asciicasts/basic.cast
+
+
+.. div:: band-mint
 
    :material-regular:`stars;2em;sd-text-primary` **What makes Dfetch different**
 
@@ -86,7 +92,7 @@ Dependencies live as plain, readable files inside your own repository. You stay 
          C, C++, Python, Go, Rust, Java — dfetch doesn't care.
          No build-system assumptions. Bring your own toolchain.
 
-      .. grid-item-card:: :material-regular:`history;2em` Built for 15+ year lifecycles
+      .. grid-item-card:: :material-regular:`history;2em` Built for long lifecycles
          :text-align: center
          :class-card: stat-card
 
@@ -94,50 +100,7 @@ Dependencies live as plain, readable files inside your own repository. You stay 
          Reproducible builds from source — **no registry, no CDN, no service required**.
 
 
-.. card::  :material-regular:`done_all;4em;sd-text-primary` **Stay up to date — effortlessly**
-   :class-card: sd-bg-dark sd-text-light
-
-   Check which dependencies have available updates and pull them in when you are ready.
-   *Dfetch* puts you in control of every change — no surprise breakages, no forced upgrades.
-
-   .. asciinema:: ../asciicasts/check.cast
-
-
-.. grid:: 1 1 2 2
-
-   .. grid-item::
-
-      :material-regular:`shuffle;4em;sd-text-primary` **VCS-agnostic**
-
-      Works seamlessly with **Git and SVN** — even mixed within the same project.
-      Pin by tag, branch, revision, or exact commit hash. Adapt to your team's workflow, not the other way around.
-
-
-   .. grid-item::
-
-      :material-regular:`archive;4em;sd-text-primary` **Fully self-contained**
-
-      Every dependency is stored **inside your repository** as plain source code.
-      No external links means simpler audits, offline builds, and hassle-free deployments that stay reproducible forever.
-
-
-   .. grid-item::
-
-      :material-regular:`inventory_2;4em;sd-text-primary` **Fetch only what you need**
-
-      Point *Dfetch* at a single subfolder inside a larger repo using the ``src:`` attribute.
-      Pull in just the files you need — **no bloat, no noise**, and license files are always retained.
-
-
-   .. grid-item::
-
-      :material-regular:`lock_open;4em;sd-text-primary` **Zero lock-in**
-
-      Your vendored code stays as plain source files. Switch tools any time — **no proprietary formats, no migration work**.
-      *Dfetch* respects that your source code belongs to you.
-
-
-.. card:: :material-regular:`account_tree;1.5em` From manifest entry to vendored folder
+.. card:: :material-regular:`account_tree;1.5em` How it works — from manifest to vendored folder
 
    One project entry in ``dfetch.yaml``. One command. Dfetch copies exactly what you
    specified, pins the version in ``.dfetch_data.yaml``, and keeps everything inside your repository.
@@ -145,9 +108,10 @@ Dependencies live as plain, readable files inside your own repository. You stay 
    .. div:: infographic-wrapper
 
       .. grid:: 1 1 2 2
-         :gutter: 5
+         :gutter: 4
 
          .. grid-item::
+            :columns: 12 12 7 7
 
             .. code-block:: yaml
                :caption: dfetch.yaml
@@ -160,45 +124,136 @@ Dependencies live as plain, readable files inside your own repository. You stay 
                      url-base: https://github.com/
 
                  projects:
-                   - name: ext/cunit   # ① local path
+                   - name: ext/cunit  # (1)
                      remote: github
-                     repo-path: org/cunit.git
-                     tag: v3.2.7       # ② pin version
-                     src: src/         # ③ subfolder only
+                     repo-path: org/cunit
+                     tag: v3.2.7      # (2)
+                     src: src/        # (3)
+
+         .. grid-item::
+            :columns: 12 12 5 5
+
+            .. code-block:: text
+               :caption: After dfetch update
+
+               your-project/
+               ├─ dfetch.yaml
+               └─ ext/
+                  └─ cunit/           (a)
+                     ├─ .dfetch_data.yaml
+                     ├─ LICENSE       (b)
+                     └─ CUnit.h       (c)
+
+   .. div:: infographic-legend
+
+      .. grid:: 1 1 3 3
+         :gutter: 2
 
          .. grid-item::
 
-            .. code-block:: text
-               :caption: your-project/  (after dfetch update)
+            **(1)** ``name:`` — destination path in your repo
 
-               your-project/
-               ├── dfetch.yaml
-               └── ext/
-                   └── cunit/          ← ① name:
-                       ├── .dfetch_data.yaml
-                       ├── LICENSE     ← always retained
-                       └── src/        ← ③ src:
-                           └── CUnit.h
+         .. grid-item::
+
+            **(2)** ``tag:`` — exact version to fetch
+
+         .. grid-item::
+
+            **(3)** ``src:`` — subfolder to copy from upstream
+
+      .. grid:: 1 1 3 3
+         :gutter: 2
+
+         .. grid-item::
+
+            **(a)** folder created at the path given by ``name:``
+
+         .. grid-item::
+
+            **(b)** license always retained, even with ``src:``
+
+         .. grid-item::
+
+            **(c)** contents of ``src:`` placed directly here
+
+
+.. div:: feature-grid
+
+   .. grid:: 1 1 2 2
+      :gutter: 4
+
+      .. grid-item::
+
+         :material-regular:`shuffle;4em;sd-text-primary` **VCS-agnostic**
+
+         Works seamlessly with **Git and SVN** — even mixed within the same project.
+         Pin by tag, branch, revision, or exact commit hash. Adapt to your team's workflow, not the other way around.
+
+
+      .. grid-item::
+
+         :material-regular:`archive;4em;sd-text-primary` **Fully self-contained**
+
+         Every dependency is stored **inside your repository** as plain source code.
+         No external links means simpler audits, offline builds, and hassle-free deployments that stay reproducible forever.
+
+
+      .. grid-item::
+
+         :material-regular:`inventory_2;4em;sd-text-primary` **Fetch only what you need**
+
+         Point *Dfetch* at a single subfolder inside a larger repo using the ``src:`` attribute.
+         Pull in just the files you need — **no bloat, no noise**, and license files are always retained.
+
+
+      .. grid-item::
+
+         :material-regular:`lock_open;4em;sd-text-primary` **Zero lock-in**
+
+         Your vendored code stays as plain source files. Switch tools any time — **no proprietary formats, no migration work**.
+         *Dfetch* respects that your source code belongs to you.
+
+
+.. card::  :material-regular:`done_all;4em;sd-text-primary` **Stay up to date — effortlessly**
+   :class-card: sd-bg-dark sd-text-light
+
+   Check which dependencies have available updates and pull them in when you are ready.
+   *Dfetch* puts you in control of every change — no surprise breakages, no forced upgrades.
+
+   .. asciinema:: ../asciicasts/check.cast
+
+
+.. div:: band-tint
+
+   :material-regular:`security;2em;sd-text-primary` **Supply-chain ready out of the box**
 
    .. grid:: 1 1 3 3
-      :gutter: 2
-      :class: infographic-legend
+      :gutter: 3
 
-      .. grid-item::
+      .. grid-item-card:: :material-regular:`receipt_long;2em` SBOM generation
+         :text-align: center
+         :class-card: stat-card
 
-         :bdg-primary:`name:` → **destination folder**
+         Generate a machine-readable **Software Bill of Materials** to track every vendored dependency —
+         ready for audits, compliance checks, and vulnerability scans.
 
-      .. grid-item::
+      .. grid-item-card:: :material-regular:`balance;2em` Automatic license detection
+         :text-align: center
+         :class-card: stat-card
 
-         :bdg-primary:`tag:` → **pinned version**
+         Infers and reports the license for every dependency automatically.
+         Stay legally compliant — **even when fetching a single subfolder** from a larger repository.
 
-      .. grid-item::
+      .. grid-item-card:: :material-regular:`analytics;2em` Multi-format reports
+         :text-align: center
+         :class-card: stat-card
 
-         :bdg-primary:`src:` → **what gets copied**
+         Export to **Jenkins JSON, SARIF, Code Climate, DependencyTrack** formats.
+         Plug into your existing security toolchain with zero extra work.
 
 
 .. card:: :material-regular:`difference;4em;sd-text-primary` **Customize without losing upstream**
-   :class-card: sd-bg-dark sd-text-light
+   :class-card: card-tinted
 
    Vendor a dependency, tweak it locally, and still stay current with upstream — *Dfetch* makes this safe.
 
@@ -216,32 +271,6 @@ Dependencies live as plain, readable files inside your own repository. You stay 
    .. asciinema:: ../asciicasts/check-ci.cast
 
 
-.. div:: band-mint
-
-   :material-regular:`security;2em;sd-text-primary` **Supply-chain ready out of the box**
-
-   .. grid:: 1 1 3 3
-      :gutter: 3
-
-      .. grid-item-card:: :material-regular:`receipt_long;2em` SBOM generation
-         :text-align: center
-
-         Generate a machine-readable **Software Bill of Materials** to track every vendored dependency —
-         ready for audits, compliance checks, and vulnerability scans.
-
-      .. grid-item-card:: :material-regular:`balance;2em` Automatic license detection
-         :text-align: center
-
-         Infers and reports the license for every dependency automatically.
-         Stay legally compliant — **even when fetching a single subfolder** from a larger repository.
-
-      .. grid-item-card:: :material-regular:`analytics;2em` Multi-format reports
-         :text-align: center
-
-         Export to **Jenkins JSON, SARIF, Code Climate, DependencyTrack** formats.
-         Plug into your existing security toolchain with zero extra work.
-
-
 .. card:: :material-regular:`bolt;2em` Already using submodules? Migrate in seconds.
 
    ``dfetch import`` automatically converts **Git submodules and SVN externals** into a dfetch manifest.
@@ -254,10 +283,36 @@ Dependencies live as plain, readable files inside your own repository. You stay 
       :material-regular:`description;1.2em` Read the migration guide
 
 
-.. card:: :material-regular:`description;1.5em` Example ``dfetch.yaml``
+.. div:: band-mint cta-band
 
-   .. literalinclude:: ../../dfetch.yaml
-      :language: yaml
+   :material-regular:`rocket_launch;2em;sd-text-primary` **Get started in seconds**
+
+   .. code-block:: bash
+
+      pip install dfetch && dfetch init && dfetch update
+
+   .. div:: cta-buttons
+
+      .. grid:: 2
+         :gutter: 2
+
+         .. grid-item::
+
+            .. button-link:: https://pypi.org/project/dfetch/
+               :color: primary
+               :shadow:
+               :expand:
+
+               :material-regular:`download;1.5em` Download
+
+         .. grid-item::
+
+            .. button-link:: https://dfetch.rtfd.io/
+               :color: secondary
+               :shadow:
+               :expand:
+
+               :material-regular:`description;1.5em` Read the docs
 
 
 .. div:: sd-text-left sd-text-muted sd-font-weight-light
