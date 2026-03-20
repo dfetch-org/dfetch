@@ -95,6 +95,53 @@ def check_json(path: Union[str, os.PathLike], content: str) -> None:
     )
 
 
+def _apply_context_substitutions(text: str, context) -> str:
+    """Replace dynamic placeholders with values stored on *context*."""
+    if hasattr(context, "archive_sha256"):
+        text = text.replace("<archive-sha256>", context.archive_sha256)
+    if hasattr(context, "archive_url"):
+        text = text.replace("<archive-url>", context.archive_url)
+    return text
+
+
+def _json_subset_matches(expected, actual) -> bool:
+    """Return *True* when *expected* is a subset of *actual* (recursive)."""
+    if isinstance(expected, dict):
+        if not isinstance(actual, dict):
+            return False
+        return all(
+            k in actual and _json_subset_matches(v, actual[k])
+            for k, v in expected.items()
+        )
+    if isinstance(expected, list):
+        if not isinstance(actual, list):
+            return False
+        return all(
+            any(_json_subset_matches(exp_item, act_item) for act_item in actual)
+            for exp_item in expected
+        )
+    return expected == actual
+
+
+def check_json_subset(path: Union[str, os.PathLike], content: str, context) -> None:
+    """Assert that a JSON file *contains* the given key-values (subset match).
+
+    Dynamic placeholders (``<archive-sha256>``, ``<archive-url>``) in
+    *content* are substituted with values from *context* before parsing.
+    """
+    content = _apply_context_substitutions(content, context)
+
+    with open(path, "r", encoding="UTF-8") as file_to_check:
+        actual_json = json.load(file_to_check)
+    expected_json = json.loads(content)
+
+    assert _json_subset_matches(expected_json, actual_json), (
+        f"JSON subset mismatch.\n"
+        f"Expected subset:\n{json.dumps(expected_json, indent=4, sort_keys=True)}\n"
+        f"Actual:\n{json.dumps(actual_json, indent=4, sort_keys=True)}"
+    )
+
+
 def check_content(
     expected_content: Iterable[str], actual_content: Iterable[str]
 ) -> None:
@@ -332,6 +379,12 @@ def step_impl(context, name):
         check_json(name, context.text)
     else:
         check_file(name, context.text)
+
+
+@then("the '{name}' json file includes")
+def step_impl(context, name):
+    """Partial JSON match – the expected JSON must be a *subset* of the actual file."""
+    check_json_subset(name, context.text, context)
 
 
 def multisub(patterns: List[Tuple[Pattern[str], str]], text: str) -> str:

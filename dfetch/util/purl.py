@@ -1,8 +1,9 @@
 """Module to convert remote URLs to valid Package URLs (PURLs).
 
-Supports: GitHub, Bitbucket, SVN, SSH paths, and more.
+Supports: GitHub, Bitbucket, SVN, SSH paths, archives, and more.
 """
 
+import os.path
 import re
 from urllib.parse import urlparse
 
@@ -35,8 +36,32 @@ BITBUCKET_REGEX = re.compile(
 # These domains have no specific Purl type, but adding the domain to the purl doesn't add any value
 EXCLUDED_DOMAINS = ["gitlab", "gitea", "gitee", "sf", "gnu"]
 
+# Archive file extensions recognised as downloadable archive artifacts
+_ARCHIVE_EXTENSIONS = (".tar.gz", ".tgz", ".tar.bz2", ".tar.xz", ".zip")
+
+# Map from dfetch hash-field algorithm prefix to CycloneDX HashAlgorithm name
+DFETCH_TO_CDX_HASH_ALGORITHM: dict[str, str] = {
+    "sha256": "SHA-256",
+}
+
 # Name given to a package or group if it is not extractable from the URL
 DEFAULT_NAME = "unknown"
+
+
+def _is_archive_url(url: str) -> bool:
+    """Return *True* when *url* points to a recognised archive file."""
+    lower = url.lower().split("?")[0]  # strip query string before checking extension
+    return any(lower.endswith(ext) for ext in _ARCHIVE_EXTENSIONS)
+
+
+def _strip_archive_extension(name: str) -> str:
+    """Remove a recognised archive extension from *name*."""
+    lower = name.lower()
+    # Check multi-part extensions first (.tar.gz etc.)
+    for ext in _ARCHIVE_EXTENSIONS:
+        if lower.endswith(ext):
+            return name[: -len(ext)]
+    return name
 
 
 def _namespace_and_name_from_domain_and_path(domain: str, path: str) -> tuple[str, str]:
@@ -82,12 +107,29 @@ def remote_url_to_purl(
 ) -> PackageURL:
     """Convert a remote URL to a valid PackageURL object.
 
-    Supports GitHub, Bitbucket, SVN, SSH paths.
+    Supports GitHub, Bitbucket, SVN, SSH paths, and archive downloads.
     Optionally specify version and subpath.
     """
     purl = _known_purl_types(remote_url, version, subpath)
     if purl:
         return purl
+
+    # Archive URLs (tar.gz, zip, …) get a generic PURL with a download_url qualifier.
+    # The name is derived from the archive filename (extension stripped); the
+    # namespace is the hostname (empty for file:// URLs).
+    if _is_archive_url(remote_url):
+        parsed = urlparse(remote_url)
+        basename = os.path.basename(parsed.path)
+        name = _strip_archive_extension(basename) or DEFAULT_NAME
+        namespace = parsed.hostname or ""
+        return PackageURL(
+            type="generic",
+            namespace=namespace or None,
+            name=name,
+            version=version,
+            qualifiers={"download_url": remote_url},
+            subpath=subpath,
+        )
 
     parsed = urlparse(remote_url)
     path = parsed.path.lstrip("/")

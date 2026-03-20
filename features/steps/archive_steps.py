@@ -55,6 +55,7 @@ def step_impl(context, name):
     create_tar_gz(archive_path, name, files)
 
     context.archive_sha256 = compute_sha256(archive_path)
+    context.archive_url = pathlib.Path(archive_path).as_uri()
 
 
 @given('an archive "{name}.zip" with the files')
@@ -68,3 +69,4 @@ def step_impl(context, name):
     create_zip(archive_path, name, files)
 
     context.archive_sha256 = compute_sha256(archive_path)
+    context.archive_url = pathlib.Path(archive_path).as_uri()
