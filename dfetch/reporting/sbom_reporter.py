@@ -115,7 +115,7 @@ from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
 from dfetch.util.license import License
 from dfetch.util.purl import DFETCH_TO_CDX_HASH_ALGORITHM
-from dfetch.vcs.archive import IntegrityHash
+from dfetch.vcs.integrity_hash import IntegrityHash
 
 # PyRight is pedantic with decorators see https://github.com/madpah/serializable/issues/8
 # It might be fixable with https://github.com/microsoft/pyright/discussions/4426, would prefer
