@@ -15,7 +15,9 @@ from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.project.svnsuperproject import SvnSuperProject
 from dfetch.util.util import resolve_absolute_path
 
-SUPPORTED_SUBPROJECT_TYPES = [ArchiveSubProject, GitSubProject, SvnSubProject]
+SUPPORTED_SUBPROJECT_TYPES: list[
+    type[ArchiveSubProject] | type[GitSubProject] | type[SvnSubProject]
+] = [ArchiveSubProject, GitSubProject, SvnSubProject]
 SUPPORTED_SUPERPROJECT_TYPES = [GitSuperProject, SvnSuperProject]
 
 logger = get_logger(__name__)

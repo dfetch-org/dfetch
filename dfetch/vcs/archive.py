@@ -24,35 +24,45 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import http.client
 import os
 import pathlib
 import shutil
 import sys
 import tarfile
 import tempfile
-import urllib.error
-import urllib.request
+import urllib.parse
 import zipfile
 from collections.abc import Sequence
 
+from dfetch.log import get_logger
+from dfetch.project.subproject import SubProject
+from dfetch.util.util import find_matching_files, safe_rm
+
 #: Archive file extensions recognised by DFetch.
-#: Defined before any intra-package imports to avoid partial-initialisation
-#: issues when other modules (e.g. dfetch.util.purl) import this symbol while
-#: the module is still being initialised.
 ARCHIVE_EXTENSIONS = (".tar.gz", ".tgz", ".tar.bz2", ".tar.xz", ".zip")
 
 #: Hash algorithms supported by the ``integrity.hash`` manifest field.
 SUPPORTED_HASH_ALGORITHMS = ("sha256",)
-
-from dfetch.log import get_logger  # noqa: E402
-from dfetch.project.subproject import SubProject  # noqa: E402
-from dfetch.util.util import find_matching_files, safe_rm  # noqa: E402
 
 logger = get_logger(__name__)
 
 # Safety limits applied during extraction to prevent decompression bombs.
 _MAX_UNCOMPRESSED_BYTES = 500 * 1024 * 1024  # 500 MB
 _MAX_MEMBER_COUNT = 10_000
+
+
+def _http_conn(scheme: str, netloc: str, timeout: int) -> http.client.HTTPConnection:
+    """Return an :class:`http.client.HTTPConnection` or HTTPS variant for *netloc*."""
+    if scheme == "https":
+        return http.client.HTTPSConnection(netloc, timeout=timeout)
+    return http.client.HTTPConnection(netloc, timeout=timeout)
+
+
+def _resource_path(parsed: urllib.parse.ParseResult) -> str:
+    """Return the path + query portion of *parsed* suitable for HTTP requests."""
+    path = parsed.path or "/"
+    return f"{path}?{parsed.query}" if parsed.query else path
 
 
 def is_archive_url(url: str) -> bool:
@@ -112,26 +122,29 @@ class ArchiveRemote:
         * ``http``/``https`` URLs first try a ``HEAD`` request.  If the server
           rejects it (405/501) a partial ``GET`` (``Range: bytes=0-0``) is
           attempted instead.  Returns *False* on any final failure.
+        * Any other URL scheme returns *False*.
         """
-        from urllib.parse import urlparse as _urlparse  # noqa: PLC0415
+        parsed = urllib.parse.urlparse(self.url)
+        if parsed.scheme == "file":
+            return os.path.exists(parsed.path)
+        if parsed.scheme not in ("http", "https"):
+            return False
+        return self._is_http_reachable(parsed)
 
-        if _urlparse(self.url).scheme == "file":
-            path = _urlparse(self.url).path
-            return os.path.exists(path)
-
-        for method, headers in [
-            ("HEAD", {}),
-            ("GET", {"Range": "bytes=0-0"}),
-        ]:
+    def _is_http_reachable(self, parsed: urllib.parse.ParseResult) -> bool:
+        """Try HEAD then partial-GET to confirm an HTTP/HTTPS URL is reachable."""
+        netloc, path = parsed.netloc, _resource_path(parsed)
+        for method, headers in [("HEAD", {}), ("GET", {"Range": "bytes=0-0"})]:
             try:
-                req = urllib.request.Request(self.url, method=method, headers=headers)
-                with urllib.request.urlopen(req, timeout=15):
-                    return True
-            except urllib.error.HTTPError as exc:
-                if exc.code in (405, 501):  # Method Not Allowed / Not Implemented
-                    continue
-                return False
-            except (urllib.error.URLError, OSError, ValueError):
+                conn = _http_conn(parsed.scheme, netloc, timeout=15)
+                try:
+                    conn.request(method, path, headers=headers)
+                    status = conn.getresponse().status
+                    if status not in (405, 501):
+                        return status < 400
+                finally:
+                    conn.close()
+            except (OSError, ValueError, http.client.HTTPException):
                 return False
         return False
 
@@ -142,14 +155,40 @@ class ArchiveRemote:
             dest_path: Local file path to write the archive to.
 
         Raises:
-            RuntimeError: On download failure.
+            RuntimeError: On download failure or unsupported URL scheme.
         """
+        parsed = urllib.parse.urlparse(self.url)
+        if parsed.scheme == "file":
+            try:
+                shutil.copy(parsed.path, dest_path)
+            except OSError as exc:
+                raise RuntimeError(
+                    f"'{self.url}' is not a valid URL or unreachable: {exc}"
+                ) from exc
+        elif parsed.scheme in ("http", "https"):
+            self._http_download(parsed, dest_path)
+        else:
+            raise RuntimeError(
+                f"'{self.url}' uses unsupported scheme '{parsed.scheme}'."
+            )
+
+    def _http_download(self, parsed: urllib.parse.ParseResult, dest_path: str) -> None:
+        """Download an HTTP/HTTPS resource to *dest_path*."""
+        conn = _http_conn(parsed.scheme, parsed.netloc, timeout=60)
         try:
-            urllib.request.urlretrieve(self.url, dest_path)
-        except (urllib.error.URLError, OSError) as exc:
+            conn.request("GET", _resource_path(parsed))
+            resp = conn.getresponse()
+            if resp.status != 200:
+                raise RuntimeError(f"HTTP {resp.status} when downloading '{self.url}'")
+            with open(dest_path, "wb") as fh:
+                while chunk := resp.read(65536):
+                    fh.write(chunk)
+        except (OSError, http.client.HTTPException) as exc:
             raise RuntimeError(
                 f"'{self.url}' is not a valid URL or unreachable: {exc}"
             ) from exc
+        finally:
+            conn.close()
 
 
 class ArchiveLocalRepo:
@@ -223,8 +262,12 @@ class ArchiveLocalRepo:
             )
 
     @staticmethod
-    def _check_zip_members(zf: zipfile.ZipFile) -> None:
+    def check_zip_members(zf: zipfile.ZipFile) -> list[zipfile.ZipInfo]:
         """Validate all ZIP member paths against path-traversal attacks.
+
+        Returns:
+            The validated list of members, safe to pass to
+            :meth:`zipfile.ZipFile.extract`.
 
         Raises:
             RuntimeError: When any member contains an absolute path, a ``..``
@@ -242,12 +285,13 @@ class ArchiveLocalRepo:
                 raise RuntimeError(
                     f"Archive contains an unsafe member path: {info.filename!r}"
                 )
+        return members
 
     @staticmethod
     def _check_tar_members(tf: tarfile.TarFile) -> None:
         """Validate TAR members against decompression bombs and path traversal.
 
-        Size/count limits mirror :meth:`_check_zip_members`.  Path validation
+        Size/count limits mirror :meth:`check_zip_members`.  Path validation
         is defence-in-depth: on Python ≥ 3.11.4 the ``filter="tar"`` passed to
         :meth:`tarfile.TarFile.extractall` also rejects unsafe paths, but we
         check here too so the guard applies on all supported Python versions.
@@ -289,13 +333,13 @@ class ArchiveLocalRepo:
             with tarfile.open(archive_path, "r:*") as tf:
                 ArchiveLocalRepo._check_tar_members(tf)
                 if sys.version_info >= (3, 11, 4):
-                    tf.extractall(dest_dir, filter="tar")
+                    tf.extractall(dest_dir, filter="tar")  # nosec B202
                 else:
-                    tf.extractall(dest_dir)  # noqa: S202
+                    tf.extractall(dest_dir)  # nosec B202
         elif lower.endswith(".zip") or zipfile.is_zipfile(archive_path):
             with zipfile.ZipFile(archive_path) as zf:
-                ArchiveLocalRepo._check_zip_members(zf)
-                zf.extractall(dest_dir)
+                ArchiveLocalRepo.check_zip_members(zf)
+                zf.extractall(dest_dir)  # nosec B202
         else:
             raise RuntimeError(
                 f"Unsupported archive format: '{archive_path}'. "
@@ -319,6 +363,8 @@ class ArchiveLocalRepo:
                     shutil.copy2(s, d)
         elif os.path.isfile(src_path):
             shutil.copy2(src_path, os.path.join(dest_dir, os.path.basename(src_path)))
+        else:
+            raise RuntimeError(f"src {src!r} was not found in archive")
 
         if keep_licenses:
             for item in os.listdir(extract_root):

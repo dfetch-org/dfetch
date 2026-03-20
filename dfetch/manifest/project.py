@@ -370,7 +370,7 @@ ProjectEntryDict = TypedDict(
         "repo-path": str,
         "vcs": str,
         "ignore": Sequence[str],
-        "integrity": dict,
+        "integrity": dict[str, str],
         "default_remote": str,
     },
     total=False,
@@ -398,7 +398,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._tag: str = kwargs.get("tag", "")
         self._vcs: str = kwargs.get("vcs", "")
         self._ignore: Sequence[str] = kwargs.get("ignore", [])
-        integrity_data: dict = kwargs.get("integrity", {})
+        integrity_data: dict[str, str] = kwargs.get("integrity", {})
         self._integrity = Integrity(hash=integrity_data.get("hash", ""))
 
         if not self._remote and not self._url:
@@ -407,7 +407,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
     @classmethod
     def from_yaml(
         cls,
-        yamldata: dict[str, str | list[str]] | ProjectEntryDict,
+        yamldata: dict[str, str | list[str] | dict[str, str]] | ProjectEntryDict,
         default_remote: str = "",
     ) -> "ProjectEntry":
         """Create a Project Entry from yaml data.

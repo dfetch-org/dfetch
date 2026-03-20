@@ -22,7 +22,7 @@ from dfetch.vcs.archive import (
 
 # These are static methods on ArchiveLocalRepo
 _check_archive_limits = ArchiveLocalRepo._check_archive_limits
-_check_zip_members = ArchiveLocalRepo._check_zip_members
+_check_zip_members = ArchiveLocalRepo.check_zip_members
 _check_tar_members = ArchiveLocalRepo._check_tar_members
 
 
@@ -37,7 +37,10 @@ def test_compute_hash_empty_file():
     try:
         digest = compute_hash(path, "sha256")
         # SHA-256 of empty string
-        assert digest == "e3b0c44298fc1c149afbf4c8996fb924" "27ae41e4649b934ca495991b7852b855"
+        assert (
+            digest == "e3b0c44298fc1c149afbf4c8996fb924"
+            "27ae41e4649b934ca495991b7852b855"
+        )
     finally:
         os.remove(path)
 

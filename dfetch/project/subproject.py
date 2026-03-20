@@ -409,7 +409,9 @@ class SubProject(ABC):
             return None
         if on_disk_version:
             project.version = on_disk_version
-            return on_disk_version.revision or on_disk_version.tag or str(on_disk_version)
+            return (
+                on_disk_version.revision or on_disk_version.tag or str(on_disk_version)
+            )
         return None
 
     @staticmethod

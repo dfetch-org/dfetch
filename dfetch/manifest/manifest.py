@@ -97,7 +97,9 @@ class ManifestDict(TypedDict, total=True):  # pylint: disable=too-many-ancestors
 
     version: int | str
     remotes: NotRequired[Sequence[RemoteDict | Remote]]
-    projects: Sequence[ProjectEntryDict | ProjectEntry | dict[str, str | list[str]]]
+    projects: Sequence[
+        ProjectEntryDict | ProjectEntry | dict[str, str | list[str] | dict[str, str]]
+    ]
 
 
 class Manifest:
@@ -140,14 +142,16 @@ class Manifest:
     def _init_projects(
         self,
         projects: Sequence[
-            ProjectEntryDict | ProjectEntry | dict[str, str | list[str]]
+            ProjectEntryDict
+            | ProjectEntry
+            | dict[str, str | list[str] | dict[str, str]]
         ],
     ) -> dict[str, ProjectEntry]:
         """Iterate over projects from manifest and initialize ProjectEntries from it.
 
         Args:
             projects (Sequence[
-                Union[ProjectEntryDict, ProjectEntry, Dict[str, Union[str, list[str]]]]
+                Union[ProjectEntryDict, ProjectEntry, Dict[str, Union[str, list[str], dict[str, str]]]]
             ]): Iterable with projects
 
         Raises:
@@ -304,9 +308,11 @@ class Manifest:
         if len(remotes) == 1:
             remotes[0].pop("default", None)
 
-        projects: list[dict[str, str | list[str]]] = []
+        projects: list[dict[str, str | list[str] | dict[str, str]]] = []
         for project in self.projects:
-            project_yaml: dict[str, str | list[str]] = project.as_yaml()
+            project_yaml: dict[str, str | list[str] | dict[str, str]] = (
+                project.as_yaml()
+            )
             if len(remotes) == 1:
                 project_yaml.pop("remote", None)
             projects.append(project_yaml)

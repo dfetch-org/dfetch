@@ -101,6 +101,53 @@ def _known_purl_types(
     return None
 
 
+def _archive_purl(
+    remote_url: str, version: str | None, subpath: str | None
+) -> PackageURL:
+    """Build a generic PURL for an archive URL."""
+    parsed = urlparse(remote_url)
+    basename = os.path.basename(parsed.path)
+    name = _strip_archive_extension(basename) or DEFAULT_NAME
+    namespace = parsed.hostname or ""
+    return PackageURL(
+        type="generic",
+        namespace=namespace or None,
+        name=name,
+        version=version,
+        qualifiers={"download_url": remote_url},
+        subpath=subpath,
+    )
+
+
+def _vcs_namespace_and_name(remote_url: str) -> tuple[str, str, str]:
+    """Derive namespace, name, and normalised URL for a generic VCS remote URL.
+
+    Returns:
+        A ``(namespace, name, remote_url)`` tuple where *remote_url* may have
+        been normalised (e.g. SSH short-form converted to ``ssh://`` scheme).
+    """
+    parsed = urlparse(remote_url)
+    path = parsed.path.lstrip("/")
+    if "svn" in parsed.scheme or "svn." in parsed.netloc:
+        namespace, name = _namespace_and_name_from_domain_and_path(parsed.netloc, path)
+        if namespace.startswith("p/"):
+            namespace = namespace[len("p/") :]
+        namespace = namespace.replace("/svn/", "/")
+    else:
+        match = SSH_REGEX.match(remote_url)
+        if match:
+            namespace, name = _namespace_and_name_from_domain_and_path(
+                match.group("host"), match.group("path")
+            )
+            if not parsed.scheme:
+                remote_url = f"ssh://{parsed.path.replace(':', '/')}"
+        else:
+            namespace, name = _namespace_and_name_from_domain_and_path(
+                remote_url, path.replace(".git", "")
+            )
+    return namespace, name, remote_url
+
+
 def remote_url_to_purl(
     remote_url: str, version: str | None = None, subpath: str | None = None
 ) -> PackageURL:
@@ -112,48 +159,9 @@ def remote_url_to_purl(
     purl = _known_purl_types(remote_url, version, subpath)
     if purl:
         return purl
-
-    # Archive URLs (tar.gz, zip, …) get a generic PURL with a download_url qualifier.
-    # The name is derived from the archive filename (extension stripped); the
-    # namespace is the hostname (empty for file:// URLs).
     if _is_archive_url(remote_url):
-        parsed = urlparse(remote_url)
-        basename = os.path.basename(parsed.path)
-        name = _strip_archive_extension(basename) or DEFAULT_NAME
-        namespace = parsed.hostname or ""
-        return PackageURL(
-            type="generic",
-            namespace=namespace or None,
-            name=name,
-            version=version,
-            qualifiers={"download_url": remote_url},
-            subpath=subpath,
-        )
-
-    parsed = urlparse(remote_url)
-    path = parsed.path.lstrip("/")
-
-    if "svn" in parsed.scheme or "svn." in parsed.netloc:
-        namespace, name = _namespace_and_name_from_domain_and_path(parsed.netloc, path)
-        if namespace.startswith("p/"):
-            namespace = namespace[len("p/") :]
-        namespace = namespace.replace("/svn/", "/")
-
-    else:
-        match = SSH_REGEX.match(remote_url)
-        if match:
-            namespace, name = _namespace_and_name_from_domain_and_path(
-                match.group("host"),
-                match.group("path"),
-            )
-
-            if not parsed.scheme:
-                remote_url = f"ssh://{parsed.path.replace(':', '/')}"
-        else:
-            namespace, name = _namespace_and_name_from_domain_and_path(
-                remote_url, path.replace(".git", "")
-            )
-
+        return _archive_purl(remote_url, version, subpath)
+    namespace, name, remote_url = _vcs_namespace_and_name(remote_url)
     return PackageURL(
         type="generic",
         namespace=namespace,
