@@ -10,12 +10,14 @@ concept.  Version identity is expressed through:
 
 * **No hash** – the URL itself acts as the identity.  The archive is
   considered up-to-date as long as the same URL is still reachable.
-* **``hash: <algorithm>:<hex>``** – the cryptographic hash of the archive file
-  acts as the version identifier.  The fetch step verifies the downloaded
-  archive against this hash and raises an error on mismatch.
+* **``integrity.hash: <algorithm>:<hex>``** – the cryptographic hash of the
+  archive file acts as the version identifier.  The fetch step verifies the
+  downloaded archive against this hash and raises an error on mismatch.
 
-The ``hash:`` field is intended to be extended to additional algorithms in
-the future; only ``sha256`` is supported today.
+The ``integrity:`` block is designed for future extension: ``sig:`` and
+``sig-key:`` fields for detached signature / signing-key verification will
+slot in alongside ``hash:`` without breaking existing manifests.
+Only ``sha256`` is supported today.
 
 Example manifest entries::
 
@@ -29,7 +31,8 @@ Example manifest entries::
       - name: my-library
         url: https://example.com/releases/my-library-1.0.tar.gz
         vcs: archive
-        hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        integrity:
+          hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 
 .. scenario-include:: ../features/fetch-archive.feature
 """
@@ -154,9 +157,9 @@ class ArchiveSubProject(SubProject):
 
     @property
     def wanted_version(self) -> Version:
-        """Version derived from the ``hash:`` field or the archive URL.
+        """Version derived from the ``integrity.hash`` field or the archive URL.
 
-        * With ``hash: sha256:<hex>`` → ``Version(revision='sha256:<hex>')``
+        * With ``integrity.hash: sha256:<hex>`` → ``Version(revision='sha256:<hex>')``
         * Without hash → ``Version(revision=<url>)``
 
         This makes the standard :class:`~dfetch.project.subproject.SubProject`
@@ -174,7 +177,7 @@ class ArchiveSubProject(SubProject):
         """Download and extract the archive to the local destination.
 
         1. Download the archive to a temporary file.
-        2. If ``hash:`` is specified, verify the downloaded file.
+        2. If ``integrity.hash`` is specified, verify the downloaded file.
         3. Extract to :attr:`local_path`, respecting ``src:`` and ``ignore:``.
 
         Raises:

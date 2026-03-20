@@ -239,11 +239,13 @@ The ``src:`` and ``ignore:`` attributes work the same way as for git/SVN project
           vcs: archive
           url: https://example.com/releases/my-library-1.0.tar.gz
 
-Hash verification
-*****************
-Use the ``hash:`` attribute to verify the integrity of the downloaded archive.
-The format is ``<algorithm>:<hex-digest>``.  Only ``sha256`` is supported
-today; the format is designed to be extended (``sha512``, etc.).
+Integrity verification
+**********************
+Use the ``integrity:`` block to verify the integrity of the downloaded archive.
+Currently the ``hash:`` sub-field is supported (format ``<algorithm>:<hex-digest>``);
+only ``sha256`` is recognised today, but the block is designed to grow to support
+detached signature verification via ``sig:`` (signature URL) and ``sig-key:``
+(signing-key URL or fingerprint) in the future.
 
 .. code-block:: yaml
 
@@ -254,7 +256,8 @@ today; the format is designed to be extended (``sha512``, etc.).
         - name: my-library
           vcs: archive
           url: https://example.com/releases/my-library-1.0.tar.gz
-          hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+          integrity:
+            hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 
 Run ``dfetch freeze`` after an initial ``dfetch update`` to add the sha256 hash to
 the manifest automatically.
@@ -317,12 +320,39 @@ a *relative* patch, relative to the fetched projects root.
 
 import copy
 from collections.abc import Sequence
+from dataclasses import dataclass, field
 
 from typing_extensions import Required, TypedDict
 
 from dfetch.manifest.remote import Remote
 from dfetch.manifest.version import Version
 from dfetch.util.util import always_str_list, str_if_possible
+
+
+@dataclass
+class Integrity:
+    """Integrity verification data for an archive dependency.
+
+    Holds the ``hash:`` sub-field today and is designed to accommodate
+    future signature-verification fields:
+
+    * ``sig`` – URL of a detached signature file (``.sig`` / ``.asc``).
+    * ``sig_key`` – URL or fingerprint of the signing key (``.p7s`` / ``.gpg``).
+    """
+
+    hash: str = field(default="")
+
+    def __bool__(self) -> bool:
+        """Return *True* when any integrity data is present."""
+        return bool(self.hash)
+
+    def as_yaml(self) -> dict[str, str]:
+        """Serialise to a YAML-compatible dict, omitting empty fields."""
+        data: dict[str, str] = {}
+        if self.hash:
+            data["hash"] = self.hash
+        return data
+
 
 ProjectEntryDict = TypedDict(
     "ProjectEntryDict",
@@ -340,7 +370,7 @@ ProjectEntryDict = TypedDict(
         "repo-path": str,
         "vcs": str,
         "ignore": Sequence[str],
-        "hash": str,
+        "integrity": dict,
         "default_remote": str,
     },
     total=False,
@@ -368,7 +398,8 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._tag: str = kwargs.get("tag", "")
         self._vcs: str = kwargs.get("vcs", "")
         self._ignore: Sequence[str] = kwargs.get("ignore", [])
-        self._hash: str = kwargs.get("hash", "")
+        integrity_data: dict = kwargs.get("integrity", {})
+        self._integrity = Integrity(hash=integrity_data.get("hash", ""))
 
         if not self._remote and not self._url:
             self._remote = kwargs.get("default_remote", "")
@@ -486,14 +517,19 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         return self._ignore
 
     @property
+    def integrity(self) -> Integrity:
+        """Get the integrity verification data for this archive project."""
+        return self._integrity
+
+    @property
     def hash(self) -> str:
-        """Get the expected hash of the archive (format: 'algorithm:hex-value')."""
-        return self._hash
+        """Convenience accessor for ``integrity.hash``."""
+        return self._integrity.hash
 
     @hash.setter
     def hash(self, value: str) -> None:
-        """Set the expected hash of the archive."""
-        self._hash = value
+        """Set ``integrity.hash`` (convenience setter used by freeze)."""
+        self._integrity.hash = value
 
     def __repr__(self) -> str:
         """Get a string representation of this project entry."""
@@ -515,9 +551,9 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         recommendation._repo_path = ""  # pylint: disable=protected-access
         return recommendation
 
-    def as_yaml(self) -> dict[str, str | list[str]]:
+    def as_yaml(self) -> dict[str, str | list[str] | dict[str, str]]:
         """Get this project as yaml dictionary."""
-        yamldata = {
+        yamldata: dict[str, str | list[str] | dict[str, str] | None] = {
             "name": self._name,
             "revision": self._revision,
             "remote": self._remote,
@@ -529,7 +565,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             "tag": self._tag,
             "repo-path": self._repo_path,
             "vcs": self._vcs,
-            "hash": self._hash,
+            "integrity": self._integrity.as_yaml() or None,
         }
 
         return {k: v for k, v in yamldata.items() if v}

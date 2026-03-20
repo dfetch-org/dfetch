@@ -17,6 +17,17 @@ REMOTE_SCHEMA = Map(
 
 HASH_STR = Regex(r"^(sha256):[a-fA-F0-9]+$")
 
+# ``integrity:`` block — designed for future extension with ``sig:`` and
+# ``sig-key:`` fields for detached signature / signing-key verification.
+INTEGRITY_MAP = Map(
+    {
+        Optional("hash"): HASH_STR,
+        # Future fields (uncomment when implemented):
+        # Optional("sig"): SAFE_STR,      # detached signature URL (.sig / .asc)
+        # Optional("sig-key"): SAFE_STR,  # signing-key URL or fingerprint (.p7s / .gpg)
+    }
+)
+
 PROJECT_SCHEMA = Map(
     {
         "name": SAFE_STR,
@@ -31,7 +42,7 @@ PROJECT_SCHEMA = Map(
         Optional("vcs"): Enum(["git", "svn", "archive"]),
         Optional("src"): SAFE_STR,
         Optional("ignore"): Seq(SAFE_STR),
-        Optional("hash"): HASH_STR,
+        Optional("integrity"): INTEGRITY_MAP,
     }
 )
 

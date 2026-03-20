@@ -4,9 +4,10 @@ Supports fetching dependencies distributed as ``.tar.gz``, ``.tgz``,
 ``.tar.bz2``, ``.tar.xz`` or ``.zip`` archives from any URL that Python's
 :mod:`urllib.request` can reach (``http://``, ``https://``, ``file://``, …).
 
-Optional integrity checking is supported via a ``hash:`` manifest field
-(e.g. ``hash: sha256:<hex>``).  The ``sha256`` algorithm is supported today;
-the format is designed for extension to ``sha512``, ``md5``, etc.
+Optional integrity checking is supported via an ``integrity:`` manifest block.
+The ``hash:`` sub-field (e.g. ``sha256:<hex>``) is supported today; the block
+is designed to grow with ``sig:`` and ``sig-key:`` fields for detached
+signature / signing-key verification in the future.
 
 Example manifest entry::
 
@@ -14,7 +15,8 @@ Example manifest entry::
       - name: my-library
         url: https://example.com/releases/my-library-1.0.tar.gz
         vcs: archive
-        hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        integrity:
+          hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 
 """
 

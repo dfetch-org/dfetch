@@ -7,8 +7,8 @@ Feature: Create a CycloneDX SBOM for archive dependencies
     - A ``generic`` Package URL (PURL) with a ``download_url`` qualifier
       pointing at the archive.
     - An external reference of type ``distribution`` (not ``vcs``).
-    - A ``SHA-256`` component hash when a ``hash:`` field is present in the
-      manifest, so downstream tooling can verify supply-chain integrity.
+    - A ``SHA-256`` component hash when an ``integrity.hash`` field is present
+      in the manifest, so downstream tooling can verify supply-chain integrity.
 
     Scenario: A fetched archive without a hash generates a json sbom
         Given an archive "SomeProject.tar.gz"
@@ -53,7 +53,8 @@ Feature: Create a CycloneDX SBOM for archive dependencies
                 - name: SomeProject
                   url: some-remote-server/SomeProject.tar.gz
                   vcs: archive
-                  hash: sha256:<archive-sha256>
+                  integrity:
+                    hash: sha256:<archive-sha256>
             """
         And all projects are updated
         When I run "dfetch report -t sbom"
@@ -93,7 +94,8 @@ Feature: Create a CycloneDX SBOM for archive dependencies
                 - name: SomeProject
                   url: some-remote-server/SomeProject.tar.gz
                   vcs: archive
-                  hash: sha256:<archive-sha256>
+                  integrity:
+                    hash: sha256:<archive-sha256>
             """
         When I run "dfetch report -t sbom"
         Then the 'report.json' json file includes
