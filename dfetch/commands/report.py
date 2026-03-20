@@ -107,10 +107,16 @@ class Report(dfetch.commands.command.Command):
 
     @staticmethod
     def _determine_version(project: ProjectEntry) -> str:
-        """Determine the fetched version."""
+        """Determine the fetched version.
+
+        For archive projects the sha256 hash (``sha256:<hex>``) stored in the
+        metadata *revision* field is used as the version identifier.  When no
+        metadata is present yet, the ``hash:`` field from the manifest is used
+        as fallback so the SBOM can still be generated before the first fetch.
+        """
         try:
             metadata = Metadata.from_file(Metadata.from_project_entry(project).path)
             version = metadata.tag or metadata.revision or ""
         except FileNotFoundError:
-            version = project.tag or project.revision or ""
+            version = project.tag or project.revision or project.hash or ""
         return version

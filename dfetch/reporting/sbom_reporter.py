@@ -14,6 +14,16 @@ See https://cyclonedx.org/use-cases/ for more details.
    :scenario:
         A fetched project generates a json sbom
 
+Archive dependencies
+--------------------
+Archive dependencies (tar.gz, zip, …) are recorded with a ``distribution``
+external reference and, when a ``hash:`` field is set, a ``SHA-256`` component
+hash for supply-chain integrity verification.
+
+.. scenario-include:: ../features/report-sbom-archive.feature
+   :scenario:
+        A fetched archive with sha256 hash generates a json sbom with hash
+
 Gitlab
 ------
 Let *DFetch* generate a SBoM and add the result as artifact in your gitlab-ci runner.
@@ -71,7 +81,7 @@ For more information see the `Github dependency submission`_.
 from decimal import Decimal
 
 from cyclonedx.builder.this import this_component as cdx_lib_component
-from cyclonedx.model import ExternalReference, ExternalReferenceType, XsUri
+from cyclonedx.model import ExternalReference, ExternalReferenceType, HashAlgorithm, HashType, XsUri
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.model.component_evidence import (
@@ -89,6 +99,7 @@ from cyclonedx.output import make_outputter
 from cyclonedx.schema import OutputFormat, SchemaVersion
 
 import dfetch.util.purl
+from dfetch.util.purl import DFETCH_TO_CDX_HASH_ALGORITHM
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
@@ -244,6 +255,27 @@ class SbomReporter(Reporter):
                     url=XsUri(f"https://bitbucket.org/{purl.namespace}/{purl.name}"),
                 )
             )
+        elif purl.qualifiers.get("download_url"):
+            # Archive dependency: add a DISTRIBUTION external reference and,
+            # when the version encodes a cryptographic hash, record it on the component.
+            download_url = purl.qualifiers["download_url"]
+            component.group = purl.namespace or None  # type: ignore[assignment]
+            component.external_references.add(
+                ExternalReference(
+                    type=ExternalReferenceType.DISTRIBUTION,
+                    url=XsUri(download_url),
+                )
+            )
+            if version and ":" in version:
+                algo_prefix, hex_value = version.split(":", 1)
+                cdx_algo_name = DFETCH_TO_CDX_HASH_ALGORITHM.get(algo_prefix)
+                if cdx_algo_name:
+                    component.hashes.add(
+                        HashType(
+                            alg=HashAlgorithm(cdx_algo_name),
+                            content=hex_value,
+                        )
+                    )
         else:
             component.group = purl.namespace
 
