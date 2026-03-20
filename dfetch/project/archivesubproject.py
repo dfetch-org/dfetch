@@ -44,17 +44,22 @@ from __future__ import annotations
 import os
 import pathlib
 import tempfile
+import urllib.request as _ur
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.subproject import SubProject
 from dfetch.vcs.archive import (
+    _safe_compare_hex,  # private helper, intentionally imported for internal use
+)
+from dfetch.vcs.archive import (
+    _suffix_for_url,  # private helper, intentionally imported for internal use
+)
+from dfetch.vcs.archive import (
     SUPPORTED_HASH_ALGORITHMS,
     ArchiveLocalRepo,
     ArchiveRemote,
-    _safe_compare_hex,  # private helper, intentionally imported for internal use
-    _suffix_for_url,    # private helper, intentionally imported for internal use
     compute_hash,
     is_archive_url,
 )
@@ -94,8 +99,6 @@ class ArchiveSubProject(SubProject):
     @staticmethod
     def list_tool_info() -> None:
         """Log information about the archive fetching tool (Python's urllib)."""
-        import urllib.request as _ur  # noqa: PLC0415
-
         SubProject._log_tool("urllib", _ur.__doc__ or "built-in")
 
     def get_default_branch(self) -> str:

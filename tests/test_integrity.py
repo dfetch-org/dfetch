@@ -2,7 +2,6 @@
 
 from dfetch.manifest.project import Integrity, ProjectEntry
 
-
 # ---------------------------------------------------------------------------
 # Integrity dataclass
 # ---------------------------------------------------------------------------
@@ -54,7 +53,14 @@ def test_projectentry_integrity_falsy_without_hash():
 
 def test_projectentry_as_yaml_includes_integrity():
     h = "sha256:" + "d" * 64
-    project = ProjectEntry({"name": "lib", "url": "https://example.com/lib.tar.gz", "vcs": "archive", "integrity": {"hash": h}})
+    project = ProjectEntry(
+        {
+            "name": "lib",
+            "url": "https://example.com/lib.tar.gz",
+            "vcs": "archive",
+            "integrity": {"hash": h},
+        }
+    )
     yaml_data = project.as_yaml()
     assert yaml_data["integrity"] == {"hash": h}
 
@@ -66,7 +72,9 @@ def test_projectentry_as_yaml_omits_empty_integrity():
 
 
 def test_projectentry_hash_setter():
-    project = ProjectEntry({"name": "lib", "url": "https://example.com/lib.tar.gz", "vcs": "archive"})
+    project = ProjectEntry(
+        {"name": "lib", "url": "https://example.com/lib.tar.gz", "vcs": "archive"}
+    )
     h = "sha256:" + "e" * 64
     project.hash = h
     assert project.hash == h

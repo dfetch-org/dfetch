@@ -107,13 +107,14 @@ from cyclonedx.model.license import DisjunctiveLicense as CycloneDxLicense
 from cyclonedx.model.license import LicenseAcknowledgement
 from cyclonedx.output import make_outputter
 from cyclonedx.schema import OutputFormat, SchemaVersion
+from packageurl import PackageURL
 
 import dfetch.util.purl
-from dfetch.util.purl import DFETCH_TO_CDX_HASH_ALGORITHM
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
 from dfetch.util.license import License
+from dfetch.util.purl import DFETCH_TO_CDX_HASH_ALGORITHM
 
 # PyRight is pedantic with decorators see https://github.com/madpah/serializable/issues/8
 # It might be fixable with https://github.com/microsoft/pyright/discussions/4426, would prefer
@@ -190,11 +191,8 @@ class SbomReporter(Reporter):
         purl = dfetch.util.purl.remote_url_to_purl(
             project.remote_url, version=version, subpath=project.source or None
         )
-
         name = project.name if purl.type == "generic" else purl.name
-
         location = self.manifest.find_name_in_manifest(project.name)
-
         component = Component(
             name=name,
             version=version,
@@ -250,7 +248,15 @@ class SbomReporter(Reporter):
                 ],
             ),
         )
+        self._apply_external_references(component, purl, version)
+        self._apply_licenses(component, licenses)
+        self._bom.components.add(component)
 
+    @staticmethod
+    def _apply_external_references(
+        component: Component, purl: PackageURL, version: str
+    ) -> None:
+        """Attach external references to *component* based on its PURL type."""
         if purl.type == "github":
             component.external_references.add(
                 ExternalReference(
@@ -266,52 +272,61 @@ class SbomReporter(Reporter):
                 )
             )
         elif purl.qualifiers.get("download_url"):
-            # Archive dependency: add a DISTRIBUTION external reference and,
-            # when the version encodes a cryptographic hash, record it on the component.
-            download_url = purl.qualifiers["download_url"]
-            component.group = purl.namespace or None  # type: ignore[assignment]
+            SbomReporter._apply_archive_refs(component, purl, version)
+        else:
+            SbomReporter._apply_vcs_refs(component, purl)
+
+    @staticmethod
+    def _apply_archive_refs(
+        component: Component, purl: PackageURL, version: str
+    ) -> None:
+        """Add DISTRIBUTION reference and optional hash for an archive dependency."""
+        download_url = purl.qualifiers["download_url"]
+        component.group = purl.namespace or None  # type: ignore[assignment]
+        component.external_references.add(
+            ExternalReference(
+                type=ExternalReferenceType.DISTRIBUTION,
+                url=XsUri(download_url),
+            )
+        )
+        if version and ":" in version:
+            algo_prefix, hex_value = version.split(":", 1)
+            cdx_algo_name = DFETCH_TO_CDX_HASH_ALGORITHM.get(algo_prefix)
+            if cdx_algo_name:
+                component.hashes.add(
+                    HashType(
+                        alg=HashAlgorithm(cdx_algo_name),
+                        content=hex_value,
+                    )
+                )
+
+    @staticmethod
+    def _apply_vcs_refs(component: Component, purl: PackageURL) -> None:
+        """Add VCS external reference and group for a generic VCS dependency."""
+        component.group = purl.namespace
+        vcs_url = purl.qualifiers.get("vcs_url", "")
+        # ExternalReferenceType.VCS does not support ssh:// urls
+        if vcs_url and "ssh://" not in vcs_url:
             component.external_references.add(
                 ExternalReference(
-                    type=ExternalReferenceType.DISTRIBUTION,
-                    url=XsUri(download_url),
+                    type=ExternalReferenceType.VCS,
+                    url=XsUri(vcs_url),
                 )
             )
-            if version and ":" in version:
-                algo_prefix, hex_value = version.split(":", 1)
-                cdx_algo_name = DFETCH_TO_CDX_HASH_ALGORITHM.get(algo_prefix)
-                if cdx_algo_name:
-                    component.hashes.add(
-                        HashType(
-                            alg=HashAlgorithm(cdx_algo_name),
-                            content=hex_value,
-                        )
-                    )
-        else:
-            component.group = purl.namespace
 
-            vcs_url = purl.qualifiers.get("vcs_url", "")
-            # ExternalReferenceType.VCS does not support ssh:// urls
-            if vcs_url and "ssh://" not in vcs_url:
-                component.external_references.add(
-                    ExternalReference(
-                        type=ExternalReferenceType.VCS,
-                        url=XsUri(vcs_url),
-                    )
-                )
-
+    @staticmethod
+    def _apply_licenses(component: Component, licenses: list[License]) -> None:
+        """Attach *licenses* to *component* and its evidence block."""
         for lic in licenses:
-            # License wants either an SPDX id or a name, prefer SPDX id when available
+            # Prefer SPDX id when available
             cdx_license = (
                 CycloneDxLicense(id=lic.spdx_id)
                 if lic.spdx_id
                 else CycloneDxLicense(name=lic.name)
             )
-
             component.licenses.add(cdx_license)
             if component.evidence:
                 component.evidence.licenses.add(cdx_license)
-
-        self._bom.components.add(component)
 
     def dump_to_file(self, outfile: str) -> bool:
         """Dump the SBoM to file."""
