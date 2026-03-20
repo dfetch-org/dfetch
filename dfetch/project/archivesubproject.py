@@ -54,9 +54,9 @@ from dfetch.vcs.archive import (
     ARCHIVE_EXTENSIONS,
     ArchiveLocalRepo,
     ArchiveRemote,
-    IntegrityHash,
     is_archive_url,
 )
+from dfetch.vcs.integrity_hash import IntegrityHash
 
 logger = get_logger(__name__)
 

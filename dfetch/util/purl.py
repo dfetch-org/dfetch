@@ -41,6 +41,8 @@ EXCLUDED_DOMAINS = ["gitlab", "gitea", "gitee", "sf", "gnu"]
 # Map from dfetch hash-field algorithm prefix to CycloneDX HashAlgorithm name
 DFETCH_TO_CDX_HASH_ALGORITHM: dict[str, str] = {
     "sha256": "SHA-256",
+    "sha384": "SHA-384",
+    "sha512": "SHA-512",
 }
 
 # Name given to a package or group if it is not extractable from the URL

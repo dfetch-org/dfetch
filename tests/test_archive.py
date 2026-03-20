@@ -11,11 +11,8 @@ import pytest
 from dfetch.project.archivesubproject import _suffix_for_url
 from dfetch.vcs.archive import (
     ARCHIVE_EXTENSIONS,
-    SUPPORTED_HASH_ALGORITHMS,
     ArchiveLocalRepo,
     ArchiveRemote,
-    IntegrityHash,
-    compute_hash,
     is_archive_url,
 )
 
@@ -23,78 +20,6 @@ from dfetch.vcs.archive import (
 _check_archive_limits = ArchiveLocalRepo._check_archive_limits
 _check_zip_members = ArchiveLocalRepo.check_zip_members
 _check_tar_members = ArchiveLocalRepo._check_tar_members
-
-
-# ---------------------------------------------------------------------------
-# compute_hash
-# ---------------------------------------------------------------------------
-
-
-def test_compute_hash_empty_file():
-    with tempfile.NamedTemporaryFile(delete=False) as f:
-        path = f.name
-    try:
-        digest = compute_hash(path, "sha256")
-        # SHA-256 of empty string
-        assert (
-            digest == "e3b0c44298fc1c149afbf4c8996fb924"
-            "27ae41e4649b934ca495991b7852b855"
-        )
-    finally:
-        os.remove(path)
-
-
-def test_compute_hash_known_content():
-    with tempfile.NamedTemporaryFile(delete=False) as f:
-        f.write(b"hello world\n")
-        path = f.name
-    try:
-        digest = compute_hash(path, "sha256")
-        assert len(digest) == 64
-        assert all(c in "0123456789abcdef" for c in digest)
-    finally:
-        os.remove(path)
-
-
-def test_compute_hash_unsupported_algorithm():
-    with tempfile.NamedTemporaryFile(delete=False) as f:
-        path = f.name
-    try:
-        with pytest.raises(RuntimeError, match="Unsupported hash algorithm"):
-            compute_hash(path, "md5")
-    finally:
-        os.remove(path)
-
-
-def test_compute_hash_default_is_sha256():
-    with tempfile.NamedTemporaryFile(delete=False) as f:
-        f.write(b"data")
-        path = f.name
-    try:
-        digest = compute_hash(path)
-        assert len(digest) == 64
-    finally:
-        os.remove(path)
-
-
-# ---------------------------------------------------------------------------
-# IntegrityHash.matches
-# ---------------------------------------------------------------------------
-
-
-def test_integrity_hash_matches_equal():
-    h = IntegrityHash("sha256", "a" * 64)
-    assert h.matches("a" * 64) is True
-
-
-def test_integrity_hash_matches_case_insensitive():
-    h = IntegrityHash("sha256", "abcdef")
-    assert h.matches("ABCDEF") is True
-
-
-def test_integrity_hash_matches_not_equal():
-    h = IntegrityHash("sha256", "a" * 64)
-    assert h.matches("b" * 64) is False
 
 
 # ---------------------------------------------------------------------------
@@ -324,7 +249,3 @@ def test_all_archive_extensions_covered():
     assert len(ARCHIVE_EXTENSIONS) > 0
     for ext in ARCHIVE_EXTENSIONS:
         assert ext.startswith(".")
-
-
-def test_supported_hash_algorithms():
-    assert "sha256" in SUPPORTED_HASH_ALGORITHMS
