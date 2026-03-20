@@ -36,6 +36,7 @@ Example manifest entries::
 
 from __future__ import annotations
 
+import os
 import pathlib
 import tempfile
 
@@ -47,9 +48,10 @@ from dfetch.vcs.archive import (
     SUPPORTED_HASH_ALGORITHMS,
     ArchiveLocalRepo,
     ArchiveRemote,
+    _safe_compare_hex,
+    _suffix_for_url,
     compute_hash,
     is_archive_url,
-    _suffix_for_url,
 )
 
 logger = get_logger(__name__)
@@ -110,15 +112,23 @@ class ArchiveSubProject(SubProject):
         for algo in SUPPORTED_HASH_ALGORITHMS:
             if revision.startswith(f"{algo}:"):
                 expected_hex = revision.split(":", 1)[1]
+                tmp_path: str | None = None
                 try:
                     with tempfile.NamedTemporaryFile(
                         suffix=_suffix_for_url(self.remote), delete=False
                     ) as tmp:
-                        self._remote_repo.download(tmp.name)
-                        actual = compute_hash(tmp.name, algo)
-                    return actual == expected_hex
+                        tmp_path = tmp.name
+                    self._remote_repo.download(tmp_path)
+                    actual = compute_hash(tmp_path, algo)
+                    return _safe_compare_hex(actual, expected_hex)
                 except RuntimeError:
                     return False
+                finally:
+                    if tmp_path:
+                        try:
+                            os.remove(tmp_path)
+                        except OSError:
+                            pass
 
         # revision is the URL – just check accessibility
         return self._remote_repo.is_accessible()
@@ -177,7 +187,7 @@ class ArchiveSubProject(SubProject):
             if expected_hash:
                 algorithm, expected_hex = expected_hash.split(":", 1)
                 actual_hex = compute_hash(tmp_path, algorithm)
-                if actual_hex != expected_hex:
+                if not _safe_compare_hex(actual_hex, expected_hex):
                     raise RuntimeError(
                         f"Hash mismatch for {self._project_entry.name}! "
                         f"{algorithm} expected {expected_hex}"
@@ -191,8 +201,6 @@ class ArchiveSubProject(SubProject):
             )
         finally:
             try:
-                import os
-
                 os.remove(tmp_path)
             except OSError:
                 pass
