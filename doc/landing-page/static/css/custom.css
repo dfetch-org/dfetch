@@ -480,6 +480,69 @@ div.admonition p {
 }
 
 /* ============================================================
+   Infographic — manifest-to-folder diagram
+   ============================================================ */
+.infographic-wrapper {
+  position: relative;
+  margin: 1.25rem 0 0.5rem;
+}
+
+/* "→ dfetch update" pill centred in the gap between the two panels */
+@media (min-width: 960px) {
+  .infographic-wrapper::after {
+    content: "→  dfetch update";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: #fff;
+    border: 1.5px solid var(--primary);
+    border-radius: 100px;
+    padding: 0.25rem 0.75rem;
+    white-space: nowrap;
+    box-shadow: var(--shad-md);
+    z-index: 2;
+    letter-spacing: 0.02em;
+    pointer-events: none;
+  }
+}
+
+/* Make both highlight blocks fill the full column height */
+.infographic-wrapper .sd-col .highlight {
+  height: 100%;
+}
+
+.infographic-wrapper .sd-col .highlight pre {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Caption text above each code block */
+.infographic-wrapper .code-block-caption {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Legend row — separated from the diagram by a hairline */
+.infographic-legend {
+  margin-top: 1.25rem !important;
+}
+
+.infographic-legend .sd-col {
+  font-size: 0.9375rem !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid var(--border);
+}
+
+/* ============================================================
    Accessibility — respect reduced-motion preference
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {

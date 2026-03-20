@@ -137,6 +137,66 @@ Dependencies live as plain, readable files inside your own repository. You stay 
       *Dfetch* respects that your source code belongs to you.
 
 
+.. card:: :material-regular:`account_tree;1.5em` From manifest entry to vendored folder
+
+   One project entry in ``dfetch.yaml``. One command. Dfetch copies exactly what you
+   specified, pins the version in ``.dfetch_data.yaml``, and keeps everything inside your repository.
+
+   .. div:: infographic-wrapper
+
+      .. grid:: 1 1 2 2
+         :gutter: 5
+
+         .. grid-item::
+
+            .. code-block:: yaml
+               :caption: dfetch.yaml
+
+               manifest:
+                 version: '0.0'
+
+                 remotes:
+                   - name: github
+                     url-base: https://github.com/
+
+                 projects:
+                   - name: ext/cunit   # ① local path
+                     remote: github
+                     repo-path: org/cunit.git
+                     tag: v3.2.7       # ② pin version
+                     src: src/         # ③ subfolder only
+
+         .. grid-item::
+
+            .. code-block:: text
+               :caption: your-project/  (after dfetch update)
+
+               your-project/
+               ├── dfetch.yaml
+               └── ext/
+                   └── cunit/          ← ① name:
+                       ├── .dfetch_data.yaml
+                       ├── LICENSE     ← always retained
+                       └── src/        ← ③ src:
+                           └── CUnit.h
+
+   .. grid:: 1 1 3 3
+      :gutter: 2
+      :class: infographic-legend
+
+      .. grid-item::
+
+         :bdg-primary:`name:` → **destination folder**
+
+      .. grid-item::
+
+         :bdg-primary:`tag:` → **pinned version**
+
+      .. grid-item::
+
+         :bdg-primary:`src:` → **what gets copied**
+
+
 .. card:: :material-regular:`difference;4em;sd-text-primary` **Customize without losing upstream**
    :class-card: sd-bg-dark sd-text-light
 
