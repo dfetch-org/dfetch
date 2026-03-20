@@ -247,7 +247,7 @@ def test_reverse_patch_zero_length_hunk():
     assert _reverse_patch(patch) == expected
 
 
-# Random small file: 5–15 lines, each line 5–20 chars (filtered to exclude control chars)
+# Random small file: 5-15 lines, each line 5-20 chars (filtered to exclude control chars)
 st_file_lines = st.lists(
     st.text(
         min_size=5,

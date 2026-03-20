@@ -23,7 +23,6 @@ Example manifest entry::
 from __future__ import annotations
 
 import hashlib
-import hmac
 import http.client
 import os
 import pathlib
@@ -36,8 +35,11 @@ import zipfile
 from collections.abc import Sequence
 
 from dfetch.log import get_logger
-from dfetch.project.subproject import SubProject
-from dfetch.util.util import find_matching_files, safe_rm
+from dfetch.util.util import (
+    copy_directory_contents,
+    copy_src_subset,
+    prune_files_by_pattern,
+)
 
 #: Archive file extensions recognised by DFetch.
 ARCHIVE_EXTENSIONS = (".tar.gz", ".tgz", ".tar.bz2", ".tar.xz", ".zip")
@@ -93,15 +95,6 @@ def compute_hash(path: str, algorithm: str = "sha256") -> str:
         for chunk in iter(lambda: fh.read(65536), b""):
             h.update(chunk)
     return h.hexdigest()
-
-
-def _safe_compare_hex(actual: str, expected: str) -> bool:
-    """Constant-time comparison of two hex digest strings.
-
-    Uses :func:`hmac.compare_digest` to avoid leaking information about the
-    expected hash value via timing side-channels.
-    """
-    return hmac.compare_digest(actual.lower(), expected.lower())
 
 
 class ArchiveRemote:
@@ -197,7 +190,7 @@ class ArchiveLocalRepo:
     Supports ``.tar.gz``, ``.tgz``, ``.tar.bz2``, ``.tar.xz`` and ``.zip``
     archives.  A single top-level directory in the archive is automatically
     stripped (like ``tar --strip-components=1``), so the archive may be
-    structured as ``project-1.0/src/…`` or ``src/…`` – both work.
+    structured as ``project-1.0/src/…`` or ``src/…`` - both work.
     """
 
     @staticmethod
@@ -224,23 +217,23 @@ class ArchiveLocalRepo:
             ArchiveLocalRepo._extract_raw(archive_path, tmp_dir)
 
             # Strip a single top-level directory if the archive uses one
-            entries = os.listdir(tmp_dir)
-            if len(entries) == 1 and os.path.isdir(os.path.join(tmp_dir, entries[0])):
-                extract_root = os.path.join(tmp_dir, entries[0])
+            top_entries = os.listdir(tmp_dir)
+            if len(top_entries) == 1 and os.path.isdir(
+                os.path.join(tmp_dir, top_entries[0])
+            ):
+                extract_root = os.path.join(tmp_dir, top_entries[0])
             else:
                 extract_root = tmp_dir
 
             pathlib.Path(dest_dir).mkdir(parents=True, exist_ok=True)
 
             if src:
-                ArchiveLocalRepo._copy_with_src(
-                    extract_root, dest_dir, src.rstrip("/"), is_license
-                )
+                copy_src_subset(extract_root, dest_dir, src.rstrip("/"), is_license)
             else:
-                ArchiveLocalRepo._copy_all(extract_root, dest_dir)
+                copy_directory_contents(extract_root, dest_dir)
 
             if ignore:
-                ArchiveLocalRepo._apply_ignore(dest_dir, ignore)
+                prune_files_by_pattern(dest_dir, ignore)
 
     @staticmethod
     def _check_archive_limits(member_count: int, total_bytes: int) -> None:
@@ -345,58 +338,3 @@ class ArchiveLocalRepo:
                 f"Unsupported archive format: '{archive_path}'. "
                 f"Supported formats: {', '.join(ARCHIVE_EXTENSIONS)}"
             )
-
-    @staticmethod
-    def _copy_with_src(
-        extract_root: str, dest_dir: str, src: str, keep_licenses: bool
-    ) -> None:
-        """Copy only *src* sub-directory contents (and optionally licenses) to *dest_dir*."""
-        src_path = os.path.join(extract_root, src)
-
-        if os.path.isdir(src_path):
-            for item in os.listdir(src_path):
-                s = os.path.join(src_path, item)
-                d = os.path.join(dest_dir, item)
-                if os.path.isdir(s):
-                    shutil.copytree(s, d)
-                else:
-                    shutil.copy2(s, d)
-        elif os.path.isfile(src_path):
-            shutil.copy2(src_path, os.path.join(dest_dir, os.path.basename(src_path)))
-        else:
-            raise RuntimeError(f"src {src!r} was not found in archive")
-
-        if keep_licenses:
-            for item in os.listdir(extract_root):
-                full = os.path.join(extract_root, item)
-                if os.path.isfile(full) and SubProject.is_license_file(item):
-                    shutil.copy2(full, os.path.join(dest_dir, item))
-
-    @staticmethod
-    def _copy_all(extract_root: str, dest_dir: str) -> None:
-        """Copy all contents of *extract_root* into *dest_dir*."""
-        for item in os.listdir(extract_root):
-            s = os.path.join(extract_root, item)
-            d = os.path.join(dest_dir, item)
-            if os.path.isdir(s):
-                shutil.copytree(s, d)
-            else:
-                shutil.copy2(s, d)
-
-    @staticmethod
-    def _apply_ignore(dest_dir: str, ignore: Sequence[str]) -> None:
-        """Remove files/directories matching *ignore* patterns from *dest_dir*."""
-        for file_or_dir in find_matching_files(dest_dir, ignore):
-            if not (
-                file_or_dir.is_file() and SubProject.is_license_file(file_or_dir.name)
-            ):
-                safe_rm(file_or_dir)
-
-
-def _suffix_for_url(url: str) -> str:
-    """Return the archive file suffix for a URL (e.g. '.tar.gz', '.zip')."""
-    lower = url.lower()
-    for ext in sorted(ARCHIVE_EXTENSIONS, key=len, reverse=True):
-        if lower.endswith(ext):
-            return ext
-    return ".archive"

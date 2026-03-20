@@ -14,9 +14,9 @@ from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project import create_super_project
 from dfetch.project.metadata import Metadata
-from dfetch.project.subproject import SubProject
 from dfetch.reporting import REPORTERS, ReportTypes
 from dfetch.util.license import License, guess_license_in_file
+from dfetch.util.util import is_license_file
 
 logger = get_logger(__name__)
 
@@ -89,7 +89,7 @@ class Report(dfetch.commands.command.Command):
 
         license_files = []
         with dfetch.util.util.in_directory(project.destination):
-            for license_file in filter(SubProject.is_license_file, glob.glob("*")):
+            for license_file in filter(is_license_file, glob.glob("*")):
                 logger.debug(f"Found license file {license_file} for {project.name}")
                 guessed_license = guess_license_in_file(license_file)
 

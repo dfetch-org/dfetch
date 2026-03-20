@@ -2,15 +2,15 @@
 
 Archives are a third VCS type alongside ``git`` and ``svn``.  They represent
 versioned dependencies that are distributed as ``.tar.gz``, ``.tgz``,
-``.tar.bz2``, ``.tar.xz`` or ``.zip`` files reachable via any URL that Python's
-:mod:`urllib.request` understands (``http://``, ``https://``, ``file://``, …).
+``.tar.bz2``, ``.tar.xz`` or ``.zip`` files reachable via ``http://``,
+``https://``, or ``file://`` URLs.
 
 Unlike git and SVN, archives have no inherent "branching" or "tagging"
 concept.  Version identity is expressed through:
 
-* **No hash** – the URL itself acts as the identity.  The archive is
+* **No hash** - the URL itself acts as the identity.  The archive is
   considered up-to-date as long as the same URL is still reachable.
-* **``integrity.hash: <algorithm>:<hex>``** – the cryptographic hash of the
+* **``integrity.hash: <algorithm>:<hex>``** - the cryptographic hash of the
   archive file acts as the version identifier.  The fetch step verifies the
   downloaded archive against this hash and raises an error on mismatch.
 
@@ -41,22 +41,18 @@ Example manifest entries::
 
 from __future__ import annotations
 
+import hmac
+import http.client
 import os
 import pathlib
 import tempfile
-import urllib.request as _ur
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.subproject import SubProject
 from dfetch.vcs.archive import (
-    _safe_compare_hex,  # private helper, intentionally imported for internal use
-)
-from dfetch.vcs.archive import (
-    _suffix_for_url,  # private helper, intentionally imported for internal use
-)
-from dfetch.vcs.archive import (
+    ARCHIVE_EXTENSIONS,
     SUPPORTED_HASH_ALGORITHMS,
     ArchiveLocalRepo,
     ArchiveRemote,
@@ -65,6 +61,24 @@ from dfetch.vcs.archive import (
 )
 
 logger = get_logger(__name__)
+
+
+def _safe_compare_hex(actual: str, expected: str) -> bool:
+    """Constant-time comparison of two hex digest strings.
+
+    Uses :func:`hmac.compare_digest` to avoid leaking timing information about
+    the expected hash value.
+    """
+    return hmac.compare_digest(actual.lower(), expected.lower())
+
+
+def _suffix_for_url(url: str) -> str:
+    """Return the archive file suffix for *url* (e.g. ``'.tar.gz'``, ``'.zip'``)."""
+    lower = url.lower()
+    for ext in sorted(ARCHIVE_EXTENSIONS, key=len, reverse=True):
+        if lower.endswith(ext):
+            return ext
+    return ".archive"
 
 
 class ArchiveSubProject(SubProject):
@@ -83,10 +97,6 @@ class ArchiveSubProject(SubProject):
         self._project_entry = project
         self._remote_repo = ArchiveRemote(project.remote_url)
 
-    # ------------------------------------------------------------------
-    # SubProject abstract interface
-    # ------------------------------------------------------------------
-
     def check(self) -> bool:
         """Return *True* when the project URL looks like an archive."""
         return is_archive_url(self.remote)
@@ -98,8 +108,8 @@ class ArchiveSubProject(SubProject):
 
     @staticmethod
     def list_tool_info() -> None:
-        """Log information about the archive fetching tool (Python's urllib)."""
-        SubProject._log_tool("urllib", _ur.__doc__ or "built-in")
+        """Log information about the archive fetching tool (Python's http.client)."""
+        SubProject._log_tool("http.client", http.client.__doc__ or "built-in")
 
     def get_default_branch(self) -> str:
         """Archives have no branches; return an empty string."""
@@ -107,7 +117,7 @@ class ArchiveSubProject(SubProject):
 
     def _latest_revision_on_branch(self, branch: str) -> str:  # noqa: ARG002
         """For archives the 'latest revision' is always the URL (or hash)."""
-        return self._project_entry.remote_url
+        return self.remote
 
     def _download_and_compute_hash(self, algorithm: str = "sha256") -> str:
         """Download the archive to a temporary file and return its hash.
@@ -117,20 +127,16 @@ class ArchiveSubProject(SubProject):
         Raises:
             RuntimeError: On download failure or unsupported algorithm.
         """
-        tmp_path: str | None = None
+        fd, tmp_path = tempfile.mkstemp(suffix=_suffix_for_url(self.remote))
+        os.close(fd)
         try:
-            with tempfile.NamedTemporaryFile(
-                suffix=_suffix_for_url(self._project_entry.remote_url), delete=False
-            ) as tmp:
-                tmp_path = tmp.name
             self._remote_repo.download(tmp_path)
             return compute_hash(tmp_path, algorithm)
         finally:
-            if tmp_path:
-                try:
-                    os.remove(tmp_path)
-                except OSError:
-                    pass
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
 
     def _does_revision_exist(self, revision: str) -> bool:
         """Check whether *revision* (a hash or URL string) is still valid.
@@ -151,16 +157,12 @@ class ArchiveSubProject(SubProject):
                 except RuntimeError:
                     return False
 
-        # revision is the URL – just check accessibility
+        # revision is the URL - just check accessibility
         return self._remote_repo.is_accessible()
 
     def _list_of_tags(self) -> list[str]:
         """Archives have no tags; returns an empty list."""
         return []
-
-    # ------------------------------------------------------------------
-    # Version overrides
-    # ------------------------------------------------------------------
 
     @property
     def wanted_version(self) -> Version:
@@ -174,11 +176,7 @@ class ArchiveSubProject(SubProject):
         """
         if self._project_entry.hash:
             return Version(revision=self._project_entry.hash)
-        return Version(revision=self._project_entry.remote_url)
-
-    # ------------------------------------------------------------------
-    # Fetch
-    # ------------------------------------------------------------------
+        return Version(revision=self.remote)
 
     def _fetch_impl(self, version: Version) -> Version:
         """Download and extract the archive to the local destination.
@@ -193,15 +191,12 @@ class ArchiveSubProject(SubProject):
         Returns:
             The version that was actually fetched (hash string or URL).
         """
-        url = self._project_entry.remote_url
         expected_hash = self._project_entry.hash
 
         pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
 
-        suffix = _suffix_for_url(url)
-        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
-            tmp_path = tmp.name
-
+        fd, tmp_path = tempfile.mkstemp(suffix=_suffix_for_url(self.remote))
+        os.close(fd)
         try:
             self._remote_repo.download(tmp_path)
 
@@ -231,13 +226,7 @@ class ArchiveSubProject(SubProject):
             except OSError:
                 pass
 
-        if expected_hash:
-            return Version(revision=expected_hash)
-        return Version(revision=url)
-
-    # ------------------------------------------------------------------
-    # Freeze support
-    # ------------------------------------------------------------------
+        return Version(revision=expected_hash if expected_hash else self.remote)
 
     def freeze_project(self, project: ProjectEntry) -> str | None:
         """Pin *project* to a cryptographic hash of the archive.
@@ -264,7 +253,7 @@ class ArchiveSubProject(SubProject):
 
         revision = on_disk.revision
 
-        # Already hash-pinned – revision is "sha256:<hex>"
+        # Already hash-pinned - revision is "sha256:<hex>"
         if revision.startswith(tuple(f"{a}:" for a in SUPPORTED_HASH_ALGORITHMS)):
             if project.hash == revision:
                 return None

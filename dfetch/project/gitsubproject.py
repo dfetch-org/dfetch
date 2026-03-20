@@ -8,7 +8,7 @@ from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.subproject import SubProject
-from dfetch.util.util import safe_rmtree
+from dfetch.util.util import LICENSE_GLOBS, safe_rmtree
 from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
 
 logger = get_logger(__name__)
@@ -64,8 +64,8 @@ class GitSubProject(SubProject):
         # When exporting a file, the destination directory must already exist
         pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
 
-        license_globs = [f"/{name.lower()}" for name in self.LICENSE_GLOBS] + [
-            f"/{name.upper()}" for name in self.LICENSE_GLOBS
+        license_globs = [f"/{name.lower()}" for name in LICENSE_GLOBS] + [
+            f"/{name.upper()}" for name in LICENSE_GLOBS
         ]
 
         local_repo = GitLocalRepo(self.local_path)
