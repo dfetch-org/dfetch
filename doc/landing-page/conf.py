@@ -95,7 +95,7 @@ html_theme = "alabaster"
 html_css_files = [
     "css/custom.css",
 ]
-html_title = "a source-only no-hassle project-dependency aggregator"
+html_title = "Vendor dependencies without the pain"
 html_logo = "../images/dfetch_logo.png"
 html_extra_path = ["robots.txt"]
 html_baseurl = "https://dfetch-org.github.io/"
@@ -112,8 +112,15 @@ html_theme_options = {
     "github_repo": "dfetch",
     "github_banner": True,
     "show_related": True,
-    "note_bg": "#FFF59C",
+    "note_bg": "#dbeafe",
     "nosidebar": True,
+    "page_width": "1100px",
+    "body_text": "#111827",
+    "link": "#2563eb",
+    "link_hover": "#1d4ed8",
+    "anchor": "#2563eb",
+    "anchor_hover_fg": "#1d4ed8",
+    "pre_bg": "#f8fafc",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
