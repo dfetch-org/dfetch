@@ -1,10 +1,10 @@
 Feature: Checking dependencies from an archive
 
     DFetch can check if archive-based projects are up-to-date.
-    For archives without a hash the URL is the version identifier so the
-    project is always considered up-to-date once fetched (the URL has not
-    changed). For archives with a 'hash:' field the hash is the version
-    identifier, and dfetch reports whether the locally stored version
+    For archives without an integrity hash the URL is the version identifier
+    so the project is always considered up-to-date once fetched (the URL has
+    not changed). For archives with an 'integrity.hash' the hash is the
+    version identifier, and dfetch reports whether the locally stored version
     matches the wanted hash.
 
     Scenario: Archive project without hash is reported as up-to-date after fetch
@@ -41,7 +41,8 @@ Feature: Checking dependencies from an archive
                 - name: SomeProject
                   url: some-remote-server/SomeProject.tar.gz
                   vcs: archive
-                  hash: sha256:<archive-sha256>
+                  integrity:
+                    hash: sha256:<archive-sha256>
             """
         And all projects are updated in MyProject
         When I run "dfetch check" in MyProject

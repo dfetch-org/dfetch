@@ -2,8 +2,9 @@ Feature: Fetching dependencies from an archive (tar/zip)
 
     Some projects are distributed as tar or zip archives, for example as
     GitHub release assets or on internal artifact servers. DFetch supports
-    fetching these archives using the 'archive' vcs type. Optionally, a hash
-    can be specified with 'hash: <algorithm>:<hex>' for integrity verification.
+    fetching these archives using the 'archive' vcs type. Optionally, an
+    'integrity:' block with a 'hash:' sub-field can be specified for
+    cryptographic integrity verification.
 
     Scenario: Tar.gz archive project is fetched
         Given an archive "SomeProject.tar.gz" with the files
@@ -69,7 +70,8 @@ Feature: Fetching dependencies from an archive (tar/zip)
                 - name: SomeProject
                   url: some-remote-server/SomeProject.tar.gz
                   vcs: archive
-                  hash: sha256:<archive-sha256>
+                  integrity:
+                    hash: sha256:<archive-sha256>
             """
         When I run "dfetch update" in MyProject
         Then 'MyProject' looks like:
@@ -93,7 +95,8 @@ Feature: Fetching dependencies from an archive (tar/zip)
                 - name: SomeProject
                   url: some-remote-server/SomeProject.tar.gz
                   vcs: archive
-                  hash: sha256:0000000000000000000000000000000000000000000000000000000000000000
+                  integrity:
+                    hash: sha256:0000000000000000000000000000000000000000000000000000000000000000
             """
         When I run "dfetch update" in MyProject
         Then the output shows
