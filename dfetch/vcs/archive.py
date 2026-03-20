@@ -21,6 +21,7 @@ Example manifest entry::
 from __future__ import annotations
 
 import hashlib
+import hmac
 import io
 import os
 import pathlib
@@ -43,6 +44,10 @@ ARCHIVE_EXTENSIONS = (".tar.gz", ".tgz", ".tar.bz2", ".tar.xz", ".zip")
 
 #: Hash algorithms supported by the ``hash:`` manifest field.
 SUPPORTED_HASH_ALGORITHMS = ("sha256",)
+
+# Safety limits applied during extraction to prevent decompression bombs.
+_MAX_UNCOMPRESSED_BYTES = 500 * 1024 * 1024  # 500 MB
+_MAX_MEMBER_COUNT = 10_000
 
 
 def is_archive_url(url: str) -> bool:
@@ -73,6 +78,15 @@ def compute_hash(path: str, algorithm: str = "sha256") -> str:
         for chunk in iter(lambda: fh.read(65536), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _safe_compare_hex(actual: str, expected: str) -> bool:
+    """Constant-time comparison of two hex digest strings.
+
+    Uses :func:`hmac.compare_digest` to avoid leaking information about the
+    expected hash value via timing side-channels.
+    """
+    return hmac.compare_digest(actual.lower(), expected.lower())
 
 
 class ArchiveRemote:
@@ -170,14 +184,76 @@ class ArchiveLocalRepo:
                 ArchiveLocalRepo._apply_ignore(dest_dir, ignore)
 
     @staticmethod
+    def _check_zip_members(zf: zipfile.ZipFile) -> None:
+        """Validate all ZIP member paths against path-traversal attacks.
+
+        Raises:
+            RuntimeError: When any member contains an absolute path, a ``..``
+                component, or when the archive exceeds the size/count limits.
+        """
+        members = zf.infolist()
+        if len(members) > _MAX_MEMBER_COUNT:
+            raise RuntimeError(
+                f"Archive contains {len(members)} members which exceeds the "
+                f"safety limit of {_MAX_MEMBER_COUNT}."
+            )
+        total_bytes = sum(info.file_size for info in members)
+        if total_bytes > _MAX_UNCOMPRESSED_BYTES:
+            raise RuntimeError(
+                f"Archive uncompressed size ({total_bytes} bytes) exceeds the "
+                f"safety limit of {_MAX_UNCOMPRESSED_BYTES} bytes."
+            )
+        for info in members:
+            member_path = pathlib.PurePosixPath(info.filename)
+            if member_path.is_absolute() or any(
+                part == ".." for part in member_path.parts
+            ):
+                raise RuntimeError(
+                    f"Archive contains an unsafe member path: {info.filename!r}"
+                )
+
+    @staticmethod
+    def _check_tar_members(tf: tarfile.TarFile) -> None:
+        """Validate TAR member count and total size against decompression bombs.
+
+        Raises:
+            RuntimeError: When the archive exceeds the size/count limits.
+        """
+        members = tf.getmembers()
+        if len(members) > _MAX_MEMBER_COUNT:
+            raise RuntimeError(
+                f"Archive contains {len(members)} members which exceeds the "
+                f"safety limit of {_MAX_MEMBER_COUNT}."
+            )
+        total_bytes = sum(m.size for m in members if m.isfile())
+        if total_bytes > _MAX_UNCOMPRESSED_BYTES:
+            raise RuntimeError(
+                f"Archive uncompressed size ({total_bytes} bytes) exceeds the "
+                f"safety limit of {_MAX_UNCOMPRESSED_BYTES} bytes."
+            )
+
+    @staticmethod
     def _extract_raw(archive_path: str, dest_dir: str) -> None:
-        """Extract archive contents to *dest_dir* without any filtering."""
+        """Extract archive contents to *dest_dir* without any filtering.
+
+        Safety checks performed before extraction:
+
+        * TAR: member count and total uncompressed size (decompression bomb).
+          Path sanitisation is handled by the built-in ``filter="tar"`` filter
+          (available from Python 3.11.4 / 3.12 as a security backport) which
+          rejects absolute paths, ``..`` components, absolute symlinks, and
+          device files.
+        * ZIP: member path traversal validation (absolute paths and ``..``
+          components are rejected) plus member count and size limits.
+        """
         lower = archive_path.lower()
         if tarfile.is_tarfile(archive_path) and not lower.endswith(".zip"):
             with tarfile.open(archive_path, "r:*") as tf:
+                ArchiveLocalRepo._check_tar_members(tf)
                 tf.extractall(dest_dir, filter="tar")
         elif lower.endswith(".zip") or zipfile.is_zipfile(archive_path):
             with zipfile.ZipFile(archive_path) as zf:
+                ArchiveLocalRepo._check_zip_members(zf)
                 zf.extractall(dest_dir)
         else:
             raise RuntimeError(
