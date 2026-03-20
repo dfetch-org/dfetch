@@ -3,23 +3,21 @@
 :sd_hide_title:
 
 .. meta::
-   :description: Dfetch is a VCS-agnostic tool that simplifies dependency management by retrieving
-                 source-only dependencies from various repositories, promoting upstream changes and
-                 allowing local customizations.
-   :keywords: dfetch, dependency management, embedded development, fetch tool, vendoring, multi-repo, dependencies, git, svn, package manager, multi-project, monorepo
+   :description: Dfetch vendors source code from Git and SVN repositories directly into your project. No submodules, no lock-in, fully self-contained.
+   :keywords: dfetch, dependency management, vendoring, git, svn, embedded development, source-only dependencies, multi-repo
    :author: Dfetch Contributors
    :google-site-verification: rXUIdonVCg6XtZUDdOd7fJdSNj3bOoJJRqCFn3OVb04
 
 .. raw:: html
 
-   <meta property="og:title" content="Dfetch - a source-only no-hassle project-dependency aggregator">
-   <meta property="og:description" content="VCS-agnostic tool to simplify using source-only dependencies of multiple repositories.">
+   <meta property="og:title" content="Dfetch — Vendor dependencies without the pain">
+   <meta property="og:description" content="VCS-agnostic source-only dependency management. Works with Git and SVN. No submodules, no lock-in.">
    <meta property="og:image" content="https://dfetch.rtfd.io/static/dfetch-logo.png">
-   <meta property="og:url" content="https://dfetch.rtfd.io">
+   <meta property="og:url" content="https://dfetch-org.github.io">
 
    <meta name="twitter:card" content="summary_large_image">
-   <meta name="twitter:title" content="Dfetch - a source-only no-hassle project-dependency aggregator">
-   <meta name="twitter:description" content="VCS-agnostic tool to simplify using source-only dependencies of multiple repositories.">
+   <meta name="twitter:title" content="Dfetch — Vendor dependencies without the pain">
+   <meta name="twitter:description" content="VCS-agnostic source-only dependency management. Works with Git and SVN. No submodules, no lock-in.">
    <meta name="twitter:image" content="https://dfetch.rtfd.io/static/dfetch-logo.png">
 
 .. image:: ../images/dfetch_header.png
@@ -61,18 +59,16 @@ Dfetch
 
 .. asciinema:: ../asciicasts/basic.cast
 
-Are you tired of managing dependencies using Git submodules or SVN externals? Introducing *Dfetch*, a VCS agnostic, no-hassle, source-only solution
-that allows you to easily retrieve dependencies as plain text from various sources. *Dfetch* eliminates the need for Git submodules or SVN externals
-by providing a efficient and user-friendly way to manage your project's dependencies using *vendoring*. It promotes upstreaming changes and allows for local
-customizations all while maintaining self-contained code repositories.
+**Dfetch** vendors source code directly into your project — no Git submodules, no SVN externals, no hidden external links.
+Dependencies live as plain, readable files inside your own repository. You stay in full control of every line.
 
-Say goodbye to the hassle of traditional dependency management solutions and hello to a more efficient and streamlined process with *Dfetch*.
+:bdg-primary-line:`Git` :bdg-primary-line:`SVN` :bdg-secondary-line:`MIT License` :bdg-success-line:`Zero lock-in` :bdg-info-line:`CI/CD ready`
 
-.. card::  :material-regular:`done_all;4em;sd-text-primary` **Check for updates**
+.. card::  :material-regular:`done_all;4em;sd-text-primary` **Stay up to date — effortlessly**
    :class-card: sd-bg-dark sd-text-light
 
-   *Dfetch* simplifies dependency management by allowing users to easily check for
-   updates and integrate them seamlessly into their codebase.
+   Check which dependencies have available updates and pull them in when you are ready.
+   *Dfetch* puts you in control of every change — no surprise breakages, no forced upgrades.
 
    .. asciinema:: ../asciicasts/check.cast
 
@@ -83,40 +79,40 @@ Say goodbye to the hassle of traditional dependency management solutions and hel
 
       :material-regular:`shuffle;4em;sd-text-primary` **VCS-agnostic**
 
-      *Dfetch* is a versatile solution, being VCS agnostic it can be used with both Git and SVN, enabling users to seamlessly manage dependencies regardless of their VCS of choice and even to mix them.
+      Works seamlessly with **Git and SVN** — even mixed within the same project. Adapt to your team's workflow, not the other way around.
 
 
    .. grid-item::
 
-      :material-regular:`archive;4em;sd-text-primary` **Self-contained**
+      :material-regular:`archive;4em;sd-text-primary` **Fully self-contained**
 
-      *Dfetch* ensures self-contained repositories by including dependencies directly within the project, eliminating external links and making deployment easier.
-
-
-   .. grid-item::
-
-      :material-regular:`build;4em;sd-text-primary` **Simple yaml config**
-
-      *Dfetch* simplifies configuration with its easy-to-use YAML file, allowing users to set up and manage dependencies with minimal setup and effort.
+      Every dependency is stored **inside your repository** as plain source code. No external links means simpler audits and hassle-free deployments.
 
 
    .. grid-item::
 
-      :material-regular:`lock_open;4em;sd-text-primary` **No lock-in**
+      :material-regular:`build;4em;sd-text-primary` **One YAML file**
 
-      *Dfetch* provides freedom of choice, users are not locked into using *Dfetch*, they can easily switch to other dependency management solutions.
+      Declare every dependency in a **single readable manifest**. Easy to review in pull requests, trivial to onboard new team members.
 
 
-.. card:: :material-regular:`smart_toy;4em;sd-text-primary` **Integrate**
+   .. grid-item::
+
+      :material-regular:`lock_open;4em;sd-text-primary` **Zero lock-in**
+
+      Your vendored code stays as plain source files. Switch tools any time — **no proprietary formats, no migration work**.
+
+
+.. card:: :material-regular:`smart_toy;4em;sd-text-primary` **Built for modern CI/CD**
    :class-card: sd-bg-dark sd-text-light
 
-         *Dfetch* streamlines the integration process by being easily adaptable to various CI/CD automated tools, making it a breeze to implement in any development workflow.
-         It can generate reports for Github, Gitlab, Jenkins, DependencyTrack and more!
+   *Dfetch* plugs right into your automation pipeline. Report dependency update status to
+   **GitHub, GitLab, Jenkins, DependencyTrack** and more — keeping your entire team informed, automatically.
 
-         .. asciinema:: ../asciicasts/check-ci.cast
+   .. asciinema:: ../asciicasts/check-ci.cast
 
 
-.. card:: Example config
+.. card:: :material-regular:`description;1.5em` Example ``dfetch.yaml``
 
    .. literalinclude:: ../../dfetch.yaml
       :language: yaml

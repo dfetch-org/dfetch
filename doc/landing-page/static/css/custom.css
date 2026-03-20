@@ -1,6 +1,273 @@
-@import url("https://fonts.googleapis.com/css?family=Roboto:100,300,300i,400,500,700,900");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
 
+/* ============================================================
+   Design Tokens
+   ============================================================ */
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --accent: #7c3aed;
+  --text: #111827;
+  --text-2: #374151;
+  --text-muted: #6b7280;
+  --bg: #ffffff;
+  --bg-2: #f9fafb;
+  --border: #e5e7eb;
+  --grad: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --shad-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shad-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shad-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shad-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  --r: 12px;
+  --r-sm: 8px;
+  --ease: 0.2s ease;
+}
+
+/* ============================================================
+   Base Typography
+   ============================================================ */
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+  line-height: 1.25 !important;
+  color: var(--text) !important;
+}
+
+.body p,
+.body dd,
+.body li {
+  font-family: "Inter", sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.8;
+  color: var(--text-2);
+  text-align: left;
+}
+
+strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ============================================================
+   Images
+   ============================================================ */
+img {
+  height: auto;
+  max-width: 100%;
+  border-radius: var(--r-sm);
+}
+
+/* ============================================================
+   Buttons — sphinx_design
+   ============================================================ */
+.sd-btn {
+  font-family: "Inter", sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 0.9375rem !important;
+  padding: 0.6875rem 1.375rem !important;
+  border-radius: var(--r-sm) !important;
+  transition: all var(--ease) !important;
+  letter-spacing: 0.01em;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.sd-btn-primary {
+  background: var(--grad) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4) !important;
+}
+
+.sd-btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.5) !important;
+  opacity: 0.95 !important;
+}
+
+.sd-btn-secondary {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(8px);
+}
+
+.sd-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-2px) !important;
+  color: #fff !important;
+}
+
+/* ============================================================
+   Cards — sphinx_design
+   ============================================================ */
+.sd-card {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r) !important;
+  box-shadow: var(--shad-sm) !important;
+  transition: box-shadow var(--ease), transform var(--ease) !important;
+  overflow: hidden !important;
+}
+
+.sd-card:hover {
+  box-shadow: var(--shad-lg) !important;
+  transform: translateY(-4px);
+}
+
+.sd-card-body {
+  padding: 2rem !important;
+}
+
+.sd-card-title {
+  font-family: "Inter", sans-serif !important;
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+  margin-bottom: 0.75rem !important;
+  letter-spacing: -0.01em;
+}
+
+/* Dark variant cards */
+.sd-bg-dark {
+  background: linear-gradient(140deg, #0f172a 0%, #1e293b 100%) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.sd-bg-dark .sd-card-title {
+  color: #fff !important;
+}
+
+.sd-bg-dark p {
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.sd-bg-dark strong {
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.sd-text-light {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* ============================================================
+   Feature Grid — sphinx_design
+   ============================================================ */
+.sd-row.sd-row-cols-md-2 .sd-col,
+.sd-row.sd-row-cols-sm-1 .sd-col {
+  padding: 1.25rem 1rem !important;
+}
+
+.sd-grid-item p strong:first-child,
+.sd-col > p > strong:first-child {
+  font-size: 1.0625rem;
+  display: inline-block;
+  margin-bottom: 0.4rem;
+  color: var(--text);
+}
+
+/* ============================================================
+   Badges — sphinx_design
+   ============================================================ */
+.sd-badge {
+  font-family: "Inter", sans-serif !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em;
+  padding: 0.3rem 0.7rem !important;
+  border-radius: 100px !important;
+}
+
+/* ============================================================
+   Asciinema Player
+   ============================================================ */
+.asciinema-player-wrapper {
+  border-radius: var(--r) !important;
+  overflow: hidden !important;
+  box-shadow: var(--shad-xl) !important;
+  margin: 1.5rem 0 !important;
+}
+
+/* ============================================================
+   Code / Syntax Highlight
+   ============================================================ */
+div.highlight {
+  border-radius: var(--r-sm) !important;
+  overflow: hidden !important;
+  box-shadow: var(--shad-sm) !important;
+  border: 1px solid var(--border) !important;
+}
+
+div.highlight pre {
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace !important;
+  font-size: 0.875rem !important;
+  line-height: 1.7 !important;
+  padding: 1.5rem !important;
+}
+
+.pre {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  padding-left: 0.25em;
+  padding-right: 0.25em;
+}
+
+/* ============================================================
+   Admonitions
+   ============================================================ */
+div.admonition {
+  border: none !important;
+  border-radius: var(--r-sm) !important;
+  border-left: 4px solid var(--primary) !important;
+  box-shadow: var(--shad-sm) !important;
+  font-family: "Inter", sans-serif;
+  padding: 1.25rem 1.5rem !important;
+  transition: box-shadow var(--ease) !important;
+}
+
+div.admonition p.admonition-title {
+  font-family: "Inter", sans-serif;
+  font-weight: 700 !important;
+  color: var(--primary) !important;
+  margin: 0 0 0.5rem 0 !important;
+}
+
+div.admonition p {
+  font-weight: 400 !important;
+  margin-top: 0.5rem !important;
+}
+
+.admonition a {
+  font-weight: 500;
+}
+
+/* ============================================================
+   Sidebar — used in main docs (not landing page)
+   ============================================================ */
 .sphinxsidebar .caption-text {
+  font-size: 110%;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sphinxsidebarwrapper .caption-text {
   font-size: 130%;
 }
 
@@ -10,35 +277,15 @@
 
 .sphinxsidebarwrapper .internal,
 .sphinxsidebarwrapper .external {
-  font-weight: 300;
+  font-weight: 400;
 }
 
-body {
-  font-family: Roboto;
+.sphinxsidebarwrapper .logo-name {
+  display: none;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: Roboto !important;
-  font-weight: 300 !important;
-}
-
-.toctree-l1 {
-  padding-bottom: 0.5em;
-}
-
-.body p,
-.body dd,
-.body li {
-  font-family: Roboto;
-  font-size: 1em;
-  font-weight: 300;
-  line-height: 2;
-  text-align: justify;
+.sphinxsidebarwrapper .logo {
+  margin-bottom: 2em;
 }
 
 .search {
@@ -50,7 +297,14 @@ h6 {
 }
 
 .sphinxsidebar input[type="submit"] {
-  font-family: "Roboto", serif;
+  font-family: "Inter", sans-serif;
+}
+
+/* ============================================================
+   Misc & Utilities
+   ============================================================ */
+.toctree-l1 {
+  padding-bottom: 0.5em;
 }
 
 .caption {
@@ -58,53 +312,13 @@ h6 {
 }
 
 .caption-text {
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.sphinxsidebarwrapper .logo-name {
-  display: none;
-}
-
-.sphinxsidebarwrapper .logo {
-  margin-bottom: 2em;
-}
-
-img {
-  height: auto;
-  max-width: 100%;
-}
-
-div.admonition {
-  border: none;
-  border-radius: 0;
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12),
-    0 3px 1px -2px rgba(0, 0, 0, 0.2);
-  font-family: Roboto;
-  padding: 2em;
-  position: relative;
-  transition: box-shadow 0.25s;
-}
-
-div.admonition p.admonition-title {
-  font-family: "Roboto", serif;
-  font-weight: 300;
-  margin: 0 0 5px 0;
-}
-
-div.admonition p {
-  font-weight: 300;
-  margin-top: 1em;
-}
-
-.admonition a {
-  font-weight: 300;
-}
-
-strong {
-  font-weight: 400;
-}
-
-.pre {
-  padding-left: 0.2em;
-  padding-right: 0.2em;
+/* Page footer / generated timestamp */
+.sd-font-weight-light.sd-text-muted {
+  font-size: 0.85rem;
+  margin-top: 3.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
 }
