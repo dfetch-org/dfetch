@@ -27,7 +27,7 @@
 /* ============================================================
    Keyframe Animations
    ============================================================ */
-@keyframes fadeSlideUp {
+@keyframes fade-slide-up {
   from {
     opacity: 0;
     transform: translateY(22px);
@@ -38,7 +38,7 @@
   }
 }
 
-@keyframes float {
+@keyframes float-up {
   0%,
   100% {
     transform: translateY(0);
@@ -48,7 +48,7 @@
   }
 }
 
-@keyframes gradientPan {
+@keyframes gradient-pan {
   0% {
     background-position: 0% 50%;
   }
@@ -60,7 +60,7 @@
   }
 }
 
-@keyframes pulseGlow {
+@keyframes pulse-glow {
   0%,
   100% {
     box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
@@ -71,7 +71,7 @@
   }
 }
 
-@keyframes badgePop {
+@keyframes badge-pop {
   from {
     opacity: 0;
     transform: scale(0.85) translateY(6px);
@@ -195,13 +195,15 @@ img {
   background-size: 200% 200% !important;
   color: #fff !important;
   border: none !important;
-  transition: transform var(--ease), opacity var(--ease) !important;
-  animation: gradientPan 4s ease infinite, pulseGlow 3s ease-in-out infinite !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45) !important;
+  transition: transform var(--ease), opacity var(--ease), box-shadow var(--ease) !important;
 }
 
-.sd-btn-primary:hover {
+.sd-btn-primary:hover,
+.sd-btn-primary:focus-visible {
   transform: translateY(-3px) scale(1.03) !important;
   opacity: 0.9 !important;
+  animation: gradient-pan 3s ease infinite, pulse-glow 2s ease-in-out 3 !important;
 }
 
 .sd-btn-secondary {
@@ -228,7 +230,7 @@ img {
   box-shadow: var(--shad-sm) !important;
   transition: box-shadow var(--ease), transform var(--ease) !important;
   overflow: hidden !important;
-  animation: fadeSlideUp 0.5s ease both;
+  animation: fade-slide-up 0.5s ease both;
 }
 
 .sd-card:hover {
@@ -303,18 +305,21 @@ img {
 .sd-card-title > span[class*="material"],
 .sd-card-body > p > span[class*="material"] {
   display: inline-block;
-  animation: float 3.8s ease-in-out infinite;
+  animation: float-up 3.8s ease-in-out infinite;
 }
 
 /* Stagger float timing per column */
 .sd-row .sd-col:nth-child(2) > p > span[class*="material"] {
   animation-delay: 0.7s;
+  animation-name: float-up;
 }
 .sd-row .sd-col:nth-child(3) > p > span[class*="material"] {
   animation-delay: 1.2s;
+  animation-name: float-up;
 }
 .sd-row .sd-col:nth-child(4) > p > span[class*="material"] {
   animation-delay: 1.9s;
+  animation-name: float-up;
 }
 
 /* ============================================================
@@ -327,7 +332,7 @@ img {
   letter-spacing: 0.03em;
   padding: 0.3rem 0.7rem !important;
   border-radius: 100px !important;
-  animation: badgePop 0.4s ease both;
+  animation: badge-pop 0.4s ease both;
 }
 
 .sd-badge:nth-child(2) {
