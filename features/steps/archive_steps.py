@@ -48,9 +48,12 @@ def _archive_url(context, filename: str) -> str:
     apply_manifest_substitutions produces ``file:///`` + absolute path, which for an
     absolute path like ``/tmp/...`` yields four slashes (``file:////tmp/...``).
     We must match that format so placeholder substitution works in SBOM assertions.
+
+    :func:`pathlib.Path.as_posix` is used instead of :func:`str.split`/join so
+    that mixed separators (e.g. on Windows) are normalised correctly.
     """
-    server_fwd = "/".join(context.remotes_dir_path.split(os.sep))
-    return f"file:///{server_fwd}/{filename}"
+    server_posix = pathlib.Path(context.remotes_dir_path).as_posix()
+    return f"file:///{server_posix}/{filename}"
 
 
 def _create_archive(context, name: str, extension: str) -> None:

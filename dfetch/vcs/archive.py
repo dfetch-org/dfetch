@@ -107,16 +107,33 @@ class ArchiveRemote:
     def is_accessible(self) -> bool:
         """Return *True* when the archive URL is reachable.
 
-        Sends a lightweight ``HEAD`` request for ``http``/``https`` URLs and
-        tests existence for ``file://`` URLs.  Returns *False* on any network
-        or I/O error.
+        * ``file://`` URLs are checked with :func:`os.path.exists` directly —
+          no network round-trip needed.
+        * ``http``/``https`` URLs first try a ``HEAD`` request.  If the server
+          rejects it (405/501) a partial ``GET`` (``Range: bytes=0-0``) is
+          attempted instead.  Returns *False* on any final failure.
         """
-        try:
-            parsed = urllib.request.Request(self.url, method="HEAD")
-            with urllib.request.urlopen(parsed, timeout=15):
-                return True
-        except (urllib.error.URLError, OSError, ValueError):
-            return False
+        from urllib.parse import urlparse as _urlparse  # noqa: PLC0415
+
+        if _urlparse(self.url).scheme == "file":
+            path = _urlparse(self.url).path
+            return os.path.exists(path)
+
+        for method, headers in [
+            ("HEAD", {}),
+            ("GET", {"Range": "bytes=0-0"}),
+        ]:
+            try:
+                req = urllib.request.Request(self.url, method=method, headers=headers)
+                with urllib.request.urlopen(req, timeout=15):
+                    return True
+            except urllib.error.HTTPError as exc:
+                if exc.code in (405, 501):  # Method Not Allowed / Not Implemented
+                    continue
+                return False
+            except (urllib.error.URLError, OSError, ValueError):
+                return False
+        return False
 
     def download(self, dest_path: str) -> None:
         """Download the archive to *dest_path*.
@@ -228,15 +245,29 @@ class ArchiveLocalRepo:
 
     @staticmethod
     def _check_tar_members(tf: tarfile.TarFile) -> None:
-        """Validate TAR member count and total size against decompression bombs.
+        """Validate TAR members against decompression bombs and path traversal.
+
+        Size/count limits mirror :meth:`_check_zip_members`.  Path validation
+        is defence-in-depth: on Python ≥ 3.11.4 the ``filter="tar"`` passed to
+        :meth:`tarfile.TarFile.extractall` also rejects unsafe paths, but we
+        check here too so the guard applies on all supported Python versions.
 
         Raises:
-            RuntimeError: When the archive exceeds the size/count limits.
+            RuntimeError: When the archive exceeds the size/count limits or
+                contains an absolute path or ``..`` component.
         """
         members = tf.getmembers()
         ArchiveLocalRepo._check_archive_limits(
             len(members), sum(m.size for m in members if m.isfile())
         )
+        for member in members:
+            member_path = pathlib.PurePosixPath(member.name)
+            if member_path.is_absolute() or any(
+                part == ".." for part in member_path.parts
+            ):
+                raise RuntimeError(
+                    f"Archive contains an unsafe member path: {member.name!r}"
+                )
 
     @staticmethod
     def _extract_raw(archive_path: str, dest_dir: str) -> None:

@@ -51,8 +51,8 @@ from dfetch.vcs.archive import (
     SUPPORTED_HASH_ALGORITHMS,
     ArchiveLocalRepo,
     ArchiveRemote,
-    _safe_compare_hex,
-    _suffix_for_url,
+    _safe_compare_hex,  # private helper, intentionally imported for internal use
+    _suffix_for_url,    # private helper, intentionally imported for internal use
     compute_hash,
     is_archive_url,
 )
@@ -131,9 +131,11 @@ class ArchiveSubProject(SubProject):
         """Check whether *revision* (a hash or URL string) is still valid.
 
         * If *revision* starts with a known hash algorithm prefix (e.g.
-          ``sha256:``) the archive is downloaded and the hash verified.
+          ``sha256:``) **the entire archive is downloaded** to a temporary file
+          and its hash is verified against *revision*.  This is intentionally
+          thorough — a lightweight HEAD check cannot confirm content integrity.
         * Otherwise *revision* is treated as the URL itself and a lightweight
-          reachability check is performed.
+          reachability check is performed via :meth:`ArchiveRemote.is_accessible`.
         """
         for algo in SUPPORTED_HASH_ALGORITHMS:
             if revision.startswith(f"{algo}:"):
@@ -199,6 +201,11 @@ class ArchiveSubProject(SubProject):
             self._remote_repo.download(tmp_path)
 
             if expected_hash:
+                if ":" not in expected_hash:
+                    raise RuntimeError(
+                        f"Malformed integrity.hash for {self._project_entry.name!r}: "
+                        f"expected '<algorithm>:<hex>', got {expected_hash!r}"
+                    )
                 algorithm, expected_hex = expected_hash.split(":", 1)
                 actual_hex = compute_hash(tmp_path, algorithm)
                 if not _safe_compare_hex(actual_hex, expected_hex):
