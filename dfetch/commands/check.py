@@ -15,6 +15,10 @@ the available version. If there are new versions available this will be shown.
 
       .. scenario-include:: ../features/check-svn-repo.feature
 
+   .. tab:: Archive
+
+      .. scenario-include:: ../features/check-archive.feature
+
 Sub-manifests
 ~~~~~~~~~~~~~
 

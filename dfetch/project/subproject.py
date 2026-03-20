@@ -388,6 +388,26 @@ class SubProject(ABC):
     def get_default_branch(self) -> str:
         """Get the default branch of this repository."""
 
+    def freeze_project(self, project: ProjectEntry) -> bool:
+        """Freeze *project* to its current on-disk version.
+
+        Subclasses may override this to apply VCS-specific freeze logic (e.g.
+        :class:`~dfetch.project.archivesubproject.ArchiveSubProject` stores
+        the hash in the ``hash:`` field rather than ``revision:``).
+
+        Returns:
+            *True* when the manifest entry was modified, *False* if the entry
+            was already pinned to the on-disk version or no on-disk version
+            could be determined.
+        """
+        on_disk_version = self.on_disk_version()
+        if project.version == on_disk_version:
+            return False
+        if on_disk_version:
+            project.version = on_disk_version
+            return True
+        return False
+
     @staticmethod
     def is_license_file(filename: str) -> bool:
         """Check if the given filename is a license file."""

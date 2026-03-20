@@ -36,6 +36,13 @@ In our above example this would for instance result in:
 
 .. scenario-include:: ../features/freeze-projects.feature
 
+For archive projects, ``dfetch freeze`` adds a ``hash: sha256:<hex>`` field
+to pin the exact archive content used.  This field acts as the version
+identifier: DFetch verifies the downloaded archive against it on every
+subsequent ``dfetch update``.
+
+.. scenario-include:: ../features/freeze-archive.feature
+
 """
 
 import argparse
@@ -78,24 +85,24 @@ class Freeze(dfetch.commands.command.Command):
         with in_directory(superproject.root_directory):
             for project in superproject.manifest.projects:
                 with catch_runtime_exceptions(exceptions) as exceptions:
-                    on_disk_version = dfetch.project.create_sub_project(
-                        project
-                    ).on_disk_version()
+                    sub_project = dfetch.project.create_sub_project(project)
+                    on_disk_version = sub_project.on_disk_version()
 
-                    if project.version == on_disk_version:
-                        logger.print_info_line(
-                            project.name,
-                            f"Already pinned in manifest on version {project.version}",
-                        )
-                    elif on_disk_version:
-                        logger.print_info_line(
-                            project.name, f"Freezing on version {on_disk_version}"
-                        )
-                        project.version = on_disk_version
+                    if not sub_project.freeze_project(project):
+                        if on_disk_version:
+                            logger.print_info_line(
+                                project.name,
+                                f"Already pinned in manifest on version {on_disk_version}",
+                            )
+                        else:
+                            logger.print_warning_line(
+                                project.name,
+                                "No version on disk, first update with 'dfetch update'",
+                            )
                     else:
-                        logger.print_warning_line(
+                        logger.print_info_line(
                             project.name,
-                            "No version on disk, first update with 'dfetch update'",
+                            f"Freezing on version {on_disk_version}",
                         )
 
                     projects.append(project)

@@ -6,6 +6,7 @@ import pathlib
 import dfetch.manifest.project
 from dfetch.log import get_logger
 from dfetch.manifest.parse import find_manifest, parse
+from dfetch.project.archivesubproject import ArchiveSubProject
 from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.gitsuperproject import GitSuperProject
 from dfetch.project.subproject import SubProject
@@ -14,7 +15,7 @@ from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.project.svnsuperproject import SvnSuperProject
 from dfetch.util.util import resolve_absolute_path
 
-SUPPORTED_SUBPROJECT_TYPES = [GitSubProject, SvnSubProject]
+SUPPORTED_SUBPROJECT_TYPES = [ArchiveSubProject, GitSubProject, SvnSubProject]
 SUPPORTED_SUPERPROJECT_TYPES = [GitSuperProject, SvnSuperProject]
 
 logger = get_logger(__name__)

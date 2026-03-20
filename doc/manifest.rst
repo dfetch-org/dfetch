@@ -99,6 +99,7 @@ Below an overview of all possible fields on the manifest. The bold items are man
                   enum:
                     - git
                     - svn
+                    - archive
                 src:
                   type: string
                   description: >
@@ -108,4 +109,12 @@ Below an overview of all possible fields on the manifest. The bold items are man
                   description: Files to ignore. See :ref:`Ignore` for details.
                   items:
                     type: string
+                hash:
+                  type: string
+                  description: >
+                    Cryptographic hash of the archive file for integrity verification.
+                    Only used with ``vcs: archive``. Format: ``<algorithm>:<hex-digest>``.
+                    Currently ``sha256`` is supported (e.g. ``sha256:e3b0c4…``).
+                    The format is designed for future extension to ``sha512``, etc.
+                    See :ref:`Archive` for details.
               uniqueItems: true
