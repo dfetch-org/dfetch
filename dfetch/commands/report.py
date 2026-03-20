@@ -89,7 +89,6 @@ class Report(dfetch.commands.command.Command):
 
         license_files = []
         with dfetch.util.util.in_directory(project.destination):
-
             for license_file in filter(SubProject.is_license_file, glob.glob("*")):
                 logger.debug(f"Found license file {license_file} for {project.name}")
                 guessed_license = guess_license_in_file(license_file)

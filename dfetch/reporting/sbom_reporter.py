@@ -81,7 +81,13 @@ For more information see the `Github dependency submission`_.
 from decimal import Decimal
 
 from cyclonedx.builder.this import this_component as cdx_lib_component
-from cyclonedx.model import ExternalReference, ExternalReferenceType, HashAlgorithm, HashType, XsUri
+from cyclonedx.model import (
+    ExternalReference,
+    ExternalReferenceType,
+    HashAlgorithm,
+    HashType,
+    XsUri,
+)
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.model.component_evidence import (
@@ -290,7 +296,6 @@ class SbomReporter(Reporter):
                 )
 
         for lic in licenses:
-
             # License wants either an SPDX id or a name, prefer SPDX id when available
             cdx_license = (
                 CycloneDxLicense(id=lic.spdx_id)

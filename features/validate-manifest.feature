@@ -89,11 +89,9 @@ Feature: Validate a manifest
             """
             Dfetch (0.12.1)
             Schema validation failed:
-
-                  hash: not-a-valid-hash
-                        ^ (line: 9)
-
-            when expecting a string matching ^(sha256):[a-fA-F0-9]+$
+                    hash: not-a-valid-hash
+                ^ (line: 8)
+            found non-matching string
             """
 
     Scenario: A manifest with duplicate project names

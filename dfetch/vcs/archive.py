@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-import io
 import os
 import pathlib
 import shutil
@@ -164,9 +163,7 @@ class ArchiveLocalRepo:
 
             # Strip a single top-level directory if the archive uses one
             entries = os.listdir(tmp_dir)
-            if len(entries) == 1 and os.path.isdir(
-                os.path.join(tmp_dir, entries[0])
-            ):
+            if len(entries) == 1 and os.path.isdir(os.path.join(tmp_dir, entries[0])):
                 extract_root = os.path.join(tmp_dir, entries[0])
             else:
                 extract_root = tmp_dir
@@ -184,6 +181,25 @@ class ArchiveLocalRepo:
                 ArchiveLocalRepo._apply_ignore(dest_dir, ignore)
 
     @staticmethod
+    def _check_archive_limits(member_count: int, total_bytes: int) -> None:
+        """Enforce decompression-bomb size and count limits.
+
+        Raises:
+            RuntimeError: When *member_count* or *total_bytes* exceeds the
+                configured safety limits.
+        """
+        if member_count > _MAX_MEMBER_COUNT:
+            raise RuntimeError(
+                f"Archive contains {member_count} members which exceeds the "
+                f"safety limit of {_MAX_MEMBER_COUNT}."
+            )
+        if total_bytes > _MAX_UNCOMPRESSED_BYTES:
+            raise RuntimeError(
+                f"Archive uncompressed size ({total_bytes} bytes) exceeds the "
+                f"safety limit of {_MAX_UNCOMPRESSED_BYTES} bytes."
+            )
+
+    @staticmethod
     def _check_zip_members(zf: zipfile.ZipFile) -> None:
         """Validate all ZIP member paths against path-traversal attacks.
 
@@ -192,17 +208,9 @@ class ArchiveLocalRepo:
                 component, or when the archive exceeds the size/count limits.
         """
         members = zf.infolist()
-        if len(members) > _MAX_MEMBER_COUNT:
-            raise RuntimeError(
-                f"Archive contains {len(members)} members which exceeds the "
-                f"safety limit of {_MAX_MEMBER_COUNT}."
-            )
-        total_bytes = sum(info.file_size for info in members)
-        if total_bytes > _MAX_UNCOMPRESSED_BYTES:
-            raise RuntimeError(
-                f"Archive uncompressed size ({total_bytes} bytes) exceeds the "
-                f"safety limit of {_MAX_UNCOMPRESSED_BYTES} bytes."
-            )
+        ArchiveLocalRepo._check_archive_limits(
+            len(members), sum(info.file_size for info in members)
+        )
         for info in members:
             member_path = pathlib.PurePosixPath(info.filename)
             if member_path.is_absolute() or any(
@@ -220,17 +228,9 @@ class ArchiveLocalRepo:
             RuntimeError: When the archive exceeds the size/count limits.
         """
         members = tf.getmembers()
-        if len(members) > _MAX_MEMBER_COUNT:
-            raise RuntimeError(
-                f"Archive contains {len(members)} members which exceeds the "
-                f"safety limit of {_MAX_MEMBER_COUNT}."
-            )
-        total_bytes = sum(m.size for m in members if m.isfile())
-        if total_bytes > _MAX_UNCOMPRESSED_BYTES:
-            raise RuntimeError(
-                f"Archive uncompressed size ({total_bytes} bytes) exceeds the "
-                f"safety limit of {_MAX_UNCOMPRESSED_BYTES} bytes."
-            )
+        ArchiveLocalRepo._check_archive_limits(
+            len(members), sum(m.size for m in members if m.isfile())
+        )
 
     @staticmethod
     def _extract_raw(archive_path: str, dest_dir: str) -> None:

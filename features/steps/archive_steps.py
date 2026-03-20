@@ -12,11 +12,9 @@ import zipfile
 
 from behave import given  # pylint: disable=no-name-in-module
 
-from dfetch.util.util import in_directory
 
-
-def compute_sha256(path: str) -> str:
-    """Compute the SHA-256 hash of a file."""
+def _sha256(path: str) -> str:
+    """Return the SHA-256 hex digest of a file."""
     h = hashlib.sha256()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(8192), b""):
@@ -44,29 +42,42 @@ def create_zip(archive_path: str, name: str, files: list[dict]) -> None:
             zf.writestr(member_path, content)
 
 
-@given('an archive "{name}.tar.gz" with the files')
-@given('an archive "{name}.tar.gz"')
-def step_impl(context, name):
+def _archive_url(context, filename: str) -> str:
+    """Build the archive URL in the same format used by apply_manifest_substitutions.
+
+    apply_manifest_substitutions produces ``file:///`` + absolute path, which for an
+    absolute path like ``/tmp/...`` yields four slashes (``file:////tmp/...``).
+    We must match that format so placeholder substitution works in SBOM assertions.
+    """
+    server_fwd = "/".join(context.remotes_dir_path.split(os.sep))
+    return f"file:///{server_fwd}/{filename}"
+
+
+def _create_archive(context, name: str, extension: str) -> None:
+    """Create an archive of the given *extension* in the remote server directory."""
     server_path = context.remotes_dir_path
     pathlib.Path(server_path).mkdir(parents=True, exist_ok=True)
 
-    archive_path = os.path.join(server_path, f"{name}.tar.gz")
+    filename = f"{name}{extension}"
+    archive_path = os.path.join(server_path, filename)
     files = list(context.table) if context.table else [{"path": "README.md"}]
-    create_tar_gz(archive_path, name, files)
 
-    context.archive_sha256 = compute_sha256(archive_path)
-    context.archive_url = pathlib.Path(archive_path).as_uri()
+    if extension == ".tar.gz":
+        create_tar_gz(archive_path, name, files)
+    else:
+        create_zip(archive_path, name, files)
+
+    context.archive_sha256 = _sha256(archive_path)
+    context.archive_url = _archive_url(context, filename)
+
+
+@given('an archive "{name}.tar.gz" with the files')
+@given('an archive "{name}.tar.gz"')
+def step_impl(context, name):
+    _create_archive(context, name, ".tar.gz")
 
 
 @given('an archive "{name}.zip" with the files')
 @given('an archive "{name}.zip"')
 def step_impl(context, name):
-    server_path = context.remotes_dir_path
-    pathlib.Path(server_path).mkdir(parents=True, exist_ok=True)
-
-    archive_path = os.path.join(server_path, f"{name}.zip")
-    files = list(context.table) if context.table else [{"path": "README.md"}]
-    create_zip(archive_path, name, files)
-
-    context.archive_sha256 = compute_sha256(archive_path)
-    context.archive_url = pathlib.Path(archive_path).as_uri()
+    _create_archive(context, name, ".zip")
