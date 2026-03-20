@@ -187,7 +187,7 @@ Dependencies live as plain, readable files inside your own repository. You stay 
    ``dfetch import`` automatically converts **Git submodules and SVN externals** into a dfetch manifest.
    No manual work, no lost history — start benefiting from dfetch's workflow immediately.
 
-   .. button-link:: https://dfetch.rtfd.io/
+   .. button-link:: https://dfetch.rtfd.io/en/latest/manual.html#import
       :color: primary
       :shadow:
 
