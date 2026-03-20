@@ -56,7 +56,6 @@ from dfetch.vcs.archive import (
     SUPPORTED_HASH_ALGORITHMS,
     ArchiveLocalRepo,
     ArchiveRemote,
-    compute_hash,
     is_archive_url,
 )
 
@@ -115,13 +114,15 @@ class ArchiveSubProject(SubProject):
         """Archives have no branches; return an empty string."""
         return ""
 
-    def _latest_revision_on_branch(self, branch: str) -> str:  # noqa: ARG002
+    def _latest_revision_on_branch(self, branch: str) -> str:
         """For archives the 'latest revision' is always the URL (or hash)."""
+        del branch
         return self.remote
 
     def _download_and_compute_hash(self, algorithm: str = "sha256") -> str:
         """Download the archive to a temporary file and return its hash.
 
+        The hash is computed during the download stream — no extra file read.
         The temporary file is always cleaned up, even on error.
 
         Raises:
@@ -130,34 +131,21 @@ class ArchiveSubProject(SubProject):
         fd, tmp_path = tempfile.mkstemp(suffix=_suffix_for_url(self.remote))
         os.close(fd)
         try:
-            self._remote_repo.download(tmp_path)
-            return compute_hash(tmp_path, algorithm)
+            return self._remote_repo.download(tmp_path, algorithm=algorithm)
         finally:
             try:
                 os.remove(tmp_path)
             except OSError:
                 pass
 
-    def _does_revision_exist(self, revision: str) -> bool:
-        """Check whether *revision* (a hash or URL string) is still valid.
+    def _does_revision_exist(self, revision: str) -> bool:  # noqa: ARG002
+        """Check whether the archive URL is still reachable.
 
-        * If *revision* starts with a known hash algorithm prefix (e.g.
-          ``sha256:``) **the entire archive is downloaded** to a temporary file
-          and its hash is verified against *revision*.  This is intentionally
-          thorough — a lightweight HEAD check cannot confirm content integrity.
-        * Otherwise *revision* is treated as the URL itself and a lightweight
-          reachability check is performed via :meth:`ArchiveRemote.is_accessible`.
+        A lightweight HEAD (or partial-GET) reachability check is used for
+        all revision types, including hash-pinned ones.  Full content-integrity
+        verification is intentionally deferred to fetch time (``_fetch_impl``),
+        keeping ``dfetch check`` fast even for large archives over slow links.
         """
-        for algo in SUPPORTED_HASH_ALGORITHMS:
-            if revision.startswith(f"{algo}:"):
-                expected_hex = revision.split(":", 1)[1]
-                try:
-                    actual = self._download_and_compute_hash(algo)
-                    return _safe_compare_hex(actual, expected_hex)
-                except RuntimeError:
-                    return False
-
-        # revision is the URL - just check accessibility
         return self._remote_repo.is_accessible()
 
     def _list_of_tags(self) -> list[str]:
@@ -191,28 +179,31 @@ class ArchiveSubProject(SubProject):
         Returns:
             The version that was actually fetched (hash string or URL).
         """
-        expected_hash = self._project_entry.hash
+        revision = version.revision
 
         pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
 
         fd, tmp_path = tempfile.mkstemp(suffix=_suffix_for_url(self.remote))
         os.close(fd)
         try:
-            self._remote_repo.download(tmp_path)
-
-            if expected_hash:
-                if ":" not in expected_hash:
-                    raise RuntimeError(
-                        f"Malformed integrity.hash for {self._project_entry.name!r}: "
-                        f"expected '<algorithm>:<hex>', got {expected_hash!r}"
-                    )
-                algorithm, expected_hex = expected_hash.split(":", 1)
-                actual_hex = compute_hash(tmp_path, algorithm)
+            hash_algo = next(
+                (
+                    algo
+                    for algo in SUPPORTED_HASH_ALGORITHMS
+                    if revision.startswith(f"{algo}:")
+                ),
+                None,
+            )
+            if hash_algo:
+                expected_hex = revision.split(":", 1)[1]
+                actual_hex = self._remote_repo.download(tmp_path, algorithm=hash_algo)
                 if not _safe_compare_hex(actual_hex, expected_hex):
                     raise RuntimeError(
                         f"Hash mismatch for {self._project_entry.name}! "
-                        f"{algorithm} expected {expected_hex}"
+                        f"{hash_algo} expected {expected_hex}"
                     )
+            else:
+                self._remote_repo.download(tmp_path)
 
             ArchiveLocalRepo.extract(
                 tmp_path,
@@ -226,7 +217,7 @@ class ArchiveSubProject(SubProject):
             except OSError:
                 pass
 
-        return Version(revision=expected_hash if expected_hash else self.remote)
+        return version
 
     def freeze_project(self, project: ProjectEntry) -> str | None:
         """Pin *project* to a cryptographic hash of the archive.
