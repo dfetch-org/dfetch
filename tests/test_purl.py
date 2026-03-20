@@ -122,3 +122,66 @@ def test_remote_url_to_purl(url, expected):
         assert purl is None
     else:
         assert str(purl) == expected
+
+
+# ---------------------------------------------------------------------------
+# Archive URL → PURL (attribute-based to avoid percent-encoding sensitivity)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "url,expected_name,expected_namespace,expected_download_url",
+    [
+        (
+            "https://example.com/releases/mylib-1.0.tar.gz",
+            "mylib-1.0",
+            "example.com",
+            "https://example.com/releases/mylib-1.0.tar.gz",
+        ),
+        (
+            "https://example.com/lib.zip",
+            "lib",
+            "example.com",
+            "https://example.com/lib.zip",
+        ),
+        (
+            "https://releases.example.com/project-2.1.tar.bz2",
+            "project-2.1",
+            "releases.example.com",
+            "https://releases.example.com/project-2.1.tar.bz2",
+        ),
+        (
+            "https://example.com/lib.tgz",
+            "lib",
+            "example.com",
+            "https://example.com/lib.tgz",
+        ),
+        (
+            "https://example.com/lib.tar.xz",
+            "lib",
+            "example.com",
+            "https://example.com/lib.tar.xz",
+        ),
+        (
+            "file:///tmp/local-archive.tar.gz",
+            "local-archive",
+            "",  # no hostname for file:// URLs
+            "file:///tmp/local-archive.tar.gz",
+        ),
+    ],
+)
+def test_archive_url_to_purl_attributes(
+    url, expected_name, expected_namespace, expected_download_url
+):
+    purl = remote_url_to_purl(url)
+    assert purl.type == "generic"
+    assert purl.name == expected_name
+    assert (purl.namespace or "") == expected_namespace
+    assert purl.qualifiers.get("download_url") == expected_download_url
+    assert "vcs_url" not in (purl.qualifiers or {})
+
+
+def test_archive_purl_with_version():
+    url = "https://example.com/lib-1.0.tar.gz"
+    purl = remote_url_to_purl(url, version="sha256:" + "a" * 64)
+    assert purl.version == "sha256:" + "a" * 64

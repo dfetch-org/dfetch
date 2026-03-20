@@ -17,8 +17,12 @@ See https://cyclonedx.org/use-cases/ for more details.
 Archive dependencies
 --------------------
 Archive dependencies (tar.gz, zip, …) are recorded with a ``distribution``
-external reference and, when a ``hash:`` field is set, a ``SHA-256`` component
-hash for supply-chain integrity verification.
+external reference and, when an ``integrity.hash:`` field is set, a ``SHA-256``
+component hash for supply-chain integrity verification.
+
+.. scenario-include:: ../features/report-sbom-archive.feature
+   :scenario:
+        A fetched archive without a hash generates a json sbom
 
 .. scenario-include:: ../features/report-sbom-archive.feature
    :scenario:
