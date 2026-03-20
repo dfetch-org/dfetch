@@ -51,6 +51,51 @@ Feature: Validate a manifest
             unexpected key not in schema 'manifest-wrong'
             """
 
+    Scenario: A valid archive manifest with hash is validated
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: SomeLib
+                  url: https://example.com/SomeLib-1.0.tar.gz
+                  vcs: archive
+                  hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+            """
+        When I run "dfetch validate"
+        Then the output shows
+            """
+            Dfetch (0.12.1)
+              dfetch.yaml         : valid
+            """
+
+    Scenario: A manifest with an invalid hash format is rejected
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: SomeLib
+                  url: https://example.com/SomeLib-1.0.tar.gz
+                  vcs: archive
+                  hash: not-a-valid-hash
+
+            """
+        When I run "dfetch validate"
+        Then the output shows
+            """
+            Dfetch (0.12.1)
+            Schema validation failed:
+
+                  hash: not-a-valid-hash
+                        ^ (line: 9)
+
+            when expecting a string matching ^(sha256):[a-fA-F0-9]+$
+            """
+
     Scenario: A manifest with duplicate project names
         Given the manifest 'dfetch.yaml'
             """

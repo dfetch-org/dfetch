@@ -15,6 +15,8 @@ REMOTE_SCHEMA = Map(
     }
 )
 
+HASH_STR = Regex(r"^(sha256):[a-fA-F0-9]+$")
+
 PROJECT_SCHEMA = Map(
     {
         "name": SAFE_STR,
@@ -26,9 +28,10 @@ PROJECT_SCHEMA = Map(
         Optional("repo-path"): SAFE_STR,
         Optional("remote"): SAFE_STR,
         Optional("patch"): SAFE_STR | Seq(SAFE_STR),
-        Optional("vcs"): Enum(["git", "svn"]),
+        Optional("vcs"): Enum(["git", "svn", "archive"]),
         Optional("src"): SAFE_STR,
         Optional("ignore"): Seq(SAFE_STR),
+        Optional("hash"): HASH_STR,
     }
 )
 

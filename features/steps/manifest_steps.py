@@ -12,13 +12,21 @@ from behave import given, then, when  # pylint: disable=no-name-in-module
 from features.steps.generic_steps import check_file, generate_file, remote_server_path
 
 
+def apply_manifest_substitutions(context, contents: str) -> str:
+    """Apply context-specific substitutions to manifest contents."""
+    result = contents.replace(
+        "url: some-remote-server", f"url: file:///{remote_server_path(context)}"
+    )
+    if hasattr(context, "archive_sha256"):
+        result = result.replace("<archive-sha256>", context.archive_sha256)
+    return result
+
+
 def generate_manifest(
     context, name="dfetch.yaml", contents: Optional[str] = None, path=None
 ):
     contents = contents or context.text
-    manifest = contents.replace(
-        "url: some-remote-server", f"url: file:///{remote_server_path(context)}"
-    )
+    manifest = apply_manifest_substitutions(context, contents)
     generate_file(os.path.join(path or os.getcwd(), name), manifest)
 
 
@@ -37,7 +45,7 @@ def step_impl(context, name, path=None):
 @then("it should generate the manifest '{name}'")
 def step_impl(context, name):
     """Check a manifest."""
-    check_file(name, context.text)
+    check_file(name, apply_manifest_substitutions(context, context.text))
 
 
 @given("the manifest '{name}' with the projects:")
