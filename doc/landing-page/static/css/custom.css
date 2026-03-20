@@ -207,18 +207,17 @@ img {
 }
 
 .sd-btn-secondary {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(8px);
+  background: transparent !important;
+  border: 1.5px solid var(--border) !important;
+  color: var(--text-2) !important;
   transition: all var(--ease) !important;
 }
 
 .sd-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.16) !important;
-  border-color: rgba(255, 255, 255, 0.42) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
   transform: translateY(-2px) !important;
-  color: #fff !important;
+  box-shadow: var(--shad-sm) !important;
 }
 
 /* ============================================================
