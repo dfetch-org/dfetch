@@ -1,9 +1,11 @@
 Feature: Checking dependencies from an archive
 
     DFetch can check if archive-based projects are up-to-date.
-    For archives without a hash, the URL is used as the version identifier.
-    For archives with a 'hash:' field, the hash is verified against the
-    downloaded archive to determine if the content matches.
+    For archives without a hash the URL is the version identifier so the
+    project is always considered up-to-date once fetched (the URL has not
+    changed). For archives with a 'hash:' field the hash is the version
+    identifier, and dfetch reports whether the locally stored version
+    matches the wanted hash.
 
     Scenario: Archive project without hash is reported as up-to-date after fetch
         Given an archive "SomeProject.tar.gz" with the files
@@ -68,7 +70,7 @@ Feature: Checking dependencies from an archive
             """
             Dfetch (0.12.1)
               SomeProject:
-              > wanted (some-remote-server/SomeProject.tar.gz), but never fetched!
+              > wanted (some-remote-server/SomeProject.tar.gz), available (some-remote-server/SomeProject.tar.gz)
             """
 
     Scenario: Non-existent archive URL is reported
@@ -78,7 +80,7 @@ Feature: Checking dependencies from an archive
               version: '0.0'
               projects:
                 - name: non-existent-archive
-                  url: https://example.com/does-not-exist.tar.gz
+                  url: https://dfetch.invalid/does-not-exist.tar.gz
                   vcs: archive
             """
         When I run "dfetch check"
@@ -86,7 +88,7 @@ Feature: Checking dependencies from an archive
             """
             Dfetch (0.12.1)
               non-existent-archive:
-              > 'https://example.com/does-not-exist.tar.gz' is not a valid URL or unreachable
+              > wanted (https://dfetch.invalid/does-not-exist.tar.gz), but not available at the upstream.
             """
 
     Scenario: Archive with local changes is reported

@@ -15,6 +15,10 @@ It tries to determine what kind of vcs it is: git, svn or something else.
 
       .. scenario-include:: ../features/fetch-svn-repo.feature
 
+   .. tab:: Archive
+
+      .. scenario-include:: ../features/fetch-archive.feature
+
 Sub-manifests
 ~~~~~~~~~~~~~~~
 

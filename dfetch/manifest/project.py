@@ -221,6 +221,46 @@ from trunk for svn and master from git.
           vcs: svn
           repo-path: cpputest/cpputest
 
+Archive
+#######
+Projects distributed as ``.tar.gz``, ``.tgz``, ``.tar.bz2``, ``.tar.xz`` or ``.zip`` archive files
+can be fetched using ``vcs: archive``.  DFetch downloads the archive from the ``url:`` and extracts
+it to the destination directory, stripping the top-level directory if present.
+
+The ``src:`` and ``ignore:`` attributes work the same way as for git/SVN projects.
+
+.. code-block:: yaml
+
+    manifest:
+        version: 0.0
+
+        projects:
+        - name: my-library
+          vcs: archive
+          url: https://example.com/releases/my-library-1.0.tar.gz
+
+Hash verification
+*****************
+Use the ``hash:`` attribute to verify the integrity of the downloaded archive.
+The format is ``<algorithm>:<hex-digest>``.  Only ``sha256`` is supported
+today; the format is designed to be extended (``sha512``, etc.).
+
+.. code-block:: yaml
+
+    manifest:
+        version: 0.0
+
+        projects:
+        - name: my-library
+          vcs: archive
+          url: https://example.com/releases/my-library-1.0.tar.gz
+          hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+Run ``dfetch freeze`` after an initial ``dfetch update`` to add the sha256 hash to
+the manifest automatically.
+
+.. scenario-include:: ../features/fetch-archive.feature
+
 Patch
 #####
 *DFetch* promotes upstreaming changes, but also allows local changes. These changes can be managed with local patch
@@ -449,6 +489,11 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
     def hash(self) -> str:
         """Get the expected hash of the archive (format: 'algorithm:hex-value')."""
         return self._hash
+
+    @hash.setter
+    def hash(self, value: str) -> None:
+        """Set the expected hash of the archive."""
+        self._hash = value
 
     def __repr__(self) -> str:
         """Get a string representation of this project entry."""

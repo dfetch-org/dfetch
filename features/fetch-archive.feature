@@ -1,9 +1,9 @@
 Feature: Fetching dependencies from an archive (tar/zip)
 
-    Some projects are distributed as tar or zip archives, for example as GitHub
-    release assets or on internal artifact servers. DFetch supports fetching
-    these archives using the 'archive' vcs type. Optionally, a hash can be
-    specified for integrity verification using 'hash: <algorithm>:<hex-value>'.
+    Some projects are distributed as tar or zip archives, for example as
+    GitHub release assets or on internal artifact servers. DFetch supports
+    fetching these archives using the 'archive' vcs type. Optionally, a hash
+    can be specified with 'hash: <algorithm>:<hex>' for integrity verification.
 
     Scenario: Tar.gz archive project is fetched
         Given an archive "SomeProject.tar.gz" with the files
@@ -33,8 +33,8 @@ Feature: Fetching dependencies from an archive (tar/zip)
 
     Scenario: Zip archive project is fetched
         Given an archive "SomeProject.zip" with the files
-            | path         |
-            | README.md    |
+            | path          |
+            | README.md     |
             | include/lib.h |
         And the manifest 'dfetch.yaml' in MyProject
             """
@@ -94,14 +94,12 @@ Feature: Fetching dependencies from an archive (tar/zip)
         Then the output shows
             """
             Dfetch (0.12.1)
-              SomeProject:
-              > Hash mismatch for SomeProject! sha256 expected 0000000000000000000000000000000000000000000000000000000000000000
+            Hash mismatch for SomeProject! sha256 expected 0000000000000000000000000000000000000000000000000000000000000000
             """
 
     Scenario: Specific directory from archive can be fetched
         Given an archive "SomeProject.tar.gz" with the files
             | path              |
-            | README.md         |
             | src/main.c        |
             | src/lib.c         |
             | tests/test_main.c |
@@ -121,7 +119,6 @@ Feature: Fetching dependencies from an archive (tar/zip)
             MyProject/
                 SomeProject/
                     .dfetch_data.yaml
-                    README.md
                     lib.c
                     main.c
                 dfetch.yaml

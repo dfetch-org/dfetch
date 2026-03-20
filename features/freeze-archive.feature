@@ -4,6 +4,8 @@ Feature: Freeze archive dependencies
     to pin the exact archive content. This uses the 'hash: sha256:<hex>'
     format, which can be extended to other algorithms in the future.
 
+    Archives that already have a hash in the manifest are left unchanged.
+
     Scenario: Archive project is frozen with its sha256 hash
         Given an archive "SomeProject.tar.gz" with the files
             | path      |
