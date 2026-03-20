@@ -33,6 +33,7 @@ import tempfile
 import urllib.parse
 import zipfile
 from collections.abc import Sequence
+from typing import overload
 
 from dfetch.log import get_logger
 from dfetch.util.util import (
@@ -141,32 +142,62 @@ class ArchiveRemote:
                 return False
         return False
 
-    def download(self, dest_path: str) -> None:
-        """Download the archive to *dest_path*.
+    @overload
+    def download(self, dest_path: str, algorithm: str) -> str: ...
+    @overload
+    def download(self, dest_path: str, algorithm: None = ...) -> None: ...
+
+    def download(self, dest_path: str, algorithm: str | None = None) -> str | None:
+        """Download the archive to *dest_path*, optionally computing its hash.
+
+        When *algorithm* is given the hash is computed during the download
+        stream (zero extra file reads) and the hex digest is returned.
 
         Args:
             dest_path: Local file path to write the archive to.
+            algorithm: Hash algorithm name (e.g. ``"sha256"``).  When *None*
+                no hash is computed and *None* is returned.
+
+        Returns:
+            Hex digest string when *algorithm* is provided, else *None*.
 
         Raises:
             RuntimeError: On download failure or unsupported URL scheme.
         """
+        hasher = hashlib.new(algorithm) if algorithm else None
         parsed = urllib.parse.urlparse(self.url)
         if parsed.scheme == "file":
             try:
-                shutil.copy(parsed.path, dest_path)
+                if hasher:
+                    with open(parsed.path, "rb") as src, open(dest_path, "wb") as dst:
+                        for chunk in iter(lambda: src.read(65536), b""):
+                            dst.write(chunk)
+                            hasher.update(chunk)
+                else:
+                    shutil.copy(parsed.path, dest_path)
             except OSError as exc:
                 raise RuntimeError(
                     f"'{self.url}' is not a valid URL or unreachable: {exc}"
                 ) from exc
         elif parsed.scheme in ("http", "https"):
-            self._http_download(parsed, dest_path)
+            self._http_download(parsed, dest_path, hasher=hasher)
         else:
             raise RuntimeError(
                 f"'{self.url}' uses unsupported scheme '{parsed.scheme}'."
             )
+        return hasher.hexdigest() if hasher else None
 
-    def _http_download(self, parsed: urllib.parse.ParseResult, dest_path: str) -> None:
-        """Download an HTTP/HTTPS resource to *dest_path*."""
+    def _http_download(
+        self,
+        parsed: urllib.parse.ParseResult,
+        dest_path: str,
+        hasher: hashlib._Hash | None = None,
+    ) -> None:
+        """Download an HTTP/HTTPS resource to *dest_path*.
+
+        When *hasher* is provided each chunk is fed into it during streaming,
+        so the caller gets the hash without an extra file read.
+        """
         conn = _http_conn(parsed.scheme, parsed.netloc, timeout=60)
         try:
             conn.request("GET", _resource_path(parsed))
@@ -176,6 +207,8 @@ class ArchiveRemote:
             with open(dest_path, "wb") as fh:
                 while chunk := resp.read(65536):
                     fh.write(chunk)
+                    if hasher:
+                        hasher.update(chunk)
         except (OSError, http.client.HTTPException) as exc:
             raise RuntimeError(
                 f"'{self.url}' is not a valid URL or unreachable: {exc}"
