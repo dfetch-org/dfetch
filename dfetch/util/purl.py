@@ -10,6 +10,8 @@ from urllib.parse import urlparse
 from packageurl import PackageURL
 from tldextract import TLDExtract
 
+from dfetch.vcs.archive import ARCHIVE_EXTENSIONS
+
 # Although tldextract can fetch the latest suffix list, we don't want that here
 NO_FETCH_EXTRACT = TLDExtract(suffix_list_urls=(), extra_suffixes=("local",))
 
@@ -36,9 +38,6 @@ BITBUCKET_REGEX = re.compile(
 # These domains have no specific Purl type, but adding the domain to the purl doesn't add any value
 EXCLUDED_DOMAINS = ["gitlab", "gitea", "gitee", "sf", "gnu"]
 
-# Archive file extensions recognised as downloadable archive artifacts
-_ARCHIVE_EXTENSIONS = (".tar.gz", ".tgz", ".tar.bz2", ".tar.xz", ".zip")
-
 # Map from dfetch hash-field algorithm prefix to CycloneDX HashAlgorithm name
 DFETCH_TO_CDX_HASH_ALGORITHM: dict[str, str] = {
     "sha256": "SHA-256",
@@ -51,14 +50,14 @@ DEFAULT_NAME = "unknown"
 def _is_archive_url(url: str) -> bool:
     """Return *True* when *url* points to a recognised archive file."""
     lower = url.lower().split("?")[0]  # strip query string before checking extension
-    return any(lower.endswith(ext) for ext in _ARCHIVE_EXTENSIONS)
+    return any(lower.endswith(ext) for ext in ARCHIVE_EXTENSIONS)
 
 
 def _strip_archive_extension(name: str) -> str:
     """Remove a recognised archive extension from *name*."""
     lower = name.lower()
     # Check multi-part extensions first (.tar.gz etc.)
-    for ext in _ARCHIVE_EXTENSIONS:
+    for ext in ARCHIVE_EXTENSIONS:
         if lower.endswith(ext):
             return name[: -len(ext)]
     return name

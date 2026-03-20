@@ -27,6 +27,7 @@ import hmac
 import os
 import pathlib
 import shutil
+import sys
 import tarfile
 import tempfile
 import urllib.error
@@ -34,17 +35,20 @@ import urllib.request
 import zipfile
 from collections.abc import Sequence
 
-from dfetch.log import get_logger
-from dfetch.project.subproject import SubProject
-from dfetch.util.util import find_matching_files, safe_rm
-
-logger = get_logger(__name__)
-
 #: Archive file extensions recognised by DFetch.
+#: Defined before any intra-package imports to avoid partial-initialisation
+#: issues when other modules (e.g. dfetch.util.purl) import this symbol while
+#: the module is still being initialised.
 ARCHIVE_EXTENSIONS = (".tar.gz", ".tgz", ".tar.bz2", ".tar.xz", ".zip")
 
-#: Hash algorithms supported by the ``hash:`` manifest field.
+#: Hash algorithms supported by the ``integrity.hash`` manifest field.
 SUPPORTED_HASH_ALGORITHMS = ("sha256",)
+
+from dfetch.log import get_logger  # noqa: E402
+from dfetch.project.subproject import SubProject  # noqa: E402
+from dfetch.util.util import find_matching_files, safe_rm  # noqa: E402
+
+logger = get_logger(__name__)
 
 # Safety limits applied during extraction to prevent decompression bombs.
 _MAX_UNCOMPRESSED_BYTES = 500 * 1024 * 1024  # 500 MB
@@ -241,10 +245,11 @@ class ArchiveLocalRepo:
         Safety checks performed before extraction:
 
         * TAR: member count and total uncompressed size (decompression bomb).
-          Path sanitisation is handled by the built-in ``filter="tar"`` filter
-          (available from Python 3.11.4 / 3.12 as a security backport) which
-          rejects absolute paths, ``..`` components, absolute symlinks, and
-          device files.
+          Path sanitisation uses the built-in ``filter="tar"`` filter when
+          available (Python ≥ 3.11.4 / 3.12), which rejects absolute paths,
+          ``..`` components, absolute symlinks, and device files.  On older
+          Python releases extraction proceeds without the filter (member-path
+          attacks are still blocked by ``_check_tar_members``).
         * ZIP: member path traversal validation (absolute paths and ``..``
           components are rejected) plus member count and size limits.
         """
@@ -252,7 +257,10 @@ class ArchiveLocalRepo:
         if tarfile.is_tarfile(archive_path) and not lower.endswith(".zip"):
             with tarfile.open(archive_path, "r:*") as tf:
                 ArchiveLocalRepo._check_tar_members(tf)
-                tf.extractall(dest_dir, filter="tar")
+                if sys.version_info >= (3, 11, 4):
+                    tf.extractall(dest_dir, filter="tar")
+                else:
+                    tf.extractall(dest_dir)  # noqa: S202
         elif lower.endswith(".zip") or zipfile.is_zipfile(archive_path):
             with zipfile.ZipFile(archive_path) as zf:
                 ArchiveLocalRepo._check_zip_members(zf)
