@@ -109,12 +109,20 @@ Below an overview of all possible fields on the manifest. The bold items are man
                   description: Files to ignore. See :ref:`Ignore` for details.
                   items:
                     type: string
-                hash:
-                  type: string
+                integrity:
+                  type: object
                   description: >
-                    Cryptographic hash of the archive file for integrity verification.
-                    Only used with ``vcs: archive``. Format: ``<algorithm>:<hex-digest>``.
-                    Currently ``sha256`` is supported (e.g. ``sha256:e3b0c4…``).
-                    The format is designed for future extension to ``sha512``, etc.
+                    Integrity verification block for archive dependencies.
+                    Only used with ``vcs: archive``.
+                    Designed for future extension with ``sig:`` (detached signature URL)
+                    and ``sig-key:`` (signing-key URL or fingerprint) fields alongside ``hash:``.
                     See :ref:`Archive` for details.
+                  properties:
+                    hash:
+                      type: string
+                      description: >
+                        Cryptographic hash of the archive file.
+                        Format: ``<algorithm>:<hex-digest>``.
+                        Currently ``sha256`` is supported (e.g. ``sha256:e3b0c4…``).
+                        The format is designed for future extension to ``sha512``, etc.
               uniqueItems: true
