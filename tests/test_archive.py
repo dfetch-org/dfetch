@@ -1,4 +1,4 @@
-"""Unit tests for dfetch.vcs.archive."""
+"""Unit tests for dfetch.vcs.archive and dfetch.project.archivesubproject."""
 
 import io
 import os
@@ -8,14 +8,12 @@ import zipfile
 
 import pytest
 
-import dfetch.project  # noqa: F401 – must be imported before dfetch.vcs.archive to break circular init
+from dfetch.project.archivesubproject import _safe_compare_hex, _suffix_for_url
 from dfetch.vcs.archive import (
     ARCHIVE_EXTENSIONS,
     SUPPORTED_HASH_ALGORITHMS,
     ArchiveLocalRepo,
     ArchiveRemote,
-    _safe_compare_hex,
-    _suffix_for_url,
     compute_hash,
     is_archive_url,
 )
@@ -260,7 +258,7 @@ def test_is_accessible_missing_file():
 
 
 # ---------------------------------------------------------------------------
-# ArchiveLocalRepo.extract – basic smoke test
+# ArchiveLocalRepo.extract - basic smoke test
 # ---------------------------------------------------------------------------
 
 

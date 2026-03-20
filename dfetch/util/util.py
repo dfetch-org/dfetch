@@ -12,6 +12,72 @@ from typing import Any
 
 from _hashlib import HASH
 
+#: Glob patterns used to identify license files by filename.
+LICENSE_GLOBS = ["licen[cs]e*", "copying*", "copyright*"]
+
+
+def is_license_file(filename: str) -> bool:
+    """Return *True* when *filename* matches a known license file pattern."""
+    return any(fnmatch.fnmatch(filename.lower(), pattern) for pattern in LICENSE_GLOBS)
+
+
+def _copy_entry(src_entry: str, dest_entry: str) -> None:
+    """Copy a single file or directory *src_entry* to *dest_entry*."""
+    if os.path.isdir(src_entry):
+        shutil.copytree(src_entry, dest_entry)
+    else:
+        shutil.copy2(src_entry, dest_entry)
+
+
+def copy_directory_contents(src_dir: str, dest_dir: str) -> None:
+    """Copy every entry in *src_dir* directly into *dest_dir*.
+
+    Directories are copied recursively; files are copied with metadata.
+    """
+    for entry_name in os.listdir(src_dir):
+        _copy_entry(
+            os.path.join(src_dir, entry_name),
+            os.path.join(dest_dir, entry_name),
+        )
+
+
+def copy_src_subset(
+    src_root: str, dest_dir: str, src: str, keep_licenses: bool
+) -> None:
+    """Copy a *src* sub-path from *src_root* into *dest_dir*.
+
+    When *src* is a directory, its contents are copied flat into *dest_dir*.
+    When *src* is a single file, that file is copied into *dest_dir*.
+    If *keep_licenses* is ``True``, any license files found directly in
+    *src_root* are also copied regardless of the *src* filter.
+
+    Raises:
+        RuntimeError: When *src* does not exist inside *src_root*.
+    """
+    src_path = os.path.join(src_root, src)
+    if os.path.isdir(src_path):
+        copy_directory_contents(src_path, dest_dir)
+    elif os.path.isfile(src_path):
+        shutil.copy2(src_path, os.path.join(dest_dir, os.path.basename(src_path)))
+    else:
+        raise RuntimeError(f"src {src!r} was not found in the extracted archive")
+
+    if keep_licenses:
+        for entry_name in os.listdir(src_root):
+            full_path = os.path.join(src_root, entry_name)
+            if os.path.isfile(full_path) and is_license_file(entry_name):
+                shutil.copy2(full_path, os.path.join(dest_dir, entry_name))
+
+
+def prune_files_by_pattern(directory: str, patterns: Sequence[str]) -> None:
+    """Remove files and directories in *directory* matching *patterns*.
+
+    License files are never removed even when they match a pattern.
+    """
+    for file_or_dir in find_matching_files(directory, patterns):
+        if not (file_or_dir.is_file() and is_license_file(file_or_dir.name)):
+            safe_rm(file_or_dir)
+
 
 def _remove_readonly(func: Any, path: str, _: Any) -> None:
     if not os.access(path, os.W_OK):

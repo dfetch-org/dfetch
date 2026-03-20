@@ -1,6 +1,5 @@
 """SubProject."""
 
-import fnmatch
 import os
 import pathlib
 from abc import ABC, abstractmethod
@@ -26,7 +25,6 @@ class SubProject(ABC):
     """
 
     NAME = ""
-    LICENSE_GLOBS = ["licen[cs]e*", "copying*", "copyright*"]
 
     def __init__(self, project: ProjectEntry) -> None:
         """Create the subproject."""
@@ -413,11 +411,3 @@ class SubProject(ABC):
                 on_disk_version.revision or on_disk_version.tag or str(on_disk_version)
             )
         return None
-
-    @staticmethod
-    def is_license_file(filename: str) -> bool:
-        """Check if the given filename is a license file."""
-        return any(
-            fnmatch.fnmatch(filename.lower(), pattern)
-            for pattern in SubProject.LICENSE_GLOBS
-        )

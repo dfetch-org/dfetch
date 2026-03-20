@@ -336,8 +336,8 @@ class Integrity:
     Holds the ``hash:`` sub-field today and is designed to accommodate
     future signature-verification fields:
 
-    * ``sig`` – URL of a detached signature file (``.sig`` / ``.asc``).
-    * ``sig_key`` – URL or fingerprint of the signing key (``.p7s`` / ``.gpg``).
+    * ``sig`` - URL of a detached signature file (``.sig`` / ``.asc``).
+    * ``sig_key`` - URL or fingerprint of the signing key (``.p7s`` / ``.gpg``).
     """
 
     hash: str = field(default="")

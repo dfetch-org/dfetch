@@ -381,7 +381,7 @@ def step_impl(context, name):
 
 @then("the '{name}' json file includes")
 def step_impl(context, name):
-    """Partial JSON match – the expected JSON must be a *subset* of the actual file."""
+    """Partial JSON match - the expected JSON must be a *subset* of the actual file."""
     check_json_subset(name, context.text, context)
 
 

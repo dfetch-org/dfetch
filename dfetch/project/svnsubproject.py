@@ -11,6 +11,7 @@ from dfetch.project.subproject import SubProject
 from dfetch.util.util import (
     find_matching_files,
     find_non_matching_files,
+    is_license_file,
     safe_rm,
 )
 from dfetch.vcs.svn import SvnRemote, SvnRepo, get_svn_version
@@ -103,7 +104,7 @@ class SvnSubProject(SubProject):
     def _remove_ignored_files(self) -> None:
         """Remove any ignored files, whilst keeping license files."""
         for file_or_dir in find_matching_files(self.local_path, self.ignore):
-            if not (file_or_dir.is_file() and self.is_license_file(file_or_dir.name)):
+            if not (file_or_dir.is_file() and is_license_file(file_or_dir.name)):
                 safe_rm(file_or_dir)
 
     def _fetch_impl(self, version: Version) -> Version:
@@ -168,9 +169,7 @@ class SvnSubProject(SubProject):
     def _license_files(url_path: str) -> list[str]:
         return [
             str(license)
-            for license in filter(
-                SvnSubProject.is_license_file, SvnRepo.files_in_path(url_path)
-            )
+            for license in filter(is_license_file, SvnRepo.files_in_path(url_path))
         ]
 
     def _get_revision(self, branch: str) -> str:
