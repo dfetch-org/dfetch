@@ -10,24 +10,88 @@
   --text: #111827;
   --text-2: #374151;
   --text-muted: #6b7280;
-  --bg: #ffffff;
-  --bg-2: #f9fafb;
+  --bg-tint: #eff6ff;
+  --bg-mint: #f0fdf4;
   --border: #e5e7eb;
   --grad: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  --grad-pan: linear-gradient(135deg, #2563eb, #7c3aed, #2563eb);
   --shad-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   --shad-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --shad-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
   --shad-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
   --r: 12px;
   --r-sm: 8px;
-  --ease: 0.2s ease;
+  --ease: 0.22s ease;
 }
 
 /* ============================================================
-   Base Typography
+   Keyframe Animations
    ============================================================ */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes gradientPan {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
+  }
+  50% {
+    box-shadow: 0 4px 30px rgba(124, 58, 237, 0.6),
+      0 0 0 5px rgba(37, 99, 235, 0.1);
+  }
+}
+
+@keyframes badgePop {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+html {
+  overflow-x: hidden;
+}
+
 body {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -63,13 +127,52 @@ strong {
   color: var(--text);
 }
 
-/* ============================================================
-   Images
-   ============================================================ */
 img {
   height: auto;
   max-width: 100%;
   border-radius: var(--r-sm);
+}
+
+/* ============================================================
+   Full-bleed Color Bands
+   ============================================================ */
+.band-tint,
+.band-mint {
+  position: relative;
+  padding: 3.5rem 0;
+  margin: 2.5rem 0;
+  z-index: 0;
+}
+
+/* Extend background to full viewport width via oversized absolute pseudo-el */
+.band-tint::before,
+.band-mint::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -9999px;
+  right: -9999px;
+  z-index: -1;
+}
+
+.band-tint::before {
+  background: var(--bg-tint);
+}
+
+.band-mint::before {
+  background: var(--bg-mint);
+}
+
+/* Section heading inside a band */
+.band-tint > p,
+.band-mint > p {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem !important;
+  line-height: 1.3 !important;
 }
 
 /* ============================================================
@@ -81,7 +184,6 @@ img {
   font-size: 0.9375rem !important;
   padding: 0.6875rem 1.375rem !important;
   border-radius: var(--r-sm) !important;
-  transition: all var(--ease) !important;
   letter-spacing: 0.01em;
   display: inline-flex !important;
   align-items: center;
@@ -89,16 +191,17 @@ img {
 }
 
 .sd-btn-primary {
-  background: var(--grad) !important;
+  background: var(--grad-pan) !important;
+  background-size: 200% 200% !important;
   color: #fff !important;
   border: none !important;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4) !important;
+  transition: transform var(--ease), opacity var(--ease) !important;
+  animation: gradientPan 4s ease infinite, pulseGlow 3s ease-in-out infinite !important;
 }
 
 .sd-btn-primary:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.5) !important;
-  opacity: 0.95 !important;
+  transform: translateY(-3px) scale(1.03) !important;
+  opacity: 0.9 !important;
 }
 
 .sd-btn-secondary {
@@ -106,11 +209,12 @@ img {
   border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
   color: rgba(255, 255, 255, 0.9) !important;
   backdrop-filter: blur(8px);
+  transition: all var(--ease) !important;
 }
 
 .sd-btn-secondary:hover {
   background: rgba(255, 255, 255, 0.16) !important;
-  border-color: rgba(255, 255, 255, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
   transform: translateY(-2px) !important;
   color: #fff !important;
 }
@@ -124,11 +228,12 @@ img {
   box-shadow: var(--shad-sm) !important;
   transition: box-shadow var(--ease), transform var(--ease) !important;
   overflow: hidden !important;
+  animation: fadeSlideUp 0.5s ease both;
 }
 
 .sd-card:hover {
   box-shadow: var(--shad-lg) !important;
-  transform: translateY(-4px);
+  transform: translateY(-5px);
 }
 
 .sd-card-body {
@@ -142,6 +247,20 @@ img {
   color: var(--text) !important;
   margin-bottom: 0.75rem !important;
   letter-spacing: -0.01em;
+}
+
+/* Stagger card entrance animations */
+.sd-row .sd-col:nth-child(1) .sd-card {
+  animation-delay: 0.05s;
+}
+.sd-row .sd-col:nth-child(2) .sd-card {
+  animation-delay: 0.15s;
+}
+.sd-row .sd-col:nth-child(3) .sd-card {
+  animation-delay: 0.25s;
+}
+.sd-row .sd-col:nth-child(4) .sd-card {
+  animation-delay: 0.35s;
 }
 
 /* Dark variant cards */
@@ -167,20 +286,35 @@ img {
   color: rgba(255, 255, 255, 0.85) !important;
 }
 
-/* ============================================================
-   Feature Grid — sphinx_design
-   ============================================================ */
-.sd-row.sd-row-cols-md-2 .sd-col,
-.sd-row.sd-row-cols-sm-1 .sd-col {
-  padding: 1.25rem 1rem !important;
+/* Stat cards — "Any VCS / Any language / Longevity" trio */
+.stat-card {
+  border-top: 3px solid var(--primary) !important;
 }
 
-.sd-grid-item p strong:first-child,
-.sd-col > p > strong:first-child {
-  font-size: 1.0625rem;
+.stat-card .sd-card-title {
+  font-size: 1.0625rem !important;
+}
+
+/* ============================================================
+   Feature Grid Icons — floating animation
+   ============================================================ */
+.sd-col > p > span[class*="material"],
+.sd-col > p > .material-icons-sharp,
+.sd-card-title > span[class*="material"],
+.sd-card-body > p > span[class*="material"] {
   display: inline-block;
-  margin-bottom: 0.4rem;
-  color: var(--text);
+  animation: float 3.8s ease-in-out infinite;
+}
+
+/* Stagger float timing per column */
+.sd-row .sd-col:nth-child(2) > p > span[class*="material"] {
+  animation-delay: 0.7s;
+}
+.sd-row .sd-col:nth-child(3) > p > span[class*="material"] {
+  animation-delay: 1.2s;
+}
+.sd-row .sd-col:nth-child(4) > p > span[class*="material"] {
+  animation-delay: 1.9s;
 }
 
 /* ============================================================
@@ -193,6 +327,23 @@ img {
   letter-spacing: 0.03em;
   padding: 0.3rem 0.7rem !important;
   border-radius: 100px !important;
+  animation: badgePop 0.4s ease both;
+}
+
+.sd-badge:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.sd-badge:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.sd-badge:nth-child(4) {
+  animation-delay: 0.24s;
+}
+.sd-badge:nth-child(5) {
+  animation-delay: 0.32s;
+}
+.sd-badge:nth-child(6) {
+  animation-delay: 0.4s;
 }
 
 /* ============================================================
@@ -216,7 +367,8 @@ div.highlight {
 }
 
 div.highlight pre {
-  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace !important;
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas,
+    monospace !important;
   font-size: 0.875rem !important;
   line-height: 1.7 !important;
   padding: 1.5rem !important;
@@ -258,7 +410,7 @@ div.admonition p {
 }
 
 /* ============================================================
-   Sidebar — used in main docs (not landing page)
+   Sidebar — used in main docs, not landing page
    ============================================================ */
 .sphinxsidebar .caption-text {
   font-size: 110%;
@@ -315,10 +467,22 @@ div.admonition p {
   font-weight: 600;
 }
 
-/* Page footer / generated timestamp */
 .sd-font-weight-light.sd-text-muted {
   font-size: 0.85rem;
   margin-top: 3.5rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   Accessibility — respect reduced-motion preference
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
