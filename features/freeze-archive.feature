@@ -10,7 +10,7 @@ Feature: Freeze archive dependencies
         Given an archive "SomeProject.tar.gz" with the files
             | path      |
             | README.md |
-        And the manifest 'dfetch.yaml' in MyProject
+        And the manifest 'dfetch.yaml'
             """
             manifest:
               version: '0.0'
@@ -19,8 +19,8 @@ Feature: Freeze archive dependencies
                   url: some-remote-server/SomeProject.tar.gz
                   vcs: archive
             """
-        And all projects are updated in MyProject
-        When I run "dfetch freeze" in MyProject
+        And all projects are updated
+        When I run "dfetch freeze"
         Then the manifest 'dfetch.yaml' is replaced with
             """
             manifest:
@@ -38,7 +38,7 @@ Feature: Freeze archive dependencies
         Given an archive "SomeProject.tar.gz" with the files
             | path      |
             | README.md |
-        And the manifest 'dfetch.yaml' in MyProject
+        And the manifest 'dfetch.yaml'
             """
             manifest:
               version: '0.0'
@@ -48,8 +48,8 @@ Feature: Freeze archive dependencies
                   vcs: archive
                   hash: sha256:<archive-sha256>
             """
-        And all projects are updated in MyProject
-        When I run "dfetch freeze" in MyProject
+        And all projects are updated
+        When I run "dfetch freeze"
         Then the manifest 'dfetch.yaml' is replaced with
             """
             manifest:

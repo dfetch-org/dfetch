@@ -101,6 +101,29 @@ class ArchiveSubProject(SubProject):
         """For archives the 'latest revision' is always the URL (or hash)."""
         return self._project_entry.remote_url
 
+    def _download_and_compute_hash(self, algorithm: str = "sha256") -> str:
+        """Download the archive to a temporary file and return its hash.
+
+        The temporary file is always cleaned up, even on error.
+
+        Raises:
+            RuntimeError: On download failure or unsupported algorithm.
+        """
+        tmp_path: str | None = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                suffix=_suffix_for_url(self._project_entry.remote_url), delete=False
+            ) as tmp:
+                tmp_path = tmp.name
+            self._remote_repo.download(tmp_path)
+            return compute_hash(tmp_path, algorithm)
+        finally:
+            if tmp_path:
+                try:
+                    os.remove(tmp_path)
+                except OSError:
+                    pass
+
     def _does_revision_exist(self, revision: str) -> bool:
         """Check whether *revision* (a hash or URL string) is still valid.
 
@@ -112,23 +135,11 @@ class ArchiveSubProject(SubProject):
         for algo in SUPPORTED_HASH_ALGORITHMS:
             if revision.startswith(f"{algo}:"):
                 expected_hex = revision.split(":", 1)[1]
-                tmp_path: str | None = None
                 try:
-                    with tempfile.NamedTemporaryFile(
-                        suffix=_suffix_for_url(self.remote), delete=False
-                    ) as tmp:
-                        tmp_path = tmp.name
-                    self._remote_repo.download(tmp_path)
-                    actual = compute_hash(tmp_path, algo)
+                    actual = self._download_and_compute_hash(algo)
                     return _safe_compare_hex(actual, expected_hex)
                 except RuntimeError:
                     return False
-                finally:
-                    if tmp_path:
-                        try:
-                            os.remove(tmp_path)
-                        except OSError:
-                            pass
 
         # revision is the URL – just check accessibility
         return self._remote_repo.is_accessible()
@@ -214,10 +225,14 @@ class ArchiveSubProject(SubProject):
     # ------------------------------------------------------------------
 
     def freeze_project(self, project: ProjectEntry) -> bool:
-        """Update *project* with the on-disk hash so the manifest is pinned.
+        """Pin *project* to a cryptographic hash of the archive.
 
-        For archives without a hash field this is a no-op (the URL is the
-        version identifier and does not change).
+        * If the archive was already fetched with a hash, the on-disk revision
+          (``sha256:<hex>``) is written to the manifest.
+        * If the archive was fetched without a hash (URL-only), the archive is
+          downloaded again, its SHA-256 is computed, and the result is written
+          to the manifest.  This ensures the manifest always ends up pinned to
+          a specific content fingerprint.
 
         Returns:
             *True* when the manifest entry was modified, *False* otherwise.
@@ -227,14 +242,22 @@ class ArchiveSubProject(SubProject):
             return False
 
         revision = on_disk.revision
-        if not revision.startswith(tuple(f"{a}:" for a in SUPPORTED_HASH_ALGORITHMS)):
-            # Archive without a hash – nothing to freeze beyond the URL
+
+        # Already hash-pinned – revision is "sha256:<hex>"
+        if revision.startswith(tuple(f"{a}:" for a in SUPPORTED_HASH_ALGORITHMS)):
             if project.hash == revision:
                 return False
+            project.hash = revision
+            return True
+
+        # URL-pinned: download the archive now and compute its hash.
+        try:
+            hex_value = self._download_and_compute_hash("sha256")
+        except RuntimeError:
             return False
 
-        if project.hash == revision:
+        new_hash = f"sha256:{hex_value}"
+        if project.hash == new_hash:
             return False
-
-        project.hash = revision
+        project.hash = new_hash
         return True

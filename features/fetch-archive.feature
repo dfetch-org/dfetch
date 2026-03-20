@@ -72,9 +72,14 @@ Feature: Fetching dependencies from an archive (tar/zip)
                   hash: sha256:<archive-sha256>
             """
         When I run "dfetch update" in MyProject
-        Then the following projects are fetched
-            | path        |
-            | SomeProject |
+        Then 'MyProject' looks like:
+            """
+            MyProject/
+                SomeProject/
+                    .dfetch_data.yaml
+                    README.md
+                dfetch.yaml
+            """
 
     Scenario: Archive with incorrect sha256 hash is rejected
         Given an archive "SomeProject.tar.gz" with the files
@@ -197,6 +202,6 @@ Feature: Fetching dependencies from an archive (tar/zip)
             """
         When I run "dfetch update" in MyProject
         Then the following projects are fetched
-            | path |
-            | LibA |
-            | LibB |
+            | path           |
+            | MyProject/LibA |
+            | MyProject/LibB |
