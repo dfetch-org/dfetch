@@ -95,6 +95,9 @@ html_theme = "alabaster"
 html_css_files = [
     "css/custom.css",
 ]
+html_js_files = [
+    "js/scroll-animate.js",
+]
 html_title = "Vendor dependencies without the pain"
 html_logo = "../images/dfetch_logo.png"
 html_extra_path = ["robots.txt"]
@@ -112,15 +115,15 @@ html_theme_options = {
     "github_repo": "dfetch",
     "github_banner": True,
     "show_related": True,
-    "note_bg": "#dbeafe",
+    "note_bg": "#fef3e0",
     "nosidebar": True,
-    "page_width": "1100px",
-    "body_text": "#111827",
-    "link": "#2563eb",
-    "link_hover": "#1d4ed8",
-    "anchor": "#2563eb",
-    "anchor_hover_fg": "#1d4ed8",
-    "pre_bg": "#f8fafc",
+    "page_width": "1400px",
+    "body_text": "#1c1917",
+    "link": "#c2620a",
+    "link_hover": "#a0510a",
+    "anchor": "#c2620a",
+    "anchor_hover_fg": "#a0510a",
+    "pre_bg": "#f9f5f0",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

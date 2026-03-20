@@ -4,17 +4,22 @@
    Design Tokens
    ============================================================ */
 :root {
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --accent: #7c3aed;
-  --text: #111827;
-  --text-2: #374151;
-  --text-muted: #6b7280;
-  --bg-tint: #eff6ff;
-  --bg-mint: #f0fdf4;
-  --border: #e5e7eb;
-  --grad: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-  --grad-pan: linear-gradient(135deg, #2563eb, #7c3aed, #2563eb);
+  /* Logo-matched palette:
+     --primary  = amber/orange ring on the logo
+     --accent   = dusty slate-blue of the circle fill
+     --dark     = charcoal from the logo background / text */
+  --primary: #c2620a;
+  --primary-dark: #a0510a;
+  --accent: #4e7fa0;
+  --accent-dark: #3a6682;
+  --text: #1c1917;
+  --text-2: #3d3530;
+  --text-muted: #78716c;
+  --bg-tint: #fef8f0;   /* very light amber warm */
+  --bg-mint: #eff6fa;   /* very light slate-blue */
+  --border: #e7e0d8;
+  --grad: linear-gradient(135deg, #c2620a 0%, #7a3a0a 100%);
+  --grad-pan: linear-gradient(135deg, #c2620a, #d97706, #c2620a);
   --shad-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   --shad-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --shad-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
@@ -63,11 +68,11 @@
 @keyframes pulse-glow {
   0%,
   100% {
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
+    box-shadow: 0 4px 14px rgba(194, 98, 10, 0.45);
   }
   50% {
-    box-shadow: 0 4px 30px rgba(124, 58, 237, 0.6),
-      0 0 0 5px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 4px 30px rgba(122, 58, 10, 0.6),
+      0 0 0 5px rgba(194, 98, 10, 0.1);
   }
 }
 
@@ -195,7 +200,7 @@ img {
   background-size: 200% 200% !important;
   color: #fff !important;
   border: none !important;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45) !important;
+  box-shadow: 0 4px 14px rgba(194, 98, 10, 0.45) !important;
   transition: transform var(--ease), opacity var(--ease), box-shadow var(--ease) !important;
 }
 
@@ -220,21 +225,63 @@ img {
   box-shadow: var(--shad-sm) !important;
 }
 
+/* Docs button — slate-blue from logo circle fill */
+a.sd-btn-secondary[href*="rtfd.io"],
+a.sd-btn-secondary[href*="readthedocs"] {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(78, 127, 160, 0.35) !important;
+}
+
+a.sd-btn-secondary[href*="rtfd.io"]:hover,
+a.sd-btn-secondary[href*="readthedocs"]:hover {
+  background: var(--accent-dark) !important;
+  border-color: var(--accent-dark) !important;
+  color: #fff !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 20px rgba(78, 127, 160, 0.45) !important;
+}
+
+/* Source button — logo charcoal/dark */
+a.sd-btn-secondary[href*="github.com"] {
+  background: #2c2420 !important;
+  border-color: #2c2420 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(44, 36, 32, 0.3) !important;
+}
+
+a.sd-btn-secondary[href*="github.com"]:hover {
+  background: #1c1714 !important;
+  border-color: #1c1714 !important;
+  color: #fff !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 20px rgba(44, 36, 32, 0.4) !important;
+}
+
 /* ============================================================
    Cards — sphinx_design
+   Unified system:
+     • All light cards  → white bg, amber top accent, subtle border + shadow
+     • .card-tinted     → warm bg-tint wash, amber top accent (used for "Customize")
+     • .sd-bg-dark      → warm charcoal bg, faint top line, white text
    ============================================================ */
+
+/* Base — every card shares these foundations */
 .sd-card {
   border: 1px solid var(--border) !important;
+  border-top: 3px solid var(--primary) !important;
   border-radius: var(--r) !important;
   box-shadow: var(--shad-sm) !important;
   transition: box-shadow var(--ease), transform var(--ease) !important;
   overflow: hidden !important;
-  animation: fade-slide-up 0.5s ease both;
+  background: #fff !important;
 }
 
-.sd-card:hover {
+/* Hover lift — light cards only */
+.sd-card:not(.sd-bg-dark):hover {
   box-shadow: var(--shad-lg) !important;
-  transform: translateY(-5px);
+  transform: translateY(-4px);
 }
 
 .sd-card-body {
@@ -250,24 +297,21 @@ img {
   letter-spacing: -0.01em;
 }
 
-/* Stagger card entrance animations */
-.sd-row .sd-col:nth-child(1) .sd-card {
-  animation-delay: 0.05s;
-}
-.sd-row .sd-col:nth-child(2) .sd-card {
-  animation-delay: 0.15s;
-}
-.sd-row .sd-col:nth-child(3) .sd-card {
-  animation-delay: 0.25s;
-}
-.sd-row .sd-col:nth-child(4) .sd-card {
-  animation-delay: 0.35s;
+/* Tinted variant — warm bg wash, amber top (inherited) */
+.card-tinted {
+  background: var(--bg-tint) !important;
 }
 
-/* Dark variant cards */
+/* Stat cards — smaller title, centred; top accent inherited from base */
+.stat-card .sd-card-title {
+  font-size: 1.0625rem !important;
+}
+
+/* Dark variant — warm charcoal matching logo, subtle top line replaces amber */
 .sd-bg-dark {
-  background: linear-gradient(140deg, #0f172a 0%, #1e293b 100%) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: linear-gradient(150deg, #1e1610 0%, #2d2018 100%) !important;
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
 }
 
 .sd-bg-dark .sd-card-title {
@@ -285,15 +329,6 @@ img {
 
 .sd-text-light {
   color: rgba(255, 255, 255, 0.85) !important;
-}
-
-/* Stat cards — "Any VCS / Any language / Longevity" trio */
-.stat-card {
-  border-top: 3px solid var(--primary) !important;
-}
-
-.stat-card .sd-card-title {
-  font-size: 1.0625rem !important;
 }
 
 /* ============================================================
@@ -390,7 +425,7 @@ div.highlight pre {
 div.admonition {
   border: none !important;
   border-radius: var(--r-sm) !important;
-  border-left: 4px solid var(--primary) !important;
+  border-left: 4px solid var(--accent) !important;
   box-shadow: var(--shad-sm) !important;
   font-family: "Inter", sans-serif;
   padding: 1.25rem 1.5rem !important;
@@ -400,7 +435,7 @@ div.admonition {
 div.admonition p.admonition-title {
   font-family: "Inter", sans-serif;
   font-weight: 700 !important;
-  color: var(--primary) !important;
+  color: var(--accent) !important;
   margin: 0 0 0.5rem 0 !important;
 }
 
@@ -479,6 +514,47 @@ div.admonition p {
 }
 
 /* ============================================================
+   Feature grid — icon + heading + paragraph blocks
+   ============================================================ */
+.feature-grid {
+  margin: 2.5rem 0;
+}
+
+.feature-grid .sd-col > p:first-child {
+  /* Icon + bold heading line */
+  font-size: 1.0625rem !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+  margin-bottom: 0.5rem !important;
+  line-height: 1.4 !important;
+}
+
+/* ============================================================
+   Final CTA band
+   ============================================================ */
+.cta-band {
+  text-align: center;
+}
+
+.cta-band > p:first-of-type {
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em;
+}
+
+.cta-band div.highlight {
+  display: inline-block;
+  text-align: left;
+  margin: 0 auto 1.5rem !important;
+  min-width: 340px;
+}
+
+.cta-band .cta-buttons {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ============================================================
    Infographic — manifest-to-folder diagram
    ============================================================ */
 .infographic-wrapper {
@@ -491,7 +567,7 @@ div.admonition p {
   .infographic-wrapper::after {
     content: "→  dfetch update";
     position: absolute;
-    top: 50%;
+    top: 25%;
     left: 50%;
     transform: translate(-50%, -50%);
     font-family: "JetBrains Mono", "Fira Code", monospace;
@@ -530,15 +606,34 @@ div.admonition p {
   color: var(--text-muted);
 }
 
-/* Legend row — separated from the diagram by a hairline */
+/* Legend rows — two rows, each 3 columns, aligned under the code blocks */
 .infographic-legend {
-  margin-top: 1.25rem !important;
+  margin-top: 1.5rem !important;
 }
 
-.infographic-legend .sd-col {
-  font-size: 0.9375rem !important;
-  padding-top: 1rem !important;
-  border-top: 1px solid var(--border);
+/* Row 1: manifest key explanations — (1)(2)(3) */
+.infographic-legend .sd-row:first-child .sd-col {
+  font-size: 0.875rem !important;
+  padding-top: 0.875rem !important;
+  border-top: 2px solid var(--primary) !important;
+  color: var(--text-2) !important;
+}
+
+/* Row 2: result annotations — (a)(b)(c) */
+.infographic-legend .sd-row:last-child .sd-col {
+  font-size: 0.875rem !important;
+  padding-top: 0.75rem !important;
+  margin-top: 0.625rem !important;
+  border-top: 1px dashed var(--border) !important;
+  color: var(--text-muted) !important;
+}
+
+/* Bold markers (1)(2)(3)(a)(b)(c) — consistent monospace pill style */
+.infographic-legend strong {
+  font-family: "JetBrains Mono", "Fira Code", monospace !important;
+  font-size: 0.8125rem !important;
+  font-weight: 700 !important;
+  color: var(--primary) !important;
 }
 
 /* ============================================================
