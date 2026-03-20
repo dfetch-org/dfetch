@@ -41,7 +41,6 @@ Example manifest entries::
 
 from __future__ import annotations
 
-import hmac
 import http.client
 import os
 import pathlib
@@ -53,22 +52,13 @@ from dfetch.manifest.version import Version
 from dfetch.project.subproject import SubProject
 from dfetch.vcs.archive import (
     ARCHIVE_EXTENSIONS,
-    SUPPORTED_HASH_ALGORITHMS,
     ArchiveLocalRepo,
     ArchiveRemote,
+    IntegrityHash,
     is_archive_url,
 )
 
 logger = get_logger(__name__)
-
-
-def _safe_compare_hex(actual: str, expected: str) -> bool:
-    """Constant-time comparison of two hex digest strings.
-
-    Uses :func:`hmac.compare_digest` to avoid leaking timing information about
-    the expected hash value.
-    """
-    return hmac.compare_digest(actual.lower(), expected.lower())
 
 
 def _suffix_for_url(url: str) -> str:
@@ -119,8 +109,8 @@ class ArchiveSubProject(SubProject):
         del branch
         return self.remote
 
-    def _download_and_compute_hash(self, algorithm: str = "sha256") -> str:
-        """Download the archive to a temporary file and return its hash.
+    def _download_and_compute_hash(self, algorithm: str = "sha256") -> IntegrityHash:
+        """Download the archive to a temporary file and return its :class:`IntegrityHash`.
 
         The hash is computed during the download stream — no extra file read.
         The temporary file is always cleaned up, even on error.
@@ -131,7 +121,8 @@ class ArchiveSubProject(SubProject):
         fd, tmp_path = tempfile.mkstemp(suffix=_suffix_for_url(self.remote))
         os.close(fd)
         try:
-            return self._remote_repo.download(tmp_path, algorithm=algorithm)
+            hex_digest = self._remote_repo.download(tmp_path, algorithm=algorithm)
+            return IntegrityHash(algorithm, hex_digest)
         finally:
             try:
                 os.remove(tmp_path)
@@ -186,21 +177,15 @@ class ArchiveSubProject(SubProject):
         fd, tmp_path = tempfile.mkstemp(suffix=_suffix_for_url(self.remote))
         os.close(fd)
         try:
-            hash_algo = next(
-                (
-                    algo
-                    for algo in SUPPORTED_HASH_ALGORITHMS
-                    if revision.startswith(f"{algo}:")
-                ),
-                None,
-            )
-            if hash_algo:
-                expected_hex = revision.split(":", 1)[1]
-                actual_hex = self._remote_repo.download(tmp_path, algorithm=hash_algo)
-                if not _safe_compare_hex(actual_hex, expected_hex):
+            expected = IntegrityHash.parse(revision)
+            if expected:
+                actual_hex = self._remote_repo.download(
+                    tmp_path, algorithm=expected.algorithm
+                )
+                if not expected.matches(actual_hex):
                     raise RuntimeError(
                         f"Hash mismatch for {self._project_entry.name}! "
-                        f"{hash_algo} expected {expected_hex}"
+                        f"{expected.algorithm} expected {expected.hex_digest}"
                     )
             else:
                 self._remote_repo.download(tmp_path)
@@ -244,17 +229,11 @@ class ArchiveSubProject(SubProject):
 
         revision = on_disk.revision
 
-        # Already hash-pinned - revision is "sha256:<hex>"
-        if revision.startswith(tuple(f"{a}:" for a in SUPPORTED_HASH_ALGORITHMS)):
-            if project.hash == revision:
-                return None
-            project.hash = revision
-            return revision
-
-        # URL-pinned: download the archive now and compute its hash.
-        # Raises RuntimeError on failure so the caller (freeze.py) can log it.
-        hex_value = self._download_and_compute_hash("sha256")
-        new_hash = f"sha256:{hex_value}"
+        # Already hash-pinned — use the on-disk revision directly.
+        pinned = IntegrityHash.parse(revision) or self._download_and_compute_hash(
+            "sha256"
+        )
+        new_hash = str(pinned)
         if project.hash == new_hash:
             return None
         project.hash = new_hash

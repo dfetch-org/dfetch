@@ -8,12 +8,13 @@ import zipfile
 
 import pytest
 
-from dfetch.project.archivesubproject import _safe_compare_hex, _suffix_for_url
+from dfetch.project.archivesubproject import _suffix_for_url
 from dfetch.vcs.archive import (
     ARCHIVE_EXTENSIONS,
     SUPPORTED_HASH_ALGORITHMS,
     ArchiveLocalRepo,
     ArchiveRemote,
+    IntegrityHash,
     compute_hash,
     is_archive_url,
 )
@@ -77,21 +78,23 @@ def test_compute_hash_default_is_sha256():
 
 
 # ---------------------------------------------------------------------------
-# _safe_compare_hex
+# IntegrityHash.matches
 # ---------------------------------------------------------------------------
 
 
-def test_safe_compare_hex_equal():
-    h = "a" * 64
-    assert _safe_compare_hex(h, h) is True
+def test_integrity_hash_matches_equal():
+    h = IntegrityHash("sha256", "a" * 64)
+    assert h.matches("a" * 64) is True
 
 
-def test_safe_compare_hex_case_insensitive():
-    assert _safe_compare_hex("ABCDEF", "abcdef") is True
+def test_integrity_hash_matches_case_insensitive():
+    h = IntegrityHash("sha256", "abcdef")
+    assert h.matches("ABCDEF") is True
 
 
-def test_safe_compare_hex_not_equal():
-    assert _safe_compare_hex("a" * 64, "b" * 64) is False
+def test_integrity_hash_matches_not_equal():
+    h = IntegrityHash("sha256", "a" * 64)
+    assert h.matches("b" * 64) is False
 
 
 # ---------------------------------------------------------------------------
