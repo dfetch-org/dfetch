@@ -179,18 +179,27 @@ def find_file(name: str, path: str = ".") -> list[str]:
 
 
 def hash_directory(path: str, skiplist: list[str] | None) -> str:
-    """Hash a directory with all its files."""
+    """Hash a directory with all its files.
+
+    Files are visited in a deterministic, sorted order so that the hash is
+    identical regardless of filesystem traversal order.  The relative path of
+    each file (not just its basename) is included in the hash so that files
+    with the same name in different sub-directories are distinguished.
+    """
     digest = hashlib.md5(usedforsecurity=False)
     skiplist = skiplist or []
 
-    for root, _, files in os.walk(path):
-        for name in files:
+    for root, dirs, files in os.walk(path):
+        dirs.sort()  # Ensure deterministic directory traversal order
+        for name in sorted(files):
             if name not in skiplist:
                 file_path = os.path.join(root, name)
+                rel_path = os.path.relpath(file_path, path)
 
-                # Hash the path and add to the digest to account for empty files/directories
+                # Hash the relative path to account for empty files/directories
+                # and to distinguish same-named files in different sub-directories
                 digest.update(
-                    hashlib.md5(name.encode(), usedforsecurity=False).digest()
+                    hashlib.md5(rel_path.encode(), usedforsecurity=False).digest()
                 )
                 digest = hash_file(file_path, digest)
 

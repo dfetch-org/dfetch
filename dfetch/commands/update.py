@@ -89,9 +89,14 @@ class Update(dfetch.commands.command.Command):
             for project in superproject.manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     self._check_destination(project, destinations)
+                    destination = project.destination
+
+                    def _ignored(dst: str = destination) -> list[str]:
+                        return list(superproject.ignored_files(dst))
+
                     dfetch.project.create_sub_project(project).update(
                         force=args.force,
-                        files_to_ignore=superproject.ignored_files(project.destination),
+                        ignored_files_callback=_ignored,
                     )
 
                     if not args.no_recommendations and os.path.isdir(

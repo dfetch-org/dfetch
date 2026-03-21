@@ -4,7 +4,7 @@
 # flake8: noqa
 
 from typing import Optional, Union
-from unittest.mock import patch
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 
@@ -133,6 +133,41 @@ def test_are_there_local_changes(
             assert expectation == subproject._are_there_local_changes(
                 files_to_ignore=[]
             )
+
+
+def test_update_uses_ignored_files_callback_for_stored_hash():
+    """The hash stored after fetch must use the post-fetch ignored files.
+
+    The callback is called twice: once before clearing (pre-fetch local-changes
+    check) and once after extraction (to compute the stored hash).  The second
+    call returns the post-extraction state so the stored hash matches what
+    dfetch check will compute later.
+    """
+    pre_fetch_ignored = ["old_file.txt"]
+    post_fetch_ignored = ["new_ignored.txt"]
+
+    # Return different values on successive calls to simulate pre/post extraction
+    callback = MagicMock(side_effect=[pre_fetch_ignored, post_fetch_ignored])
+
+    with patch("dfetch.project.subproject.os.path.exists") as mock_exists:
+        with patch("dfetch.project.subproject.Metadata.from_file") as mock_meta_file:
+            with patch("dfetch.project.subproject.hash_directory") as mock_hash:
+                with patch("dfetch.project.subproject.safe_rm"):
+                    with patch("dfetch.project.subproject.Metadata.dump"):
+                        mock_exists.return_value = True
+                        mock_meta_file.return_value.version = Version(revision="abc")
+                        mock_hash.return_value = "hash123"
+
+                        subproject = ConcreteSubProject(ProjectEntry({"name": "p1"}))
+                        subproject._wanted_version = Version(revision="new")
+
+                        subproject.update(force=True, ignored_files_callback=callback)
+
+                        assert callback.call_count == 2
+                        # The hash must be computed with the post-fetch ignored list
+                        hash_call_skiplist = mock_hash.call_args[1]["skiplist"]
+                        assert "new_ignored.txt" in hash_call_skiplist
+                        assert "old_file.txt" not in hash_call_skiplist
 
 
 @pytest.mark.parametrize(

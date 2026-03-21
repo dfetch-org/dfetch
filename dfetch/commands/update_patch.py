@@ -86,8 +86,10 @@ class UpdatePatch(dfetch.commands.command.Command):
             for project in superproject.manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     subproject = dfetch.project.create_sub_project(project)
+                    destination = project.destination
 
-                    files_to_ignore = superproject.ignored_files(project.destination)
+                    def _ignored(dst: str = destination) -> list[str]:
+                        return list(superproject.ignored_files(dst))
 
                     # Check if the project has a patch, maybe suggest creating one?
                     if not subproject.patch:
@@ -118,7 +120,7 @@ class UpdatePatch(dfetch.commands.command.Command):
                     # force update to fetched version from metadata without applying patch
                     subproject.update(
                         force=True,
-                        files_to_ignore=files_to_ignore,
+                        ignored_files_callback=_ignored,
                         patch_count=len(subproject.patch) - 1,
                     )
 
@@ -141,7 +143,7 @@ class UpdatePatch(dfetch.commands.command.Command):
 
                     # force update again to fetched version from metadata but with applying patch
                     subproject.update(
-                        force=True, files_to_ignore=files_to_ignore, patch_count=-1
+                        force=True, ignored_files_callback=_ignored, patch_count=-1
                     )
 
         if exceptions:

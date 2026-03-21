@@ -3,7 +3,7 @@
 import os
 import pathlib
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
@@ -90,7 +90,7 @@ class SubProject(ABC):
     def update(
         self,
         force: bool = False,
-        files_to_ignore: Sequence[str] | None = None,
+        ignored_files_callback: Callable[[], Sequence[str]] | None = None,
         patch_count: int = -1,
     ) -> None:
         """Update this subproject if required.
@@ -98,7 +98,11 @@ class SubProject(ABC):
         Args:
             force (bool, optional): Ignore if version is ok or any local changes were done.
                                     Defaults to False.
-            files_to_ignore (Sequence[str], optional): list of files that are ok to overwrite.
+            ignored_files_callback (Callable, optional): Called to obtain the set of files
+                to ignore.  Invoked twice: once before clearing the destination (to detect
+                pre-existing local changes) and once after extraction (to compute the stored
+                hash).  Calling it at both points ensures the stored hash and the check-time
+                hash use the same skiplist, preventing false "local changes" reports.
             patch_count (int, optional): Number of patches to apply (-1 means all).
         """
         to_fetch = self.update_is_required(force)
@@ -106,9 +110,11 @@ class SubProject(ABC):
         if not to_fetch:
             return
 
-        files_to_ignore = files_to_ignore or []
+        pre_fetch_ignored = (
+            list(ignored_files_callback()) if ignored_files_callback else []
+        )
 
-        if not force and self._are_there_local_changes(files_to_ignore):
+        if not force and self._are_there_local_changes(pre_fetch_ignored):
             self._log_project(
                 "skipped - local changes after last update (use --force to overwrite)"
             )
@@ -128,9 +134,16 @@ class SubProject(ABC):
 
         applied_patches = self._apply_patches(patch_count)
 
+        post_fetch_ignored = (
+            list(ignored_files_callback()) if ignored_files_callback else []
+        )
+
         self.__metadata.fetched(
             actually_fetched,
-            hash_=hash_directory(self.local_path, skiplist=[self.__metadata.FILENAME]),
+            hash_=hash_directory(
+                self.local_path,
+                skiplist=[self.__metadata.FILENAME] + post_fetch_ignored,
+            ),
             patch_=applied_patches,
         )
 
