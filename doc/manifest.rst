@@ -123,6 +123,7 @@ Below an overview of all possible fields on the manifest. The bold items are man
                       description: >
                         Cryptographic hash of the archive file.
                         Format: ``<algorithm>:<hex-digest>``.
-                        Currently ``sha256`` is supported (e.g. ``sha256:e3b0c4…``).
-                        The format is designed for future extension to ``sha512``, etc.
+                        Supported algorithms: ``sha256`` (64 hex chars),
+                        ``sha384`` (96 hex chars), and ``sha512`` (128 hex chars).
+                        Example: ``sha256:e3b0c4…``.
               uniqueItems: true

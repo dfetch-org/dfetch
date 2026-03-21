@@ -5,9 +5,10 @@ Supports fetching dependencies distributed as ``.tar.gz``, ``.tgz``,
 :mod:`urllib.request` can reach (``http://``, ``https://``, ``file://``, …).
 
 Optional integrity checking is supported via an ``integrity:`` manifest block.
-The ``hash:`` sub-field (e.g. ``sha256:<hex>``) is supported today; the block
-is designed to grow with ``sig:`` and ``sig-key:`` fields for detached
-signature / signing-key verification in the future.
+The ``hash:`` sub-field accepts ``sha256:<hex>`` (64 hex chars),
+``sha384:<hex>`` (96 hex chars), or ``sha512:<hex>`` (128 hex chars).
+The block is designed to grow with ``sig:`` and ``sig-key:`` fields for
+detached signature / signing-key verification in the future.
 
 Example manifest entry::
 

@@ -19,6 +19,10 @@ def apply_manifest_substitutions(context, contents: str) -> str:
     )
     if hasattr(context, "archive_sha256"):
         result = result.replace("<archive-sha256>", context.archive_sha256)
+    if hasattr(context, "archive_sha384"):
+        result = result.replace("<archive-sha384>", context.archive_sha384)
+    if hasattr(context, "archive_sha512"):
+        result = result.replace("<archive-sha512>", context.archive_sha512)
     if hasattr(context, "archive_url"):
         result = result.replace("<archive-url>", context.archive_url)
     return result

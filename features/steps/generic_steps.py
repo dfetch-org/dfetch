@@ -99,6 +99,10 @@ def _apply_context_substitutions(text: str, context) -> str:
     """Replace dynamic placeholders with values stored on *context*."""
     if hasattr(context, "archive_sha256"):
         text = text.replace("<archive-sha256>", context.archive_sha256)
+    if hasattr(context, "archive_sha384"):
+        text = text.replace("<archive-sha384>", context.archive_sha384)
+    if hasattr(context, "archive_sha512"):
+        text = text.replace("<archive-sha512>", context.archive_sha512)
     if hasattr(context, "archive_url"):
         text = text.replace("<archive-url>", context.archive_url)
     return text

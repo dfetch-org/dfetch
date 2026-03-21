@@ -17,7 +17,7 @@ concept.  Version identity is expressed through:
 The ``integrity:`` block is designed for future extension: ``sig:`` and
 ``sig-key:`` fields for detached signature / signing-key verification will
 slot in alongside ``hash:`` without breaking existing manifests.
-Only ``sha256`` is supported today.
+Supported hash algorithms: ``sha256``, ``sha384``, and ``sha512``.
 
 Example manifest entries::
 
@@ -147,7 +147,7 @@ class ArchiveSubProject(SubProject):
     def wanted_version(self) -> Version:
         """Version derived from the ``integrity.hash`` field or the archive URL.
 
-        * With ``integrity.hash: sha256:<hex>`` → ``Version(revision='sha256:<hex>')``
+        * With ``integrity.hash: <alg>:<hex>`` → ``Version(revision='<alg>:<hex>')``
         * Without hash → ``Version(revision=<url>)``
 
         This makes the standard :class:`~dfetch.project.subproject.SubProject`
@@ -212,11 +212,12 @@ class ArchiveSubProject(SubProject):
         * If the archive was fetched without a hash (URL-only), the archive is
           downloaded again, its SHA-256 is computed, and the result is written
           to ``integrity.hash``.  This ensures the manifest always ends up
-          pinned to a specific content fingerprint.
+          pinned to a specific content fingerprint.  SHA-256 is used as the
+          default algorithm when no prior hash is present.
 
         Returns:
-            The ``sha256:<hex>`` string written to *project*, or *None* if the
-            manifest was already up-to-date.
+            The ``<algorithm>:<hex>`` string written to *project*, or *None* if
+            the manifest was already up-to-date.
 
         Raises:
             RuntimeError: On download or hash-computation failure so the caller
