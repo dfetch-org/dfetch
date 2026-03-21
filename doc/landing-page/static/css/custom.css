@@ -448,6 +448,35 @@ a.sd-btn-secondary[href*="github.com"]:hover {
   margin: 1.5rem 0 !important;
 }
 
+/* Custom terminal theme matched to page palette.
+   Overrides the monokai theme set in conf.py.
+
+   ANSI color mapping for dfetch's CLI output:
+     color-4  (bold blue 34)   → accent blue — "Dfetch (version)" header
+     color-10 (bright green 92)→ primary amber — project names
+     color-12 (bright blue 94) → light accent — "Checking / Fetching" progress
+*/
+.asciinema-player-theme-monokai {
+  --term-color-background: #1e1610;   /* warm charcoal — matches dark card */
+  --term-color-foreground: #f0e8dc;   /* warm cream */
+  --term-color-0:  #2d2018;           /* black (bg2) */
+  --term-color-1:  #c0544a;           /* red */
+  --term-color-2:  #7aad6b;           /* green (spinner) */
+  --term-color-3:  #c2820a;           /* yellow/amber */
+  --term-color-4:  #4e7fa0;           /* blue → accent (header) */
+  --term-color-5:  #9b6eb0;           /* magenta */
+  --term-color-6:  #5da0b5;           /* cyan */
+  --term-color-7:  #e8ddd0;           /* white */
+  --term-color-8:  #6b5e54;           /* bright black / comments */
+  --term-color-9:  #e07060;           /* bright red */
+  --term-color-10: #c2620a;           /* bright green → primary amber (project names) */
+  --term-color-11: #d9a44a;           /* bright yellow */
+  --term-color-12: #7aa8c5;           /* bright blue → light accent (progress) */
+  --term-color-13: #b08ac0;           /* bright magenta */
+  --term-color-14: #7dc0d5;           /* bright cyan */
+  --term-color-15: #f0e8dc;           /* bright white */
+}
+
 /* ============================================================
    Code / Syntax Highlight
    ============================================================ */
