@@ -64,6 +64,47 @@ You stay in full control of every line.
          :material-regular:`article;2em` Source
 
 
+.. div:: how-it-works
+
+   **How it works**
+
+   .. grid:: 1 1 3 3
+      :gutter: 0
+
+      .. grid-item::
+         :class: how-step
+
+         .. div:: step-num
+
+            1
+
+         **Install**
+
+         ``pip install dfetch``
+
+      .. grid-item::
+         :class: how-step
+
+         .. div:: step-num
+
+            2
+
+         **Configure**
+
+         Add your projects to ``dfetch.yaml``
+
+      .. grid-item::
+         :class: how-step
+
+         .. div:: step-num
+
+            3
+
+         **Fetch**
+
+         ``dfetch update``
+
+
 .. div:: band-tint
 
    :material-regular:`play_circle;2em;sd-text-primary` **See it in action**
@@ -177,38 +218,37 @@ You stay in full control of every line.
             **(c)** contents of ``src:`` placed directly here
 
 
-.. div:: feature-grid
+.. div:: why-dfetch
 
-   .. grid:: 1 1 2 2
-      :gutter: 4
+   **Why teams choose Dfetch**
+
+   .. grid:: 1
+      :gutter: 0
 
       .. grid-item::
 
-         :material-regular:`shuffle;4em;sd-text-primary` **VCS-agnostic**
+         :material-regular:`shuffle;1.5em;sd-text-primary` **VCS-agnostic**
 
          Works seamlessly with **Git and SVN** — even mixed within the same project.
          Pin by tag, branch, revision, or exact commit hash. Adapt to your team's workflow, not the other way around.
 
-
       .. grid-item::
 
-         :material-regular:`archive;4em;sd-text-primary` **Fully self-contained**
+         :material-regular:`archive;1.5em;sd-text-primary` **Fully self-contained**
 
          Every dependency is stored **inside your repository** as plain source code.
          No external links means simpler audits, offline builds, and hassle-free deployments that stay reproducible forever.
 
-
       .. grid-item::
 
-         :material-regular:`inventory_2;4em;sd-text-primary` **Fetch only what you need**
+         :material-regular:`inventory_2;1.5em;sd-text-primary` **Fetch only what you need**
 
          Point *Dfetch* at a single subfolder inside a larger repo using the ``src:`` attribute.
          Pull in just the files you need — **no bloat, no noise**, and license files are always retained.
 
-
       .. grid-item::
 
-         :material-regular:`lock_open;4em;sd-text-primary` **Zero lock-in**
+         :material-regular:`lock_open;1.5em;sd-text-primary` **Zero lock-in**
 
          Your vendored code stays as plain source files. Switch tools any time — **no proprietary formats, no migration work**.
          *Dfetch* respects that your source code belongs to you.

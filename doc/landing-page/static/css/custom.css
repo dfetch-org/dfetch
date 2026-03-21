@@ -90,8 +90,9 @@
 /* ============================================================
    Base
    ============================================================ */
-html {
-  overflow-x: hidden;
+html,
+body {
+  overflow-x: clip;
 }
 
 body {
@@ -101,6 +102,58 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--text);
+  /* Dot grid covers the full viewport; gradient overlay fades dots to white
+     at both viewport edges so they never clip abruptly. */
+  background-color: #fff;
+  background-image:
+    linear-gradient(
+      to right,
+      #fff 0%,
+      transparent 12%,
+      transparent 88%,
+      #fff 100%
+    ),
+    radial-gradient(
+      circle,
+      rgba(194, 98, 10, 0.15) 1.5px,
+      transparent 1.5px
+    );
+  background-size: 100% 100%, 28px 28px;
+  background-repeat: no-repeat, repeat;
+}
+
+/* Content area: transparent so the body dot grid shows through.
+   Only the soft hero glow is applied here. */
+div.body {
+  background-color: transparent;
+  background-image:
+    radial-gradient(
+      ellipse 120% 35% at 50% 0%,
+      rgba(194, 98, 10, 0.09) 0%,
+      transparent 60%
+    );
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* Dot grid on the tinted bands — confined to their own background,
+   does NOT extend into the -9999px overflow area (only background-color does). */
+.band-tint {
+  background-image: radial-gradient(
+    circle,
+    rgba(194, 98, 10, 0.18) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 28px 28px;
+}
+
+.band-mint {
+  background-image: radial-gradient(
+    circle,
+    rgba(78, 127, 160, 0.18) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 28px 28px;
 }
 
 h1,
@@ -514,19 +567,145 @@ div.admonition p {
 }
 
 /* ============================================================
-   Feature grid — icon + heading + paragraph blocks
+   How it Works — 3-step strip
    ============================================================ */
-.feature-grid {
-  margin: 2.5rem 0;
+.how-it-works {
+  padding: 3rem 0 2rem;
+  margin: 2rem 0;
+  text-align: center;
 }
 
-.feature-grid .sd-col > p:first-child {
-  /* Icon + bold heading line */
+.how-it-works > p {
+  font-size: 1.875rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em;
+  margin-bottom: 2.5rem !important;
+  color: var(--text) !important;
+  line-height: 1.25 !important;
+}
+
+.how-it-works .sd-row {
+  position: relative;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .how-it-works .sd-row::before {
+    content: "";
+    position: absolute;
+    top: 24px;
+    left: 18%;
+    right: 18%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--primary) 30%,
+      var(--accent) 70%,
+      transparent
+    );
+    z-index: 0;
+    pointer-events: none;
+  }
+}
+
+.sd-col.how-step {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  position: relative;
+  z-index: 1;
+}
+
+.step-num {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--grad);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  box-shadow: 0 4px 14px rgba(194, 98, 10, 0.4);
+  flex-shrink: 0;
+}
+
+.step-num p {
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+.sd-col.how-step > p {
+  line-height: 1.55 !important;
+}
+
+.sd-col.how-step > p strong {
+  display: block;
   font-size: 1.0625rem !important;
   font-weight: 700 !important;
   color: var(--text) !important;
-  margin-bottom: 0.5rem !important;
+  margin-bottom: 0.25rem;
+}
+
+/* Suppress float animation on how-step icons */
+.sd-col.how-step > p > span[class*="material"] {
+  animation: none !important;
+}
+
+/* ============================================================
+   Why Dfetch — accordion feature list
+   ============================================================ */
+.why-dfetch {
+  padding: 3rem 0;
+  margin: 2rem 0;
+}
+
+.why-dfetch > p {
+  font-size: 1.875rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 2.5rem !important;
+  color: var(--text) !important;
+  line-height: 1.25 !important;
+}
+
+.why-dfetch .sd-col {
+  border-bottom: 1px solid var(--border) !important;
+  padding: 1.5rem 0 !important;
+}
+
+.why-dfetch .sd-col:first-child {
+  border-top: 1px solid var(--border) !important;
+}
+
+.why-dfetch .sd-col > p:first-child {
+  font-size: 1.0625rem !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  margin-bottom: 0.375rem !important;
   line-height: 1.4 !important;
+}
+
+.why-dfetch .sd-col > p:last-child {
+  font-size: 0.9375rem !important;
+  color: var(--text-2) !important;
+  margin: 0 !important;
+}
+
+/* Suppress float animation on why-dfetch icons */
+.why-dfetch .sd-col > p:first-child > span[class*="material"] {
+  animation: none !important;
+  flex-shrink: 0 !important;
 }
 
 /* ============================================================
