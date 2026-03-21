@@ -355,6 +355,27 @@ You stay in full control of every line.
                :material-regular:`description;1.5em` Read the docs
 
 
+.. raw:: html
+
+   <script>
+   (function () {
+     document.documentElement.classList.add('js');
+     var targets = document.querySelectorAll(
+       '.how-it-works, .band-tint, .band-mint, .why-dfetch, .sd-card'
+     );
+     var observer = new IntersectionObserver(function (entries) {
+       entries.forEach(function (entry) {
+         if (entry.isIntersecting) {
+           entry.target.classList.add('is-visible');
+           observer.unobserve(entry.target);
+         }
+       });
+     }, { threshold: 0.08 });
+     targets.forEach(function (el) { observer.observe(el); });
+   })();
+   </script>
+
+
 .. div:: sd-text-left sd-text-muted sd-font-weight-light
 
     Generated: |today|
