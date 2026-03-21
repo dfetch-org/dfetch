@@ -403,7 +403,11 @@ class SubProject(ABC):
                 download error).  Callers should catch and report these.
         """
         on_disk_version = self.on_disk_version()
-        if project.version == on_disk_version:
+        if (
+            on_disk_version
+            and project.version.tag == on_disk_version.tag
+            and project.version.revision == on_disk_version.revision
+        ):
             return None
         if on_disk_version:
             project.version = on_disk_version

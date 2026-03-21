@@ -116,10 +116,17 @@ def _json_subset_matches(expected, actual) -> bool:
     if isinstance(expected, list):
         if not isinstance(actual, list):
             return False
-        return all(
-            any(_json_subset_matches(exp_item, act_item) for act_item in actual)
-            for exp_item in expected
-        )
+        matched = [False] * len(actual)
+        for exp_item in expected:
+            found = False
+            for i, act_item in enumerate(actual):
+                if not matched[i] and _json_subset_matches(exp_item, act_item):
+                    matched[i] = True
+                    found = True
+                    break
+            if not found:
+                return False
+        return True
     return expected == actual
 
 
