@@ -58,7 +58,7 @@ Feature: Fetching dependencies from an archive (tar/zip)
                 dfetch.yaml
             """
 
-    Scenario: Archive project with sha256 hash verification is fetched
+    Scenario: Archive projects with sha256, sha384 and sha512 hash verification are fetched
         Given an archive "SomeProject.tar.gz" with the files
             | path      |
             | README.md |
@@ -67,17 +67,33 @@ Feature: Fetching dependencies from an archive (tar/zip)
             manifest:
               version: '0.0'
               projects:
-                - name: SomeProject
+                - name: SomeProject-sha256
                   url: some-remote-server/SomeProject.tar.gz
                   vcs: archive
                   integrity:
                     hash: sha256:<archive-sha256>
+                - name: SomeProject-sha384
+                  url: some-remote-server/SomeProject.tar.gz
+                  vcs: archive
+                  integrity:
+                    hash: sha384:<archive-sha384>
+                - name: SomeProject-sha512
+                  url: some-remote-server/SomeProject.tar.gz
+                  vcs: archive
+                  integrity:
+                    hash: sha512:<archive-sha512>
             """
         When I run "dfetch update" in MyProject
         Then 'MyProject' looks like:
             """
             MyProject/
-                SomeProject/
+                SomeProject-sha256/
+                    .dfetch_data.yaml
+                    README.md
+                SomeProject-sha384/
+                    .dfetch_data.yaml
+                    README.md
+                SomeProject-sha512/
                     .dfetch_data.yaml
                     README.md
                 dfetch.yaml

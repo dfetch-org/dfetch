@@ -22,6 +22,24 @@ def _sha256(path: str) -> str:
     return h.hexdigest()
 
 
+def _sha384(path: str) -> str:
+    """Return the SHA-384 hex digest of a file."""
+    h = hashlib.sha384()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _sha512(path: str) -> str:
+    """Return the SHA-512 hex digest of a file."""
+    h = hashlib.sha512()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def create_tar_gz(archive_path: str, name: str, files: list[dict]) -> None:
     """Create a .tar.gz archive with files nested under a top-level <name>/ directory."""
     with tarfile.open(archive_path, "w:gz") as tar:
@@ -71,6 +89,8 @@ def _create_archive(context, name: str, extension: str) -> None:
         create_zip(archive_path, name, files)
 
     context.archive_sha256 = _sha256(archive_path)
+    context.archive_sha384 = _sha384(archive_path)
+    context.archive_sha512 = _sha512(archive_path)
     context.archive_url = _archive_url(context, filename)
 
 

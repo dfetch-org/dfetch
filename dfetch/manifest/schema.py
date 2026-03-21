@@ -15,7 +15,9 @@ REMOTE_SCHEMA = Map(
     }
 )
 
-HASH_STR = Regex(r"^(sha256):[a-fA-F0-9]{64}$")
+HASH_STR = Regex(
+    r"^(sha256:[a-fA-F0-9]{64}|sha384:[a-fA-F0-9]{96}|sha512:[a-fA-F0-9]{128})$"
+)
 
 # ``integrity:`` block — designed for future extension with ``sig:`` and
 # ``sig-key:`` fields for detached signature / signing-key verification.
