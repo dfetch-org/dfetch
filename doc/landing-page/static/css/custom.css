@@ -26,6 +26,7 @@
   --shad-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
   --r: 12px;
   --r-sm: 8px;
+  --r-lg: 20px;
   --ease: 0.22s ease;
 }
 
@@ -210,14 +211,14 @@ img {
 /* Bleeds to left viewport edge — rounded corner on the right at ~80vw from viewport left */
 .band-tint::before {
   left: calc(50% - 50vw);
-  border-radius: 0 20px 20px 0;
+  border-radius: 0 var(--r-lg) var(--r-lg) 0;
   background: rgba(254, 248, 240, 0.4);
 }
 
 /* Bleeds to right viewport edge — rounded corner on the left at ~20vw from viewport left */
 .band-mint::before {
   left: calc(50% - 30vw);
-  border-radius: 20px 0 0 20px;
+  border-radius: var(--r-lg) 0 0 var(--r-lg);
   background: rgba(239, 246, 250, 0.4);
 }
 
@@ -933,6 +934,33 @@ div.admonition p {
   font-weight: 700 !important;
   color: var(--primary) !important;
 }
+
+/* ============================================================
+   Scroll Fade-in
+   Progressive enhancement: only active when JS adds .js to <html>.
+   ============================================================ */
+.js .how-it-works,
+.js .band-tint,
+.js .band-mint,
+.js .why-dfetch,
+.js .sd-card {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.js .how-it-works.is-visible,
+.js .band-tint.is-visible,
+.js .band-mint.is-visible,
+.js .why-dfetch.is-visible,
+.js .sd-card.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger cards within a grid row */
+.js .sd-row .sd-col:nth-child(2) .sd-card { transition-delay: 0.12s; }
+.js .sd-row .sd-col:nth-child(3) .sd-card { transition-delay: 0.24s; }
 
 /* ============================================================
    Accessibility — respect reduced-motion preference
