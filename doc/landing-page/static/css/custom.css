@@ -183,23 +183,41 @@ img {
   z-index: 0;
 }
 
-/* Extend background to full viewport width via oversized absolute pseudo-el */
+/* Band backgrounds: alternating left-origin and right-origin full-bleed bands.
+   Width = 95vw so the rounded corner always sits 5vw from the opposite viewport edge,
+   visible regardless of content column width.
+
+   Formula:
+     width      = 80vw                     → always 20vw gap on the non-origin side
+
+     band-tint  left = 50% - 50vw          → flush with viewport left edge
+                                              rounded right corner lands at 80vw
+
+     band-mint  left = 50% - 30vw          → starts at 20vw from viewport left edge
+                                              rounded left corner visible at 20vw,
+                                              right edge reaches 100vw (viewport right)
+*/
 .band-tint::before,
 .band-mint::before {
   content: "";
   position: absolute;
   top: 0;
   bottom: 0;
-  left: -9999px;
-  right: -9999px;
+  width: 80vw;
   z-index: -1;
 }
 
+/* Bleeds to left viewport edge — rounded corner on the right at ~80vw from viewport left */
 .band-tint::before {
+  left: calc(50% - 50vw);
+  border-radius: 0 20px 20px 0;
   background: rgba(254, 248, 240, 0.4);
 }
 
+/* Bleeds to right viewport edge — rounded corner on the left at ~20vw from viewport left */
 .band-mint::before {
+  left: calc(50% - 30vw);
+  border-radius: 20px 0 0 20px;
   background: rgba(239, 246, 250, 0.4);
 }
 
@@ -238,10 +256,18 @@ img {
   transition: transform var(--ease), opacity var(--ease), box-shadow var(--ease) !important;
 }
 
-.sd-btn-primary:hover,
+.sd-btn-primary:hover {
+  transform: translateY(-3px) scale(1.03) !important;
+  opacity: 0.9 !important;
+  outline: none !important;
+  animation: gradient-pan 3s ease infinite, pulse-glow 2s ease-in-out 3 !important;
+}
+
 .sd-btn-primary:focus-visible {
   transform: translateY(-3px) scale(1.03) !important;
   opacity: 0.9 !important;
+  outline: 2px solid var(--primary) !important;
+  outline-offset: 2px !important;
   animation: gradient-pan 3s ease infinite, pulse-glow 2s ease-in-out 3 !important;
 }
 
@@ -555,6 +581,13 @@ div.admonition p {
 }
 
 /* ============================================================
+   Icon color — match Docs button accent blue
+   ============================================================ */
+.sd-text-primary {
+  color: var(--accent) !important;
+}
+
+/* ============================================================
    Misc & Utilities
    ============================================================ */
 .toctree-l1 {
@@ -651,7 +684,8 @@ div.admonition p {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--grad);
+  background: var(--grad-pan);
+  background-size: 200% 200%;
   color: #fff;
   display: flex;
   align-items: center;
