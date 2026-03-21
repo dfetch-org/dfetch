@@ -5,7 +5,7 @@
 
 import pytest
 
-from dfetch.util.util import copy_src_subset
+from dfetch.util.util import copy_src_subset, hash_directory
 
 # ---------------------------------------------------------------------------
 # copy_src_subset – path-traversal protection
@@ -54,3 +54,64 @@ def test_copy_src_subset_rejects_path_traversal(tmp_path, evil_src):
 
     with pytest.raises(RuntimeError):
         copy_src_subset(str(src_root), str(dest), evil_src, keep_licenses=False)
+
+
+# ---------------------------------------------------------------------------
+# hash_directory – determinism
+# ---------------------------------------------------------------------------
+
+
+def test_hash_directory_is_deterministic(tmp_path):
+    """hash_directory must return the same value on repeated calls."""
+    d = tmp_path / "proj"
+    d.mkdir()
+    (d / "a.c").write_text("int main(){}")
+    (d / "b.h").write_text("#pragma once")
+    sub = d / "src"
+    sub.mkdir()
+    (sub / "util.c").write_text("void util(){}")
+
+    assert hash_directory(str(d), None) == hash_directory(str(d), None)
+
+
+def test_hash_directory_differs_when_file_content_changes(tmp_path):
+    """Modifying a file must produce a different hash."""
+    d = tmp_path / "proj"
+    d.mkdir()
+    f = d / "file.txt"
+    f.write_text("original")
+
+    h1 = hash_directory(str(d), None)
+    f.write_text("modified")
+    h2 = hash_directory(str(d), None)
+
+    assert h1 != h2
+
+
+def test_hash_directory_differs_for_same_name_in_different_subdirs(tmp_path):
+    """Files with identical names but in different sub-directories must affect the hash."""
+    d1 = tmp_path / "proj1"
+    d1.mkdir()
+    (d1 / "a").mkdir()
+    (d1 / "a" / "file.txt").write_text("in a")
+
+    d2 = tmp_path / "proj2"
+    d2.mkdir()
+    (d2 / "b").mkdir()
+    (d2 / "b" / "file.txt").write_text("in a")
+
+    assert hash_directory(str(d1), None) != hash_directory(str(d2), None)
+
+
+def test_hash_directory_skiplist_excludes_file(tmp_path):
+    """Files listed in skiplist must not contribute to the hash."""
+    d = tmp_path / "proj"
+    d.mkdir()
+    (d / "tracked.txt").write_text("data")
+    (d / "ignored.txt").write_text("ignored data")
+
+    h_with_skip = hash_directory(str(d), ["ignored.txt"])
+    (d / "ignored.txt").write_text("changed ignored data")
+    h_with_skip2 = hash_directory(str(d), ["ignored.txt"])
+
+    assert h_with_skip == h_with_skip2

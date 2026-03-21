@@ -5,7 +5,7 @@
 
 import argparse
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, patch
 
 import pytest
 
@@ -75,7 +75,8 @@ def test_forced_update():
 
                             update(args)
                             mocked_create.return_value.update.assert_called_once_with(
-                                force=True, files_to_ignore=[]
+                                force=True,
+                                ignored_files_callback=ANY,
                             )
 
 

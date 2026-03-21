@@ -92,6 +92,32 @@ Feature: Checking dependencies from an archive
               > wanted (https://dfetch.invalid/does-not-exist.tar.gz), but not available at the upstream.
             """
 
+    Scenario: Archive project with ignore list shows no local changes after fresh fetch
+        Given an archive "SomeProject.tar.gz" with the files
+            | path              |
+            | README.md         |
+            | src/main.c        |
+            | tests/test_main.c |
+        And the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+              version: '0.0'
+              projects:
+                - name: SomeProject
+                  url: some-remote-server/SomeProject.tar.gz
+                  vcs: archive
+                  ignore:
+                    - tests
+            """
+        And all projects are updated in MyProject
+        When I run "dfetch check SomeProject" in MyProject
+        Then the output shows
+            """
+            Dfetch (0.12.1)
+              SomeProject:
+              > up-to-date (some-remote-server/SomeProject.tar.gz)
+            """
+
     Scenario: Archive with local changes is reported
         Given an archive "SomeProject.tar.gz" with the files
             | path      |
