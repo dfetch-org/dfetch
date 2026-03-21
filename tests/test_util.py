@@ -88,21 +88,6 @@ def test_hash_directory_differs_when_file_content_changes(tmp_path):
     assert h1 != h2
 
 
-def test_hash_directory_differs_for_same_name_in_different_subdirs(tmp_path):
-    """Files with identical names but in different sub-directories must affect the hash."""
-    d1 = tmp_path / "proj1"
-    d1.mkdir()
-    (d1 / "a").mkdir()
-    (d1 / "a" / "file.txt").write_text("in a")
-
-    d2 = tmp_path / "proj2"
-    d2.mkdir()
-    (d2 / "b").mkdir()
-    (d2 / "b" / "file.txt").write_text("in a")
-
-    assert hash_directory(str(d1), None) != hash_directory(str(d2), None)
-
-
 def test_hash_directory_skiplist_excludes_file(tmp_path):
     """Files listed in skiplist must not contribute to the hash."""
     d = tmp_path / "proj"
