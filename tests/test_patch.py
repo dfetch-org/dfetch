@@ -253,7 +253,7 @@ st_file_lines = st.lists(
         min_size=5,
         max_size=20,
         alphabet=st.characters(
-            blacklist_categories=("Cc", "Cs"), blacklist_characters="\r\n"
+            blacklist_categories=("Cc", "Cs", "Zl", "Zp"), blacklist_characters="\r\n"
         ),
     ),
     min_size=5,

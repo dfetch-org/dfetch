@@ -54,11 +54,9 @@ def copy_src_subset(
     Raises:
         RuntimeError: When *src* does not exist inside *src_root*.
     """
-    resolved_src_root = os.path.realpath(src_root)
     src_path = os.path.join(src_root, src)
+    check_no_path_traversal(src_path, src_root)
     resolved_src_path = os.path.realpath(src_path)
-    if os.path.commonpath([resolved_src_root, resolved_src_path]) != resolved_src_root:
-        raise RuntimeError(f"src {src!r} escapes the source root")
     if os.path.isdir(resolved_src_path):
         copy_directory_contents(resolved_src_path, dest_dir)
     elif os.path.isfile(resolved_src_path):
@@ -241,6 +239,29 @@ def str_if_possible(data: list[str]) -> str | list[str]:
         if the list is empty, otherwise the original list.
     """
     return "" if not data else data[0] if len(data) == 1 else data
+
+
+def check_no_path_traversal(path: str | Path, root: str | Path) -> None:
+    """Raise *RuntimeError* if *path* escapes *root*.
+
+    Both *path* and *root* are resolved with :func:`os.path.realpath` before
+    comparison, so symlinks and relative ``..`` components cannot bypass the
+    check.
+
+    See https://owasp.org/www-community/attacks/Path_Traversal
+
+    Raises:
+        RuntimeError: When *path* resolves to a location outside *root*.
+    """
+    resolved_root = os.path.realpath(root)
+    resolved_path = os.path.realpath(path)
+    try:
+        escapes = os.path.commonpath([resolved_root, resolved_path]) != resolved_root
+    except ValueError:
+        # commonpath raises ValueError on Windows when paths span different drives
+        escapes = True
+    if escapes:
+        raise RuntimeError(f"{str(path)!r} is outside root {str(root)!r}")
 
 
 def resolve_absolute_path(path: str | Path) -> Path:
