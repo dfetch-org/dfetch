@@ -79,6 +79,14 @@ def test_forced_update():
                                 ignored_files_callback=ANY,
                             )
 
+                            cb = mocked_create.return_value.update.call_args.kwargs[
+                                "ignored_files_callback"
+                            ]
+                            cb()
+                            fake_superproject.ignored_files.assert_called_once_with(
+                                "some_dest"
+                            )
+
 
 def test_create_menu():
     subparsers = argparse.ArgumentParser().add_subparsers()

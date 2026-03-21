@@ -420,6 +420,7 @@ class SubProject(ABC):
             on_disk_version
             and project.version.tag == on_disk_version.tag
             and project.version.revision == on_disk_version.revision
+            and (bool(project.version.tag) or self.revision_is_enough())
         ):
             return None
         if on_disk_version:

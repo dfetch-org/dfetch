@@ -191,8 +191,8 @@ def test_update_uses_ignored_files_callback_for_stored_hash():
             "already-pinned-revision-matches-branch-differs",
             Version(revision="abc123"),
             Version(revision="abc123", branch="feature"),
-            None,
-            Version(revision="abc123"),
+            "abc123",
+            Version(revision="abc123", branch="feature"),
         ),
         (
             "tag-differs-triggers-freeze",
