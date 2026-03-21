@@ -38,7 +38,7 @@ You stay in full control of every line.
 
     .. grid-item::
 
-      .. button-link:: https://pypi.org/project/dfetch/
+      .. button-link:: https://github.com/dfetch-org/dfetch/releases/latest
          :color: primary
          :shadow:
          :expand:
@@ -80,7 +80,7 @@ You stay in full control of every line.
 
          **Install**
 
-         ``pip install dfetch``
+         Download or ``pip install dfetch``
 
       .. grid-item::
          :class: how-step
@@ -103,6 +103,46 @@ You stay in full control of every line.
          **Fetch**
 
          ``dfetch update``
+
+
+.. div:: install-options
+
+   :material-regular:`devices;1.5em;sd-text-primary` **Available on every platform**
+
+   .. grid:: 2 2 4 4
+      :gutter: 2
+
+      .. grid-item-card:: :material-regular:`terminal;1.75em` Linux
+         :text-align: center
+         :class-card: install-card
+         :link: https://github.com/dfetch-org/dfetch/releases/latest
+         :link-type: url
+
+         ``.deb``  ·  ``.rpm``
+
+      .. grid-item-card:: :material-regular:`laptop_mac;1.75em` macOS
+         :text-align: center
+         :class-card: install-card
+         :link: https://github.com/dfetch-org/dfetch/releases/latest
+         :link-type: url
+
+         ``.pkg``
+
+      .. grid-item-card:: :material-regular:`desktop_windows;1.75em` Windows
+         :text-align: center
+         :class-card: install-card
+         :link: https://github.com/dfetch-org/dfetch/releases/latest
+         :link-type: url
+
+         ``.msi``
+
+      .. grid-item-card:: :material-regular:`code;1.75em` Python / pip
+         :text-align: center
+         :class-card: install-card
+         :link: https://pypi.org/project/dfetch/
+         :link-type: url
+
+         ``pip install dfetch``
 
 
 .. div:: band-tint
@@ -327,10 +367,6 @@ You stay in full control of every line.
 
    :material-regular:`rocket_launch;2em;sd-text-primary` **Get started in seconds**
 
-   .. code-block:: bash
-
-      pip install dfetch && dfetch init && dfetch update
-
    .. div:: cta-buttons
 
       .. grid:: 2
@@ -338,7 +374,7 @@ You stay in full control of every line.
 
          .. grid-item::
 
-            .. button-link:: https://pypi.org/project/dfetch/
+            .. button-link:: https://github.com/dfetch-org/dfetch/releases/latest
                :color: primary
                :shadow:
                :expand:

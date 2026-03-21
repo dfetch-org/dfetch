@@ -628,6 +628,50 @@ div.admonition p {
 }
 
 /* ============================================================
+   Install Options — platform card grid
+   ============================================================ */
+.install-options {
+  padding: 1.5rem 0 2rem;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.install-options > p {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem !important;
+  line-height: 1.3 !important;
+}
+
+/* Compact padding for install cards */
+.install-card .sd-card-body {
+  padding: 1.125rem 1rem !important;
+}
+
+/* Icon row — primary colour, no float animation */
+.install-card .sd-card-title > span[class*="material"] {
+  color: var(--primary) !important;
+  animation: none !important;
+  display: inline-block;
+  margin-bottom: 0.25rem;
+}
+
+/* Format tag row (.deb · .rpm / .msi / .pkg / pip install) */
+.install-card .sd-card-body > p {
+  font-size: 0.8125rem !important;
+  font-family: "JetBrains Mono", "Fira Code", monospace !important;
+  color: var(--text-muted) !important;
+  margin: 0 !important;
+  line-height: 1.5 !important;
+}
+
+/* Whole-card link cursor */
+.install-card a.sd-stretched-link {
+  cursor: pointer;
+}
+
+/* ============================================================
    How it Works — 3-step strip
    ============================================================ */
 .how-it-works {
