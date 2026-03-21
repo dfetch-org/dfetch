@@ -582,11 +582,13 @@ div.admonition p {
   margin-bottom: 2.5rem !important;
   color: var(--text) !important;
   line-height: 1.25 !important;
+  text-align: center !important;
 }
 
 .how-it-works .sd-row {
   position: relative;
   justify-content: center;
+  align-items: flex-start;
 }
 
 @media (min-width: 768px) {
@@ -599,10 +601,10 @@ div.admonition p {
     height: 1px;
     background: linear-gradient(
       90deg,
-      transparent,
-      var(--primary) 30%,
-      var(--accent) 70%,
-      transparent
+      transparent 0%,
+      rgba(194, 98, 10, 0.35) 20%,
+      rgba(194, 98, 10, 0.35) 80%,
+      transparent 100%
     );
     z-index: 0;
     pointer-events: none;
@@ -643,6 +645,7 @@ div.admonition p {
 
 .sd-col.how-step > p {
   line-height: 1.55 !important;
+  margin-bottom: 0.25rem !important;
 }
 
 .sd-col.how-step > p strong {
@@ -650,7 +653,14 @@ div.admonition p {
   font-size: 1.0625rem !important;
   font-weight: 700 !important;
   color: var(--text) !important;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.375rem;
+}
+
+/* Description line — muted to create visual hierarchy below the step name */
+.sd-col.how-step > p:last-child {
+  font-size: 0.9375rem !important;
+  color: var(--text-muted) !important;
+  margin-top: 0.25rem !important;
 }
 
 /* Suppress float animation on how-step icons */

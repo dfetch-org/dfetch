@@ -91,7 +91,7 @@ You stay in full control of every line.
 
          **Configure**
 
-         Add your projects to ``dfetch.yaml``
+         Add projects to ``dfetch.yaml``
 
       .. grid-item::
          :class: how-step
