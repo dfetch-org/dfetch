@@ -94,6 +94,7 @@ Feature: Create an CycloneDX sbom
                                 "url": "https://github.com/cpputest/cpputest"
                             }
                         ],
+                        "group": "cpputest",
                         "licenses": [
                             {
                                 "license": {
