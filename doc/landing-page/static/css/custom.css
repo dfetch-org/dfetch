@@ -136,25 +136,6 @@ div.body {
   background-repeat: no-repeat;
 }
 
-/* Dot grid on the tinted bands — confined to their own background,
-   does NOT extend into the -9999px overflow area (only background-color does). */
-.band-tint {
-  background-image: radial-gradient(
-    circle,
-    rgba(194, 98, 10, 0.18) 1.5px,
-    transparent 1.5px
-  );
-  background-size: 28px 28px;
-}
-
-.band-mint {
-  background-image: radial-gradient(
-    circle,
-    rgba(78, 127, 160, 0.18) 1.5px,
-    transparent 1.5px
-  );
-  background-size: 28px 28px;
-}
 
 h1,
 h2,
@@ -215,11 +196,11 @@ img {
 }
 
 .band-tint::before {
-  background: var(--bg-tint);
+  background: rgba(254, 248, 240, 0.4);
 }
 
 .band-mint::before {
-  background: var(--bg-mint);
+  background: rgba(239, 246, 250, 0.4);
 }
 
 /* Section heading inside a band */
@@ -592,7 +573,24 @@ div.admonition p {
   font-size: 0.85rem;
   margin-top: 3.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
+  border: none;
+  position: relative;
+}
+
+.sd-font-weight-light.sd-text-muted::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(194, 98, 10, 0.35) 0,
+    rgba(194, 98, 10, 0.35) 2px,
+    transparent 2px,
+    transparent 28px
+  );
 }
 
 /* ============================================================
@@ -716,12 +714,43 @@ div.admonition p {
 }
 
 .why-dfetch .sd-col {
-  border-bottom: 1px solid var(--border) !important;
+  border: none !important;
   padding: 1.5rem 0 !important;
+  position: relative;
 }
 
-.why-dfetch .sd-col:first-child {
-  border-top: 1px solid var(--border) !important;
+/* Bottom dot-rule — same 28px period and 2px dot as the page grid */
+.why-dfetch .sd-col::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(194, 98, 10, 0.35) 0,
+    rgba(194, 98, 10, 0.35) 2px,
+    transparent 2px,
+    transparent 28px
+  );
+}
+
+/* Top dot-rule on the first row only */
+.why-dfetch .sd-col:first-child::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(194, 98, 10, 0.35) 0,
+    rgba(194, 98, 10, 0.35) 2px,
+    transparent 2px,
+    transparent 28px
+  );
 }
 
 .why-dfetch .sd-col > p:first-child {
@@ -842,8 +871,25 @@ div.admonition p {
   font-size: 0.875rem !important;
   padding-top: 0.75rem !important;
   margin-top: 0.625rem !important;
-  border-top: 1px dashed var(--border) !important;
+  border-top: none !important;
+  position: relative;
   color: var(--text-muted) !important;
+}
+
+.infographic-legend .sd-row:last-child .sd-col::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(194, 98, 10, 0.2) 0,
+    rgba(194, 98, 10, 0.2) 2px,
+    transparent 2px,
+    transparent 28px
+  );
 }
 
 /* Bold markers (1)(2)(3)(a)(b)(c) — consistent monospace pill style */
