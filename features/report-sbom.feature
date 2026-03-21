@@ -227,3 +227,38 @@ Feature: Create an CycloneDX sbom
                 "specVersion": "1.6"
             }
             """
+
+    Scenario: A fetched archive dependency generates a json sbom with distribution reference
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: test-repo-headers
+                  url: https://github.com/dfetch-org/test-repo/archive/refs/tags/v1.tar.gz
+                  vcs: archive
+                  ignore:
+                    - '*.md'
+                    - '*.txt'
+            """
+        And all projects are updated
+        When I run "dfetch report -t sbom"
+        Then the 'report.json' json file includes
+            """
+            {
+                "components": [
+                    {
+                        "name": "test-repo-headers",
+                        "group": "github.com",
+                        "type": "library",
+                        "externalReferences": [
+                            {
+                                "type": "distribution",
+                                "url": "https://github.com/dfetch-org/test-repo/archive/refs/tags/v1.tar.gz"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """

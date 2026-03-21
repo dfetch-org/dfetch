@@ -159,34 +159,53 @@ class ArchiveRemote:
             )
         return hasher.hexdigest() if hasher else None
 
+    _MAX_REDIRECTS = 10
+
     def _http_download(
         self,
         parsed: urllib.parse.ParseResult,
         dest_path: str,
         hasher: hashlib._Hash | None = None,
     ) -> None:
-        """Download an HTTP/HTTPS resource to *dest_path*.
+        """Download an HTTP/HTTPS resource to *dest_path*, following redirects.
 
-        When *hasher* is provided each chunk is fed into it during streaming,
-        so the caller gets the hash without an extra file read.
+        Up to :attr:`_MAX_REDIRECTS` 3xx redirects are followed transparently
+        (e.g. GitHub archive URLs redirect to a CDN).  When *hasher* is
+        provided each chunk is fed into it during streaming, so the caller gets
+        the hash without an extra file read.
         """
-        conn = _http_conn(parsed.scheme, parsed.netloc, timeout=60)
-        try:
-            conn.request("GET", _resource_path(parsed))
-            resp = conn.getresponse()
-            if resp.status != 200:
-                raise RuntimeError(f"HTTP {resp.status} when downloading '{self.url}'")
-            with open(dest_path, "wb") as fh:
-                while chunk := resp.read(65536):
-                    fh.write(chunk)
-                    if hasher:
-                        hasher.update(chunk)
-        except (OSError, http.client.HTTPException) as exc:
-            raise RuntimeError(
-                f"'{self.url}' is not a valid URL or unreachable: {exc}"
-            ) from exc
-        finally:
-            conn.close()
+        for _ in range(self._MAX_REDIRECTS + 1):
+            conn = _http_conn(parsed.scheme, parsed.netloc, timeout=60)
+            try:
+                conn.request("GET", _resource_path(parsed))
+                resp = conn.getresponse()
+                if resp.status in (301, 302, 303, 307, 308):
+                    location = resp.getheader("Location", "")
+                    if not location:
+                        raise RuntimeError(
+                            f"Redirect with no Location header from '{parsed.geturl()}'"
+                        )
+                    parsed = urllib.parse.urlparse(
+                        urllib.parse.urljoin(parsed.geturl(), location)
+                    )
+                    continue
+                if resp.status != 200:
+                    raise RuntimeError(
+                        f"HTTP {resp.status} when downloading '{self.url}'"
+                    )
+                with open(dest_path, "wb") as fh:
+                    while chunk := resp.read(65536):
+                        fh.write(chunk)
+                        if hasher:
+                            hasher.update(chunk)
+                return
+            except (OSError, http.client.HTTPException) as exc:
+                raise RuntimeError(
+                    f"'{self.url}' is not a valid URL or unreachable: {exc}"
+                ) from exc
+            finally:
+                conn.close()
+        raise RuntimeError(f"Too many redirects when downloading '{self.url}'")
 
 
 class ArchiveLocalRepo:
