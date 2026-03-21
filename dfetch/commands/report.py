@@ -116,7 +116,14 @@ class Report(dfetch.commands.command.Command):
         """
         try:
             metadata = Metadata.from_file(Metadata.from_project_entry(project).path)
-            version = metadata.tag or metadata.revision or ""
+            version = (
+                metadata.tag
+                or metadata.revision
+                or project.tag
+                or project.revision
+                or project.hash
+                or ""
+            )
         except FileNotFoundError:
             version = project.tag or project.revision or project.hash or ""
         return version
