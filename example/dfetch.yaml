@@ -39,6 +39,15 @@ manifest:
     src: src
 
   - name: cpputest-git-rev-only
-    dst: Tests/cpputest-git-rev-only
     revision: d14505cc9191fcf17ccbd92af1c3409eb3969890
     repo-path: cpputest/cpputest.git                              # Use external git directly
+
+  - name: cppcheck-archive
+    remote: github
+    dst: Tests/cpputest-archive
+    repo-path: danmar/cppcheck/archive/2.20.0.tar.gz
+    ignore:
+       - tests
+       - .github
+    integrity:
+      hash: sha256:7be7992439339017edb551d8e7d2315f9bb57c402da50c2cee9cd0e2724600a1
