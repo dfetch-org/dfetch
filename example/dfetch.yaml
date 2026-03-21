@@ -44,7 +44,7 @@ manifest:
 
   - name: cppcheck-archive
     remote: github
-    dst: Tests/cpputest-archive
+    dst: Tests/cppcheck-archive
     repo-path: danmar/cppcheck/archive/2.20.0.tar.gz
     ignore:
        - tests
