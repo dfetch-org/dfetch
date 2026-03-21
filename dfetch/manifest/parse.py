@@ -10,7 +10,11 @@ from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest, ManifestDict
 from dfetch.manifest.schema import MANIFEST_SCHEMA
-from dfetch.util.util import find_file, prefix_runtime_exceptions
+from dfetch.util.util import (
+    check_no_path_traversal,
+    find_file,
+    prefix_runtime_exceptions,
+)
 
 logger = get_logger(__name__)
 
@@ -92,7 +96,9 @@ def get_submanifests(skip: list[str] | None = None) -> list[Manifest]:
     for path in find_file(DEFAULT_MANIFEST_NAME, root_dir):
         path = os.path.realpath(path)
 
-        if os.path.commonprefix((path, root_dir)) != root_dir:
+        try:
+            check_no_path_traversal(path, root_dir)
+        except RuntimeError:
             logger.warning(f"Sub-manifest {path} is outside {root_dir}")
             continue
 

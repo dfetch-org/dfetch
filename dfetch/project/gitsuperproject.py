@@ -16,7 +16,7 @@ from dfetch.manifest.project import ProjectEntry
 from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import RevisionRange, SuperProject
-from dfetch.util.util import resolve_absolute_path
+from dfetch.util.util import check_no_path_traversal, resolve_absolute_path
 from dfetch.vcs.git import GitLocalRepo
 
 logger = get_logger(__name__)
@@ -43,10 +43,7 @@ class GitSuperProject(SuperProject):
         """Return a list of files that can be ignored in a given path."""
         resolved_path = resolve_absolute_path(path)
 
-        if not resolved_path.is_relative_to(self.root_directory):
-            raise RuntimeError(
-                f"{resolved_path} not in superproject {self.root_directory}!"
-            )
+        check_no_path_traversal(resolved_path, self.root_directory)
 
         return GitLocalRepo.ignored_files(path)
 

@@ -37,7 +37,11 @@ from dfetch.project import create_super_project
 from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.svnsubproject import SvnSubProject
-from dfetch.util.util import catch_runtime_exceptions, in_directory
+from dfetch.util.util import (
+    catch_runtime_exceptions,
+    check_no_path_traversal,
+    in_directory,
+)
 from dfetch.vcs.patch import Patch, PatchAuthor, PatchInfo, PatchType
 
 logger = get_logger(__name__)
@@ -80,11 +84,7 @@ class FormatPatch(dfetch.commands.command.Command):
 
         output_dir_path = pathlib.Path(args.output_directory).resolve()
 
-        if not output_dir_path.is_relative_to(superproject.root_directory):
-            raise RuntimeError(
-                f"Output directory '{output_dir_path}' must be inside"
-                f" the superproject root '{superproject.root_directory}'"
-            )
+        check_no_path_traversal(output_dir_path, superproject.root_directory)
 
         output_dir_path.mkdir(parents=True, exist_ok=True)
 

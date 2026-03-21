@@ -19,7 +19,7 @@ from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.subproject import SubProject
-from dfetch.util.util import resolve_absolute_path
+from dfetch.util.util import check_no_path_traversal, resolve_absolute_path
 
 logger = get_logger(__name__)
 
@@ -136,10 +136,7 @@ class NoVcsSuperProject(SuperProject):
         """Return a list of files that can be ignored in a given path."""
         resolved_path = resolve_absolute_path(path)
 
-        if not resolved_path.is_relative_to(self.root_directory):
-            raise RuntimeError(
-                f"{resolved_path} not in superproject {self.root_directory}!"
-            )
+        check_no_path_traversal(resolved_path, self.root_directory)
 
         return []
 

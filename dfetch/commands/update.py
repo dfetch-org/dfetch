@@ -41,7 +41,11 @@ import dfetch.project
 from dfetch.commands.common import check_sub_manifests
 from dfetch.log import get_logger
 from dfetch.project import create_super_project
-from dfetch.util.util import catch_runtime_exceptions, in_directory
+from dfetch.util.util import (
+    catch_runtime_exceptions,
+    check_no_path_traversal,
+    in_directory,
+)
 
 logger = get_logger(__name__)
 
@@ -126,8 +130,9 @@ class Update(dfetch.commands.command.Command):
         project: dfetch.manifest.project.ProjectEntry, real_path: str, safe_dir: str
     ) -> None:
         """Check if destination is outside the directory tree."""
-        if os.path.commonprefix((real_path, safe_dir)) != safe_dir:
-            # See https://owasp.org/www-community/attacks/Path_Traversal
+        try:
+            check_no_path_traversal(real_path, safe_dir)
+        except RuntimeError:
             logger.print_warning_line(
                 project.name,
                 f'Skipping, path "{project.destination}" is outside manifest directory tree.',
@@ -135,7 +140,7 @@ class Update(dfetch.commands.command.Command):
             raise RuntimeError(
                 "Destination must be in the manifests folder or a subfolder. "
                 f'"{project.destination}" is outside this tree!'
-            )
+            ) from None
 
     @staticmethod
     def _check_dst_not_in_blacklist(

@@ -279,6 +279,19 @@ class ArchiveLocalRepo:
             )
 
     @staticmethod
+    def _check_archive_member_path(name: str) -> None:
+        """Raise *RuntimeError* if *name* is an unsafe archive member path.
+
+        Rejects absolute paths and any ``..`` path component.
+
+        Raises:
+            RuntimeError: When *name* is absolute or contains a ``..`` component.
+        """
+        member_path = pathlib.PurePosixPath(name)
+        if member_path.is_absolute() or any(part == ".." for part in member_path.parts):
+            raise RuntimeError(f"Archive contains an unsafe member path: {name!r}")
+
+    @staticmethod
     def check_zip_members(zf: zipfile.ZipFile) -> list[zipfile.ZipInfo]:
         """Validate all ZIP member paths against path-traversal attacks.
 
@@ -295,13 +308,7 @@ class ArchiveLocalRepo:
             len(members), sum(info.file_size for info in members)
         )
         for info in members:
-            member_path = pathlib.PurePosixPath(info.filename)
-            if member_path.is_absolute() or any(
-                part == ".." for part in member_path.parts
-            ):
-                raise RuntimeError(
-                    f"Archive contains an unsafe member path: {info.filename!r}"
-                )
+            ArchiveLocalRepo._check_archive_member_path(info.filename)
         return members
 
     @staticmethod
@@ -322,13 +329,7 @@ class ArchiveLocalRepo:
             len(members), sum(m.size for m in members if m.isfile())
         )
         for member in members:
-            member_path = pathlib.PurePosixPath(member.name)
-            if member_path.is_absolute() or any(
-                part == ".." for part in member_path.parts
-            ):
-                raise RuntimeError(
-                    f"Archive contains an unsafe member path: {member.name!r}"
-                )
+            ArchiveLocalRepo._check_archive_member_path(member.name)
 
     @staticmethod
     def _extract_raw(archive_path: str, dest_dir: str) -> None:

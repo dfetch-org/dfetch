@@ -41,7 +41,11 @@ from dfetch.project import create_super_project
 from dfetch.project.gitsuperproject import GitSuperProject
 from dfetch.project.metadata import Metadata
 from dfetch.project.superproject import NoVcsSuperProject, RevisionRange
-from dfetch.util.util import catch_runtime_exceptions, in_directory
+from dfetch.util.util import (
+    catch_runtime_exceptions,
+    check_no_path_traversal,
+    in_directory,
+)
 
 logger = get_logger(__name__)
 
@@ -160,8 +164,8 @@ class UpdatePatch(dfetch.commands.command.Command):
         patch_path = pathlib.Path(patch_to_update).resolve()
 
         try:
-            patch_path.relative_to(root)
-        except ValueError:
+            check_no_path_traversal(patch_path, root)
+        except RuntimeError:
             logger.print_warning_line(
                 project_name,
                 f'No updating patch "{patch_to_update}" which is outside {root}',
