@@ -258,6 +258,7 @@ class SbomReporter(Reporter):
     ) -> None:
         """Attach external references to *component* based on its PURL type."""
         if purl.type == "github":
+            component.group = purl.namespace
             component.external_references.add(
                 ExternalReference(
                     type=ExternalReferenceType.VCS,
@@ -265,6 +266,7 @@ class SbomReporter(Reporter):
                 )
             )
         elif purl.type == "bitbucket":
+            component.group = purl.namespace
             component.external_references.add(
                 ExternalReference(
                     type=ExternalReferenceType.VCS,
