@@ -136,6 +136,76 @@ def test_are_there_local_changes(
 
 
 @pytest.mark.parametrize(
+    "name, project_version, on_disk_version, expect_return, expect_project_version",
+    [
+        (
+            "already-pinned-tag-matches",
+            Version(tag="v1.0", branch="main"),
+            Version(tag="v1.0", branch="main"),
+            None,
+            Version(tag="v1.0", branch="main"),
+        ),
+        (
+            "already-pinned-tag-matches-branch-differs",
+            Version(tag="v1.0"),
+            Version(tag="v1.0", branch="main"),
+            None,
+            Version(tag="v1.0"),
+        ),
+        (
+            "already-pinned-revision-matches-branch-differs",
+            Version(revision="abc123"),
+            Version(revision="abc123", branch="feature"),
+            None,
+            Version(revision="abc123"),
+        ),
+        (
+            "tag-differs-triggers-freeze",
+            Version(tag="v1.0"),
+            Version(tag="v2.0", branch="main"),
+            "v2.0",
+            Version(tag="v2.0", branch="main"),
+        ),
+        (
+            "revision-differs-triggers-freeze",
+            Version(revision="abc123"),
+            Version(revision="def456", branch="main"),
+            "def456",
+            Version(revision="def456", branch="main"),
+        ),
+        (
+            "no-on-disk-version",
+            Version(tag="v1.0"),
+            None,
+            None,
+            Version(tag="v1.0"),
+        ),
+    ],
+)
+def test_freeze_project(
+    name: str,
+    project_version: Version,
+    on_disk_version: Union[Version, None],
+    expect_return: Union[str, None],
+    expect_project_version: Version,
+):
+    with patch("dfetch.project.subproject.os.path.exists") as mocked_path_exists:
+        with patch("dfetch.project.subproject.Metadata.from_file") as mocked_metadata:
+            subproject = ConcreteSubProject(ProjectEntry({"name": "proj1"}))
+
+            mocked_path_exists.return_value = bool(on_disk_version)
+            mocked_metadata().version = on_disk_version
+
+            project = ProjectEntry({"name": "proj1"})
+            project.version = project_version
+
+            result = subproject.freeze_project(project)
+
+            assert result == expect_return
+            assert project.version == expect_project_version
+
+
+@pytest.mark.parametrize(
     "ci_env_value, expected_result",
     [
         ("true", True),

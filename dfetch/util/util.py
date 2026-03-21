@@ -54,11 +54,18 @@ def copy_src_subset(
     Raises:
         RuntimeError: When *src* does not exist inside *src_root*.
     """
+    resolved_src_root = os.path.realpath(src_root)
     src_path = os.path.join(src_root, src)
-    if os.path.isdir(src_path):
-        copy_directory_contents(src_path, dest_dir)
-    elif os.path.isfile(src_path):
-        shutil.copy2(src_path, os.path.join(dest_dir, os.path.basename(src_path)))
+    resolved_src_path = os.path.realpath(src_path)
+    if os.path.commonpath([resolved_src_root, resolved_src_path]) != resolved_src_root:
+        raise RuntimeError(f"src {src!r} escapes the source root")
+    if os.path.isdir(resolved_src_path):
+        copy_directory_contents(resolved_src_path, dest_dir)
+    elif os.path.isfile(resolved_src_path):
+        shutil.copy2(
+            resolved_src_path,
+            os.path.join(dest_dir, os.path.basename(resolved_src_path)),
+        )
     else:
         raise RuntimeError(f"src {src!r} was not found in the extracted archive")
 
