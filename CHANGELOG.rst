@@ -1,3 +1,11 @@
+Unreleased
+==========
+
+* Add archive (``vcs: archive``) support for fetching dependencies from ``.tar.gz``, ``.tgz``, ``.tar.bz2``, ``.tar.xz`` and ``.zip`` files via HTTP, HTTPS or file URLs (#1058)
+* Fix path-traversal check using character-based prefix comparison instead of path-component comparison (#1058)
+* Fix directory hash being non-deterministic across filesystem traversal orders, causing false local-change detection (#1058)
+* Fix ``dfetch freeze`` not capturing branch information for SVN projects when only the revision matched (#1058)
+
 Release 0.12.1 (released 2026-02-24)
 ====================================
 
