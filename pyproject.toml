@@ -84,6 +84,7 @@ development = [
     'pre-commit==4.5.1',
     'ruff==0.15.7',
     'hypothesis==6.151.9',
+    'import-linter==2.11',
 ]
 docs = [
     'sphinx==8.2.3',
@@ -221,3 +222,30 @@ product-version = "{VERSION}"
 file-version = "{VERSION}"
 product-name = "dfetch"
 file-description = "A vendoring tool for fetching and managing external dependencies."
+
+[tool.importlinter]
+root_packages = ["dfetch"]
+
+# Enforce C4 architecture: higher layers may import from lower layers, not vice versa.
+# See doc/internal.rst for the architecture documentation.
+#
+#  dfetch.commands   (top — orchestrates everything)
+#       ↓
+#  dfetch.reporting  (formats output, knows about project & manifest)
+#       ↓
+#  dfetch.project    (core domain — knows about manifest & vcs)
+#       ↓
+#  dfetch.manifest | dfetch.vcs  (independent lower-level modules)
+#       ↓
+#  dfetch.util | dfetch.log      (foundational utilities)
+
+[[tool.importlinter.contracts]]
+name = "C4 architecture layers"
+type = "layers"
+layers = [
+    "dfetch.commands",
+    "dfetch.reporting",
+    "dfetch.project",
+    "dfetch.manifest | dfetch.vcs",
+    "dfetch.util | dfetch.log",
+]
