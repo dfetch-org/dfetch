@@ -28,7 +28,7 @@ def _copy_entry(src_entry: str, dest_entry: str, root: str) -> None:
     """
     check_no_path_traversal(src_entry, root)
     if os.path.isdir(src_entry):
-        shutil.copytree(src_entry, dest_entry)
+        shutil.copytree(src_entry, dest_entry, symlinks=True)
     else:
         shutil.copy2(src_entry, dest_entry)
 
