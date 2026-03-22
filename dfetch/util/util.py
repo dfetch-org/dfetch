@@ -89,17 +89,17 @@ def prune_files_by_pattern(directory: str, patterns: Sequence[str]) -> None:
     seen: set[str] = set()
     paths = []
     for file_or_dir in find_matching_files(directory, patterns):
-        resolved = str(file_or_dir.resolve())
-        if resolved in seen:
+        path_str = str(file_or_dir)
+        if path_str in seen:
             continue
-        seen.add(resolved)
+        seen.add(path_str)
         paths.append(file_or_dir)
 
     # Remove children before parents to avoid FileNotFoundError on already-deleted paths.
-    paths.sort(key=lambda p: len(str(p.resolve())), reverse=True)
+    paths.sort(key=lambda p: len(str(p)), reverse=True)
 
     for file_or_dir in paths:
-        if file_or_dir.exists() and not (
+        if os.path.lexists(str(file_or_dir)) and not (
             file_or_dir.is_file() and is_license_file(file_or_dir.name)
         ):
             safe_rm(file_or_dir)

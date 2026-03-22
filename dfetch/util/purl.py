@@ -1,16 +1,13 @@
-"""Module to convert remote URLs to valid Package URLs (PURLs).
+"""Module to convert VCS remote URLs to valid Package URLs (PURLs).
 
-Supports: GitHub, Bitbucket, SVN, SSH paths, archives, and more.
+Supports: GitHub, Bitbucket, SVN, SSH paths, and generic VCS URLs.
 """
 
-import os.path
 import re
 from urllib.parse import urlparse
 
 from packageurl import PackageURL
 from tldextract import TLDExtract
-
-from dfetch.vcs.archive import ARCHIVE_EXTENSIONS
 
 # Although tldextract can fetch the latest suffix list, we don't want that here
 NO_FETCH_EXTRACT = TLDExtract(suffix_list_urls=(), extra_suffixes=("local",))
@@ -38,31 +35,8 @@ BITBUCKET_REGEX = re.compile(
 # These domains have no specific Purl type, but adding the domain to the purl doesn't add any value
 EXCLUDED_DOMAINS = ["gitlab", "gitea", "gitee", "sf", "gnu"]
 
-# Map from dfetch hash-field algorithm prefix to CycloneDX HashAlgorithm name
-DFETCH_TO_CDX_HASH_ALGORITHM: dict[str, str] = {
-    "sha256": "SHA-256",
-    "sha384": "SHA-384",
-    "sha512": "SHA-512",
-}
-
 # Name given to a package or group if it is not extractable from the URL
 DEFAULT_NAME = "unknown"
-
-
-def _is_archive_url(url: str) -> bool:
-    """Return *True* when *url* points to a recognised archive file."""
-    lower = url.lower().split("?")[0]  # strip query string before checking extension
-    return any(lower.endswith(ext) for ext in ARCHIVE_EXTENSIONS)
-
-
-def _strip_archive_extension(name: str) -> str:
-    """Remove a recognised archive extension from *name*."""
-    lower = name.lower()
-    # Check multi-part extensions first (.tar.gz etc.)
-    for ext in ARCHIVE_EXTENSIONS:
-        if lower.endswith(ext):
-            return name[: -len(ext)]
-    return name
 
 
 def _namespace_and_name_from_domain_and_path(domain: str, path: str) -> tuple[str, str]:
@@ -103,24 +77,6 @@ def _known_purl_types(
     return None
 
 
-def _archive_purl(
-    remote_url: str, version: str | None, subpath: str | None
-) -> PackageURL:
-    """Build a generic PURL for an archive URL."""
-    parsed = urlparse(remote_url)
-    basename = os.path.basename(parsed.path)
-    name = _strip_archive_extension(basename) or DEFAULT_NAME
-    namespace = parsed.hostname or ""
-    return PackageURL(
-        type="generic",
-        namespace=namespace or None,
-        name=name,
-        version=version,
-        qualifiers={"download_url": remote_url},
-        subpath=subpath,
-    )
-
-
 def _vcs_namespace_and_name(remote_url: str) -> tuple[str, str, str]:
     """Derive namespace, name, and normalised URL for a generic VCS remote URL.
 
@@ -150,25 +106,23 @@ def _vcs_namespace_and_name(remote_url: str) -> tuple[str, str, str]:
     return namespace, name, remote_url
 
 
-def remote_url_to_purl(
-    remote_url: str, version: str | None = None, subpath: str | None = None
+def vcs_url_to_purl(
+    vcs_url: str, version: str | None = None, subpath: str | None = None
 ) -> PackageURL:
-    """Convert a remote URL to a valid PackageURL object.
+    """Convert a VCS remote URL to a valid PackageURL object.
 
-    Supports GitHub, Bitbucket, SVN, SSH paths, and archive downloads.
+    Supports GitHub, Bitbucket, SVN, SSH paths, and generic VCS URLs.
     Optionally specify version and subpath.
     """
-    purl = _known_purl_types(remote_url, version, subpath)
+    purl = _known_purl_types(vcs_url, version, subpath)
     if purl:
         return purl
-    if _is_archive_url(remote_url):
-        return _archive_purl(remote_url, version, subpath)
-    namespace, name, remote_url = _vcs_namespace_and_name(remote_url)
+    namespace, name, vcs_url = _vcs_namespace_and_name(vcs_url)
     return PackageURL(
         type="generic",
         namespace=namespace,
         name=name,
         version=version,
-        qualifiers={"vcs_url": remote_url},
+        qualifiers={"vcs_url": vcs_url},
         subpath=subpath,
     )

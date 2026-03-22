@@ -36,6 +36,8 @@ import zipfile
 from collections.abc import Sequence
 from typing import overload
 
+from packageurl import PackageURL
+
 from dfetch.log import get_logger
 from dfetch.util.util import (
     copy_directory_contents,
@@ -43,14 +45,53 @@ from dfetch.util.util import (
     prune_files_by_pattern,
 )
 
+logger = get_logger(__name__)
+
 #: Archive file extensions recognised by DFetch.
 ARCHIVE_EXTENSIONS = (".tar.gz", ".tgz", ".tar.bz2", ".tar.xz", ".zip")
-
-logger = get_logger(__name__)
 
 # Safety limits applied during extraction to prevent decompression bombs.
 _MAX_UNCOMPRESSED_BYTES = 500 * 1024 * 1024  # 500 MB
 _MAX_MEMBER_COUNT = 10_000
+
+
+def is_archive_url(url: str) -> bool:
+    """Return *True* when *url* ends with a recognised archive extension.
+
+    Query strings and fragments are stripped before testing so that URLs like
+    ``https://example.com/pkg.tar.gz?download=1`` are correctly recognised.
+    """
+    path = urllib.parse.urlparse(url).path
+    return any(path.lower().endswith(ext) for ext in ARCHIVE_EXTENSIONS)
+
+
+def strip_archive_extension(name: str) -> str:
+    """Remove a recognised archive extension from *name*."""
+    lower = name.lower()
+    for ext in ARCHIVE_EXTENSIONS:
+        if lower.endswith(ext):
+            return name[: -len(ext)]
+    return name
+
+
+def archive_url_to_purl(
+    download_url: str,
+    version: str | None = None,
+    subpath: str | None = None,
+) -> PackageURL:
+    """Build a generic PackageURL for an archive download URL."""
+    parsed = urllib.parse.urlparse(download_url)
+    basename = os.path.basename(parsed.path)
+    name = strip_archive_extension(basename) or "unknown"
+    namespace = parsed.hostname or ""
+    return PackageURL(
+        type="generic",
+        namespace=namespace or None,
+        name=name,
+        version=version,
+        qualifiers={"download_url": download_url},
+        subpath=subpath,
+    )
 
 
 def _http_conn(scheme: str, netloc: str, timeout: int) -> http.client.HTTPConnection:
@@ -64,11 +105,6 @@ def _resource_path(parsed: urllib.parse.ParseResult) -> str:
     """Return the path + query portion of *parsed* suitable for HTTP requests."""
     path = parsed.path or "/"
     return f"{path}?{parsed.query}" if parsed.query else path
-
-
-def is_archive_url(url: str) -> bool:
-    """Return *True* when *url* ends with a recognised archive extension."""
-    return any(url.lower().endswith(ext) for ext in ARCHIVE_EXTENSIONS)
 
 
 class ArchiveRemote:

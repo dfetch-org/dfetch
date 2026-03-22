@@ -3,6 +3,7 @@
 import logging
 import os
 import sys
+import types
 from contextlib import nullcontext
 from typing import Any, cast
 
@@ -194,7 +195,22 @@ def get_logger(name: str, console: Console | None = None) -> DLogger:
 def configure_external_logger(name: str, level: int = logging.INFO) -> None:
     """Configure an external logger from a third party package."""
     logger = logging.getLogger(name)
+    # Ensure the external logger is a plain Logger so its log methods do not
+    # wrap messages in Rich markup (which DLogger.warning / DLogger.error do).
+    # Without this, markup_escape in ExtLogFilter would turn those Rich tags
+    # into literal text that shifts tab-stop calculations when rendered.
+    logger.__class__ = logging.Logger
     logger.setLevel(level)
     logger.propagate = True
     logger.handlers.clear()
     logger.addFilter(ExtLogFilter())
+    # Some packages (e.g. patch_ng) cache logger bound-methods as module-level
+    # names at import time (e.g. `warning = logger.warning`).  After the
+    # __class__ reassignment above those cached references still point at the
+    # old DLogger method, so re-bind them to the freshly demoted logger.
+    module = sys.modules.get(name.split(".")[0])
+    if module is not None:
+        for method_name in ("debug", "info", "warning", "error", "critical"):
+            attr = getattr(module, method_name, None)
+            if isinstance(attr, types.MethodType) and attr.__self__ is logger:
+                setattr(module, method_name, getattr(logger, method_name))
