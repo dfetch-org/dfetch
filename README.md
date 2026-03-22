@@ -29,6 +29,8 @@ Dfetch must promote upstreaming changes, but allow for local customizations.
 The problem is described thoroughly in [managing external dependencies](https://embeddedartistry.com/blog/2020/06/22/qa-on-managing-external-dependencies/) and sometimes
 is also known as [*vendoring*](https://dfetch.readthedocs.io/en/latest/vendoring.html).
 
+Dfetch supports three source types: **Git**, **SVN**, and **archive files** (`.tar.gz`, `.tgz`, `.tar.bz2`, `.tar.xz`, `.zip`). Archives can be verified with a cryptographic hash (`sha256`, `sha384`, or `sha512`) to guarantee integrity on every fetch.
+
 Other tools that do similar things are ``Zephyr's West``, ``CMake ExternalProject`` and other meta tools.
 See [alternatives](https://dfetch.readthedocs.io/en/latest/alternatives.html) for a complete list.
 
@@ -43,7 +45,8 @@ See [alternatives](https://dfetch.readthedocs.io/en/latest/alternatives.html) fo
 * Compose multi-repo code bases into a single working tree
 * Vendoring dependencies for reproducible builds
 * Apply local patches while keeping upstream syncable
-* VCS-agnostic dependency management
+* VCS-agnostic dependency management (Git, SVN, and plain archives)
+* Fetch and verify archives with cryptographic integrity checks
 * Self-contained exports for releases or audits
 
 ## Install
@@ -110,6 +113,13 @@ manifest:
     dst: Tests/cpputest-git-src
     repo-path: cpputest/cpputest.git
     src: src
+
+  - name: my-library
+    dst: ext/my-library
+    url: https://example.com/releases/my-library-1.0.tar.gz
+    vcs: archive
+    integrity:
+      hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 ```
 
 ## Github Action

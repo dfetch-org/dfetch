@@ -3,8 +3,8 @@
 :sd_hide_title:
 
 .. meta::
-   :description: Dfetch vendors source code from Git and SVN repositories directly into your project. No submodules, no lock-in, fully self-contained.
-   :keywords: dfetch, dependency management, vendoring, git, svn, embedded development, source-only dependencies, multi-repo, supply chain, sbom, license compliance
+   :description: Dfetch vendors source code from Git or SVN repositories or plain archives directly into your project. No submodules, no lock-in, fully self-contained.
+   :keywords: dfetch, dependency management, vendoring, git, svn, archive, embedded development, source-only dependencies, multi-repo, supply chain, sbom, license compliance
    :author: Dfetch Contributors
    :google-site-verification: rXUIdonVCg6XtZUDdOd7fJdSNj3bOoJJRqCFn3OVb04
 
@@ -31,8 +31,8 @@ Dfetch
 **Vendor dependencies without the pain.**
 
 **Dfetch** copies source code directly into your project — no Git submodules, no SVN externals,
-no hidden external links. Dependencies live as plain, readable files inside your own repository.
-You stay in full control of every line.
+no hidden external links. Fetch from Git, SVN, or plain archive URLs. Dependencies live as plain,
+readable files inside your own repository. You stay in full control of every line.
 
 .. grid:: 1 3 3 3
    :gutter: 3
@@ -180,8 +180,8 @@ You stay in full control of every line.
          :text-align: center
          :class-card: stat-card
 
-         Works with **Git and SVN** — even mixed in the same project.
-         The only dependency manager that bridges both without compromise.
+         Works with **Git, SVN, and archive URLs** — even mixed in the same project.
+         The only dependency manager that bridges these without compromise.
 
       .. grid-item-card:: :material-regular:`code;2em` Any language, any build system
          :text-align: center
@@ -296,8 +296,8 @@ You stay in full control of every line.
 
          :material-regular:`shuffle;1.5em;sd-text-primary` **VCS-agnostic**
 
-         Works seamlessly with **Git and SVN** — even mixed within the same project.
-         Pin by tag, branch, revision, or exact commit hash. Adapt to your team's workflow, not the other way around.
+         Works seamlessly with **Git, SVN, and archive URLs** — even mixed within the same project.
+         Pin by tag, branch, revision, commit hash, or cryptographic hash. Adapt to your team's workflow, not the other way around.
 
       .. grid-item::
 
