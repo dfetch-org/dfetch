@@ -34,10 +34,10 @@ Dfetch
 no hidden external links. Dependencies live as plain, readable files inside your own repository.
 You stay in full control of every line.
 
-.. grid:: 1 1 3 3
+.. grid:: 3 3 3 3
    :gutter: 3
 
-    .. grid-item::
+   .. grid-item::
 
       .. button-link:: https://github.com/dfetch-org/dfetch/releases/latest
          :color: primary
@@ -46,7 +46,7 @@ You stay in full control of every line.
 
          :material-regular:`download;2em` Download
 
-    .. grid-item::
+   .. grid-item::
 
       .. button-link:: https://dfetch.rtfd.io/
          :color: secondary
@@ -55,7 +55,7 @@ You stay in full control of every line.
 
          :material-regular:`description;2em` Docs
 
-    .. grid-item::
+   .. grid-item::
 
       .. button-link:: https://github.com/dfetch-org/dfetch/
          :color: secondary
