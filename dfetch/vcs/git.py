@@ -12,7 +12,7 @@ from pathlib import Path, PurePath
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
-from dfetch.util.util import in_directory, safe_rm, safe_rmtree
+from dfetch.util.util import in_directory, safe_rm
 from dfetch.vcs.patch import Patch, PatchType
 
 logger = get_logger(__name__)
@@ -226,7 +226,7 @@ class GitRemote:
             except SubprocessCommandError as exc:
                 if exc.returncode != 128:
                     raise
-        safe_rmtree(temp_dir)
+        safe_rm(temp_dir, within=Path(temp_dir).parent)
 
         return exists
 
@@ -394,7 +394,7 @@ class GitLocalRepo:
             try:
                 for file_to_copy in os.listdir(src_dir_path):
                     shutil.move(src_dir_path + "/" + file_to_copy, ".")
-                safe_rmtree(PurePath(src_dir_path).parts[0])
+                safe_rm(PurePath(src_dir_path).parts[0])
             except FileNotFoundError:
                 logger.warning(
                     f"The 'src:' filter '{src_dir_path}' didn't match any files from '{remote}'"
