@@ -657,6 +657,14 @@ div.admonition p {
   margin-bottom: 0.25rem;
 }
 
+/* Font Awesome brand icons in install cards */
+.install-platform-icon {
+  font-size: 2rem;
+  color: var(--primary) !important;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
 /* Format tag row (.deb · .rpm / .msi / .pkg / pip install) */
 .install-card .sd-card-body > p {
   font-size: 0.8125rem !important;
