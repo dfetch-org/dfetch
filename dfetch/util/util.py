@@ -21,8 +21,12 @@ def is_license_file(filename: str) -> bool:
     return any(fnmatch.fnmatch(filename.lower(), pattern) for pattern in LICENSE_GLOBS)
 
 
-def _copy_entry(src_entry: str, dest_entry: str) -> None:
-    """Copy a single file or directory *src_entry* to *dest_entry*."""
+def _copy_entry(src_entry: str, dest_entry: str, root: str) -> None:
+    """Copy a single file or directory *src_entry* to *dest_entry*.
+
+    Raises :exc:`RuntimeError` if *src_entry* resolves outside *root*.
+    """
+    check_no_path_traversal(src_entry, root)
     if os.path.isdir(src_entry):
         shutil.copytree(src_entry, dest_entry)
     else:
@@ -35,9 +39,11 @@ def copy_directory_contents(src_dir: str, dest_dir: str) -> None:
     Directories are copied recursively; files are copied with metadata.
     """
     for entry_name in os.listdir(src_dir):
+        src_path = os.path.join(src_dir, entry_name)
         _copy_entry(
-            os.path.join(src_dir, entry_name),
+            src_path,
             os.path.join(dest_dir, entry_name),
+            src_dir,
         )
 
 
@@ -70,6 +76,7 @@ def copy_src_subset(
     if keep_licenses:
         for entry_name in os.listdir(src_root):
             full_path = os.path.join(src_root, entry_name)
+            check_no_path_traversal(full_path, src_root)
             if os.path.isfile(full_path) and is_license_file(entry_name):
                 shutil.copy2(full_path, os.path.join(dest_dir, entry_name))
 
@@ -79,7 +86,12 @@ def prune_files_by_pattern(directory: str, patterns: Sequence[str]) -> None:
 
     License files are never removed even when they match a pattern.
     """
+    seen: set[str] = set()
     for file_or_dir in find_matching_files(directory, patterns):
+        resolved = str(file_or_dir.resolve())
+        if resolved in seen:
+            continue
+        seen.add(resolved)
         if not (file_or_dir.is_file() and is_license_file(file_or_dir.name)):
             safe_rm(file_or_dir)
 
