@@ -121,7 +121,7 @@ You stay in full control of every line.
 
          .. raw:: html
 
-            <i class="fa-brands fa-linux install-platform-icon"></i>
+            <i class="fa-brands fa-linux install-platform-icon" aria-hidden="true"></i>
 
          ``.deb``  ·  ``.rpm``
 
@@ -133,7 +133,7 @@ You stay in full control of every line.
 
          .. raw:: html
 
-            <i class="fa-brands fa-apple install-platform-icon"></i>
+            <i class="fa-brands fa-apple install-platform-icon" aria-hidden="true"></i>
 
          ``.pkg``
 
@@ -145,7 +145,7 @@ You stay in full control of every line.
 
          .. raw:: html
 
-            <i class="fa-brands fa-windows install-platform-icon"></i>
+            <i class="fa-brands fa-windows install-platform-icon" aria-hidden="true"></i>
 
          ``.msi``
 
@@ -157,7 +157,7 @@ You stay in full control of every line.
 
          .. raw:: html
 
-            <i class="fa-brands fa-python install-platform-icon"></i>
+            <i class="fa-brands fa-python install-platform-icon" aria-hidden="true"></i>
 
          ``pip install dfetch``
 
