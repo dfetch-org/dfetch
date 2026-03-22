@@ -126,6 +126,13 @@ repos:
         files: ^dfetch/
         args: [--py310-plus]
         types: [file, python]
+    -   id: import-linter
+        name: import-linter
+        description: Enforce C4 architecture import constraints
+        entry: lint-imports
+        language: python
+        pass_filenames: false
+        always_run: true
 
 -   repo: https://github.com/gitleaks/gitleaks
     rev: v8.28.0
