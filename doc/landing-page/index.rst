@@ -364,15 +364,19 @@ You stay in full control of every line.
       :file: static/patch-diagram.svg
 
 
-.. card:: :material-regular:`smart_toy;4em;sd-text-primary` **Built for modern CI/CD**
-   :class-card: sd-bg-dark sd-text-light
+.. div:: band-mint
 
-   *Dfetch* plugs right into your automation pipeline, allowing you to push dependency status to your existing tools automatically.
+   :material-regular:`smart_toy;2em;sd-text-primary` **Built for modern CI/CD**
 
-   .. raw:: html
-      :file: static/ci-diagram.svg
+   .. card::
+      :class-card: sd-bg-dark sd-text-light
 
-   .. asciinema:: ../asciicasts/check-ci.cast
+      *Dfetch* plugs right into your automation pipeline, allowing you to push dependency status to your existing tools automatically.
+
+      .. raw:: html
+         :file: static/ci-diagram.svg
+
+      .. asciinema:: ../asciicasts/check-ci.cast
 
 
 .. card:: :material-regular:`bolt;2em` Already using submodules? Migrate in seconds.

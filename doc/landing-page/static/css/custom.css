@@ -339,6 +339,13 @@ a.sd-btn-secondary[href*="github.com"]:hover {
   background: #fff !important;
 }
 
+/* Extra vertical separation between consecutive standalone (full-width) cards.
+   Grid item cards (.sd-col > .sd-card) are excluded. */
+:not(.sd-col) > .sd-card {
+  margin-top: 3.5rem !important;
+  margin-bottom: 3.5rem !important;
+}
+
 /* Hover lift — light cards only */
 .sd-card:not(.sd-bg-dark):hover {
   box-shadow: var(--shad-lg) !important;
