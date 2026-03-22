@@ -113,35 +113,51 @@ You stay in full control of every line.
    .. grid:: 2 2 4 4
       :gutter: 2
 
-      .. grid-item-card:: :material-regular:`terminal;1.75em` Linux
+      .. grid-item-card:: Linux
          :text-align: center
          :class-card: install-card
          :link: https://github.com/dfetch-org/dfetch/releases/latest
          :link-type: url
+
+         .. raw:: html
+
+            <i class="fa-brands fa-linux install-platform-icon"></i>
 
          ``.deb``  ·  ``.rpm``
 
-      .. grid-item-card:: :material-regular:`laptop_mac;1.75em` macOS
+      .. grid-item-card:: macOS
          :text-align: center
          :class-card: install-card
          :link: https://github.com/dfetch-org/dfetch/releases/latest
          :link-type: url
+
+         .. raw:: html
+
+            <i class="fa-brands fa-apple install-platform-icon"></i>
 
          ``.pkg``
 
-      .. grid-item-card:: :material-regular:`desktop_windows;1.75em` Windows
+      .. grid-item-card:: Windows
          :text-align: center
          :class-card: install-card
          :link: https://github.com/dfetch-org/dfetch/releases/latest
          :link-type: url
 
+         .. raw:: html
+
+            <i class="fa-brands fa-windows install-platform-icon"></i>
+
          ``.msi``
 
-      .. grid-item-card:: :material-regular:`code;1.75em` Python / pip
+      .. grid-item-card:: Python / pip
          :text-align: center
          :class-card: install-card
          :link: https://pypi.org/project/dfetch/
          :link-type: url
+
+         .. raw:: html
+
+            <i class="fa-brands fa-python install-platform-icon"></i>
 
          ``pip install dfetch``
 

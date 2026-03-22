@@ -93,6 +93,8 @@ todo_include_todos = False
 html_theme = "alabaster"
 
 html_css_files = [
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css",
     "css/custom.css",
 ]
 html_js_files = [
