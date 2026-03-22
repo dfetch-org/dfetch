@@ -13,6 +13,11 @@ Documentation build configuration file.
 import os
 import sys
 
+# Prevent ANSI color codes in command output captured by sphinxcontrib.programoutput.
+# Python 3.13+ argparse emits colors when FORCE_COLOR is set; NO_COLOR suppresses
+# that regardless of FORCE_COLOR, and dfetch's own Rich console respects it too.
+os.environ["NO_COLOR"] = "1"
+
 from dfetch import __version__
 
 # -- General configuration ------------------------------------------------
