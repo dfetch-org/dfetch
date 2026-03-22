@@ -34,7 +34,7 @@ Dfetch
 no hidden external links. Dependencies live as plain, readable files inside your own repository.
 You stay in full control of every line.
 
-.. grid:: 3 3 3 3
+.. grid:: 1 3 3 3
    :gutter: 3
 
    .. grid-item::
