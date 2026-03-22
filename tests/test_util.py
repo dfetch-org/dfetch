@@ -5,7 +5,12 @@
 
 import pytest
 
-from dfetch.util.util import copy_src_subset, hash_directory, prune_files_by_pattern
+from dfetch.util.util import (
+    copy_src_subset,
+    hash_directory,
+    prune_files_by_pattern,
+    strip_glob_prefix,
+)
 
 # ---------------------------------------------------------------------------
 # copy_src_subset – path-traversal protection
@@ -155,3 +160,27 @@ def test_prune_skips_already_removed_paths(tmp_path):
 
     assert not parent.exists()
     assert unrelated.exists()
+
+
+# ---------------------------------------------------------------------------
+# strip_glob_prefix
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "path, pattern, expected",
+    [
+        # Wildcard prefix stripped
+        ("some_dir_a/ext/lib", "some_dir_*", "ext/lib"),
+        # Multi-level pattern with wildcard
+        ("SomeFolder/SomeSubFolder/file.c", "SomeFolder/Some*", "file.c"),
+        # Exact (no-wildcard) prefix stripped
+        ("pkg/sub/module", "pkg", "sub/module"),
+        # Path does not match pattern — returned unchanged
+        ("unrelated/path", "pkg", "unrelated/path"),
+        # Path too shallow to have anything beyond the pattern — returned unchanged
+        ("some_dir_a", "some_dir_*", "some_dir_a"),
+    ],
+)
+def test_strip_glob_prefix(path, pattern, expected):
+    assert strip_glob_prefix(path, pattern) == expected

@@ -140,7 +140,7 @@ Feature: Fetch projects with nested VCS dependencies
             """
             Dfetch (0.12.1)
               glob-project:
-              > Found & fetched submodule "./some_dir_a/ext/test-repo"  (some-remote-server/TestRepo.git @ master - 79698c99152e4a4b7b759c9def50a130bc91a2ff)
+              > Found & fetched submodule "./ext/test-repo"  (some-remote-server/TestRepo.git @ master - 79698c99152e4a4b7b759c9def50a130bc91a2ff)
               > Fetched master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a
             """
         Then 'MyProject' looks like:

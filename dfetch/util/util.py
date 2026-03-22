@@ -7,7 +7,7 @@ import shutil
 import stat
 from collections.abc import Generator, Iterator, Sequence
 from contextlib import contextmanager
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Any
 
 from _hashlib import HASH
@@ -146,6 +146,7 @@ def safe_rm(
     for path in paths_to_remove:
         if os.path.lexists(path):
             if os.path.islink(path):
+                check_no_path_traversal(Path(path).parent, base)
                 os.unlink(path)
             else:
                 check_no_path_traversal(path, base)
@@ -287,6 +288,51 @@ def check_no_path_traversal(path: str | Path, root: str | Path) -> None:
         escapes = True
     if escapes:
         raise RuntimeError(f"{str(path)!r} is outside root {str(root)!r}")
+
+
+def strip_glob_prefix(path: str, pattern: str) -> str:
+    """Return *path* with its leading glob-pattern prefix stripped.
+
+    When the first ``len(pattern.parts)`` components of *path* match *pattern*
+    (using :func:`fnmatch.fnmatch`), those components are removed and the
+    remainder is returned.  If *path* does not match, or *path* has no
+    components beyond the matched prefix, *path* is returned unchanged.
+
+    This is useful after a glob-matched directory has been "promoted" to the
+    root: it computes where a nested entry ends up relative to the new root.
+
+    Args:
+        path:    The original path whose prefix should be stripped.
+        pattern: A glob pattern (may contain ``*`` wildcards) whose matched
+                 portion forms the prefix to remove.
+
+    Returns:
+        The path with the matched prefix stripped, or *path* unchanged when no
+        match is found.
+
+    Examples::
+
+        >>> strip_glob_prefix("some_dir_a/ext/lib", "some_dir_*")
+        'ext/lib'
+        >>> strip_glob_prefix("SomeFolder/SomeSubFolder/file.c", "SomeFolder/Some*")
+        'file.c'
+        >>> strip_glob_prefix("pkg/sub/module", "pkg")
+        'sub/module'
+        >>> strip_glob_prefix("unrelated/path", "pkg")
+        'unrelated/path'
+    """
+    src_parts = PurePath(pattern).parts
+    sub_parts = PurePath(path).parts
+    depth = len(src_parts)
+
+    if len(sub_parts) <= depth:
+        return path
+
+    candidate = str(PurePath(*sub_parts[:depth]))
+    if fnmatch.fnmatch(candidate, pattern):
+        return str(Path(*sub_parts[depth:]))
+
+    return path
 
 
 def resolve_absolute_path(path: str | Path) -> Path:

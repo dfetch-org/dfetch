@@ -12,7 +12,7 @@ from pathlib import Path, PurePath
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
-from dfetch.util.util import in_directory, safe_rm
+from dfetch.util.util import in_directory, safe_rm, strip_glob_prefix
 from dfetch.vcs.patch import Patch, PatchType
 
 logger = get_logger(__name__)
@@ -324,39 +324,27 @@ class GitLocalRepo:
                 .strip()
             )
 
-            if src:
-                for submodule in submodules:
-                    submodule.path = self._rewrite_path(src, submodule.path)
-
-                self._move_src_folder_up(remote, src)
-
-            if submodules:
-                for ignore_path in ignore or []:
-                    safe_rm(glob.glob(ignore_path))
+            submodules = self._apply_src_and_ignore(remote, src, ignore, submodules)
 
             return str(current_sha), submodules
 
-    @staticmethod
-    def _rewrite_path(src: str, existing_path: str) -> str:
-        """Rewrites existing_path relative to src pattern.
+    def _apply_src_and_ignore(
+        self,
+        remote: str,
+        src: str | None,
+        ignore: Sequence[str] | None,
+        submodules: list[Submodule],
+    ) -> list[Submodule]:
+        """Apply src filter and ignore patterns, returning surviving submodules."""
+        if src:
+            for submodule in submodules:
+                submodule.path = strip_glob_prefix(submodule.path, src)
+            self._move_src_folder_up(remote, src)
 
-        Handles wildcards (*) and nested directories.
-        """
-        src_path = PurePath(src)
-        sub_path = PurePath(existing_path)
+        for ignore_path in ignore or []:
+            safe_rm(glob.glob(ignore_path))
 
-        if sub_path.match(str(src_path)):
-            # Count fixed prefix parts (before any wildcard)
-            prefix_len = 0
-            for part in src_path.parts:
-                if "*" in part:
-                    break
-                prefix_len += 1
-            # Return path relative to fixed prefix
-            return str(Path(*sub_path.parts[prefix_len:]))
-
-        # Return unchanged if no match
-        return existing_path
+        return [s for s in submodules if os.path.exists(s.path)]
 
     @staticmethod
     def _move_src_folder_up(remote: str, src: str) -> None:
