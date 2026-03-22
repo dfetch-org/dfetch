@@ -150,12 +150,12 @@ def safe_rm(
             else:
                 check_no_path_traversal(path, base)
                 if os.path.isdir(path):
-                    safe_rmtree(str(path))
+                    _safe_rmtree(str(path))
                 else:
                     os.remove(path)
 
 
-def safe_rmtree(path: str) -> None:
+def _safe_rmtree(path: str) -> None:
     """Delete an entire directory and all its subfolders and files."""
     try:
         shutil.rmtree(  # pylint: disable=deprecated-argument

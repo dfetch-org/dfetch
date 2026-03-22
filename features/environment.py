@@ -2,11 +2,12 @@
 
 import os
 import tempfile
+from pathlib import Path
 
 from behave import fixture, use_fixture
 from rich.console import Console
 
-from dfetch.util.util import safe_rmtree
+from dfetch.util.util import safe_rm
 
 
 @fixture
@@ -22,7 +23,7 @@ def tmpdir(context):
     yield context.tmpdir
     # -- CLEANUP-FIXTURE PART:
     os.chdir(context.orig_cwd)
-    safe_rmtree(context.tmpdir)
+    safe_rm(context.tmpdir, within=Path(context.tmpdir).parent)
 
 
 def before_scenario(context, _):
