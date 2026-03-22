@@ -228,51 +228,61 @@ You stay in full control of every line.
                      tag: v3.2.7      # (2)
                      src: src/        # (3)
 
+            .. div:: infographic-legend
+
+               .. grid:: 1 1 3 3
+                  :gutter: 2
+
+                  .. grid-item::
+
+                     **(1)** ``name:`` — destination path in your repo
+
+                  .. grid-item::
+
+                     **(2)** ``tag:`` — exact version to fetch
+
+                  .. grid-item::
+
+                     **(3)** ``src:`` — subfolder to copy from upstream
+
+            .. raw:: html
+
+               <div class="infographic-flow" aria-hidden="true">
+                 <div class="infographic-command">
+                   <span class="term-prompt">$</span> dfetch update<span class="term-cursor"></span>
+                 </div>
+               </div>
+
          .. grid-item::
             :columns: 12 12 5 5
 
-            .. code-block:: text
+            .. code-block:: bash
                :caption: After dfetch update
 
                your-project/
                ├─ dfetch.yaml
                └─ ext/
-                  └─ cunit/           (a)
+                  └─ cunit/         # (a)
                      ├─ .dfetch_data.yaml
-                     ├─ LICENSE       (b)
-                     └─ CUnit.h       (c)
+                     ├─ LICENSE     # (b)
+                     └─ CUnit.h     # (c)
 
-   .. div:: infographic-legend
+            .. div:: infographic-legend
 
-      .. grid:: 1 1 3 3
-         :gutter: 2
+               .. grid:: 1 1 3 3
+                  :gutter: 2
 
-         .. grid-item::
+                  .. grid-item::
 
-            **(1)** ``name:`` — destination path in your repo
+                     **(a)** folder created at the path given by ``name:``
 
-         .. grid-item::
+                  .. grid-item::
 
-            **(2)** ``tag:`` — exact version to fetch
+                     **(b)** license always retained, even with ``src:``
 
-         .. grid-item::
+                  .. grid-item::
 
-            **(3)** ``src:`` — subfolder to copy from upstream
-
-      .. grid:: 1 1 3 3
-         :gutter: 2
-
-         .. grid-item::
-
-            **(a)** folder created at the path given by ``name:``
-
-         .. grid-item::
-
-            **(b)** license always retained, even with ``src:``
-
-         .. grid-item::
-
-            **(c)** contents of ``src:`` placed directly here
+                     **(c)** contents of ``src:`` placed directly here
 
 
 .. div:: why-dfetch

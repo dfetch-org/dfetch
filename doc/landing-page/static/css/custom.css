@@ -124,7 +124,10 @@ body {
 }
 
 /* Content area: transparent so the body dot grid shows through.
-   Only the soft hero glow is applied here. */
+   Only the soft hero glow is applied here.
+   Also reset documentwrapper — Alabaster's responsive CSS sets it to #fff
+   at max-width: 1400px, which covers the body dot grid on mobile. */
+div.documentwrapper,
 div.body {
   background-color: transparent;
   background-image:
@@ -903,38 +906,75 @@ div.admonition p {
   margin: 1.25rem 0 0.5rem;
 }
 
-/* "→ dfetch update" pill centred in the gap between the two panels */
+/* Flow wrapper — just handles positioning */
+.infographic-flow {
+  display: inline-flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+/* Desktop: float between the two code-block tops */
 @media (min-width: 960px) {
-  .infographic-wrapper::after {
-    content: "→  dfetch update";
+  .infographic-flow {
     position: absolute;
-    top: 25%;
+    top: 14%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-family: "JetBrains Mono", "Fira Code", monospace;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    color: var(--primary);
-    background: #fff;
-    border: 1.5px solid var(--primary);
-    border-radius: 100px;
-    padding: 0.25rem 0.75rem;
-    white-space: nowrap;
-    box-shadow: var(--shad-md);
     z-index: 2;
-    letter-spacing: 0.02em;
-    pointer-events: none;
   }
 }
 
-/* Make both highlight blocks fill the full column height */
-.infographic-wrapper .sd-col .highlight {
-  height: 100%;
+/* Mobile: in-flow, centred below the first column's legend */
+@media (max-width: 959px) {
+  .infographic-flow {
+    margin: 0.875rem auto 0;
+    width: fit-content;
+  }
 }
 
-.infographic-wrapper .sd-col .highlight pre {
-  height: 100%;
-  box-sizing: border-box;
+/* "$ dfetch update" terminal chip — >=======> chevron shape */
+.infographic-command {
+  --ch: 0.8rem;  /* chevron depth ≈ half the pill height */
+  display: flex;
+  align-items: center;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  background: #1e1610;
+  color: rgba(255, 255, 255, 0.92);
+  padding: 0.4rem 1.5rem;
+  clip-path: polygon(
+    0%                     0%,
+    calc(100% - var(--ch)) 0%,
+    100%                   50%,
+    calc(100% - var(--ch)) 100%,
+    0%                     100%,
+    var(--ch)              50%
+  );
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+}
+
+.infographic-command .term-prompt {
+  color: #6ab0d4;
+  margin-right: 0.4em;
+}
+
+.infographic-command .term-cursor {
+  display: inline-block;
+  width: 5px;
+  height: 12px;
+  background: #6ab0d4;
+  border-radius: 1px;
+  margin-left: 0.35em;
+  opacity: 0.8;
+  animation: term-cursor-blink 1.1s step-end infinite;
+}
+
+@keyframes term-cursor-blink {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0; }
 }
 
 /* Caption text above each code block */
@@ -947,43 +987,16 @@ div.admonition p {
   color: var(--text-muted);
 }
 
-/* Legend rows — two rows, each 3 columns, aligned under the code blocks */
+/* Legend — sits below each code block inside its grid column */
 .infographic-legend {
-  margin-top: 1.5rem !important;
+  margin-top: 1rem !important;
 }
 
-/* Row 1: manifest key explanations — (1)(2)(3) */
-.infographic-legend .sd-row:first-child .sd-col {
+.infographic-legend .sd-col {
   font-size: 0.875rem !important;
   padding-top: 0.875rem !important;
   border-top: 2px solid var(--primary) !important;
   color: var(--text-2) !important;
-}
-
-/* Row 2: result annotations — (a)(b)(c) */
-.infographic-legend .sd-row:last-child .sd-col {
-  font-size: 0.875rem !important;
-  padding-top: 0.75rem !important;
-  margin-top: 0.625rem !important;
-  border-top: none !important;
-  position: relative;
-  color: var(--text-muted) !important;
-}
-
-.infographic-legend .sd-row:last-child .sd-col::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgba(194, 98, 10, 0.2) 0,
-    rgba(194, 98, 10, 0.2) 2px,
-    transparent 2px,
-    transparent 28px
-  );
 }
 
 /* Bold markers (1)(2)(3)(a)(b)(c) — consistent monospace pill style */
@@ -992,6 +1005,13 @@ div.admonition p {
   font-size: 0.8125rem !important;
   font-weight: 700 !important;
   color: var(--primary) !important;
+}
+
+/* Annotation comments # (1) # (2) # (3) / # (a) # (b) # (c) —
+   colour matches the bold legend markers above */
+.infographic-wrapper .c1 {
+  color: var(--primary) !important;
+  font-weight: 600;
 }
 
 /* ============================================================
