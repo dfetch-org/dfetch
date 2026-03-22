@@ -6,7 +6,8 @@ from functools import lru_cache
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
-from dfetch.project.subproject import SubProject, VcsDependency
+from dfetch.project.metadata import Dependency
+from dfetch.project.subproject import SubProject
 from dfetch.util.util import LICENSE_GLOBS, safe_rm
 from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
 
@@ -56,7 +57,7 @@ class GitSubProject(SubProject):
             )
             SubProject._log_tool("git", "<not found in PATH>")
 
-    def _fetch_impl(self, version: Version) -> tuple[Version, list[VcsDependency]]:
+    def _fetch_impl(self, version: Version) -> tuple[Version, list[Dependency]]:
         """Get the revision of the remote and place it at the local path."""
         rev_or_branch_or_tag = self._determine_what_to_fetch(version)
 
@@ -83,7 +84,7 @@ class GitSubProject(SubProject):
                 f" ({submodule.url} @ {Version(tag=submodule.tag, branch=submodule.branch, revision=submodule.sha)})",
             )
             vcs_deps.append(
-                VcsDependency(
+                Dependency(
                     remote_url=submodule.url,
                     destination=submodule.path,
                     branch=submodule.branch,

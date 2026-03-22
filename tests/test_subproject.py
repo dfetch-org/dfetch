@@ -10,13 +10,14 @@ import pytest
 
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
-from dfetch.project.subproject import SubProject, VcsDependency
+from dfetch.project.metadata import Dependency
+from dfetch.project.subproject import SubProject
 
 
 class ConcreteSubProject(SubProject):
     _wanted_version: Version
 
-    def _fetch_impl(self, version: Version) -> tuple[Version, list[VcsDependency]]:
+    def _fetch_impl(self, version: Version) -> tuple[Version, list[Dependency]]:
         return Version(), []
 
     def _latest_revision_on_branch(self, branch):
