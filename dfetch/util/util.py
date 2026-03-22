@@ -102,7 +102,7 @@ def prune_files_by_pattern(directory: str, patterns: Sequence[str]) -> None:
         if os.path.lexists(str(file_or_dir)) and not (
             file_or_dir.is_file() and is_license_file(file_or_dir.name)
         ):
-            safe_rm(file_or_dir)
+            safe_rm(file_or_dir, within=directory)
 
 
 def _remove_readonly(func: Any, path: str, _: Any) -> None:
@@ -134,15 +134,18 @@ def find_matching_files(directory: str, patterns: Sequence[str]) -> Iterator[Pat
             yield Path(path)
 
 
-def safe_rm(paths: str | Path | Sequence[str | Path]) -> None:
+def safe_rm(
+    paths: str | Path | Sequence[str | Path],
+    within: str | Path = ".",
+) -> None:
     """Delete a file, directory or list of files/directories safely."""
+    base = Path(within).resolve()
     paths_to_remove = (
         [paths] if isinstance(paths, str) or not isinstance(paths, Sequence) else paths
     )
     for path in paths_to_remove:
         if os.path.lexists(path):
-            if not Path(path).is_relative_to("."):
-                raise RuntimeError(f"Trying to delete '{path}' outside cwd!")
+            check_no_path_traversal(path, base)
             if os.path.isdir(path):
                 safe_rmtree(str(path))
             else:

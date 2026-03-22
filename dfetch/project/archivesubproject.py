@@ -49,7 +49,7 @@ import tempfile
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
-from dfetch.project.subproject import SubProject
+from dfetch.project.subproject import SubProject, VcsDependency
 from dfetch.vcs.archive import (
     ARCHIVE_EXTENSIONS,
     ArchiveLocalRepo,
@@ -166,7 +166,7 @@ class ArchiveSubProject(SubProject):
             return Version(revision=self._project_entry.hash)
         return Version(revision=self.remote)
 
-    def _fetch_impl(self, version: Version) -> Version:
+    def _fetch_impl(self, version: Version) -> tuple[Version, list[VcsDependency]]:
         """Download and extract the archive to the local destination.
 
         1. Download the archive to a temporary file.
@@ -211,7 +211,7 @@ class ArchiveSubProject(SubProject):
             except OSError:
                 pass
 
-        return version
+        return version, []
 
     def freeze_project(self, project: ProjectEntry) -> str | None:
         """Pin *project* to a cryptographic hash of the archive.
