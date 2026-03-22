@@ -15,6 +15,7 @@ def mock_manifest(projects, path: str = "/some/path") -> MagicMock:
         mock_project = Mock(spec=ProjectEntry)
         mock_project.name = project["name"]
         mock_project.destination = "some_dest"
+        mock_project.remote = ""
         project_mocks += [mock_project]
 
     mocked_manifest = MagicMock(spec=Manifest, projects=project_mocks, path=path)

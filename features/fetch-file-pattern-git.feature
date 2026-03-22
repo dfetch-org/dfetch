@@ -57,7 +57,7 @@ Feature: Fetch file pattern from git repo
         Then the output shows
             """
             Dfetch (0.12.1)
-            The 'src:' filter 'SomeFolder/Some*' matches multiple directories from 'some-remote-server/SomeProjectWithAnInterestingFile.git'. Only considering files in 'SomeFolder/SomeSubFolder'.
+            The 'src:' filter 'SomeFolder/Some*' matches multiple directories from 'some-remote-server/SomeProjectWithAnInterestingFile.git'. Only considering files in 'SomeFolder/SomeOtherSubFolder'.
               SomeProjectWithAnInterestingFile:
               > Fetched v1
             """

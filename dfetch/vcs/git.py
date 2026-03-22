@@ -366,7 +366,7 @@ class GitLocalRepo:
             remote (str): Name of the root
             src (str): Src folder to move up
         """
-        matched_paths = glob.glob(src)
+        matched_paths = sorted(glob.glob(src))
 
         if not matched_paths:
             logger.warning(
