@@ -9,22 +9,20 @@ from typing import Optional
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 
-from features.steps.generic_steps import check_file, generate_file, remote_server_path
+from features.steps.generic_steps import (
+    apply_archive_substitutions,
+    check_file,
+    generate_file,
+    remote_server_path,
+)
 
 
 def apply_manifest_substitutions(context, contents: str) -> str:
     """Apply context-specific substitutions to manifest contents."""
-    result = contents.replace(
+    result = apply_archive_substitutions(contents, context)
+    result = result.replace(
         "url: some-remote-server", f"url: file:///{remote_server_path(context)}"
     )
-    if hasattr(context, "archive_sha256"):
-        result = result.replace("<archive-sha256>", context.archive_sha256)
-    if hasattr(context, "archive_sha384"):
-        result = result.replace("<archive-sha384>", context.archive_sha384)
-    if hasattr(context, "archive_sha512"):
-        result = result.replace("<archive-sha512>", context.archive_sha512)
-    if hasattr(context, "archive_url"):
-        result = result.replace("<archive-url>", context.archive_url)
     return result
 
 

@@ -109,18 +109,27 @@ from cyclonedx.output import make_outputter
 from cyclonedx.schema import OutputFormat, SchemaVersion
 from packageurl import PackageURL
 
-import dfetch.util.purl
+import dfetch
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
 from dfetch.util.license import License
-from dfetch.util.purl import DFETCH_TO_CDX_HASH_ALGORITHM
+from dfetch.util.purl import vcs_url_to_purl
+from dfetch.vcs.archive import archive_url_to_purl
 from dfetch.vcs.integrity_hash import IntegrityHash
 
 # PyRight is pedantic with decorators see https://github.com/madpah/serializable/issues/8
 # It might be fixable with https://github.com/microsoft/pyright/discussions/4426, would prefer
 # upstream fix, for now suppress, mypy will keep us safe.
 # pyright: reportCallIssue=false, reportAttributeAccessIssue=false
+
+
+# Map from dfetch hash-field algorithm prefix to CycloneDX HashAlgorithm name
+DFETCH_TO_CDX_HASH_ALGORITHM: dict[str, str] = {
+    "sha256": "SHA-256",
+    "sha384": "SHA-384",
+    "sha512": "SHA-512",
+}
 
 
 class SbomReporter(Reporter):
@@ -189,9 +198,13 @@ class SbomReporter(Reporter):
         version: str,
     ) -> None:
         """Add a project to the report."""
-        purl = dfetch.util.purl.remote_url_to_purl(
-            project.remote_url, version=version, subpath=project.source or None
-        )
+        subpath = project.source or None
+        if project.vcs == "archive":
+            purl = archive_url_to_purl(
+                project.remote_url, version=version, subpath=subpath
+            )
+        else:
+            purl = vcs_url_to_purl(project.remote_url, version=version, subpath=subpath)
         name = project.name if purl.type == "generic" else purl.name
         location = self.manifest.find_name_in_manifest(project.name)
         component = Component(

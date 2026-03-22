@@ -2,7 +2,8 @@
 
 import pytest
 
-from dfetch.util.purl import remote_url_to_purl
+from dfetch.util.purl import vcs_url_to_purl
+from dfetch.vcs.archive import archive_url_to_purl
 
 
 @pytest.mark.parametrize(
@@ -117,7 +118,7 @@ from dfetch.util.purl import remote_url_to_purl
     ],
 )
 def test_remote_url_to_purl(url, expected):
-    purl = remote_url_to_purl(url)
+    purl = vcs_url_to_purl(url)
     if expected is None:
         assert purl is None
     else:
@@ -173,7 +174,7 @@ def test_remote_url_to_purl(url, expected):
 def test_archive_url_to_purl_attributes(
     url, expected_name, expected_namespace, expected_download_url
 ):
-    purl = remote_url_to_purl(url)
+    purl = archive_url_to_purl(url)
     assert purl.type == "generic"
     assert purl.name == expected_name
     assert (purl.namespace or "") == expected_namespace
@@ -183,5 +184,5 @@ def test_archive_url_to_purl_attributes(
 
 def test_archive_purl_with_version():
     url = "https://example.com/lib-1.0.tar.gz"
-    purl = remote_url_to_purl(url, version="sha256:" + "a" * 64)
+    purl = archive_url_to_purl(url, version="sha256:" + "a" * 64)
     assert purl.version == "sha256:" + "a" * 64

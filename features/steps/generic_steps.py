@@ -95,8 +95,8 @@ def check_json(path: Union[str, os.PathLike], content: str) -> None:
     )
 
 
-def _apply_context_substitutions(text: str, context) -> str:
-    """Replace dynamic placeholders with values stored on *context*."""
+def apply_archive_substitutions(text: str, context) -> str:
+    """Replace archive-related dynamic placeholders with values stored on *context*."""
     if hasattr(context, "archive_sha256"):
         text = text.replace("<archive-sha256>", context.archive_sha256)
     if hasattr(context, "archive_sha384"):
@@ -109,7 +109,23 @@ def _apply_context_substitutions(text: str, context) -> str:
 
 
 def _json_subset_matches(expected, actual) -> bool:
-    """Return *True* when *expected* is a subset of *actual* (recursive)."""
+    """Return *True* when *expected* is a subset of *actual* (recursive).
+
+    **List matching is greedy and order-sensitive.** Each item in *expected*
+    is matched against *actual* in order, claiming the first unused actual
+    item that satisfies the subset check.  This means an earlier expected
+    item can consume the only actual item that a later, more specific
+    expected item would need.  For example, with::
+
+        expected = [{"a": 1}, {"a": 1, "b": 2}]
+        actual   = [{"a": 1, "b": 2}]
+
+    the first expected item matches ``{"a": 1, "b": 2}`` (leaving nothing
+    for the second), so the overall match returns *False* even though
+    ``{"a": 1, "b": 2}`` satisfies the second item.  Consumers should
+    **not** rely on non-deterministic matching; instead, pre-order *expected*
+    lists from most-specific to least-specific to avoid this behaviour.
+    """
     if isinstance(expected, dict):
         if not isinstance(actual, dict):
             return False
@@ -140,7 +156,7 @@ def check_json_subset(path: Union[str, os.PathLike], content: str, context) -> N
     Dynamic placeholders (``<archive-sha256>``, ``<archive-url>``) in
     *content* are substituted with values from *context* before parsing.
     """
-    content = _apply_context_substitutions(content, context)
+    content = apply_archive_substitutions(content, context)
 
     with open(path, "r", encoding="UTF-8") as file_to_check:
         actual_json = json.load(file_to_check)
@@ -254,7 +270,7 @@ def check_output(context, line_count=None):
         context: Behave context with cmd_output and expected text
         line_count: If set, compare only the first N lines of actual output
     """
-    expected_raw = _apply_context_substitutions(context.text, context)
+    expected_raw = apply_archive_substitutions(context.text, context)
 
     expected_text = multisub(
         patterns=[
