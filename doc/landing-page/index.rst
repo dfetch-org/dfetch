@@ -345,8 +345,103 @@ You stay in full control of every line.
 .. card:: :material-regular:`smart_toy;4em;sd-text-primary` **Built for modern CI/CD**
    :class-card: sd-bg-dark sd-text-light
 
-   *Dfetch* plugs right into your automation pipeline. Report dependency update status to
-   **GitHub, GitLab, Jenkins, DependencyTrack** and more — keeping your entire team informed, automatically.
+   *Dfetch* plugs right into your automation pipeline, pushing dependency status to your existing tools automatically.
+
+   .. raw:: html
+
+      <svg class="ci-diagram" viewBox="0 0 600 420" xmlns="http://www.w3.org/2000/svg"
+           role="img" aria-label="dfetch check reports quality status to GitHub, GitLab, Jenkins and Code Climate; dfetch report generates CycloneDX SBOM for GitHub, GitLab and DependencyTrack">
+        <defs>
+          <clipPath id="ci-check-clip">
+            <rect x="10" y="20" width="155" height="60" rx="8"/>
+          </clipPath>
+          <clipPath id="ci-report-clip">
+            <rect x="10" y="255" width="155" height="60" rx="8"/>
+          </clipPath>
+        </defs>
+
+        <!-- dfetch check command box -->
+        <rect x="10" y="20" width="155" height="60" rx="8"
+              fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+        <rect x="10" y="20" width="4" height="60" fill="#4e7fa0" clip-path="url(#ci-check-clip)"/>
+        <text x="88" y="50" text-anchor="middle" dominant-baseline="middle"
+              font-family="JetBrains Mono,monospace" font-size="12">
+          <tspan fill="#6ab0d4">$ </tspan><tspan fill="rgba(255,255,255,0.95)">dfetch check</tspan>
+        </text>
+        <rect x="140" y="43" width="6" height="12" rx="1" fill="#6ab0d4" opacity="0.7">
+          <animate attributeName="opacity" values="0.7;0;0.7" dur="1.1s" repeatCount="indefinite"/>
+        </rect>
+
+        <!-- dfetch report command box -->
+        <rect x="10" y="255" width="155" height="60" rx="8"
+              fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+        <rect x="10" y="255" width="4" height="60" fill="#2da88e" clip-path="url(#ci-report-clip)"/>
+        <text x="88" y="277" text-anchor="middle" dominant-baseline="middle"
+              font-family="JetBrains Mono,monospace" font-size="12">
+          <tspan fill="#5ecfb8">$ </tspan><tspan fill="rgba(255,255,255,0.95)">dfetch report</tspan>
+        </text>
+        <text x="88" y="296" text-anchor="middle" dominant-baseline="middle"
+              font-family="JetBrains Mono,monospace" font-size="11"
+              fill="rgba(255,255,255,0.5)">-t sbom</text>
+        <rect x="122" y="290" width="6" height="10" rx="1" fill="#5ecfb8" opacity="0.7">
+          <animate attributeName="opacity" values="0.7;0;0.7" dur="1.3s" begin="-0.6s" repeatCount="indefinite"/>
+        </rect>
+
+        <!-- CHECK: track lines -->
+        <path id="ck-p1" d="M 165,50 C 292,50 292,30  420,30"  class="ci-line"/>
+        <path id="ck-p2" d="M 165,50 C 292,50 292,88  420,88"  class="ci-line"/>
+        <path id="ck-p3" d="M 165,50 C 292,50 292,146 420,146" class="ci-line"/>
+        <path id="ck-p4" d="M 165,50 C 292,50 292,204 420,204" class="ci-line"/>
+
+        <!-- CHECK dots — amber -->
+        <circle r="3.5" fill="#c2620a"><animateMotion dur="1.5s" begin="0s"      repeatCount="indefinite" calcMode="linear"><mpath href="#ck-p1"/></animateMotion></circle>
+        <circle r="3.5" fill="#c2620a"><animateMotion dur="1.5s" begin="-0.375s" repeatCount="indefinite" calcMode="linear"><mpath href="#ck-p2"/></animateMotion></circle>
+        <circle r="3.5" fill="#c2620a"><animateMotion dur="1.5s" begin="-0.75s"  repeatCount="indefinite" calcMode="linear"><mpath href="#ck-p3"/></animateMotion></circle>
+        <circle r="3.5" fill="#c2620a"><animateMotion dur="1.5s" begin="-1.125s" repeatCount="indefinite" calcMode="linear"><mpath href="#ck-p4"/></animateMotion></circle>
+
+        <!-- REPORT: track lines -->
+        <path id="rp-p1" d="M 165,285 C 292,285 292,273 420,273" class="ci-line"/>
+        <path id="rp-p2" d="M 165,285 C 292,285 292,331 420,331" class="ci-line"/>
+        <path id="rp-p3" d="M 165,285 C 292,285 292,389 420,389" class="ci-line"/>
+
+        <!-- REPORT dots — teal -->
+        <circle r="3.5" fill="#2da88e"><animateMotion dur="1.5s" begin="0s"    repeatCount="indefinite" calcMode="linear"><mpath href="#rp-p1"/></animateMotion></circle>
+        <circle r="3.5" fill="#2da88e"><animateMotion dur="1.5s" begin="-0.5s" repeatCount="indefinite" calcMode="linear"><mpath href="#rp-p2"/></animateMotion></circle>
+        <circle r="3.5" fill="#2da88e"><animateMotion dur="1.5s" begin="-1.0s" repeatCount="indefinite" calcMode="linear"><mpath href="#rp-p3"/></animateMotion></circle>
+
+        <!-- CHECK destinations -->
+        <rect x="420" y="5"   width="172" height="50" rx="8" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <text x="506" y="22"  text-anchor="middle" dominant-baseline="middle" fill="rgba(255,255,255,0.9)"  font-family="Inter,sans-serif" font-weight="600" font-size="13">GitHub</text>
+        <text x="506" y="40"  text-anchor="middle" dominant-baseline="middle" fill="rgba(194,98,10,0.85)"   font-family="Inter,sans-serif" font-size="11">SARIF · code scanning</text>
+
+        <rect x="420" y="63"  width="172" height="50" rx="8" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <text x="506" y="80"  text-anchor="middle" dominant-baseline="middle" fill="rgba(255,255,255,0.9)"  font-family="Inter,sans-serif" font-weight="600" font-size="13">GitLab</text>
+        <text x="506" y="98"  text-anchor="middle" dominant-baseline="middle" fill="rgba(194,98,10,0.85)"   font-family="Inter,sans-serif" font-size="11">code quality in MRs</text>
+
+        <rect x="420" y="121" width="172" height="50" rx="8" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <text x="506" y="138" text-anchor="middle" dominant-baseline="middle" fill="rgba(255,255,255,0.9)"  font-family="Inter,sans-serif" font-weight="600" font-size="13">Jenkins</text>
+        <text x="506" y="156" text-anchor="middle" dominant-baseline="middle" fill="rgba(194,98,10,0.85)"   font-family="Inter,sans-serif" font-size="11">warnings-ng plugin</text>
+
+        <rect x="420" y="179" width="172" height="50" rx="8" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <text x="506" y="196" text-anchor="middle" dominant-baseline="middle" fill="rgba(255,255,255,0.9)"  font-family="Inter,sans-serif" font-weight="600" font-size="13">Code Climate</text>
+        <text x="506" y="214" text-anchor="middle" dominant-baseline="middle" fill="rgba(194,98,10,0.85)"   font-family="Inter,sans-serif" font-size="11">quality reports</text>
+
+        <!-- section separator -->
+        <line x1="20" y1="237" x2="592" y2="237" stroke="rgba(255,255,255,0.07)" stroke-width="1" stroke-dasharray="4 5"/>
+
+        <!-- REPORT destinations -->
+        <rect x="420" y="248" width="172" height="50" rx="8" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <text x="506" y="265" text-anchor="middle" dominant-baseline="middle" fill="rgba(255,255,255,0.9)"  font-family="Inter,sans-serif" font-weight="600" font-size="13">GitHub</text>
+        <text x="506" y="283" text-anchor="middle" dominant-baseline="middle" fill="rgba(45,168,142,0.9)"   font-family="Inter,sans-serif" font-size="11">CycloneDX · dep. graph</text>
+
+        <rect x="420" y="306" width="172" height="50" rx="8" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <text x="506" y="323" text-anchor="middle" dominant-baseline="middle" fill="rgba(255,255,255,0.9)"  font-family="Inter,sans-serif" font-weight="600" font-size="13">GitLab</text>
+        <text x="506" y="341" text-anchor="middle" dominant-baseline="middle" fill="rgba(45,168,142,0.9)"   font-family="Inter,sans-serif" font-size="11">CycloneDX · dep. scan</text>
+
+        <rect x="420" y="364" width="172" height="50" rx="8" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        <text x="506" y="381" text-anchor="middle" dominant-baseline="middle" fill="rgba(255,255,255,0.9)"  font-family="Inter,sans-serif" font-weight="600" font-size="13">DependencyTrack</text>
+        <text x="506" y="399" text-anchor="middle" dominant-baseline="middle" fill="rgba(45,168,142,0.9)"   font-family="Inter,sans-serif" font-size="11">vulnerability tracking</text>
+      </svg>
 
    .. asciinema:: ../asciicasts/check-ci.cast
 
