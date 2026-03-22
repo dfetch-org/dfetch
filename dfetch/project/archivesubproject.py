@@ -109,19 +109,28 @@ class ArchiveSubProject(SubProject):
         del branch
         return self.remote
 
-    def _download_and_compute_hash(self, algorithm: str = "sha256") -> IntegrityHash:
+    def _download_and_compute_hash(
+        self, algorithm: str = "sha256", url: str | None = None
+    ) -> IntegrityHash:
         """Download the archive to a temporary file and return its :class:`IntegrityHash`.
 
         The hash is computed during the download stream — no extra file read.
         The temporary file is always cleaned up, even on error.
 
+        Args:
+            algorithm: Hash algorithm to use (``sha256``, ``sha384``, ``sha512``).
+            url: If given, download from this URL instead of ``self._remote_repo``.
+                 Use this to pin to the exact URL stored in the on-disk revision.
+
         Raises:
             RuntimeError: On download failure or unsupported algorithm.
         """
-        fd, tmp_path = tempfile.mkstemp(suffix=_suffix_for_url(self.remote))
+        effective_url = url if url is not None else self.remote
+        remote = ArchiveRemote(effective_url) if url is not None else self._remote_repo
+        fd, tmp_path = tempfile.mkstemp(suffix=_suffix_for_url(effective_url))
         os.close(fd)
         try:
-            hex_digest = self._remote_repo.download(tmp_path, algorithm=algorithm)
+            hex_digest = remote.download(tmp_path, algorithm=algorithm)
             return IntegrityHash(algorithm, hex_digest)
         finally:
             try:
@@ -231,8 +240,9 @@ class ArchiveSubProject(SubProject):
         revision = on_disk.revision
 
         # Already hash-pinned — use the on-disk revision directly.
+        # Otherwise download from the revision URL (not the possibly-updated manifest URL).
         pinned = IntegrityHash.parse(revision) or self._download_and_compute_hash(
-            "sha256"
+            "sha256", url=revision
         )
         new_hash = str(pinned)
         if project.hash == new_hash:

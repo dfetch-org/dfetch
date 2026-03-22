@@ -13,27 +13,9 @@ import zipfile
 from behave import given  # pylint: disable=no-name-in-module
 
 
-def _sha256(path: str) -> str:
-    """Return the SHA-256 hex digest of a file."""
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-    return h.hexdigest()
-
-
-def _sha384(path: str) -> str:
-    """Return the SHA-384 hex digest of a file."""
-    h = hashlib.sha384()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-    return h.hexdigest()
-
-
-def _sha512(path: str) -> str:
-    """Return the SHA-512 hex digest of a file."""
-    h = hashlib.sha512()
+def _file_digest(path: str, constructor) -> str:
+    """Return the hex digest of *path* using the given hashlib *constructor*."""
+    h = constructor()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(8192), b""):
             h.update(chunk)
@@ -85,12 +67,14 @@ def _create_archive(context, name: str, extension: str) -> None:
 
     if extension == ".tar.gz":
         create_tar_gz(archive_path, name, files)
-    else:
+    elif extension == ".zip":
         create_zip(archive_path, name, files)
+    else:
+        raise ValueError(f"Unsupported archive extension: {extension!r}")
 
-    context.archive_sha256 = _sha256(archive_path)
-    context.archive_sha384 = _sha384(archive_path)
-    context.archive_sha512 = _sha512(archive_path)
+    context.archive_sha256 = _file_digest(archive_path, hashlib.sha256)
+    context.archive_sha384 = _file_digest(archive_path, hashlib.sha384)
+    context.archive_sha512 = _file_digest(archive_path, hashlib.sha512)
     context.archive_url = _archive_url(context, filename)
 
 

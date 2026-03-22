@@ -1,14 +1,18 @@
 """Unit tests for dfetch.vcs.archive and dfetch.project.archivesubproject."""
 
+import hashlib
 import io
 import os
 import tarfile
 import tempfile
 import zipfile
+from unittest.mock import patch
 
 import pytest
 
-from dfetch.project.archivesubproject import _suffix_for_url
+from dfetch.manifest.project import ProjectEntry
+from dfetch.manifest.version import Version
+from dfetch.project.archivesubproject import ArchiveSubProject, _suffix_for_url
 from dfetch.vcs.archive import (
     ARCHIVE_EXTENSIONS,
     ArchiveLocalRepo,
@@ -249,3 +253,115 @@ def test_all_archive_extensions_covered():
     assert len(ARCHIVE_EXTENSIONS) > 0
     for ext in ARCHIVE_EXTENSIONS:
         assert ext.startswith(".")
+
+
+# ---------------------------------------------------------------------------
+# Helpers shared by ArchiveSubProject tests
+# ---------------------------------------------------------------------------
+
+
+def _make_tar_gz(path: str, content: bytes = b"hello") -> None:
+    """Write a minimal .tar.gz archive containing one file to *path*."""
+    with tarfile.open(path, "w:gz") as tf:
+        info = tarfile.TarInfo(name="pkg/README.md")
+        info.size = len(content)
+        tf.addfile(info, io.BytesIO(content))
+
+
+def _sha256_file(path: str) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _file_url(path: str) -> str:
+    return "file:///" + path.lstrip("/")
+
+
+def _make_subproject(url: str) -> ArchiveSubProject:
+    return ArchiveSubProject(
+        ProjectEntry({"name": "pkg", "url": url, "vcs": "archive"})
+    )
+
+
+# ---------------------------------------------------------------------------
+# ArchiveSubProject._download_and_compute_hash – explicit url parameter
+# ---------------------------------------------------------------------------
+
+
+def test_download_and_compute_hash_default_uses_remote_repo():
+    """Without an explicit url the hash is computed from self._remote_repo."""
+    with tempfile.TemporaryDirectory() as tmp:
+        archive = os.path.join(tmp, "pkg.tar.gz")
+        _make_tar_gz(archive)
+        url = _file_url(archive)
+        sp = _make_subproject(url)
+
+        result = sp._download_and_compute_hash("sha256")
+
+        assert result.algorithm == "sha256"
+        assert result.hex_digest == _sha256_file(archive)
+
+
+def test_download_and_compute_hash_explicit_url_overrides_remote_repo():
+    """When *url* is supplied a fresh ArchiveRemote for that URL is used.
+
+    This is the regression guard for the fix: if the manifest URL was changed
+    after fetching, freeze must still hash the *original* archive (the one
+    recorded in the on-disk revision), not the current manifest URL.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        archive_a = os.path.join(tmp, "pkg_a.tar.gz")
+        archive_b = os.path.join(tmp, "pkg_b.tar.gz")
+        _make_tar_gz(archive_a, content=b"version A")
+        _make_tar_gz(archive_b, content=b"version B")
+        url_a = _file_url(archive_a)
+        url_b = _file_url(archive_b)
+
+        # SubProject points to archive_b (current manifest URL).
+        sp = _make_subproject(url_b)
+
+        # Passing url=url_a must use archive_a's content.
+        result = sp._download_and_compute_hash("sha256", url=url_a)
+
+        assert result.hex_digest == _sha256_file(archive_a)
+        assert result.hex_digest != _sha256_file(archive_b)
+
+
+# ---------------------------------------------------------------------------
+# ArchiveSubProject.freeze_project – uses on-disk revision URL
+# ---------------------------------------------------------------------------
+
+
+def test_freeze_project_uses_on_disk_url_not_manifest_url():
+    """freeze_project must hash the archive at the on-disk revision URL.
+
+    Scenario: the manifest URL was updated after the last fetch.  Without the
+    fix, freeze would download from the new (current) manifest URL and produce
+    a hash that doesn't match the fetched archive.  With the fix it uses the
+    URL stored in the on-disk revision.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        archive_a = os.path.join(tmp, "pkg_a.tar.gz")
+        archive_b = os.path.join(tmp, "pkg_b.tar.gz")
+        _make_tar_gz(archive_a, content=b"original fetch")
+        _make_tar_gz(archive_b, content=b"updated manifest url")
+        url_a = _file_url(archive_a)
+        url_b = _file_url(archive_b)
+
+        # SubProject now points to archive_b (manifest was updated after fetch).
+        sp = _make_subproject(url_b)
+
+        # Simulate on-disk state: was fetched from url_a (no hash-pin at the time).
+        on_disk = Version(revision=url_a)
+        with patch.object(sp, "on_disk_version", return_value=on_disk):
+            project_entry = ProjectEntry(
+                {"name": "pkg", "url": url_b, "vcs": "archive"}
+            )
+            sp.freeze_project(project_entry)
+
+        expected_hash = f"sha256:{_sha256_file(archive_a)}"
+        assert project_entry.hash == expected_hash
+        assert _sha256_file(archive_b) not in project_entry.hash
