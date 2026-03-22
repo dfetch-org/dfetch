@@ -32,6 +32,7 @@ import sys
 import tarfile
 import tempfile
 import urllib.parse
+import urllib.request
 import zipfile
 from collections.abc import Sequence
 from typing import overload
@@ -129,7 +130,7 @@ class ArchiveRemote:
         """
         parsed = urllib.parse.urlparse(self.url)
         if parsed.scheme == "file":
-            return os.path.exists(parsed.path)
+            return os.path.exists(urllib.request.url2pathname(parsed.path))
         if parsed.scheme not in ("http", "https"):
             return False
         return self._is_http_reachable(parsed)
@@ -176,14 +177,15 @@ class ArchiveRemote:
         hasher = hashlib.new(algorithm) if algorithm else None
         parsed = urllib.parse.urlparse(self.url)
         if parsed.scheme == "file":
+            file_path = urllib.request.url2pathname(parsed.path)
             try:
                 if hasher:
-                    with open(parsed.path, "rb") as src, open(dest_path, "wb") as dst:
+                    with open(file_path, "rb") as src, open(dest_path, "wb") as dst:
                         for chunk in iter(lambda: src.read(65536), b""):
                             dst.write(chunk)
                             hasher.update(chunk)
                 else:
-                    shutil.copy(parsed.path, dest_path)
+                    shutil.copy(file_path, dest_path)
             except OSError as exc:
                 raise RuntimeError(
                     f"'{self.url}' is not a valid URL or unreachable: {exc}"

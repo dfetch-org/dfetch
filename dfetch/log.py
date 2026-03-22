@@ -147,8 +147,9 @@ class ExtLogFilter(logging.Filter):  # pylint: disable=too-few-public-methods
         """Add indentation to the log record message."""
         color = "blue" if record.levelno < logging.WARNING else "yellow"
 
-        line = markup_escape(str(record.msg)).replace("\n", "\n    ")
+        line = markup_escape(record.getMessage()).replace("\n", "\n    ")
         record.msg = f"{self.prefix}[{color}]{line}[/{color}]"
+        record.args = ()
         return True
 
 
