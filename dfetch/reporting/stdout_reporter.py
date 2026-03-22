@@ -1,7 +1,71 @@
-"""*Dfetch* can generate an report on stdout.
+"""*Dfetch* can generate a report on stdout.
 
-Depending on the state of the projects it will show as much information
-from the manifest or the metadata (``.dfetch_data.yaml``).
+The stdout report prints one block per project. Fields are drawn from the
+manifest where possible and fall back to the ``.dfetch_data.yaml`` metadata
+written by :ref:`Update` when the project has been fetched at least once.
+
+Output format
+~~~~~~~~~~~~~
+
+A typical block looks like this:
+
+.. code-block:: console
+
+   my-project:
+   - remote            : <none>
+     remote url        : https://github.com/example/my-project
+     branch            : main
+     tag               : <none>
+     last fetch        : 01/01/2025, 12:00:00
+     revision          : e1fda19a…
+     patch             : <none>
+     licenses          : MIT
+
+The fields are:
+
+- **remote**: named :ref:`Remotes` entry from the manifest (``<none>`` when
+  the URL is given directly via ``url:``).
+- **remote url**: full URL of the upstream repository (derived from ``url:``
+  or the ``url-base`` of the :ref:`Remotes` entry).
+- **branch** / **tag** / **revision**: version as recorded at fetch time;
+  see :ref:`Revision/Branch/Tag`.
+- **last fetch**: timestamp of the last successful ``dfetch update``.
+- **patch**: patch file(s) applied after fetching (``<none>`` if unused);
+  see :ref:`Patch`.
+- **licenses**: license(s) auto-detected in the fetched directory.
+
+If a project has never been fetched the metadata file is absent and only
+``last fetch: never`` is shown.
+
+Dependencies
+~~~~~~~~~~~~
+
+When a fetched git project contains submodules, *Dfetch* records each one as a
+dependency inside the project's ``.dfetch_data.yaml`` metadata file. The
+stdout report surfaces these under a ``dependencies`` block:
+
+.. code-block:: console
+
+   my-project:
+   - remote            : <none>
+     ...
+     dependencies      :
+     - path            : ext/vendor-lib
+       url             : https://github.com/example/vendor-lib
+       branch          : master
+       tag             : <none>
+       revision        : 79698c99…
+       source-type     : git-submodule
+
+Each dependency entry contains:
+
+- **path**: location of the submodule inside the fetched project.
+- **url**: upstream URL of the submodule repository.
+- **branch** / **tag** / **revision**: version information pinned by the parent.
+- **source-type**: origin of the dependency (e.g. ``git-submodule``).
+
+.. scenario-include:: ../features/fetch-git-repo-with-submodule.feature
+    :scenario: Submodule changes are reported in the project report
 """
 
 from dfetch.log import get_logger

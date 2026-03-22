@@ -31,8 +31,6 @@ Metadata
     A file created by *DFetch* to store some relevant information about
     a subproject.
 
-.. _architecture:
-
 Architecture
 ------------
 These diagrams are based on `Simon Brown's C4-model`_.

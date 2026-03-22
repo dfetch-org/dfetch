@@ -29,6 +29,26 @@ checking sub-manifests with ``--no-recommendations``.
 
 .. scenario-include:: ../features/updated-project-has-dependencies.feature
 
+Git submodules
+~~~~~~~~~~~~~~
+
+When a git dependency itself contains git submodules, *Dfetch* fetches and resolves
+them automatically, no extra manifest entries or ``git submodule`` commands are needed.
+
+Each submodule is checked out at the exact revision pinned by the parent repository.
+*Dfetch* reports every resolved submodule in the update output::
+
+   Dfetch (0.12.1)
+     my-project:
+     > Found & fetched submodule "./ext/vendor-lib"  (https://github.com/example/vendor-lib @ master - 79698c9…)
+     > Fetched master - e1fda19…
+
+Nested submodules (submodules of submodules) are resolved recursively. The pinned
+details for each submodule are recorded in the ``.dfetch_data.yaml`` metadata file
+and are visible in :ref:`Report`.
+
+.. scenario-include:: ../features/fetch-git-repo-with-submodule.feature
+
 """
 
 import argparse
