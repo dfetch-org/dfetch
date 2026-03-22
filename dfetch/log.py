@@ -9,6 +9,7 @@ from typing import Any, cast
 from rich.console import Console
 from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
+from rich.markup import escape as markup_escape
 from rich.status import Status
 
 from dfetch import __version__
@@ -52,26 +53,30 @@ class DLogger(logging.Logger):
 
     def print_report_line(self, name: str, info: str) -> None:
         """Print a line for a report."""
+        safe_name = markup_escape(name)
+        safe_info = markup_escape(info)
         self.info(
-            f"  [bold][bright_green]{name:20s}:[/bright_green][blue] {info}[/blue][/bold]"
+            f"  [bold][bright_green]{safe_name:20s}:[/bright_green][blue] {safe_info}[/blue][/bold]"
         )
 
     def print_info_line(self, name: str, info: str) -> None:
         """Print a line of info, only printing the project name once."""
         if name not in DLogger._printed_projects:
-            self.info(f"  [bold][bright_green]{name}:[/bright_green][/bold]")
+            safe_name = markup_escape(name)
+            self.info(f"  [bold][bright_green]{safe_name}:[/bright_green][/bold]")
             DLogger._printed_projects.add(name)
 
-        line = info.replace("\n", "\n    ")
+        line = markup_escape(info).replace("\n", "\n    ")
         self.info(f"  [bold blue]> {line}[/bold blue]")
 
     def print_warning_line(self, name: str, info: str) -> None:
         """Print a warning line: green name, yellow value."""
         if name not in DLogger._printed_projects:
-            self.info(f"  [bold][bright_green]{name}:[/bright_green][/bold]")
+            safe_name = markup_escape(name)
+            self.info(f"  [bold][bright_green]{safe_name}:[/bright_green][/bold]")
             DLogger._printed_projects.add(name)
 
-        line = info.replace("\n", "\n    ")
+        line = markup_escape(info).replace("\n", "\n    ")
         self.info(f"  [bold bright_yellow]> {line}[/bold bright_yellow]")
 
     def print_title(self) -> None:
@@ -85,12 +90,14 @@ class DLogger(logging.Logger):
     def warning(self, msg: object, *args: Any, **kwargs: Any) -> None:
         """Log warning."""
         super().warning(
-            f"[bold bright_yellow]{msg}[/bold bright_yellow]", *args, **kwargs
+            f"[bold bright_yellow]{markup_escape(str(msg))}[/bold bright_yellow]",
+            *args,
+            **kwargs,
         )
 
     def error(self, msg: object, *args: Any, **kwargs: Any) -> None:
         """Log error."""
-        super().error(f"[red]{msg}[/red]", *args, **kwargs)
+        super().error(f"[red]{markup_escape(str(msg))}[/red]", *args, **kwargs)
 
     def status(
         self, name: str, message: str, spinner: str = "dots", enabled: bool = True
@@ -111,11 +118,12 @@ class DLogger(logging.Logger):
             return nullcontext(None)
 
         if name not in DLogger._printed_projects:
-            self.info(f"  [bold][bright_green]{name}:[/bright_green][/bold]")
+            safe_name = markup_escape(name)
+            self.info(f"  [bold][bright_green]{safe_name}:[/bright_green][/bold]")
             DLogger._printed_projects.add(name)
 
         return Status(
-            f"[bold bright_blue]> {message}[/bold bright_blue]",
+            f"[bold bright_blue]> {markup_escape(message)}[/bold bright_blue]",
             spinner=spinner,
             console=rich_console,
         )
@@ -138,7 +146,7 @@ class ExtLogFilter(logging.Filter):  # pylint: disable=too-few-public-methods
         """Add indentation to the log record message."""
         color = "blue" if record.levelno < logging.WARNING else "yellow"
 
-        line = record.msg.replace("\n", "\n    ")
+        line = markup_escape(str(record.msg)).replace("\n", "\n    ")
         record.msg = f"{self.prefix}[{color}]{line}[/{color}]"
         return True
 

@@ -313,17 +313,67 @@ class ArchiveLocalRepo:
         return members
 
     @staticmethod
-    def _check_tar_members(tf: tarfile.TarFile) -> None:
-        """Validate TAR members against decompression bombs and path traversal.
+    def _check_tar_member_type(member: tarfile.TarInfo) -> None:
+        """Reject dangerous TAR member types that could harm the host system.
 
-        Size/count limits mirror :meth:`check_zip_members`.  Path validation
-        is defence-in-depth: on Python ≥ 3.11.4 the ``filter="tar"`` passed to
-        :meth:`tarfile.TarFile.extractall` also rejects unsafe paths, but we
-        check here too so the guard applies on all supported Python versions.
+        On Python ≥ 3.11.4 the ``filter="tar"`` passed to
+        :meth:`tarfile.TarFile.extractall` already blocks many of these, but
+        we validate here too so the guard is active on **all** supported Python
+        versions and provides defence-in-depth on newer ones.
+
+        Rejected member types:
+
+        * **Symlinks with absolute or escaping targets** — could create a
+          foothold outside the extraction directory for later writes.
+        * **Hard links with absolute or escaping targets** — same risk as
+          dangerous symlinks; the target path is validated like a regular
+          member name.
+        * **Device files** (character, block) — accessing ``/dev/mem`` or
+          similar via an extracted device node can compromise the host.
+        * **FIFO / named pipes** — rarely present in software archives and
+          can be used to communicate with host processes or block extraction.
 
         Raises:
-            RuntimeError: When the archive exceeds the size/count limits or
-                contains an absolute path or ``..`` component.
+            RuntimeError: When *member* is a disallowed or unsafe member type.
+        """
+        if member.issym():
+            target = member.linkname
+            if os.path.isabs(target) or any(
+                part == ".." for part in pathlib.PurePosixPath(target).parts
+            ):
+                raise RuntimeError(
+                    f"Archive contains a symlink with an unsafe target: "
+                    f"{member.name!r} -> {target!r}"
+                )
+        elif member.islnk():
+            # Hard-link targets are archive-relative paths; apply the same
+            # path-traversal check as we do for regular member names.
+            ArchiveLocalRepo._check_archive_member_path(member.linkname)
+        elif member.isdev() or member.isfifo():
+            raise RuntimeError(
+                f"Archive contains a special file (device/FIFO): {member.name!r}"
+            )
+
+    @staticmethod
+    def _check_tar_members(tf: tarfile.TarFile) -> None:
+        """Validate TAR members against decompression bombs and unsafe member types.
+
+        Checks applied (all supported Python versions):
+
+        * **Size / count limits** — guard against decompression-bomb archives.
+        * **Path traversal** — reject absolute paths and ``..`` components.
+        * **Unsafe member types** — reject symlinks with absolute or escaping
+          targets, hardlinks with escaping targets, device files, and FIFOs
+          (see :meth:`_check_tar_member_type`).
+
+        On Python ≥ 3.11.4 the ``filter="tar"`` passed to
+        :meth:`tarfile.TarFile.extractall` provides additional OS-level
+        protection; these checks remain as defence-in-depth.
+
+        Raises:
+            RuntimeError: When the archive exceeds the size/count limits,
+                contains an absolute path or ``..`` component, or contains an
+                unsafe member type (dangerous symlink, device file, FIFO).
         """
         members = tf.getmembers()
         ArchiveLocalRepo._check_archive_limits(
@@ -331,6 +381,7 @@ class ArchiveLocalRepo:
         )
         for member in members:
             ArchiveLocalRepo._check_archive_member_path(member.name)
+            ArchiveLocalRepo._check_tar_member_type(member)
 
     @staticmethod
     def _extract_raw(archive_path: str, dest_dir: str) -> None:
@@ -338,12 +389,12 @@ class ArchiveLocalRepo:
 
         Safety checks performed before extraction:
 
-        * TAR: member count and total uncompressed size (decompression bomb).
-          Path sanitisation uses the built-in ``filter="tar"`` filter when
-          available (Python ≥ 3.11.4 / 3.12), which rejects absolute paths,
-          ``..`` components, absolute symlinks, and device files.  On older
-          Python releases extraction proceeds without the filter (member-path
-          attacks are still blocked by ``_check_tar_members``).
+        * TAR: :meth:`_check_tar_members` validates every member for
+          decompression-bomb limits, path traversal, dangerous symlink
+          targets, hardlink targets, device files, and FIFOs on **all**
+          supported Python versions.  When Python ≥ 3.11.4 is available the
+          built-in ``filter="tar"`` provides additional OS-level enforcement
+          as defence-in-depth.
         * ZIP: member path traversal validation (absolute paths and ``..``
           components are rejected) plus member count and size limits.
         """

@@ -3,6 +3,7 @@
 import hashlib
 import io
 import os
+import pathlib
 import tarfile
 import tempfile
 import zipfile
@@ -24,6 +25,7 @@ from dfetch.vcs.archive import (
 _check_archive_limits = ArchiveLocalRepo._check_archive_limits
 _check_zip_members = ArchiveLocalRepo.check_zip_members
 _check_tar_members = ArchiveLocalRepo._check_tar_members
+_check_tar_member_type = ArchiveLocalRepo._check_tar_member_type
 
 
 # ---------------------------------------------------------------------------
@@ -168,6 +170,135 @@ def test_check_tar_members_absolute():
         _check_tar_members(tf)
 
 
+def _make_tar_with_member(setup_fn) -> tarfile.TarFile:
+    """Create an in-memory tar whose members are set up by *setup_fn(tf)*."""
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:") as tf:
+        setup_fn(tf)
+    buf.seek(0)
+    return tarfile.open(fileobj=buf, mode="r:")
+
+
+def _add_symlink(tf: tarfile.TarFile, name: str, target: str) -> None:
+    info = tarfile.TarInfo(name=name)
+    info.type = tarfile.SYMTYPE
+    info.linkname = target
+    tf.addfile(info)
+
+
+def _add_hardlink(tf: tarfile.TarFile, name: str, target: str) -> None:
+    info = tarfile.TarInfo(name=name)
+    info.type = tarfile.LNKTYPE
+    info.linkname = target
+    tf.addfile(info)
+
+
+def _add_chrdev(tf: tarfile.TarFile, name: str) -> None:
+    info = tarfile.TarInfo(name=name)
+    info.type = tarfile.CHRTYPE
+    tf.addfile(info)
+
+
+def _add_blkdev(tf: tarfile.TarFile, name: str) -> None:
+    info = tarfile.TarInfo(name=name)
+    info.type = tarfile.BLKTYPE
+    tf.addfile(info)
+
+
+def _add_fifo(tf: tarfile.TarFile, name: str) -> None:
+    info = tarfile.TarInfo(name=name)
+    info.type = tarfile.FIFOTYPE
+    tf.addfile(info)
+
+
+# ---------------------------------------------------------------------------
+# _check_tar_member_type — symlink validation
+# ---------------------------------------------------------------------------
+
+
+def test_check_tar_member_type_safe_symlink():
+    tf = _make_tar_with_member(lambda t: _add_symlink(t, "link", "relative/target"))
+    member = tf.getmembers()[0]
+    _check_tar_member_type(member)  # should not raise
+
+
+def test_check_tar_member_type_absolute_symlink():
+    tf = _make_tar_with_member(lambda t: _add_symlink(t, "link", "/etc/passwd"))
+    member = tf.getmembers()[0]
+    with pytest.raises(RuntimeError, match="unsafe target"):
+        _check_tar_member_type(member)
+
+
+def test_check_tar_member_type_dotdot_symlink():
+    tf = _make_tar_with_member(lambda t: _add_symlink(t, "link", "../../etc/passwd"))
+    member = tf.getmembers()[0]
+    with pytest.raises(RuntimeError, match="unsafe target"):
+        _check_tar_member_type(member)
+
+
+# ---------------------------------------------------------------------------
+# _check_tar_member_type — hardlink validation
+# ---------------------------------------------------------------------------
+
+
+def test_check_tar_member_type_safe_hardlink():
+    tf = _make_tar_with_member(lambda t: _add_hardlink(t, "hardlink", "project/real.c"))
+    member = tf.getmembers()[0]
+    _check_tar_member_type(member)  # should not raise
+
+
+def test_check_tar_member_type_dotdot_hardlink():
+    tf = _make_tar_with_member(
+        lambda t: _add_hardlink(t, "hardlink", "../outside/secret.txt")
+    )
+    member = tf.getmembers()[0]
+    with pytest.raises(RuntimeError, match="unsafe member path"):
+        _check_tar_member_type(member)
+
+
+# ---------------------------------------------------------------------------
+# _check_tar_member_type — device / FIFO validation
+# ---------------------------------------------------------------------------
+
+
+def test_check_tar_member_type_char_device():
+    tf = _make_tar_with_member(lambda t: _add_chrdev(t, "dev/mem"))
+    member = tf.getmembers()[0]
+    with pytest.raises(RuntimeError, match="special file"):
+        _check_tar_member_type(member)
+
+
+def test_check_tar_member_type_block_device():
+    tf = _make_tar_with_member(lambda t: _add_blkdev(t, "dev/sda"))
+    member = tf.getmembers()[0]
+    with pytest.raises(RuntimeError, match="special file"):
+        _check_tar_member_type(member)
+
+
+def test_check_tar_member_type_fifo():
+    tf = _make_tar_with_member(lambda t: _add_fifo(t, "named_pipe"))
+    member = tf.getmembers()[0]
+    with pytest.raises(RuntimeError, match="special file"):
+        _check_tar_member_type(member)
+
+
+# ---------------------------------------------------------------------------
+# _check_tar_members — integration of member-type validation
+# ---------------------------------------------------------------------------
+
+
+def test_check_tar_members_rejects_absolute_symlink():
+    tf = _make_tar_with_member(lambda t: _add_symlink(t, "link", "/etc/passwd"))
+    with pytest.raises(RuntimeError, match="unsafe target"):
+        _check_tar_members(tf)
+
+
+def test_check_tar_members_rejects_device_file():
+    tf = _make_tar_with_member(lambda t: _add_chrdev(t, "dev/mem"))
+    with pytest.raises(RuntimeError, match="special file"):
+        _check_tar_members(tf)
+
+
 # ---------------------------------------------------------------------------
 # ArchiveRemote.is_accessible
 # ---------------------------------------------------------------------------
@@ -177,7 +308,7 @@ def test_is_accessible_existing_file():
     with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as f:
         path = f.name
     try:
-        url = f"file:///{path.lstrip('/')}"
+        url = pathlib.Path(path).as_uri()
         remote = ArchiveRemote(url)
         assert remote.is_accessible() is True
     finally:
@@ -277,7 +408,7 @@ def _sha256_file(path: str) -> str:
 
 
 def _file_url(path: str) -> str:
-    return "file:///" + path.lstrip("/")
+    return pathlib.Path(path).as_uri()
 
 
 def _make_subproject(url: str) -> ArchiveSubProject:
