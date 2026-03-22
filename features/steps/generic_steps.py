@@ -50,8 +50,8 @@ def temporary_env(key: str, value: str):
 
 
 def remote_server_path(context):
-    """Get the path to the remote dir."""
-    return "/".join(context.remotes_dir_path.split(os.sep))
+    """Get the path to the remote dir as a POSIX path string."""
+    return pathlib.Path(context.remotes_dir_path).as_posix()
 
 
 def call_command(context: Context, args: list[str], path: Optional[str] = ".") -> None:
