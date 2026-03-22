@@ -31,11 +31,32 @@ Metadata
     A file created by *DFetch* to store some relevant information about
     a subproject.
 
+.. _architecture:
+
 Architecture
 ------------
 These diagrams are based on `Simon Brown's C4-model`_.
 
 .. _`Simon Brown's C4-model` : https://c4model.com/#CoreDiagrams
+
+The layer boundaries shown in the diagrams are enforced at development time by
+`import-linter <https://import-linter.readthedocs.io/>`_. The contracts are configured in
+``pyproject.toml`` under ``[tool.importlinter]``. Run ``lint-imports`` to verify them locally.
+Dependencies must remain unidirectional and follow this order:
+
+.. code-block:: text
+
+    dfetch.commands
+         ↓
+    dfetch.reporting
+         ↓
+    dfetch.project
+         ↓
+    dfetch.manifest  (independent of dfetch.vcs)
+    dfetch.vcs       (independent of dfetch.manifest)
+         ↓
+    dfetch.util  (independent of dfetch.log)
+    dfetch.log   (independent of dfetch.util)
 
 C1 - Context
 ''''''''''''

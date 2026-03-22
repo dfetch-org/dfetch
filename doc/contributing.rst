@@ -49,6 +49,13 @@ To avoid any discussion about formatting `black <https://github.com/psf/black>`_
 Next to that `isort <https://github.com/PyCQA/isort>`_ is used for sorting the imports.
 And `doc8 <https://github.com/pycqa/doc8>`_ is used as rst linter.
 
+`import-linter <https://import-linter.readthedocs.io/>`_ is used to guard the :ref:`architecture` by verifying
+that imports between modules respect the C4 layer boundaries. Run it with:
+
+.. code-block:: bash
+
+    lint-imports
+
 Run ``script/check_quality.bat`` (or GitHub will run it for you). Alternatively when using VSCode run the `Check Quality` task from the command palette.
 
 Testing
