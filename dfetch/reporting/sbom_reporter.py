@@ -319,7 +319,7 @@ class SbomReporter(Reporter):
     @staticmethod
     def _apply_vcs_refs(component: Component, purl: PackageURL) -> None:
         """Add VCS external reference and group for a generic VCS dependency."""
-        component.group = purl.namespace
+        component.group = purl.namespace or None
         vcs_url = purl.qualifiers.get("vcs_url", "")
         # ExternalReferenceType.VCS does not support ssh:// urls
         if vcs_url and "ssh://" not in vcs_url:
