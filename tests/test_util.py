@@ -5,7 +5,7 @@
 
 import pytest
 
-from dfetch.util.util import copy_src_subset, hash_directory
+from dfetch.util.util import copy_src_subset, hash_directory, prune_files_by_pattern
 
 # ---------------------------------------------------------------------------
 # copy_src_subset – path-traversal protection
@@ -100,3 +100,58 @@ def test_hash_directory_skiplist_excludes_file(tmp_path):
     h_with_skip2 = hash_directory(str(d), ["ignored.txt"])
 
     assert h_with_skip == h_with_skip2
+
+
+# ---------------------------------------------------------------------------
+# prune_files_by_pattern – delete-order safety
+# ---------------------------------------------------------------------------
+
+
+def test_prune_removes_matched_file(tmp_path):
+    (tmp_path / "remove_me.txt").write_text("gone")
+    prune_files_by_pattern(str(tmp_path), ["remove_me.txt"])
+    assert not (tmp_path / "remove_me.txt").exists()
+
+
+def test_prune_parent_and_child_both_matched_no_error(tmp_path):
+    """When a dir and a file inside it both match, removal must not raise.
+
+    Before the fix, removing the parent first left the child path pointing at a
+    non-existent location; the subsequent safe_rm call then raised
+    FileNotFoundError.
+    """
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "main.c").write_text("int main(){}")
+
+    # "src" matches the directory; "main.c" matches the child inside it.
+    prune_files_by_pattern(str(tmp_path), ["src", "main.c"])
+
+    assert not src.exists()
+
+
+def test_prune_preserves_license_file(tmp_path):
+    """License files must survive even when they match a removal pattern."""
+    (tmp_path / "LICENSE").write_text("MIT")
+    (tmp_path / "delete_me.txt").write_text("gone")
+
+    prune_files_by_pattern(str(tmp_path), ["LICENSE", "delete_me.txt"])
+
+    assert (tmp_path / "LICENSE").exists()
+    assert not (tmp_path / "delete_me.txt").exists()
+
+
+def test_prune_skips_already_removed_paths(tmp_path):
+    """Paths that no longer exist after a parent removal are silently skipped."""
+    parent = tmp_path / "libs"
+    parent.mkdir()
+    child = parent / "lib.a"
+    child.write_text("binary")
+    unrelated = tmp_path / "readme.txt"
+    unrelated.write_text("keep")
+
+    # Both "libs" (directory) and "libs/lib.a" (child) match; no exception expected.
+    prune_files_by_pattern(str(tmp_path), ["libs", "lib.a"])
+
+    assert not parent.exists()
+    assert unrelated.exists()
