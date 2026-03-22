@@ -145,11 +145,14 @@ def safe_rm(
     )
     for path in paths_to_remove:
         if os.path.lexists(path):
-            check_no_path_traversal(path, base)
-            if os.path.isdir(path):
-                safe_rmtree(str(path))
+            if os.path.islink(path):
+                os.unlink(path)
             else:
-                os.remove(path)
+                check_no_path_traversal(path, base)
+                if os.path.isdir(path):
+                    safe_rmtree(str(path))
+                else:
+                    os.remove(path)
 
 
 def safe_rmtree(path: str) -> None:
