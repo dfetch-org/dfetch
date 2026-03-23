@@ -55,7 +55,7 @@ jobs:
 
       - name: Add msbuild to PATH
         if: ${{ matrix.platform == 'windows-latest' }}
-        uses: microsoft/setup-msbuild@767f00a3f09872d96a0cb9fcd5e6a4ff33311330 # v2
+        uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v2
       - name: Install WiX
         if: ${{ matrix.platform == 'windows-latest' }}
         run: |
