@@ -199,6 +199,18 @@ Also called vendoring. More info: `<https://dfetch.readthedocs.io/en/latest/gett
 
      dfetch init
 
+- Add a new project to the manifest (interactive step-by-step wizard):
+
+  .. code-block:: console
+
+     dfetch add -i <url>
+
+  or non-interactively (auto-accept defaults, skip confirmation):
+
+  .. code-block:: console
+
+     dfetch add -f <url>
+
 - Generate a manifest from existing git submodules or svn externals:
 
   .. code-block:: console
