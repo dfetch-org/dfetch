@@ -33,18 +33,33 @@ def step_impl(context, remote_url):
 def step_impl(context, remote_url):
     url = _resolve_url(remote_url, context)
 
-    # Separate the confirmation row (if any) from the Prompt.ask rows.
-    # The table has columns: prompt_contains | answer.
-    # The final "Add project to manifest?" row drives Confirm.ask; all others
-    # drive Prompt.ask in order.
-    confirm_answer = True
+    # Parse the answer table into three buckets:
+    #   • "Add project to manifest?" → add_confirm (bool)
+    #   • "Run" + "update" in prompt  → update_confirm (bool, default False)
+    #   • anything else               → Prompt.ask answers (in order)
+    add_confirm = True
+    update_confirm = False
     prompt_answers: deque[str] = deque()
 
     for row in context.table:
-        if "Add project to manifest" in row["prompt_contains"]:
-            confirm_answer = row["answer"].lower() not in ("n", "no", "false")
+        prompt = row["prompt_contains"]
+        answer = row["answer"]
+        if "Add project to manifest" in prompt:
+            add_confirm = answer.lower() not in ("n", "no", "false")
+        elif "update" in prompt.lower() and "run" in prompt.lower():
+            update_confirm = answer.lower() not in ("n", "no", "false")
         else:
-            prompt_answers.append(row["answer"])
+            prompt_answers.append(answer)
+
+    # Two sequential Confirm calls: first "add?", then (if added) "update?".
+    # We use an iterator so each call consumes the next value.
+    _confirm_values = iter([add_confirm, update_confirm])
+
+    def _auto_confirm(prompt: str, **kwargs) -> bool:
+        try:
+            return next(_confirm_values)
+        except StopIteration:
+            return bool(kwargs.get("default", False))
 
     def _auto_prompt(prompt: str, **kwargs) -> str:  # type: ignore[return]
         """Return the next pre-defined answer, ignoring the actual prompt text."""
@@ -53,7 +68,7 @@ def step_impl(context, remote_url):
         return str(kwargs.get("default", ""))
 
     with patch("dfetch.commands.add.Prompt.ask", side_effect=_auto_prompt):
-        with patch("dfetch.commands.add.Confirm.ask", return_value=confirm_answer):
+        with patch("dfetch.commands.add.Confirm.ask", side_effect=_auto_confirm):
             call_command(context, ["add", "--interactive", url])
 
 

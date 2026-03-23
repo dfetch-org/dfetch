@@ -1,9 +1,10 @@
 """SubProject."""
 
+import contextlib
 import os
 import pathlib
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Generator, Sequence
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
@@ -407,6 +408,19 @@ class SubProject(ABC):
     def list_of_tags(self) -> list[str]:
         """Get list of all available tags (public wrapper around ``_list_of_tags``)."""
         return self._list_of_tags()
+
+    @contextlib.contextmanager
+    def browse_tree(
+        self,
+    ) -> Generator[Callable[[str], list[tuple[str, bool]]], None, None]:
+        """Context manager yielding a function to list remote tree contents.
+
+        The yielded callable accepts an optional path (relative to repo root)
+        and returns a list of ``(name, is_dir)`` pairs.  The default
+        implementation returns an empty list; VCS-specific subclasses override
+        this to perform a real remote tree walk.
+        """
+        yield lambda path="": []
 
     def freeze_project(self, project: ProjectEntry) -> str | None:
         """Freeze *project* to its current on-disk version.
