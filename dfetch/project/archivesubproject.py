@@ -41,7 +41,6 @@ Example manifest entries::
 
 from __future__ import annotations
 
-import http.client
 import os
 import pathlib
 import tempfile
@@ -98,8 +97,7 @@ class ArchiveSubProject(SubProject):
 
     @staticmethod
     def list_tool_info() -> None:
-        """Log information about the archive fetching tool (Python's http.client)."""
-        SubProject._log_tool("http.client", http.client.__doc__ or "built-in")
+        """No external tool info to report; archive fetching uses Python stdlib only."""
 
     def get_default_branch(self) -> str:
         """Archives have no branches; return an empty string."""
