@@ -154,7 +154,7 @@ def test_add_command_force_appends_entry():
 
 
 def test_add_command_user_confirms():
-    """Without --force the user is prompted; 'y' proceeds."""
+    """Without --force the user is prompted; confirming proceeds."""
     fake_superproject = Mock()
     fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
     fake_superproject.manifest.remotes = []
@@ -171,7 +171,7 @@ def test_add_command_user_confirms():
         with patch(
             "dfetch.commands.add.create_sub_project", return_value=fake_subproject
         ):
-            with patch("dfetch.commands.add.Prompt.ask", return_value="y"):
+            with patch("dfetch.commands.add.Confirm.ask", return_value=True):
                 with patch(
                     "dfetch.commands.add.append_entry_manifest_file"
                 ) as mock_append:
@@ -198,7 +198,7 @@ def test_add_command_user_aborts():
         with patch(
             "dfetch.commands.add.create_sub_project", return_value=fake_subproject
         ):
-            with patch("dfetch.commands.add.Prompt.ask", return_value="n"):
+            with patch("dfetch.commands.add.Confirm.ask", return_value=False):
                 with patch(
                     "dfetch.commands.add.append_entry_manifest_file"
                 ) as mock_append:
@@ -237,7 +237,7 @@ def test_add_command_raises_on_duplicate_name():
 
 
 def test_add_command_interactive_branch():
-    """Interactive mode with branch selection appends correct entry."""
+    """Interactive mode: typing a branch name appends entry with that branch."""
     fake_superproject = Mock()
     fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
     fake_superproject.manifest.remotes = []
@@ -248,8 +248,9 @@ def test_add_command_interactive_branch():
     fake_subproject.list_of_branches.return_value = ["main", "dev"]
     fake_subproject.list_of_tags.return_value = ["v1.0"]
 
-    # Answers in order: name, dst, version_type, branch, src, confirm
-    answers = iter(["myrepo", "libs/myrepo", "branch", "dev", "", "y"])
+    # Prompts: name, dst, version (single step), src
+    # Confirm is mocked separately.
+    prompt_answers = iter(["myrepo", "libs/myrepo", "dev", ""])
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
@@ -259,17 +260,18 @@ def test_add_command_interactive_branch():
         ):
             with patch(
                 "dfetch.commands.add.Prompt.ask",
-                side_effect=lambda *a, **kw: next(answers),
+                side_effect=lambda *a, **kw: next(prompt_answers),
             ):
-                with patch(
-                    "dfetch.commands.add.append_entry_manifest_file"
-                ) as mock_append:
-                    Add()(
-                        _make_args(
-                            "https://github.com/org/myrepo.git",
-                            interactive=True,
+                with patch("dfetch.commands.add.Confirm.ask", return_value=True):
+                    with patch(
+                        "dfetch.commands.add.append_entry_manifest_file"
+                    ) as mock_append:
+                        Add()(
+                            _make_args(
+                                "https://github.com/org/myrepo.git",
+                                interactive=True,
+                            )
                         )
-                    )
 
     mock_append.assert_called_once()
     entry: ProjectEntry = mock_append.call_args[0][1]
@@ -278,8 +280,48 @@ def test_add_command_interactive_branch():
     assert entry.destination == "libs/myrepo"
 
 
+def test_add_command_interactive_branch_by_number():
+    """Interactive mode: picking a branch by number selects it correctly."""
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
+    fake_superproject.manifest.remotes = []
+    fake_superproject.root_directory = Path("/some")
+
+    fake_subproject = Mock()
+    fake_subproject.get_default_branch.return_value = "main"
+    fake_subproject.list_of_branches.return_value = ["main", "dev"]
+    fake_subproject.list_of_tags.return_value = []
+
+    # "2" selects the second option in the pick list (dev).
+    prompt_answers = iter(["myrepo", "myrepo", "2", ""])
+
+    with patch(
+        "dfetch.commands.add.create_super_project", return_value=fake_superproject
+    ):
+        with patch(
+            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
+        ):
+            with patch(
+                "dfetch.commands.add.Prompt.ask",
+                side_effect=lambda *a, **kw: next(prompt_answers),
+            ):
+                with patch("dfetch.commands.add.Confirm.ask", return_value=True):
+                    with patch(
+                        "dfetch.commands.add.append_entry_manifest_file"
+                    ) as mock_append:
+                        Add()(
+                            _make_args(
+                                "https://github.com/org/myrepo.git",
+                                interactive=True,
+                            )
+                        )
+
+    entry: ProjectEntry = mock_append.call_args[0][1]
+    assert entry.branch == "dev"
+
+
 def test_add_command_interactive_tag():
-    """Interactive mode with tag selection appends entry with tag set."""
+    """Interactive mode: typing a tag name appends entry with tag set."""
     fake_superproject = Mock()
     fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
     fake_superproject.manifest.remotes = []
@@ -290,7 +332,8 @@ def test_add_command_interactive_tag():
     fake_subproject.list_of_branches.return_value = ["main"]
     fake_subproject.list_of_tags.return_value = ["v1.0", "v2.0"]
 
-    answers = iter(["myrepo", "myrepo", "tag", "v2.0", "", "y"])
+    # version prompt: type the tag name directly.
+    prompt_answers = iter(["myrepo", "myrepo", "v2.0", ""])
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
@@ -300,17 +343,18 @@ def test_add_command_interactive_tag():
         ):
             with patch(
                 "dfetch.commands.add.Prompt.ask",
-                side_effect=lambda *a, **kw: next(answers),
+                side_effect=lambda *a, **kw: next(prompt_answers),
             ):
-                with patch(
-                    "dfetch.commands.add.append_entry_manifest_file"
-                ) as mock_append:
-                    Add()(
-                        _make_args(
-                            "https://github.com/org/myrepo.git",
-                            interactive=True,
+                with patch("dfetch.commands.add.Confirm.ask", return_value=True):
+                    with patch(
+                        "dfetch.commands.add.append_entry_manifest_file"
+                    ) as mock_append:
+                        Add()(
+                            _make_args(
+                                "https://github.com/org/myrepo.git",
+                                interactive=True,
+                            )
                         )
-                    )
 
     mock_append.assert_called_once()
     entry: ProjectEntry = mock_append.call_args[0][1]
@@ -319,7 +363,7 @@ def test_add_command_interactive_tag():
 
 
 def test_add_command_interactive_abort():
-    """Interactive mode: answering 'n' at confirmation does not append."""
+    """Interactive mode: declining confirmation does not append."""
     fake_superproject = Mock()
     fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
     fake_superproject.manifest.remotes = []
@@ -330,7 +374,7 @@ def test_add_command_interactive_abort():
     fake_subproject.list_of_branches.return_value = ["main"]
     fake_subproject.list_of_tags.return_value = []
 
-    answers = iter(["myrepo", "myrepo", "branch", "main", "", "n"])
+    prompt_answers = iter(["myrepo", "myrepo", "main", ""])
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
@@ -340,17 +384,18 @@ def test_add_command_interactive_abort():
         ):
             with patch(
                 "dfetch.commands.add.Prompt.ask",
-                side_effect=lambda *a, **kw: next(answers),
+                side_effect=lambda *a, **kw: next(prompt_answers),
             ):
-                with patch(
-                    "dfetch.commands.add.append_entry_manifest_file"
-                ) as mock_append:
-                    Add()(
-                        _make_args(
-                            "https://github.com/org/myrepo.git",
-                            interactive=True,
+                with patch("dfetch.commands.add.Confirm.ask", return_value=False):
+                    with patch(
+                        "dfetch.commands.add.append_entry_manifest_file"
+                    ) as mock_append:
+                        Add()(
+                            _make_args(
+                                "https://github.com/org/myrepo.git",
+                                interactive=True,
+                            )
                         )
-                    )
 
     mock_append.assert_not_called()
 
@@ -367,7 +412,8 @@ def test_add_command_interactive_with_src():
     fake_subproject.list_of_branches.return_value = ["main"]
     fake_subproject.list_of_tags.return_value = []
 
-    answers = iter(["myrepo", "myrepo", "branch", "main", "include/", "y"])
+    # Prompts: name, dst, version, src
+    answers = iter(["myrepo", "myrepo", "main", "include/"])
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
@@ -379,15 +425,16 @@ def test_add_command_interactive_with_src():
                 "dfetch.commands.add.Prompt.ask",
                 side_effect=lambda *a, **kw: next(answers),
             ):
-                with patch(
-                    "dfetch.commands.add.append_entry_manifest_file"
-                ) as mock_append:
-                    Add()(
-                        _make_args(
-                            "https://github.com/org/myrepo.git",
-                            interactive=True,
+                with patch("dfetch.commands.add.Confirm.ask", return_value=True):
+                    with patch(
+                        "dfetch.commands.add.append_entry_manifest_file"
+                    ) as mock_append:
+                        Add()(
+                            _make_args(
+                                "https://github.com/org/myrepo.git",
+                                interactive=True,
+                            )
                         )
-                    )
 
     mock_append.assert_called_once()
     entry: ProjectEntry = mock_append.call_args[0][1]

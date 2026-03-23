@@ -10,47 +10,43 @@ In the simplest form you just provide the URL::
 
     dfetch add https://github.com/some-org/some-repo.git
 
-Dfetch will fetch the remote repository metadata (branches and tags), pick
-the default branch, guess a sensible destination path based on where your
-existing projects live, and append the new entry to ``dfetch.yaml``.
+Dfetch fetches remote metadata (branches, tags), picks the default branch,
+guesses a destination path from your existing projects, shows a preview, and
+appends the entry to ``dfetch.yaml`` after a single confirmation prompt.
 
-A confirmation prompt is shown before writing. Pass ``--force`` (or ``-f``)
-to skip it::
+Skip the confirmation with ``--force``::
 
     dfetch add -f https://github.com/some-org/some-repo.git
 
 Interactive mode
 ----------------
-With ``--interactive`` (or ``-i``) dfetch guides you through every manifest
-field step by step::
+Use ``--interactive`` (``-i``) for a guided, step-by-step wizard::
 
     dfetch add -i https://github.com/some-org/some-repo.git
 
-You will be prompted for:
+The wizard walks through:
 
-* **name** – a human-readable project name (default: repository name from URL)
-* **dst** – local destination directory (default: guessed from existing
-  projects)
-* **branch / tag / revision** – version to fetch (default: default branch of
-  the remote)
-* **src** – sub-path or glob inside the remote to copy (optional)
+* **name** – defaults to the repository name extracted from the URL
+* **dst** – local destination; defaults to a path guessed from existing projects
+* **version** – pick from a short numbered list of branches and tags (most
+  relevant shown first; type any other value to use it directly)
+* **src** – optional sub-path or glob to fetch only part of the repo
 
-All prompts show a sensible default so you can just press *Enter* to accept
-it.  When a list of choices is available (e.g. branches or tags) the list is
-displayed so you can easily pick one.
-
-The entry is appended at the end of the manifest and *not* fetched to disk;
-run ``dfetch update`` afterwards to materialise the dependency.
+All prompts have a pre-filled default so you can just press *Enter* to accept.
+The entry is appended at the end of the manifest; run ``dfetch update``
+afterwards to materialise the dependency.
 
 .. scenario-include:: ../features/add-project-through-cli.feature
 """
 
 import argparse
 import os
+import re
 from collections.abc import Sequence
 from pathlib import Path
 
-from rich.prompt import Prompt
+import semver
+from rich.prompt import Confirm, Prompt
 
 import dfetch.commands.command
 import dfetch.manifest.project
@@ -64,6 +60,13 @@ from dfetch.project.subproject import SubProject
 from dfetch.util.purl import vcs_url_to_purl
 
 logger = get_logger(__name__)
+
+# Maximum number of branches/tags shown in the pick list.
+_MAX_CHOICES = 5
+
+# Characters that are not allowed in a project name or destination path.
+# (YAML special chars that could break the manifest even after yaml.dump)
+_UNSAFE_NAME_RE = re.compile(r"[\x00-\x1F\x7F-\x9F:#\[\]{}&*!|>'\"%@`]")
 
 
 class Add(dfetch.commands.command.Command):
@@ -99,8 +102,8 @@ class Add(dfetch.commands.command.Command):
             action="store_true",
             help=(
                 "Interactively guide through each manifest field. "
-                "Dfetch will fetch the remote branch/tag list and "
-                "let you confirm or override every value."
+                "Dfetch fetches the remote branch/tag list and lets "
+                "you pick or override every value."
             ),
         )
 
@@ -114,7 +117,7 @@ class Add(dfetch.commands.command.Command):
         # Build a minimal entry so we can probe the remote.
         probe_entry = ProjectEntry(ProjectEntryDict(name=purl.name, url=remote_url))
 
-        # Determines VCS type, tries to reach remote.
+        # Determines VCS type; tries to reach the remote.
         subproject = create_sub_project(probe_entry)
 
         _check_name_uniqueness(probe_entry.name, superproject.manifest.projects)
@@ -163,7 +166,7 @@ class Add(dfetch.commands.command.Command):
             project_entry.as_yaml(),
         )
 
-        if not args.force and not _confirm():
+        if not args.force and not Confirm.ask("Add project to manifest?", default=True):
             logger.print_warning_line(project_entry.name, "Aborting add of project")
             return
 
@@ -201,16 +204,14 @@ def _interactive_flow(
     # --- dst ---
     dst = _ask_dst(name, default_dst)
 
-    # --- version: branch / tag / revision ---
+    # --- version (branch or tag) ---
     branches = subproject.list_of_branches()
     tags = subproject.list_of_tags()
-
     version_type, version_value = _ask_version(default_branch, branches, tags)
 
     # --- src (optional) ---
     src = _ask_src()
 
-    # Build the entry dict.
     entry_dict: ProjectEntryDict = ProjectEntryDict(
         name=name,
         url=remote_url,
@@ -234,31 +235,50 @@ def _interactive_flow(
     return project_entry
 
 
+# ---------------------------------------------------------------------------
+# Individual prompt helpers
+# ---------------------------------------------------------------------------
+
+
 def _ask_name(default: str, existing_projects: Sequence[ProjectEntry]) -> str:
-    """Prompt for the project name, re-asking if the name already exists."""
+    """Prompt for the project name, re-asking on duplicates or invalid input."""
     existing_names = {p.name for p in existing_projects}
     while True:
-        name = Prompt.ask(
-            "  [bold]Project name[/bold]",
-            default=default,
-        )
+        name = Prompt.ask("  [bold]Name[/bold]", default=default).strip()
+        if not name:
+            logger.warning("Name cannot be empty.")
+            continue
+        if _UNSAFE_NAME_RE.search(name):
+            logger.warning(
+                f"Name '{name}' contains characters not allowed in a manifest name. "
+                "Avoid: # : [ ] {{ }} & * ! | > ' \" % @ `"
+            )
+            continue
         if name in existing_names:
             logger.warning(
-                f"A project named '{name}' already exists in the manifest. "
-                "Please choose a different name."
+                f"A project named '{name}' already exists. Choose a different name."
             )
-        else:
-            return name
+            continue
+        return name
 
 
 def _ask_dst(name: str, default: str) -> str:
-    """Prompt for the destination path."""
+    """Prompt for the destination path, re-asking on path-traversal attempts."""
     suggested = default or name
-    dst = Prompt.ask(
-        "  [bold]Destination path[/bold] (relative to manifest)",
-        default=suggested,
-    )
-    return dst
+    while True:
+        dst = Prompt.ask(
+            "  [bold]Destination[/bold] (path relative to manifest)",
+            default=suggested,
+        ).strip()
+        if not dst:
+            return name  # fall back to project name
+        # Block path traversal: reject any component that is '..'
+        if any(part == ".." for part in Path(dst).parts):
+            logger.warning(
+                f"Destination '{dst}' contains '..'. Paths must stay within the manifest directory."
+            )
+            continue
+        return dst
 
 
 def _ask_version(
@@ -266,68 +286,121 @@ def _ask_version(
     branches: list[str],
     tags: list[str],
 ) -> tuple[str, str]:
-    """Prompt for branch, tag, or revision.
+    """Show a short pick-list of branches and tags and let the user choose one.
 
-    Returns a ``(type, value)`` tuple where *type* is one of ``"branch"``,
-    ``"tag"``, or ``"revision"``.
+    The list is limited to ``_MAX_CHOICES`` entries each for branches and
+    tags.  The user can pick by number, or type any branch/tag/SHA directly.
+    Returns a ``(type, value)`` tuple.
     """
-    if branches:
-        logger.info(
-            "  [blue]Available branches:[/blue] "
-            + ", ".join(f"[green]{b}[/green]" for b in branches[:10])
-            + ("  …" if len(branches) > 10 else "")
-        )
-    if tags:
-        logger.info(
-            "  [blue]Available tags:[/blue]    "
-            + ", ".join(f"[green]{t}[/green]" for t in tags[:10])
-            + ("  …" if len(tags) > 10 else "")
-        )
+    choices: list[tuple[str, str]] = []  # (type, value)
 
-    version_type = Prompt.ask(
-        "  [bold]Version type[/bold]",
-        choices=["branch", "tag", "revision"],
-        default="branch",
-    )
+    # Branches: put the default branch first, then a few more.
+    ordered_branches = _prioritise_default(branches, default_branch)[:_MAX_CHOICES]
+    for b in ordered_branches:
+        choices.append(("branch", b))
 
-    if version_type == "branch":
-        value = Prompt.ask(
-            "  [bold]Branch[/bold]",
+    # Tags: most-recent semver tags first, then the rest.
+    ordered_tags = _sort_tags_newest_first(tags)[:_MAX_CHOICES]
+    for t in ordered_tags:
+        choices.append(("tag", t))
+
+    _print_version_menu(choices, default_branch)
+
+    while True:
+        raw = Prompt.ask(
+            "  [bold]Version[/bold]  (number, branch, tag, or SHA)",
             default=default_branch,
-        )
-    elif version_type == "tag":
-        default_tag = tags[0] if tags else ""
-        value = Prompt.ask(
-            "  [bold]Tag[/bold]",
-            default=default_tag,
-        )
-    else:
-        value = Prompt.ask(
-            "  [bold]Revision (full SHA)[/bold]",
+        ).strip()
+
+        # Numeric pick.
+        if raw.isdigit():
+            idx = int(raw) - 1
+            if 0 <= idx < len(choices):
+                return choices[idx]
+            logger.warning(f"  Pick a number between 1 and {len(choices)}.")
+            continue
+
+        # Check if it matches a known branch or tag.
+        if raw in branches:
+            return ("branch", raw)
+        if raw in tags:
+            return ("tag", raw)
+
+        # Assume it's a SHA revision if it looks like a hex string (≥ 7 chars).
+        if re.fullmatch(r"[0-9a-fA-F]{7,40}", raw):
+            return ("revision", raw)
+
+        # Otherwise treat as a branch name (the most common case for typing a
+        # custom value the user knows but that didn't appear in the short list).
+        if raw:
+            return ("branch", raw)
+
+        logger.warning("  Please enter a number or a version value.")
+
+
+def _print_version_menu(choices: list[tuple[str, str]], default_branch: str) -> None:
+    """Render the numbered branch/tag pick list."""
+    if not choices:
+        return
+
+    lines: list[str] = []
+    for i, (vtype, value) in enumerate(choices, start=1):
+        marker = " (default)" if value == default_branch and vtype == "branch" else ""
+        colour = "cyan" if vtype == "branch" else "magenta"
+        tag_label = f"[dim]{vtype}[/dim]"
+        lines.append(
+            f"  [bold white]{i:>2}[/bold white]  [{colour}]{value}[/{colour}]{marker}  {tag_label}"
         )
 
-    return version_type, value
+    # Indicate if there are more options not shown.
+    panel_content = "\n".join(lines)
+    logger.info(panel_content)
 
 
 def _ask_src() -> str:
-    """Prompt for an optional ``src:`` sub-path or glob."""
+    """Optionally prompt for a ``src:`` sub-path or glob pattern."""
     src = Prompt.ask(
-        "  [bold]Source sub-path or glob[/bold] (leave empty to fetch entire repo)",
+        "  [bold]Source path[/bold]  (sub-path/glob, or Enter to fetch whole repo)",
         default="",
-    )
-    return src.strip()
+    ).strip()
+    return src
 
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Sorting / ordering helpers
 # ---------------------------------------------------------------------------
 
 
-def _confirm() -> bool:
-    """Show a confirmation prompt to the user before adding the project."""
-    return (
-        Prompt.ask("Add project to manifest?", choices=["y", "n"], default="y") == "y"
+def _prioritise_default(branches: list[str], default: str) -> list[str]:
+    """Return *branches* with *default* moved to position 0."""
+    if default in branches:
+        rest = [b for b in branches if b != default]
+        return [default, *rest]
+    return branches
+
+
+def _sort_tags_newest_first(tags: list[str]) -> list[str]:
+    """Sort *tags* with semver-parseable tags newest-first; others appended."""
+
+    def _semver_key(tag: str) -> semver.Version | None:
+        cleaned = tag.lstrip("vV")
+        try:
+            return semver.Version.parse(cleaned)
+        except ValueError:
+            return None
+
+    semver_tags = sorted(
+        [t for t in tags if _semver_key(t) is not None],
+        key=lambda t: _semver_key(t),  # type: ignore[arg-type, return-value]
+        reverse=True,
     )
+    non_semver = [t for t in tags if _semver_key(t) is None]
+    return semver_tags + non_semver
+
+
+# ---------------------------------------------------------------------------
+# Non-interactive helpers
+# ---------------------------------------------------------------------------
 
 
 def _check_name_uniqueness(
