@@ -4,14 +4,14 @@ import contextlib
 import pathlib
 import shutil
 import tempfile
-from collections.abc import Callable, Generator
+from collections.abc import Generator
 from functools import lru_cache
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.metadata import Dependency
-from dfetch.project.subproject import SubProject
+from dfetch.project.subproject import LsFn, SubProject
 from dfetch.util.util import LICENSE_GLOBS, safe_rm
 from dfetch.vcs.git import CheckoutOptions, GitLocalRepo, GitRemote, get_git_version
 
@@ -49,16 +49,14 @@ class GitSubProject(SubProject):
         return [str(branch) for branch in self._remote_repo.list_of_branches()]
 
     @contextlib.contextmanager
-    def browse_tree(
-        self,
-    ) -> Generator[Callable[[str], list[tuple[str, bool]]], None, None]:
+    def browse_tree(self) -> Generator[LsFn, None, None]:
         """Shallow-clone the remote and yield a tree-listing callable.
 
-        The yielded ``ls_fn(path="")`` calls ``git ls-tree HEAD`` on the
-        temporary clone.  The clone is removed on context exit.
+        The yielded ``LsFn`` calls ``git ls-tree HEAD`` on a temporary
+        blobless clone.  The clone is removed on context exit.
         """
         tmpdir = tempfile.mkdtemp(prefix="dfetch_browse_")
-        ls_fn: Callable[[str], list[tuple[str, bool]]]
+        ls_fn: LsFn
         try:
             GitRemote.clone_minimal(self._remote_repo._remote, tmpdir)
             ls_fn = lambda path="": GitRemote.ls_tree(tmpdir, path=path)  # noqa: E731

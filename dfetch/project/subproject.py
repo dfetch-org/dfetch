@@ -15,6 +15,11 @@ from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
 from dfetch.vcs.patch import Patch
 
+# A callable that lists the contents of a VCS tree path.
+# Accepts a path relative to the repo root (empty string for the root)
+# and returns ``(name, is_dir)`` pairs for each entry at that path.
+LsFn = Callable[[str], list[tuple[str, bool]]]
+
 logger = get_logger(__name__)
 
 
@@ -410,15 +415,13 @@ class SubProject(ABC):
         return self._list_of_tags()
 
     @contextlib.contextmanager
-    def browse_tree(
-        self,
-    ) -> Generator[Callable[[str], list[tuple[str, bool]]], None, None]:
+    def browse_tree(self) -> Generator[LsFn, None, None]:
         """Context manager yielding a function to list remote tree contents.
 
-        The yielded callable accepts an optional path (relative to repo root)
-        and returns a list of ``(name, is_dir)`` pairs.  The default
-        implementation returns an empty list; VCS-specific subclasses override
-        this to perform a real remote tree walk.
+        The yielded ``LsFn`` accepts an optional path (relative to the repo
+        root) and returns ``(name, is_dir)`` pairs for each entry.  The
+        default implementation returns an empty list; VCS-specific subclasses
+        override this to perform a real remote tree walk.
         """
         yield lambda path="": []
 

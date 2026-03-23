@@ -44,10 +44,10 @@ so the dependency is materialised without a separate command.
 import argparse
 import os
 import re
-import sys
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 import semver
 from rich.prompt import Confirm, Prompt
@@ -60,28 +60,36 @@ from dfetch.manifest.manifest import append_entry_manifest_file
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote
 from dfetch.project import create_sub_project, create_super_project
-from dfetch.project.subproject import SubProject
+from dfetch.project.subproject import LsFn, SubProject
 from dfetch.util.purl import vcs_url_to_purl
+from dfetch.util import terminal
 
 logger = get_logger(__name__)
 
-# ---------------------------------------------------------------------------
-# ANSI codes used in the scrollable / tree UI (plain stdout; no Rich markup)
-# ---------------------------------------------------------------------------
-_R = "\x1b[0m"  # reset
-_B = "\x1b[1m"  # bold
-_D = "\x1b[2m"  # dim
-_CYN = "\x1b[36m"  # cyan  – branches
-_MAG = "\x1b[35m"  # magenta – tags
-_GRN = "\x1b[32m"  # green  – selected ✓
-_YLW = "\x1b[33m"  # yellow – cursor ▶
-_HL = "\x1b[7m"  # reverse-video – highlighted row
-
-# Viewport height for scrollable lists.
-_VIEWPORT = 10
-
 # Characters that are not allowed in a project name (YAML special chars).
 _UNSAFE_NAME_RE = re.compile(r"[\x00-\x1F\x7F-\x9F:#\[\]{}&*!|>'\"%@`]")
+
+
+# ---------------------------------------------------------------------------
+# Value objects
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class VersionRef:
+    """A resolved version reference: a branch name, tag, or commit SHA."""
+
+    kind: Literal["branch", "tag", "revision"]
+    value: str
+
+    def apply_to(self, entry: ProjectEntryDict) -> None:
+        """Write this version reference into *entry*."""
+        if self.kind == "branch":
+            entry["branch"] = self.value
+        elif self.kind == "tag":
+            entry["tag"] = self.value
+        elif self.kind == "revision":
+            entry["revision"] = self.value
 
 
 # ---------------------------------------------------------------------------
@@ -166,16 +174,13 @@ class Add(dfetch.commands.command.Command):
                 existing_projects=superproject.manifest.projects,
             )
         else:
-            project_entry = ProjectEntry(
-                ProjectEntryDict(
-                    name=probe_entry.name,
-                    url=remote_url,
-                    branch=default_branch,
-                    dst=guessed_dst,
-                ),
+            project_entry = _non_interactive_entry(
+                name=probe_entry.name,
+                remote_url=remote_url,
+                branch=default_branch,
+                dst=guessed_dst,
+                remote_to_use=remote_to_use,
             )
-            if remote_to_use:
-                project_entry.set_remote(remote_to_use)
 
         if project_entry is None:
             return
@@ -197,8 +202,8 @@ class Add(dfetch.commands.command.Command):
 
         logger.print_info_line(project_entry.name, "Added project to manifest")
 
-        # Offer to run update immediately (only when we prompted the user, i.e.
-        # not in --force mode where we want zero interaction).
+        # Offer to run update immediately (only when we already prompted the user,
+        # i.e. not in --force mode where we want zero interaction).
         if not args.force and Confirm.ask(
             f"Run 'dfetch update {project_entry.name}' now?", default=True
         ):
@@ -210,6 +215,55 @@ class Add(dfetch.commands.command.Command):
                 no_recommendations=False,
             )
             Update()(update_args)
+
+
+# ---------------------------------------------------------------------------
+# Entry construction
+# ---------------------------------------------------------------------------
+
+
+def _non_interactive_entry(
+    *,
+    name: str,
+    remote_url: str,
+    branch: str,
+    dst: str,
+    remote_to_use: Remote | None,
+) -> ProjectEntry:
+    """Build a ``ProjectEntry`` using inferred defaults (no user interaction)."""
+    entry = ProjectEntry(
+        ProjectEntryDict(name=name, url=remote_url, branch=branch, dst=dst)
+    )
+    if remote_to_use:
+        entry.set_remote(remote_to_use)
+    return entry
+
+
+def _build_entry(
+    *,
+    name: str,
+    remote_url: str,
+    dst: str,
+    version: VersionRef,
+    src: str,
+    ignore: list[str],
+    remote_to_use: Remote | None,
+) -> ProjectEntry:
+    """Assemble a ``ProjectEntry`` from the fields collected by the wizard."""
+    entry_dict: ProjectEntryDict = ProjectEntryDict(
+        name=name,
+        url=remote_url,
+        dst=dst,
+    )
+    version.apply_to(entry_dict)
+    if src:
+        entry_dict["src"] = src
+    if ignore:
+        entry_dict["ignore"] = ignore
+    entry = ProjectEntry(entry_dict)
+    if remote_to_use:
+        entry.set_remote(remote_to_use)
+    return entry
 
 
 # ---------------------------------------------------------------------------
@@ -225,372 +279,30 @@ def _interactive_flow(
     subproject: SubProject,
     remote_to_use: Remote | None,
     existing_projects: Sequence[ProjectEntry],
-) -> ProjectEntry | None:
-    """Guide the user through every manifest field and return a ``ProjectEntry``.
-
-    Returns ``None`` when the user aborts the wizard.
-    """
+) -> ProjectEntry:
+    """Guide the user through every manifest field and return a ``ProjectEntry``."""
     logger.info("[bold blue]--- Interactive add wizard ---[/bold blue]")
 
-    # --- name ---
     name = _ask_name(default_name, existing_projects)
-
-    # --- dst ---
     dst = _ask_dst(name, default_dst)
-
-    # --- version (branch or tag) ---
-    branches = subproject.list_of_branches()
-    tags = subproject.list_of_tags()
-    version_type, version_value = _ask_version(default_branch, branches, tags)
-
-    # --- src and ignore (browsed from a single minimal clone) ---
+    version = _ask_version(
+        default_branch,
+        subproject.list_of_branches(),
+        subproject.list_of_tags(),
+    )
     with subproject.browse_tree() as ls_fn:
         src = _ask_src(ls_fn)
         ignore = _ask_ignore(ls_fn)
 
-    entry_dict: ProjectEntryDict = ProjectEntryDict(
+    return _build_entry(
         name=name,
-        url=remote_url,
+        remote_url=remote_url,
         dst=dst,
+        version=version,
+        src=src,
+        ignore=ignore,
+        remote_to_use=remote_to_use,
     )
-
-    if version_type == "branch":
-        entry_dict["branch"] = version_value
-    elif version_type == "tag":
-        entry_dict["tag"] = version_value
-    elif version_type == "revision":
-        entry_dict["revision"] = version_value
-
-    if src:
-        entry_dict["src"] = src
-
-    if ignore:
-        entry_dict["ignore"] = ignore
-
-    project_entry = ProjectEntry(entry_dict)
-    if remote_to_use:
-        project_entry.set_remote(remote_to_use)
-
-    return project_entry
-
-
-# ---------------------------------------------------------------------------
-# Terminal UI helpers
-# ---------------------------------------------------------------------------
-
-
-def _is_tty() -> bool:
-    """Return True when running attached to an interactive terminal."""
-    return sys.stdin.isatty() and not os.environ.get("CI")
-
-
-def _read_key() -> str:  # pragma: no cover – raw terminal input
-    """Read one keypress from stdin in raw mode; return a normalised key name."""
-    if sys.platform == "win32":
-        import msvcrt  # type: ignore[import]
-
-        ch = msvcrt.getwch()
-        if ch in ("\x00", "\xe0"):
-            ch2 = msvcrt.getwch()
-            return {
-                "H": "UP",
-                "P": "DOWN",
-                "K": "LEFT",
-                "M": "RIGHT",
-                "I": "PGUP",
-                "Q": "PGDN",
-            }.get(ch2, "UNKNOWN")
-        if ch in ("\r", "\n"):
-            return "ENTER"
-        if ch == "\x1b":
-            return "ESC"
-        if ch == " ":
-            return "SPACE"
-        if ch == "\x03":
-            raise KeyboardInterrupt
-        return ch
-    else:
-        import select as _select
-        import termios
-        import tty
-
-        fd = sys.stdin.fileno()
-        old = termios.tcgetattr(fd)
-        try:
-            tty.setraw(fd)
-            ch = os.read(fd, 1)
-            if ch in (b"\r", b"\n"):
-                return "ENTER"
-            if ch == b"\x1b":
-                r, _, _ = _select.select([fd], [], [], 0.05)
-                if r:
-                    rest = b""
-                    while True:
-                        r2, _, _ = _select.select([fd], [], [], 0.01)
-                        if not r2:
-                            break
-                        rest += os.read(fd, 1)
-                    return {
-                        b"\x1b[A": "UP",
-                        b"\x1b[B": "DOWN",
-                        b"\x1b[C": "RIGHT",
-                        b"\x1b[D": "LEFT",
-                        b"\x1b[5~": "PGUP",
-                        b"\x1b[6~": "PGDN",
-                    }.get(ch + rest, "ESC")
-                return "ESC"
-            if ch == b" ":
-                return "SPACE"
-            if ch in (b"\x03", b"\x04"):
-                raise KeyboardInterrupt
-            return ch.decode("utf-8", errors="replace")
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old)
-
-
-class _Screen:
-    """Minimal ANSI helper for in-place redraw (writes directly to stdout)."""
-
-    def __init__(self) -> None:
-        self._lines = 0
-
-    def draw(self, lines: list[str]) -> None:
-        if self._lines:
-            sys.stdout.write(f"\x1b[{self._lines}A\x1b[0J")
-        sys.stdout.write("\n".join(lines) + "\n")
-        sys.stdout.flush()
-        self._lines = len(lines)
-
-    def clear(self) -> None:
-        if self._lines:
-            sys.stdout.write(f"\x1b[{self._lines}A\x1b[0J")
-            sys.stdout.flush()
-            self._lines = 0
-
-
-def _scrollable_pick(
-    title: str,
-    display_items: list[str],
-    *,
-    default_idx: int = 0,
-) -> int | None:  # pragma: no cover – interactive TTY only
-    """Scrollable single-pick list.
-
-    *display_items* are pre-formatted strings (may include raw ANSI codes).
-    Returns the selected index, or ``None`` when the user pressed Esc.
-    """
-    screen = _Screen()
-    idx = default_idx
-    top = 0
-    n = len(display_items)
-
-    while True:
-        idx = max(0, min(idx, n - 1))
-        if idx < top:
-            top = idx
-        elif idx >= top + _VIEWPORT:
-            top = idx - _VIEWPORT + 1
-
-        lines: list[str] = [f"  {_B}{title}{_R}"]
-        for i in range(top, min(top + _VIEWPORT, n)):
-            cursor = f"{_YLW}▶{_R}" if i == idx else " "
-            hl_s = _HL if i == idx else ""
-            hl_e = _R if i == idx else ""
-            lines.append(f"  {cursor} {hl_s}{display_items[i]}{hl_e}")
-
-        if top > 0:
-            lines.append(f"    {_D}↑ {top} more above{_R}")
-        remaining = n - (top + _VIEWPORT)
-        if remaining > 0:
-            lines.append(f"    {_D}↓ {remaining} more below{_R}")
-        lines.append(
-            f"  {_D}↑/↓ navigate  PgUp/PgDn jump  Enter select  Esc free-type{_R}"
-        )
-
-        screen.draw(lines)
-        key = _read_key()
-
-        if key == "UP":
-            idx -= 1
-        elif key == "DOWN":
-            idx += 1
-        elif key == "PGUP":
-            idx = max(0, idx - _VIEWPORT)
-        elif key == "PGDN":
-            idx = min(n - 1, idx + _VIEWPORT)
-        elif key == "ENTER":
-            screen.clear()
-            return idx
-        elif key == "ESC":
-            screen.clear()
-            return None
-
-
-# ---------------------------------------------------------------------------
-# Tree browser
-# ---------------------------------------------------------------------------
-
-
-@dataclass
-class _TreeNode:
-    name: str
-    path: str  # relative from repo root
-    is_dir: bool
-    depth: int = 0
-    expanded: bool = False
-    selected: bool = False
-    children_loaded: bool = False
-
-
-def _expand_node(
-    nodes: list[_TreeNode],
-    idx: int,
-    ls_fn: Callable[[str], list[tuple[str, bool]]],
-) -> None:
-    """Expand the directory node at *idx*, loading children if needed."""
-    node = nodes[idx]
-    if not node.children_loaded:
-        entries = ls_fn(node.path)
-        children = [
-            _TreeNode(
-                name=name,
-                path=f"{node.path}/{name}",
-                is_dir=is_dir,
-                depth=node.depth + 1,
-            )
-            for name, is_dir in entries
-        ]
-        nodes[idx + 1 : idx + 1] = children
-        node.children_loaded = True
-    node.expanded = True
-
-
-def _collapse_node(nodes: list[_TreeNode], idx: int) -> None:
-    """Collapse the directory node at *idx*, removing all descendant nodes."""
-    parent_depth = nodes[idx].depth
-    i = idx + 1
-    while i < len(nodes) and nodes[i].depth > parent_depth:
-        i += 1
-    del nodes[idx + 1 : i]
-    nodes[idx].expanded = False
-
-
-def _tree_browser(
-    ls_fn: Callable[[str], list[tuple[str, bool]]],
-    title: str,
-    *,
-    multi: bool = False,
-) -> list[str] | str | None:  # pragma: no cover – interactive TTY only
-    """Interactive tree browser.
-
-    ``multi=False`` (default) — single-select; returns the selected path
-    string, ``""`` if the user skips with Esc, or ``None`` on keyboard
-    interrupt.
-
-    ``multi=True`` — multi-select; Space toggles selection, Enter confirms;
-    returns a (possibly empty) ``list[str]``, or ``None`` on keyboard
-    interrupt.
-    """
-    root_entries = ls_fn("")
-    if not root_entries:
-        return [] if multi else ""
-
-    nodes: list[_TreeNode] = [
-        _TreeNode(name=name, path=name, is_dir=is_dir, depth=0)
-        for name, is_dir in root_entries
-    ]
-
-    screen = _Screen()
-    idx = 0
-    top = 0
-
-    while True:
-        n = len(nodes)
-        if n == 0:
-            screen.clear()
-            return [] if multi else ""
-
-        idx = max(0, min(idx, n - 1))
-        if idx < top:
-            top = idx
-        elif idx >= top + _VIEWPORT:
-            top = idx - _VIEWPORT + 1
-
-        lines: list[str] = [f"  {_B}{title}{_R}"]
-        for i in range(top, min(top + _VIEWPORT, n)):
-            node = nodes[i]
-            indent = "  " * node.depth
-            if node.is_dir:
-                arrow = "▼" if node.expanded else "▶"
-                icon = f"{arrow} "
-            else:
-                icon = "  "
-            cursor = _HL if i == idx else ""
-            sel = f"{_GRN}✓{_R} " if node.selected else "  "
-            lines.append(f"  {cursor}{indent}{sel}{icon}{node.name}{_R}")
-
-        if top > 0:
-            lines.append(f"    {_D}↑ {top} more above{_R}")
-        remaining = n - (top + _VIEWPORT)
-        if remaining > 0:
-            lines.append(f"    {_D}↓ {remaining} more below{_R}")
-
-        if multi:
-            lines.append(
-                f"  {_D}↑/↓ navigate  Space select  Enter confirm  →/← expand/collapse  Esc skip{_R}"
-            )
-        else:
-            lines.append(
-                f"  {_D}↑/↓ navigate  Enter/Space select  →/← expand/collapse  Esc skip{_R}"
-            )
-
-        screen.draw(lines)
-        key = _read_key()
-        node = nodes[idx]
-
-        if key == "UP":
-            idx -= 1
-        elif key == "DOWN":
-            idx += 1
-        elif key == "PGUP":
-            idx = max(0, idx - _VIEWPORT)
-        elif key == "PGDN":
-            idx = min(n - 1, idx + _VIEWPORT)
-        elif key == "RIGHT":
-            if node.is_dir and not node.expanded:
-                _expand_node(nodes, idx, ls_fn)
-        elif key == "LEFT":
-            if node.is_dir and node.expanded:
-                _collapse_node(nodes, idx)
-            elif node.depth > 0:
-                # Jump to parent node
-                for i in range(idx - 1, -1, -1):
-                    if nodes[i].depth < node.depth:
-                        idx = i
-                        break
-        elif key == "SPACE":
-            if multi:
-                node.selected = not node.selected
-            elif not node.is_dir:
-                screen.clear()
-                return node.path
-        elif key == "ENTER":
-            if multi:
-                # Confirm all selected items
-                selected = [nd.path for nd in nodes if nd.selected]
-                screen.clear()
-                return selected
-            elif node.is_dir:
-                if node.expanded:
-                    _collapse_node(nodes, idx)
-                else:
-                    _expand_node(nodes, idx, ls_fn)
-            else:
-                screen.clear()
-                return node.path
-        elif key == "ESC":
-            screen.clear()
-            return [] if multi else ""
 
 
 # ---------------------------------------------------------------------------
@@ -632,7 +344,8 @@ def _ask_dst(name: str, default: str) -> str:
             return name  # fall back to project name
         if any(part == ".." for part in Path(dst).parts):
             logger.warning(
-                f"Destination '{dst}' contains '..'. Paths must stay within the manifest directory."
+                f"Destination '{dst}' contains '..'. "
+                "Paths must stay within the manifest directory."
             )
             continue
         return dst
@@ -642,8 +355,8 @@ def _ask_version(
     default_branch: str,
     branches: list[str],
     tags: list[str],
-) -> tuple[str, str]:
-    """Choose a version (branch / tag / SHA).
+) -> VersionRef:
+    """Choose a version (branch / tag / SHA) and return it as a ``VersionRef``.
 
     In a TTY shows a scrollable pick list (all branches then all tags).
     Outside a TTY (CI, pipe, tests) falls back to a numbered text menu.
@@ -651,50 +364,99 @@ def _ask_version(
     ordered_branches = _prioritise_default(branches, default_branch)
     ordered_tags = _sort_tags_newest_first(tags)
 
-    # (vtype, value) — all branches first, then all tags
-    choices: list[tuple[str, str]] = [
-        *[("branch", b) for b in ordered_branches],
-        *[("tag", t) for t in ordered_tags],
+    choices: list[VersionRef] = [
+        *[VersionRef("branch", b) for b in ordered_branches],
+        *[VersionRef("tag", t) for t in ordered_tags],
     ]
 
-    if _is_tty() and choices:
+    if terminal.is_tty() and choices:
         return _scrollable_version_pick(choices, default_branch)
 
     return _text_version_pick(choices, default_branch, branches, tags)
 
 
+def _ask_src(ls_fn: LsFn) -> str:
+    """Optionally prompt for a ``src:`` sub-path or glob pattern.
+
+    In a TTY opens a tree browser for single-path selection.
+    Outside a TTY falls back to a free-text prompt.
+    """
+    if terminal.is_tty():
+        return _tree_single_pick(ls_fn, "Source path  (Enter to select, Esc to skip)")
+
+    return Prompt.ask(
+        "  [bold]Source path[/bold]  (sub-path/glob, or Enter to fetch whole repo)",
+        default="",
+    ).strip()
+
+
+def _ask_ignore(ls_fn: LsFn) -> list[str]:
+    """Optionally prompt for ``ignore:`` paths.
+
+    In a TTY opens a tree browser with multi-select (Space to toggle,
+    Enter to confirm).  Outside a TTY falls back to a comma-separated
+    free-text prompt.
+    """
+    if terminal.is_tty():
+        return _tree_multi_pick(
+            ls_fn,
+            "Ignore paths  (Space to select, Enter to confirm, Esc to skip)",
+        )
+
+    raw = Prompt.ask(
+        "  [bold]Ignore paths[/bold]  (comma-separated, or Enter to skip)",
+        default="",
+    ).strip()
+    return [p.strip() for p in raw.split(",") if p.strip()] if raw else []
+
+
+# ---------------------------------------------------------------------------
+# Version pickers
+# ---------------------------------------------------------------------------
+
+
 def _scrollable_version_pick(
-    choices: list[tuple[str, str]],
+    choices: list[VersionRef],
     default_branch: str,
-) -> tuple[str, str]:  # pragma: no cover – interactive TTY only
-    """Scrollable version picker; falls back to free-text on Esc."""
-    display: list[str] = []
+) -> VersionRef:  # pragma: no cover – interactive TTY only
+    """Scrollable version picker; falls back to free-text prompt on Esc."""
     default_idx = 0
-    for i, (vtype, val) in enumerate(choices):
-        if vtype == "branch":
-            suffix = f"  {_D}(default){_R}" if val == default_branch else ""
-            display.append(f"{_CYN}{val}{_R}  {_D}branch{_R}{suffix}")
-            if val == default_branch and default_idx == 0:
+    display: list[str] = []
+    for i, ref in enumerate(choices):
+        if ref.kind == "branch":
+            suffix = (
+                f"  {terminal.DIM}(default){terminal.RESET}"
+                if ref.value == default_branch
+                else ""
+            )
+            display.append(
+                f"{terminal.CYAN}{ref.value}{terminal.RESET}"
+                f"  {terminal.DIM}branch{terminal.RESET}{suffix}"
+            )
+            if ref.value == default_branch and default_idx == 0:
                 default_idx = i
         else:
-            display.append(f"{_MAG}{val}{_R}  {_D}tag{_R}")
+            display.append(
+                f"{terminal.MAGENTA}{ref.value}{terminal.RESET}"
+                f"  {terminal.DIM}tag{terminal.RESET}"
+            )
 
-    result = _scrollable_pick("Version", display, default_idx=default_idx)
-    if result is not None:
-        return choices[result]
+    selected = terminal.scrollable_pick("Version", display, default_idx=default_idx)
+    if selected is not None:
+        return choices[selected]
 
     # Esc pressed — fall back to free-text
-    branches = [v for t, v in choices if t == "branch"]
-    tags = [v for t, v in choices if t == "tag"]
+    branches = [c.value for c in choices if c.kind == "branch"]
+    tags = [c.value for c in choices if c.kind == "tag"]
     return _text_version_pick(choices, default_branch, branches, tags)
 
 
 def _text_version_pick(
-    choices: list[tuple[str, str]],
+    choices: list[VersionRef],
     default_branch: str,
     branches: list[str],
     tags: list[str],
-) -> tuple[str, str]:
+) -> VersionRef:
     """Numbered text-based version picker (non-TTY fallback)."""
     _print_version_menu(choices, default_branch)
 
@@ -712,80 +474,214 @@ def _text_version_pick(
             continue
 
         if raw in branches:
-            return ("branch", raw)
+            return VersionRef("branch", raw)
         if raw in tags:
-            return ("tag", raw)
-
+            return VersionRef("tag", raw)
         if re.fullmatch(r"[0-9a-fA-F]{7,40}", raw):
-            return ("revision", raw)
-
+            return VersionRef("revision", raw)
         if raw:
-            return ("branch", raw)
+            return VersionRef("branch", raw)
 
         logger.warning("  Please enter a number or a version value.")
 
 
-def _print_version_menu(choices: list[tuple[str, str]], default_branch: str) -> None:
+def _print_version_menu(choices: list[VersionRef], default_branch: str) -> None:
     """Render the numbered branch/tag pick list (text fallback)."""
     if not choices:
         return
 
     lines: list[str] = []
-    for i, (vtype, value) in enumerate(choices, start=1):
-        marker = " (default)" if value == default_branch and vtype == "branch" else ""
-        colour = "cyan" if vtype == "branch" else "magenta"
-        tag_label = f"[dim]{vtype}[/dim]"
+    for i, ref in enumerate(choices, start=1):
+        marker = (
+            " (default)" if ref.value == default_branch and ref.kind == "branch" else ""
+        )
+        colour = "cyan" if ref.kind == "branch" else "magenta"
         lines.append(
-            f"  [bold white]{i:>2}[/bold white]  [{colour}]{value}[/{colour}]{marker}  {tag_label}"
+            f"  [bold white]{i:>2}[/bold white]"
+            f"  [{colour}]{ref.value}[/{colour}]{marker}"
+            f"  [dim]{ref.kind}[/dim]"
         )
 
     logger.info("\n".join(lines))
 
 
-def _ask_src(ls_fn: Callable[[str], list[tuple[str, bool]]]) -> str:
-    """Optionally prompt for a ``src:`` sub-path or glob pattern.
+# ---------------------------------------------------------------------------
+# Tree browser
+# ---------------------------------------------------------------------------
 
-    In a TTY opens a tree browser for single-path selection.
-    Outside a TTY falls back to a free-text prompt.
+
+@dataclass
+class _TreeNode:
+    """One entry in the flattened view of a remote VCS tree."""
+
+    name: str
+    path: str  # path relative to repo root
+    is_dir: bool
+    depth: int = 0
+    expanded: bool = False
+    selected: bool = False
+    children_loaded: bool = False
+
+
+def _expand_node(nodes: list[_TreeNode], idx: int, ls_fn: LsFn) -> None:
+    """Expand the directory node at *idx*, loading children if not yet done."""
+    node = nodes[idx]
+    if not node.children_loaded:
+        children = [
+            _TreeNode(
+                name=name,
+                path=f"{node.path}/{name}",
+                is_dir=is_dir,
+                depth=node.depth + 1,
+            )
+            for name, is_dir in ls_fn(node.path)
+        ]
+        nodes[idx + 1 : idx + 1] = children
+        node.children_loaded = True
+    node.expanded = True
+
+
+def _collapse_node(nodes: list[_TreeNode], idx: int) -> None:
+    """Collapse the directory node at *idx* and remove all descendant nodes."""
+    parent_depth = nodes[idx].depth
+    end = idx + 1
+    while end < len(nodes) and nodes[end].depth > parent_depth:
+        end += 1
+    del nodes[idx + 1 : end]
+    nodes[idx].expanded = False
+
+
+def _render_tree_lines(
+    nodes: list[_TreeNode], idx: int, top: int, *, hint: str
+) -> list[str]:
+    """Build the list of display strings for one frame of the tree browser."""
+    n = len(nodes)
+    lines: list[str] = []
+    for i in range(top, min(top + terminal.VIEWPORT, n)):
+        node = nodes[i]
+        indent = "  " * node.depth
+        icon = ("▼ " if node.expanded else "▶ ") if node.is_dir else "  "
+        highlight = terminal.REVERSE if i == idx else ""
+        check = f"{terminal.GREEN}✓{terminal.RESET} " if node.selected else "  "
+        lines.append(f"  {highlight}{indent}{check}{icon}{node.name}{terminal.RESET}")
+    return lines
+
+
+def _run_tree_browser(
+    ls_fn: LsFn,
+    title: str,
+    *,
+    multi: bool,
+) -> list[str]:  # pragma: no cover – interactive TTY only
+    """Core tree browser loop.
+
+    Returns a list of selected paths.  In single-select mode the list has
+    at most one item; in multi-select mode it may have any number.
     """
-    if _is_tty():
-        result = _tree_browser(
-            ls_fn, "Source path  (Enter to select, Esc to skip)", multi=False
-        )
-        if result and isinstance(result, str):
-            return result
-        return ""
-
-    return Prompt.ask(
-        "  [bold]Source path[/bold]  (sub-path/glob, or Enter to fetch whole repo)",
-        default="",
-    ).strip()
-
-
-def _ask_ignore(ls_fn: Callable[[str], list[tuple[str, bool]]]) -> list[str]:
-    """Optionally prompt for ``ignore:`` paths.
-
-    In a TTY opens a tree browser with multi-select (Space to toggle,
-    Enter to confirm).  Outside a TTY falls back to a comma-separated
-    free-text prompt.
-    """
-    if _is_tty():
-        result = _tree_browser(
-            ls_fn,
-            "Ignore paths  (Space to select, Enter to confirm, Esc to skip)",
-            multi=True,
-        )
-        if isinstance(result, list):
-            return result
+    root_entries = ls_fn("")
+    if not root_entries:
         return []
 
-    raw = Prompt.ask(
-        "  [bold]Ignore paths[/bold]  (comma-separated, or Enter to skip)",
-        default="",
-    ).strip()
-    if not raw:
-        return []
-    return [p.strip() for p in raw.split(",") if p.strip()]
+    nodes: list[_TreeNode] = [
+        _TreeNode(name=name, path=name, is_dir=is_dir, depth=0)
+        for name, is_dir in root_entries
+    ]
+
+    hint = (
+        "↑/↓ navigate  Space select  Enter confirm  →/← expand/collapse  Esc skip"
+        if multi
+        else "↑/↓ navigate  Enter/Space select  →/← expand/collapse  Esc skip"
+    )
+
+    screen = terminal.Screen()
+    idx = 0
+    top = 0
+
+    while True:
+        n = len(nodes)
+        if n == 0:
+            screen.clear()
+            return []
+
+        idx = max(0, min(idx, n - 1))
+        if idx < top:
+            top = idx
+        elif idx >= top + terminal.VIEWPORT:
+            top = idx - terminal.VIEWPORT + 1
+
+        header = [f"  {terminal.BOLD}{title}{terminal.RESET}"]
+        body = _render_tree_lines(nodes, idx, top, hint=hint)
+        scroll_hints = []
+        if top > 0:
+            scroll_hints.append(f"    {terminal.DIM}↑ {top} more above{terminal.RESET}")
+        remaining = n - (top + terminal.VIEWPORT)
+        if remaining > 0:
+            scroll_hints.append(
+                f"    {terminal.DIM}↓ {remaining} more below{terminal.RESET}"
+            )
+        footer = [f"  {terminal.DIM}{hint}{terminal.RESET}"]
+
+        screen.draw(header + body + scroll_hints + footer)
+        key = terminal.read_key()
+        node = nodes[idx]
+
+        if key == "UP":
+            idx -= 1
+        elif key == "DOWN":
+            idx += 1
+        elif key == "PGUP":
+            idx = max(0, idx - terminal.VIEWPORT)
+        elif key == "PGDN":
+            idx = min(n - 1, idx + terminal.VIEWPORT)
+        elif key == "RIGHT":
+            if node.is_dir and not node.expanded:
+                _expand_node(nodes, idx, ls_fn)
+        elif key == "LEFT":
+            if node.is_dir and node.expanded:
+                _collapse_node(nodes, idx)
+            elif node.depth > 0:
+                for i in range(idx - 1, -1, -1):
+                    if nodes[i].depth < node.depth:
+                        idx = i
+                        break
+        elif key == "SPACE":
+            if multi:
+                node.selected = not node.selected
+            elif not node.is_dir:
+                screen.clear()
+                return [node.path]
+        elif key == "ENTER":
+            if multi:
+                screen.clear()
+                return [nd.path for nd in nodes if nd.selected]
+            elif node.is_dir:
+                if node.expanded:
+                    _collapse_node(nodes, idx)
+                else:
+                    _expand_node(nodes, idx, ls_fn)
+            else:
+                screen.clear()
+                return [node.path]
+        elif key == "ESC":
+            screen.clear()
+            return []
+
+
+def _tree_single_pick(ls_fn: LsFn, title: str) -> str:
+    """Browse the remote tree and return a single selected path.
+
+    Returns ``""`` if the user skips (Esc) or no tree is available.
+    """
+    result = _run_tree_browser(ls_fn, title, multi=False)
+    return result[0] if result else ""
+
+
+def _tree_multi_pick(ls_fn: LsFn, title: str) -> list[str]:
+    """Browse the remote tree and return all selected paths.
+
+    Returns ``[]`` if the user skips (Esc) or nothing is selected.
+    """
+    return _run_tree_browser(ls_fn, title, multi=True)
 
 
 # ---------------------------------------------------------------------------
@@ -802,17 +698,16 @@ def _prioritise_default(branches: list[str], default: str) -> list[str]:
 
 
 def _sort_tags_newest_first(tags: list[str]) -> list[str]:
-    """Sort *tags* with semver-parseable tags newest-first; others appended."""
+    """Sort *tags* newest-semver-first; non-semver tags appended as-is."""
 
     def _semver_key(tag: str) -> semver.Version | None:
-        cleaned = tag.lstrip("vV")
         try:
-            return semver.Version.parse(cleaned)
+            return semver.Version.parse(tag.lstrip("vV"))
         except ValueError:
             return None
 
     semver_tags = sorted(
-        [t for t in tags if _semver_key(t) is not None],
+        (t for t in tags if _semver_key(t) is not None),
         key=lambda t: _semver_key(t),  # type: ignore[arg-type, return-value]
         reverse=True,
     )
@@ -848,15 +743,16 @@ def _guess_destination(
         return ""
 
     common_path = os.path.commonpath(destinations)
+    if not common_path or common_path == os.path.sep:
+        return ""
 
-    if common_path and common_path != os.path.sep:
-        if len(destinations) == 1:
-            parent = str(Path(common_path).parent)
-            if parent and parent != ".":
-                return (Path(parent) / project_name).as_posix()
-            return ""
-        return (Path(common_path) / project_name).as_posix()
-    return ""
+    if len(destinations) == 1:
+        parent = str(Path(common_path).parent)
+        if parent and parent != ".":
+            return (Path(parent) / project_name).as_posix()
+        return ""
+
+    return (Path(common_path) / project_name).as_posix()
 
 
 def _determine_remote(remotes: Sequence[Remote], remote_url: str) -> Remote | None:
