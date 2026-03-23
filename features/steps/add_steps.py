@@ -33,19 +33,28 @@ def step_impl(context, remote_url):
 def step_impl(context, remote_url):
     url = _resolve_url(remote_url, context)
 
-    # Build a FIFO queue of answers in the order prompts will arrive.
-    answers: deque[str] = deque(row["answer"] for row in context.table)
+    # Separate the confirmation row (if any) from the Prompt.ask rows.
+    # The table has columns: prompt_contains | answer.
+    # The final "Add project to manifest?" row drives Confirm.ask; all others
+    # drive Prompt.ask in order.
+    confirm_answer = True
+    prompt_answers: deque[str] = deque()
 
-    def _auto_answer(prompt: str, **kwargs) -> str:  # type: ignore[return]
+    for row in context.table:
+        if "Add project to manifest" in row["prompt_contains"]:
+            confirm_answer = row["answer"].lower() not in ("n", "no", "false")
+        else:
+            prompt_answers.append(row["answer"])
+
+    def _auto_prompt(prompt: str, **kwargs) -> str:  # type: ignore[return]
         """Return the next pre-defined answer, ignoring the actual prompt text."""
-        if answers:
-            return answers.popleft()
-        # Fallback: use default if provided.
-        default = kwargs.get("default", "")
-        return str(default)
+        if prompt_answers:
+            return prompt_answers.popleft()
+        return str(kwargs.get("default", ""))
 
-    with patch("dfetch.commands.add.Prompt.ask", side_effect=_auto_answer):
-        call_command(context, ["add", "--interactive", url])
+    with patch("dfetch.commands.add.Prompt.ask", side_effect=_auto_prompt):
+        with patch("dfetch.commands.add.Confirm.ask", return_value=confirm_answer):
+            call_command(context, ["add", "--interactive", url])
 
 
 @then("the manifest '{name}' contains entry")

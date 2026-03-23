@@ -75,9 +75,8 @@ Feature: Add a project to the manifest via the CLI
             | prompt_contains           | answer   |
             | Project name              | my-lib   |
             | Destination path          | libs/my  |
-            | Version type              | branch   |
-            | Branch                    | master   |
-            | Source sub-path or glob   |          |
+            | Version                   | master   |
+            | Source path               |          |
             | Add project to manifest?  | y        |
         Then the manifest 'dfetch.yaml' contains entry
             """
@@ -100,9 +99,8 @@ Feature: Add a project to the manifest via the CLI
             | prompt_contains           | answer   |
             | Project name              | my-lib   |
             | Destination path          | my-lib   |
-            | Version type              | tag      |
-            | Tag                       | v1       |
-            | Source sub-path or glob   |          |
+            | Version                   | v1       |
+            | Source path               |          |
             | Add project to manifest?  | y        |
         Then the manifest 'dfetch.yaml' contains entry
             """
@@ -124,9 +122,8 @@ Feature: Add a project to the manifest via the CLI
             | prompt_contains           | answer   |
             | Project name              | MyLib    |
             | Destination path          | MyLib    |
-            | Version type              | branch   |
-            | Branch                    | master   |
-            | Source sub-path or glob   |          |
+            | Version                   | master   |
+            | Source path               |          |
             | Add project to manifest?  | n        |
         Then the manifest 'dfetch.yaml' is replaced with
             """
