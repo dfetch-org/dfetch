@@ -49,19 +49,27 @@ class GitSubProject(SubProject):
         return [str(branch) for branch in self._remote_repo.list_of_branches()]
 
     @contextlib.contextmanager
-    def browse_tree(self) -> Generator[LsFn, None, None]:
+    def browse_tree(self, version: str = "") -> Generator[LsFn, None, None]:
         """Shallow-clone the remote and yield a tree-listing callable.
 
         The yielded ``LsFn`` calls ``git ls-tree HEAD`` on a temporary
         blobless clone.  The clone is removed on context exit.
         """
         tmpdir = tempfile.mkdtemp(prefix="dfetch_browse_")
-        ls_fn: LsFn
+        cloned = False
         try:
-            GitRemote.clone_minimal(self._remote_repo._remote, tmpdir)
-            ls_fn = lambda path="": GitRemote.ls_tree(tmpdir, path=path)  # noqa: E731
-        except Exception:
-            ls_fn = lambda path="": []  # noqa: E731
+            self._remote_repo.fetch_for_tree_browse(
+                tmpdir, version or self._remote_repo.get_default_branch()
+            )
+            cloned = True
+        except Exception:  # pylint: disable=broad-exception-caught  # nosec B110
+            pass
+
+        def ls_fn(path: str = "") -> list[tuple[str, bool]]:
+            if cloned:
+                return GitRemote.ls_tree(tmpdir, path=path)
+            return []
+
         try:
             yield ls_fn
         finally:

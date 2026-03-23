@@ -31,6 +31,7 @@ import shutil
 import sys
 import tarfile
 import tempfile
+import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
@@ -130,7 +131,10 @@ class ArchiveRemote:
         """
         parsed = urllib.parse.urlparse(self.url)
         if parsed.scheme == "file":
-            return os.path.exists(urllib.request.url2pathname(parsed.path))
+            try:
+                return os.path.exists(urllib.request.url2pathname(parsed.path))
+            except urllib.error.URLError:
+                return False
         if parsed.scheme not in ("http", "https"):
             return False
         return self._is_http_reachable(parsed)

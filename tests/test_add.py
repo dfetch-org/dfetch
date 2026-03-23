@@ -58,7 +58,9 @@ def _make_subproject(
     """Return a Mock SubProject with sensible defaults."""
     sp = Mock()
     sp.get_default_branch.return_value = default_branch
-    sp.list_of_branches.return_value = branches if branches is not None else [default_branch]
+    sp.list_of_branches.return_value = (
+        branches if branches is not None else [default_branch]
+    )
     sp.list_of_tags.return_value = tags if tags is not None else []
     # browse_tree returns an empty ls_fn by default (no remote tree available)
     sp.browse_tree.return_value.__enter__ = Mock(return_value=lambda path="": [])
@@ -499,11 +501,11 @@ def test_add_command_interactive_run_update():
                 "dfetch.commands.add.Prompt.ask",
                 side_effect=lambda *a, **kw: next(prompt_answers),
             ):
-                with patch(
-                    "dfetch.commands.add.Confirm.ask", side_effect=[True, True]
-                ):
+                with patch("dfetch.commands.add.Confirm.ask", side_effect=[True, True]):
                     with patch("dfetch.commands.add.append_entry_manifest_file"):
-                        with patch("dfetch.commands.update.Update.__call__") as mock_update:
+                        with patch(
+                            "dfetch.commands.update.Update.__call__"
+                        ) as mock_update:
                             Add()(
                                 _make_args(
                                     "https://github.com/org/myrepo.git",

@@ -23,7 +23,7 @@ LsFn = Callable[[str], list[tuple[str, bool]]]
 logger = get_logger(__name__)
 
 
-class SubProject(ABC):
+class SubProject(ABC):  # pylint: disable=too-many-public-methods
     """Abstract SubProject object.
 
     This object represents one Project entry in the Manifest.
@@ -255,6 +255,11 @@ class SubProject(ABC):
         logger.print_report_line(name, msg.strip())
 
     @property
+    def name(self) -> str:
+        """Get the name of this project."""
+        return self.__project.name
+
+    @property
     def local_path(self) -> str:
         """Get the local destination of this project."""
         return self.__project.destination
@@ -415,7 +420,7 @@ class SubProject(ABC):
         return self._list_of_tags()
 
     @contextlib.contextmanager
-    def browse_tree(self) -> Generator[LsFn, None, None]:
+    def browse_tree(self, version: str = "") -> Generator[LsFn, None, None]:
         """Context manager yielding a function to list remote tree contents.
 
         The yielded ``LsFn`` accepts an optional path (relative to the repo
@@ -423,7 +428,12 @@ class SubProject(ABC):
         default implementation returns an empty list; VCS-specific subclasses
         override this to perform a real remote tree walk.
         """
-        yield lambda path="": []
+        _ = version
+
+        def _empty_ls(_path: str = "") -> list[tuple[str, bool]]:
+            return []
+
+        yield _empty_ls
 
     def freeze_project(self, project: ProjectEntry) -> str | None:
         """Freeze *project* to its current on-disk version.
