@@ -3,6 +3,12 @@
 # Uses relative paths
 cd "$(dirname "$0")"
 
+# Set stable environment to avoid embedding host-specific metadata in casts
+export HOME=/home/dev
+export USER=dev
+export LC_ALL=C.UTF-8
+export TZ=UTC
+
 rm -rf ../asciicasts/*
 
 asciinema rec --overwrite -c "./basic-demo.sh" ../asciicasts/basic.cast
