@@ -5,7 +5,7 @@
 
 import argparse
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch, call
+from unittest.mock import MagicMock, Mock, call, patch
 
 import pytest
 
@@ -48,6 +48,22 @@ def _make_args(
         force=force,
         interactive=interactive,
     )
+
+
+def _make_subproject(
+    default_branch: str = "main",
+    branches: list[str] | None = None,
+    tags: list[str] | None = None,
+) -> Mock:
+    """Return a Mock SubProject with sensible defaults."""
+    sp = Mock()
+    sp.get_default_branch.return_value = default_branch
+    sp.list_of_branches.return_value = branches if branches is not None else [default_branch]
+    sp.list_of_tags.return_value = tags if tags is not None else []
+    # browse_tree returns an empty ls_fn by default (no remote tree available)
+    sp.browse_tree.return_value.__enter__ = Mock(return_value=lambda path="": [])
+    sp.browse_tree.return_value.__exit__ = Mock(return_value=False)
+    return sp
 
 
 # ---------------------------------------------------------------------------
@@ -133,10 +149,7 @@ def test_add_command_force_appends_entry():
     fake_superproject.manifest.remotes = []
     fake_superproject.root_directory = Path("/some")
 
-    fake_subproject = Mock()
-    fake_subproject.get_default_branch.return_value = "main"
-    fake_subproject.list_of_branches.return_value = ["main"]
-    fake_subproject.list_of_tags.return_value = ["v1.0"]
+    fake_subproject = _make_subproject("main", ["main"], ["v1.0"])
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
@@ -154,24 +167,22 @@ def test_add_command_force_appends_entry():
 
 
 def test_add_command_user_confirms():
-    """Without --force the user is prompted; confirming proceeds."""
+    """Without --force the user is prompted; confirming proceeds and update is declined."""
     fake_superproject = Mock()
     fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
     fake_superproject.manifest.remotes = []
     fake_superproject.root_directory = Path("/some")
 
-    fake_subproject = Mock()
-    fake_subproject.get_default_branch.return_value = "main"
-    fake_subproject.list_of_branches.return_value = ["main"]
-    fake_subproject.list_of_tags.return_value = []
+    fake_subproject = _make_subproject()
 
+    # First Confirm.ask → True (add), second → False (don't run update)
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
     ):
         with patch(
             "dfetch.commands.add.create_sub_project", return_value=fake_subproject
         ):
-            with patch("dfetch.commands.add.Confirm.ask", return_value=True):
+            with patch("dfetch.commands.add.Confirm.ask", side_effect=[True, False]):
                 with patch(
                     "dfetch.commands.add.append_entry_manifest_file"
                 ) as mock_append:
@@ -187,10 +198,7 @@ def test_add_command_user_aborts():
     fake_superproject.manifest.remotes = []
     fake_superproject.root_directory = Path("/some")
 
-    fake_subproject = Mock()
-    fake_subproject.get_default_branch.return_value = "main"
-    fake_subproject.list_of_branches.return_value = ["main"]
-    fake_subproject.list_of_tags.return_value = []
+    fake_subproject = _make_subproject()
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
@@ -216,10 +224,7 @@ def test_add_command_raises_on_duplicate_name():
     fake_superproject.manifest.remotes = []
     fake_superproject.root_directory = Path("/some")
 
-    fake_subproject = Mock()
-    fake_subproject.get_default_branch.return_value = "main"
-    fake_subproject.list_of_branches.return_value = []
-    fake_subproject.list_of_tags.return_value = []
+    fake_subproject = _make_subproject()
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
@@ -243,14 +248,10 @@ def test_add_command_interactive_branch():
     fake_superproject.manifest.remotes = []
     fake_superproject.root_directory = Path("/some")
 
-    fake_subproject = Mock()
-    fake_subproject.get_default_branch.return_value = "main"
-    fake_subproject.list_of_branches.return_value = ["main", "dev"]
-    fake_subproject.list_of_tags.return_value = ["v1.0"]
+    fake_subproject = _make_subproject("main", ["main", "dev"], ["v1.0"])
 
-    # Prompts: name, dst, version (single step), src
-    # Confirm is mocked separately.
-    prompt_answers = iter(["myrepo", "libs/myrepo", "dev", ""])
+    # Prompts: name, dst, version, src, ignore (text fallback, non-TTY)
+    prompt_answers = iter(["myrepo", "libs/myrepo", "dev", "", ""])
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
@@ -262,7 +263,9 @@ def test_add_command_interactive_branch():
                 "dfetch.commands.add.Prompt.ask",
                 side_effect=lambda *a, **kw: next(prompt_answers),
             ):
-                with patch("dfetch.commands.add.Confirm.ask", return_value=True):
+                with patch(
+                    "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
+                ):
                     with patch(
                         "dfetch.commands.add.append_entry_manifest_file"
                     ) as mock_append:
@@ -287,13 +290,10 @@ def test_add_command_interactive_branch_by_number():
     fake_superproject.manifest.remotes = []
     fake_superproject.root_directory = Path("/some")
 
-    fake_subproject = Mock()
-    fake_subproject.get_default_branch.return_value = "main"
-    fake_subproject.list_of_branches.return_value = ["main", "dev"]
-    fake_subproject.list_of_tags.return_value = []
+    fake_subproject = _make_subproject("main", ["main", "dev"], [])
 
     # "2" selects the second option in the pick list (dev).
-    prompt_answers = iter(["myrepo", "myrepo", "2", ""])
+    prompt_answers = iter(["myrepo", "myrepo", "2", "", ""])
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
@@ -305,7 +305,9 @@ def test_add_command_interactive_branch_by_number():
                 "dfetch.commands.add.Prompt.ask",
                 side_effect=lambda *a, **kw: next(prompt_answers),
             ):
-                with patch("dfetch.commands.add.Confirm.ask", return_value=True):
+                with patch(
+                    "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
+                ):
                     with patch(
                         "dfetch.commands.add.append_entry_manifest_file"
                     ) as mock_append:
@@ -327,13 +329,10 @@ def test_add_command_interactive_tag():
     fake_superproject.manifest.remotes = []
     fake_superproject.root_directory = Path("/some")
 
-    fake_subproject = Mock()
-    fake_subproject.get_default_branch.return_value = "main"
-    fake_subproject.list_of_branches.return_value = ["main"]
-    fake_subproject.list_of_tags.return_value = ["v1.0", "v2.0"]
+    fake_subproject = _make_subproject("main", ["main"], ["v1.0", "v2.0"])
 
     # version prompt: type the tag name directly.
-    prompt_answers = iter(["myrepo", "myrepo", "v2.0", ""])
+    prompt_answers = iter(["myrepo", "myrepo", "v2.0", "", ""])
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
@@ -345,7 +344,9 @@ def test_add_command_interactive_tag():
                 "dfetch.commands.add.Prompt.ask",
                 side_effect=lambda *a, **kw: next(prompt_answers),
             ):
-                with patch("dfetch.commands.add.Confirm.ask", return_value=True):
+                with patch(
+                    "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
+                ):
                     with patch(
                         "dfetch.commands.add.append_entry_manifest_file"
                     ) as mock_append:
@@ -369,12 +370,9 @@ def test_add_command_interactive_abort():
     fake_superproject.manifest.remotes = []
     fake_superproject.root_directory = Path("/some")
 
-    fake_subproject = Mock()
-    fake_subproject.get_default_branch.return_value = "main"
-    fake_subproject.list_of_branches.return_value = ["main"]
-    fake_subproject.list_of_tags.return_value = []
+    fake_subproject = _make_subproject()
 
-    prompt_answers = iter(["myrepo", "myrepo", "main", ""])
+    prompt_answers = iter(["myrepo", "myrepo", "main", "", ""])
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
@@ -407,13 +405,10 @@ def test_add_command_interactive_with_src():
     fake_superproject.manifest.remotes = []
     fake_superproject.root_directory = Path("/some")
 
-    fake_subproject = Mock()
-    fake_subproject.get_default_branch.return_value = "main"
-    fake_subproject.list_of_branches.return_value = ["main"]
-    fake_subproject.list_of_tags.return_value = []
+    fake_subproject = _make_subproject()
 
-    # Prompts: name, dst, version, src
-    answers = iter(["myrepo", "myrepo", "main", "include/"])
+    # Prompts: name, dst, version, src, ignore
+    answers = iter(["myrepo", "myrepo", "main", "include/", ""])
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject
@@ -425,7 +420,9 @@ def test_add_command_interactive_with_src():
                 "dfetch.commands.add.Prompt.ask",
                 side_effect=lambda *a, **kw: next(answers),
             ):
-                with patch("dfetch.commands.add.Confirm.ask", return_value=True):
+                with patch(
+                    "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
+                ):
                     with patch(
                         "dfetch.commands.add.append_entry_manifest_file"
                     ) as mock_append:
@@ -439,6 +436,82 @@ def test_add_command_interactive_with_src():
     mock_append.assert_called_once()
     entry: ProjectEntry = mock_append.call_args[0][1]
     assert entry.source == "include/"
+
+
+def test_add_command_interactive_with_ignore():
+    """Interactive mode: providing ignore paths includes them in the entry."""
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
+    fake_superproject.manifest.remotes = []
+    fake_superproject.root_directory = Path("/some")
+
+    fake_subproject = _make_subproject()
+
+    # Prompts: name, dst, version, src (empty), ignore (comma-separated)
+    answers = iter(["myrepo", "myrepo", "main", "", "tests, docs"])
+
+    with patch(
+        "dfetch.commands.add.create_super_project", return_value=fake_superproject
+    ):
+        with patch(
+            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
+        ):
+            with patch(
+                "dfetch.commands.add.Prompt.ask",
+                side_effect=lambda *a, **kw: next(answers),
+            ):
+                with patch(
+                    "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
+                ):
+                    with patch(
+                        "dfetch.commands.add.append_entry_manifest_file"
+                    ) as mock_append:
+                        Add()(
+                            _make_args(
+                                "https://github.com/org/myrepo.git",
+                                interactive=True,
+                            )
+                        )
+
+    mock_append.assert_called_once()
+    entry: ProjectEntry = mock_append.call_args[0][1]
+    assert list(entry.ignore) == ["tests", "docs"]
+
+
+def test_add_command_interactive_run_update():
+    """Interactive mode: confirming update calls the Update command."""
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
+    fake_superproject.manifest.remotes = []
+    fake_superproject.root_directory = Path("/some")
+
+    fake_subproject = _make_subproject()
+
+    prompt_answers = iter(["myrepo", "myrepo", "main", "", ""])
+
+    with patch(
+        "dfetch.commands.add.create_super_project", return_value=fake_superproject
+    ):
+        with patch(
+            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
+        ):
+            with patch(
+                "dfetch.commands.add.Prompt.ask",
+                side_effect=lambda *a, **kw: next(prompt_answers),
+            ):
+                with patch(
+                    "dfetch.commands.add.Confirm.ask", side_effect=[True, True]
+                ):
+                    with patch("dfetch.commands.add.append_entry_manifest_file"):
+                        with patch("dfetch.commands.update.Update.__call__") as mock_update:
+                            Add()(
+                                _make_args(
+                                    "https://github.com/org/myrepo.git",
+                                    interactive=True,
+                                )
+                            )
+
+    mock_update.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
@@ -457,10 +530,7 @@ def test_add_command_matches_existing_remote():
     fake_superproject.manifest.remotes = [fake_remote]
     fake_superproject.root_directory = Path("/some")
 
-    fake_subproject = Mock()
-    fake_subproject.get_default_branch.return_value = "main"
-    fake_subproject.list_of_branches.return_value = ["main"]
-    fake_subproject.list_of_tags.return_value = []
+    fake_subproject = _make_subproject()
 
     with patch(
         "dfetch.commands.add.create_super_project", return_value=fake_superproject

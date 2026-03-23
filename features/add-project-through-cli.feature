@@ -7,7 +7,8 @@ Feature: Add a project to the manifest via the CLI
 
     Pass ``--force`` / ``-f`` to skip the confirmation prompt.
     Pass ``--interactive`` / ``-i`` to be guided step-by-step through every
-    manifest field (name, destination, branch/tag/revision, optional src).
+    manifest field (name, destination, branch/tag/revision, optional src,
+    optional ignore list).
 
     Background:
         Given a git repository "MyLib.git"
@@ -77,7 +78,9 @@ Feature: Add a project to the manifest via the CLI
             | Destination path          | libs/my  |
             | Version                   | master   |
             | Source path               |          |
+            | Ignore paths              |          |
             | Add project to manifest?  | y        |
+            | Run update                | n        |
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: my-lib
@@ -101,7 +104,9 @@ Feature: Add a project to the manifest via the CLI
             | Destination path          | my-lib   |
             | Version                   | v1       |
             | Source path               |          |
+            | Ignore paths              |          |
             | Add project to manifest?  | y        |
+            | Run update                | n        |
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: my-lib
@@ -124,6 +129,7 @@ Feature: Add a project to the manifest via the CLI
             | Destination path          | MyLib    |
             | Version                   | master   |
             | Source path               |          |
+            | Ignore paths              |          |
             | Add project to manifest?  | n        |
         Then the manifest 'dfetch.yaml' is replaced with
             """

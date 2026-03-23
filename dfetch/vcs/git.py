@@ -200,6 +200,48 @@ class GitRemote:
         return info
 
     @staticmethod
+    def clone_minimal(remote: str, target: str) -> None:
+        """Shallow blobless clone for browsing the tree without checking out files."""
+        run_on_cmdline(
+            logger,
+            cmd=[
+                "git",
+                "clone",
+                "--depth=1",
+                "--no-checkout",
+                "--quiet",
+                remote,
+                target,
+            ],
+            env=_extend_env_for_non_interactive_mode(),
+        )
+
+    @staticmethod
+    def ls_tree(local_path: str, path: str = "") -> list[tuple[str, bool]]:
+        """List the contents of the HEAD tree at *path* in a local clone.
+
+        Returns a list of ``(name, is_dir)`` pairs sorted with directories
+        first (alphabetically), then files (alphabetically).
+        """
+        cmd = ["git", "-C", local_path, "ls-tree", "HEAD"]
+        if path:
+            cmd.append(path.rstrip("/") + "/")
+        try:
+            result = run_on_cmdline(logger, cmd=cmd)
+            entries: list[tuple[str, bool]] = []
+            for line in result.stdout.decode().splitlines():
+                if not line.strip():
+                    continue
+                meta, name = line.split("\t", 1)
+                obj_type = meta.split()[1]
+                entries.append((name, obj_type == "tree"))
+            dirs = sorted((n, d) for n, d in entries if d)
+            files = sorted((n, d) for n, d in entries if not d)
+            return dirs + files
+        except SubprocessCommandError:
+            return []
+
+    @staticmethod
     def _find_sha_of_branch_or_tag(info: dict[str, str], branch_or_tag: str) -> str:
         """Find SHA of a branch tip or tag."""
         for reference, sha in info.items():

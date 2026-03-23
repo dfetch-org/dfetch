@@ -1,6 +1,10 @@
 """Git specific implementation."""
 
+import contextlib
 import pathlib
+import shutil
+import tempfile
+from collections.abc import Callable, Generator
 from functools import lru_cache
 
 from dfetch.log import get_logger
@@ -43,6 +47,27 @@ class GitSubProject(SubProject):
     def list_of_branches(self) -> list[str]:
         """Get list of all available branches."""
         return [str(branch) for branch in self._remote_repo.list_of_branches()]
+
+    @contextlib.contextmanager
+    def browse_tree(
+        self,
+    ) -> Generator[Callable[[str], list[tuple[str, bool]]], None, None]:
+        """Shallow-clone the remote and yield a tree-listing callable.
+
+        The yielded ``ls_fn(path="")`` calls ``git ls-tree HEAD`` on the
+        temporary clone.  The clone is removed on context exit.
+        """
+        tmpdir = tempfile.mkdtemp(prefix="dfetch_browse_")
+        ls_fn: Callable[[str], list[tuple[str, bool]]]
+        try:
+            GitRemote.clone_minimal(self._remote_repo._remote, tmpdir)
+            ls_fn = lambda path="": GitRemote.ls_tree(tmpdir, path=path)  # noqa: E731
+        except Exception:
+            ls_fn = lambda path="": []  # noqa: E731
+        try:
+            yield ls_fn
+        finally:
+            shutil.rmtree(tmpdir, ignore_errors=True)
 
     @staticmethod
     def revision_is_enough() -> bool:
