@@ -40,6 +40,10 @@ class GitSubProject(SubProject):
         """Get list of all available tags."""
         return [str(tag) for tag in self._remote_repo.list_of_tags()]
 
+    def list_of_branches(self) -> list[str]:
+        """Get list of all available branches."""
+        return [str(branch) for branch in self._remote_repo.list_of_branches()]
+
     @staticmethod
     def revision_is_enough() -> bool:
         """See if this VCS can uniquely distinguish branch with revision only."""

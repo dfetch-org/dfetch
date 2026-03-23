@@ -400,6 +400,14 @@ class SubProject(ABC):
     def get_default_branch(self) -> str:
         """Get the default branch of this repository."""
 
+    def list_of_branches(self) -> list[str]:
+        """Get list of all available branches. Override in VCS-specific subclasses."""
+        return []
+
+    def list_of_tags(self) -> list[str]:
+        """Get list of all available tags (public wrapper around ``_list_of_tags``)."""
+        return self._list_of_tags()
+
     def freeze_project(self, project: ProjectEntry) -> str | None:
         """Freeze *project* to its current on-disk version.
 

@@ -148,6 +148,16 @@ class GitRemote:
             if reference.startswith("refs/tags/")
         ]
 
+    def list_of_branches(self) -> list[str]:
+        """Get list of all available branches."""
+        info = self._ls_remote(self._remote)
+
+        return [
+            reference.replace("refs/heads/", "")
+            for reference, _ in info.items()
+            if reference.startswith("refs/heads/")
+        ]
+
     def get_default_branch(self) -> str:
         """Try to get the default branch or fallback to master."""
         try:
