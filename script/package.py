@@ -8,7 +8,7 @@ import tomllib as toml
 import xml.etree.ElementTree as ET  # nosec (only used for XML generation, not parsing untrusted input)
 from pathlib import Path
 
-from setuptools_scm import get_version
+from setuptools_scm import get_version  # pylint: disable=import-error
 
 from dfetch import __version__ as __digit_only_version__  # Used inside the installers
 

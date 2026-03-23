@@ -566,6 +566,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             "repo-path": self._repo_path,
             "vcs": self._vcs,
             "integrity": self._integrity.as_yaml() or None,
+            "ignore": list(self._ignore) if self._ignore else None,
         }
 
         return {k: v for k, v in yamldata.items() if v}

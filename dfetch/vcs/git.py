@@ -199,22 +199,34 @@ class GitRemote:
                 info[ref] = sha
         return info
 
-    @staticmethod
-    def clone_minimal(remote: str, target: str) -> None:
-        """Shallow blobless clone for browsing the tree without checking out files."""
+    def fetch_for_tree_browse(self, target: str, version: str) -> None:
+        """Fetch just enough objects to support ``ls_tree`` on *version*.
+
+        Uses ``--no-checkout`` and ``--filter=blob:none`` so only tree objects
+        are transferred — no file contents are downloaded.
+        """
+        run_on_cmdline(logger, ["git", "-C", target, "init"])
         run_on_cmdline(
             logger,
-            cmd=[
+            [
                 "git",
-                "clone",
-                "--depth=1",
-                "--no-checkout",
-                "--quiet",
-                remote,
+                "-C",
                 target,
+                "fetch",
+                "--depth=1",
+                "--filter=blob:none",
+                self._remote,
+                version,
             ],
             env=_extend_env_for_non_interactive_mode(),
         )
+
+    @staticmethod
+    def _parse_ls_tree_entry(line: str, prefix: str) -> tuple[str, bool]:
+        """Parse one ``git ls-tree`` output line into a ``(name, is_dir)`` pair."""
+        meta, name = line.split("\t", 1)
+        base = name[len(prefix) :] if prefix and name.startswith(prefix) else name
+        return base, meta.split()[1] == "tree"
 
     @staticmethod
     def ls_tree(local_path: str, path: str = "") -> list[tuple[str, bool]]:
@@ -223,20 +235,19 @@ class GitRemote:
         Returns a list of ``(name, is_dir)`` pairs sorted with directories
         first (alphabetically), then files (alphabetically).
         """
-        cmd = ["git", "-C", local_path, "ls-tree", "HEAD"]
+        cmd = ["git", "-C", local_path, "ls-tree", "FETCH_HEAD"]
         if path:
             cmd.append(path.rstrip("/") + "/")
         try:
             result = run_on_cmdline(logger, cmd=cmd)
-            entries: list[tuple[str, bool]] = []
-            for line in result.stdout.decode().splitlines():
-                if not line.strip():
-                    continue
-                meta, name = line.split("\t", 1)
-                obj_type = meta.split()[1]
-                entries.append((name, obj_type == "tree"))
-            dirs = sorted((n, d) for n, d in entries if d)
-            files = sorted((n, d) for n, d in entries if not d)
+            prefix = (path.rstrip("/") + "/") if path else ""
+            entries = [
+                GitRemote._parse_ls_tree_entry(line, prefix)
+                for line in result.stdout.decode().splitlines()
+                if line.strip()
+            ]
+            dirs: list[tuple[str, bool]] = sorted((n, d) for n, d in entries if d)
+            files: list[tuple[str, bool]] = sorted((n, d) for n, d in entries if not d)
             return dirs + files
         except SubprocessCommandError:
             return []

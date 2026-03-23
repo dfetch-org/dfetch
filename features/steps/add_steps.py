@@ -1,6 +1,6 @@
 """Steps for the 'dfetch add' feature tests."""
 
-# pylint: disable=function-redefined, missing-function-docstring, not-callable
+# pylint: disable=function-redefined, missing-function-docstring, import-error, not-callable
 # pyright: reportRedeclaration=false, reportAttributeAccessIssue=false, reportCallIssue=false
 
 from collections import deque
@@ -55,13 +55,13 @@ def step_impl(context, remote_url):
     # We use an iterator so each call consumes the next value.
     _confirm_values = iter([add_confirm, update_confirm])
 
-    def _auto_confirm(prompt: str, **kwargs) -> bool:
+    def _auto_confirm(_prompt: str, **kwargs) -> bool:
         try:
             return next(_confirm_values)
         except StopIteration:
             return bool(kwargs.get("default", False))
 
-    def _auto_prompt(prompt: str, **kwargs) -> str:  # type: ignore[return]
+    def _auto_prompt(_prompt: str, **kwargs) -> str:  # type: ignore[return]
         """Return the next pre-defined answer, ignoring the actual prompt text."""
         if prompt_answers:
             return prompt_answers.popleft()
