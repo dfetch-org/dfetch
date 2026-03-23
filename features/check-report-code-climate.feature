@@ -25,7 +25,7 @@ Feature: Let check report to code climate
             """
             [
                 {
-                    "description": "The manifest requires version 'v1' of ext/test-repo-tag-v1. it was never fetched, fetch it with 'dfetch update ext/test-repo-tag-v1. The latest version available is 'v2.0'",
+                    "description": "The manifest requires version 'v1' of ext/test-repo-tag-v1. it was never fetched, fetch it with 'dfetch update ext/test-repo-tag-v1'. The latest version available is 'v2.0'",
                     "check_name": "unfetched-project",
                     "categories": [
                         "Security",

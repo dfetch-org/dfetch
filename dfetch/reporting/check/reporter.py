@@ -153,7 +153,7 @@ class CheckReporter(AbstractCheckReporter):
             message=f"{project.name} was never fetched!",
             description=(
                 f"The manifest requires version '{str(wanted_version) or 'latest'}' of {project.name}. "
-                f"it was never fetched, fetch it with 'dfetch update {project.name}. "
+                f"it was never fetched, fetch it with 'dfetch update {project.name}'. "
                 f"The latest version available is '{latest}'"
             ),
         )
