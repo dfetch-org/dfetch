@@ -30,7 +30,7 @@ Feature: Let check report to jenkins
                         "fileName": "dfetch.yaml",
                         "severity": "High",
                         "message": "ext/test-repo-tag-v1 : ext/test-repo-tag-v1 was never fetched!",
-                        "description": "The manifest requires version 'v1' of ext/test-repo-tag-v1. it was never fetched, fetch it with 'dfetch update ext/test-repo-tag-v1. The latest version available is 'v2.0'",
+                        "description": "The manifest requires version 'v1' of ext/test-repo-tag-v1. it was never fetched, fetch it with 'dfetch update ext/test-repo-tag-v1'. The latest version available is 'v2.0'",
                         "lineStart": 9,
                         "lineEnd": 9,
                         "columnStart": 13,
