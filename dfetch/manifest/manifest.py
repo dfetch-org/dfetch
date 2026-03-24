@@ -371,6 +371,66 @@ class Manifest:
                 )
         raise RuntimeError(f"{name} was not found in the manifest!")
 
+    # Characters not allowed in a project name (YAML special chars).
+    _UNSAFE_NAME_RE = re.compile(r"[\x00-\x1F\x7F-\x9F:#\[\]{}&*!|>'\"%@`]")
+
+    def check_name_uniqueness(self, project_name: str) -> None:
+        """Raise if *project_name* is already used in the manifest."""
+        if project_name in {project.name for project in self.projects}:
+            raise RuntimeError(
+                f"Project with name '{project_name}' already exists in manifest!"
+            )
+
+    def validate_project_name(self, name: str) -> None:
+        """Raise ValueError if *name* is not valid for use in this manifest."""
+        if not name:
+            raise ValueError("Name cannot be empty.")
+        if self._UNSAFE_NAME_RE.search(name):
+            raise ValueError(
+                f"Name '{name}' contains characters not allowed in a manifest name. "
+                "Avoid: # : [ ] { } & * ! | > ' \" % @ `"
+            )
+        if name in {p.name for p in self.projects}:
+            raise ValueError(f"Project with name '{name}' already exists in manifest!")
+
+    @staticmethod
+    def validate_destination(dst: str) -> None:
+        """Raise ValueError if *dst* is not a safe manifest destination path."""
+        if any(part == ".." for part in Path(dst).parts):
+            raise ValueError(
+                f"Destination '{dst}' contains '..'. "
+                "Paths must stay within the manifest directory."
+            )
+
+    def guess_destination(self, project_name: str) -> str:
+        """Guess the destination based on the common prefix of existing projects.
+
+        With two or more existing projects the common parent directory is used.
+        With a single existing project its parent directory is used (if any).
+        """
+        destinations = [p.destination for p in self.projects if p.destination]
+        if not destinations:
+            return ""
+
+        common_path = os.path.commonpath(destinations)
+        if not common_path or common_path == os.path.sep:
+            return ""
+
+        if len(destinations) == 1:
+            parent = str(Path(common_path).parent)
+            if parent and parent != ".":
+                return (Path(parent) / project_name).as_posix()
+            return ""
+
+        return (Path(common_path) / project_name).as_posix()
+
+    def find_remote_for_url(self, remote_url: str) -> Remote | None:
+        """Return the first remote whose base URL is a prefix of *remote_url*."""
+        for remote in self.remotes:
+            if remote_url.startswith(remote.url):
+                return remote
+        return None
+
 
 class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
     """Dump a manifest YAML.

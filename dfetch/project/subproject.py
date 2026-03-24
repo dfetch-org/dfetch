@@ -1,10 +1,9 @@
 """SubProject."""
 
-import contextlib
 import os
 import pathlib
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Generator, Sequence
+from collections.abc import Callable, Sequence
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
@@ -14,11 +13,6 @@ from dfetch.project.metadata import Dependency, Metadata
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
 from dfetch.vcs.patch import Patch
-
-# A callable that lists the contents of a VCS tree path.
-# Accepts a path relative to the repo root (empty string for the root)
-# and returns ``(name, is_dir)`` pairs for each entry at that path.
-LsFn = Callable[[str], list[tuple[str, bool]]]
 
 logger = get_logger(__name__)
 
@@ -418,22 +412,6 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
     def list_of_tags(self) -> list[str]:
         """Get list of all available tags (public wrapper around ``_list_of_tags``)."""
         return self._list_of_tags()
-
-    @contextlib.contextmanager
-    def browse_tree(self, version: str = "") -> Generator[LsFn, None, None]:
-        """Context manager yielding a function to list remote tree contents.
-
-        The yielded ``LsFn`` accepts an optional path (relative to the repo
-        root) and returns ``(name, is_dir)`` pairs for each entry.  The
-        default implementation returns an empty list; VCS-specific subclasses
-        override this to perform a real remote tree walk.
-        """
-        _ = version
-
-        def _empty_ls(_path: str = "") -> list[tuple[str, bool]]:
-            return []
-
-        yield _empty_ls
 
     def freeze_project(self, project: ProjectEntry) -> str | None:
         """Freeze *project* to its current on-disk version.

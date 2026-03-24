@@ -9,12 +9,8 @@ from unittest.mock import MagicMock, Mock, call, patch
 
 import pytest
 
-from dfetch.commands.add import (
-    Add,
-    _check_name_uniqueness,
-    _determine_remote,
-    _guess_destination,
-)
+from dfetch.commands.add import Add
+from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote
 from tests.manifest_mock import mock_manifest
@@ -69,27 +65,31 @@ def _make_subproject(
 
 
 # ---------------------------------------------------------------------------
-# _check_name_uniqueness
+# Manifest.check_name_uniqueness
 # ---------------------------------------------------------------------------
 
 
 def test_check_name_uniqueness_raises_when_duplicate():
-    projects = [_make_project("foo"), _make_project("bar")]
+    m = Mock()
+    m.projects = [_make_project("foo"), _make_project("bar")]
     with pytest.raises(RuntimeError, match="already exists"):
-        _check_name_uniqueness("foo", projects)
+        Manifest.check_name_uniqueness(m, "foo")
 
 
 def test_check_name_uniqueness_passes_for_new_name():
-    projects = [_make_project("foo")]
-    _check_name_uniqueness("bar", projects)  # should not raise
+    m = Mock()
+    m.projects = [_make_project("foo")]
+    Manifest.check_name_uniqueness(m, "bar")  # should not raise
 
 
 def test_check_name_uniqueness_passes_for_empty_manifest():
-    _check_name_uniqueness("anything", [])
+    m = Mock()
+    m.projects = []
+    Manifest.check_name_uniqueness(m, "anything")
 
 
 # ---------------------------------------------------------------------------
-# _guess_destination
+# Manifest.guess_destination
 # ---------------------------------------------------------------------------
 
 
@@ -107,33 +107,38 @@ def test_check_name_uniqueness_passes_for_empty_manifest():
     ],
 )
 def test_guess_destination(project_name, existing, expected):
-    projects = [_make_project(name, dst) for name, dst in existing]
-    assert _guess_destination(project_name, projects) == expected
+    m = Mock()
+    m.projects = [_make_project(name, dst) for name, dst in existing]
+    assert Manifest.guess_destination(m, project_name) == expected
 
 
 # ---------------------------------------------------------------------------
-# _determine_remote
+# Manifest.find_remote_for_url
 # ---------------------------------------------------------------------------
 
 
 def test_determine_remote_returns_matching_remote():
-    remotes = [
+    m = Mock()
+    m.remotes = [
         _make_remote("github", "https://github.com/"),
         _make_remote("gitlab", "https://gitlab.com/"),
     ]
-    result = _determine_remote(remotes, "https://github.com/myorg/myrepo.git")
+    result = Manifest.find_remote_for_url(m, "https://github.com/myorg/myrepo.git")
     assert result is not None
     assert result.name == "github"
 
 
 def test_determine_remote_returns_none_when_no_match():
-    remotes = [_make_remote("github", "https://github.com/")]
-    result = _determine_remote(remotes, "https://bitbucket.org/myorg/myrepo.git")
+    m = Mock()
+    m.remotes = [_make_remote("github", "https://github.com/")]
+    result = Manifest.find_remote_for_url(m, "https://bitbucket.org/myorg/myrepo.git")
     assert result is None
 
 
 def test_determine_remote_returns_none_for_empty_remotes():
-    result = _determine_remote([], "https://github.com/myorg/myrepo.git")
+    m = Mock()
+    m.remotes = []
+    result = Manifest.find_remote_for_url(m, "https://github.com/myorg/myrepo.git")
     assert result is None
 
 

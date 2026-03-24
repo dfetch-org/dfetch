@@ -1,5 +1,6 @@
 """Git specific implementation."""
 
+import contextlib
 import functools
 import glob
 import os
@@ -10,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from dfetch.log import get_logger
+from dfetch.terminal import LsFunction
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import (
     in_directory,
@@ -220,6 +222,31 @@ class GitRemote:
             ],
             env=_extend_env_for_non_interactive_mode(),
         )
+
+    @contextlib.contextmanager
+    def browse_tree(self, version: str = "") -> Generator[LsFunction, None, None]:
+        """Shallow-clone the remote and yield a tree-listing callable.
+
+        The yielded ``LsFunction`` calls ``git ls-tree`` on a blobless temporary
+        clone.  The clone is removed on context exit.
+        """
+        tmpdir = tempfile.mkdtemp(prefix="dfetch_browse_")
+        cloned = False
+        try:
+            self.fetch_for_tree_browse(tmpdir, version or self.get_default_branch())
+            cloned = True
+        except Exception:  # pylint: disable=broad-exception-caught  # nosec B110
+            pass
+
+        def ls_function(path: str = "") -> list[tuple[str, bool]]:
+            if cloned:
+                return GitRemote.ls_tree(tmpdir, path=path)
+            return []
+
+        try:
+            yield ls_function
+        finally:
+            shutil.rmtree(tmpdir, ignore_errors=True)
 
     @staticmethod
     def _parse_ls_tree_entry(line: str, prefix: str) -> tuple[str, bool]:

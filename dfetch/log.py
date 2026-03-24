@@ -122,6 +122,15 @@ class DLogger(logging.Logger):
         """Print a field with corresponding value."""
         self.print_report_line(field_name, field if field else "<none>")
 
+    def print_yaml_field(self, key: str, value: str | list[str]) -> None:
+        """Print one manifest field in YAML style."""
+        if isinstance(value, list):
+            self.info(f"  [blue]{key}:[/blue]")
+            for item in value:
+                self.info(f"    - {item}")
+        else:
+            self.info(f"  [blue]{key}:[/blue] {value}")
+
     def warning(self, msg: object, *args: Any, **kwargs: Any) -> None:
         """Log warning."""
         super().warning(

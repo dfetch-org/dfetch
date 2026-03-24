@@ -1,8 +1,13 @@
 """Module for handling version information from strings."""
 
+from __future__ import annotations
+
 import re
 from collections import defaultdict
+from dataclasses import dataclass
+from typing import Literal
 
+import semver
 from semver.version import Version
 
 BASEVERSION = re.compile(
@@ -91,6 +96,46 @@ def _create_available_version_dict(
         if version:
             parsed_tags[prefix] += [(version, available_tag)]
     return parsed_tags
+
+
+@dataclass(frozen=True)
+class VersionRef:
+    """A resolved version reference: a branch name, tag, or commit SHA."""
+
+    kind: Literal["branch", "tag", "revision"]
+    value: str
+
+
+def prioritise_default(branches: list[str], default: str) -> list[str]:
+    """Return *branches* with *default* moved to position 0."""
+    if default in branches:
+        rest = [b for b in branches if b != default]
+        return [default, *rest]
+    return branches
+
+
+def sort_tags_newest_first(tags: list[str]) -> list[str]:
+    """Sort *tags* newest-semver-first; non-semver tags appended as-is."""
+
+    def _parse_semver(tag: str) -> semver.Version | None:
+        try:
+            return semver.Version.parse(tag.lstrip("vV"))
+        except ValueError:
+            return None
+
+    parsed = {t: _parse_semver(t) for t in tags}
+    semver_tags = sorted(
+        (t for t, v in parsed.items() if v is not None),
+        key=lambda t: parsed[t],  # type: ignore[arg-type, return-value]
+        reverse=True,
+    )
+    non_semver = [t for t, v in parsed.items() if v is None]
+    return semver_tags + non_semver
+
+
+def is_commit_sha(value: str) -> bool:
+    """Return True when *value* looks like a Git commit SHA (7–40 hex chars)."""
+    return bool(re.fullmatch(r"[0-9a-fA-F]{7,40}", value))
 
 
 if __name__ == "__main__":
