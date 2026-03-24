@@ -1,14 +1,16 @@
 """SVN specific implementation."""
 
+import contextlib
 import os
 import pathlib
 import urllib.parse
+from collections.abc import Generator
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.metadata import Dependency
-from dfetch.project.subproject import SubProject
+from dfetch.project.subproject import LsFn, SubProject
 from dfetch.util.util import (
     find_matching_files,
     find_non_matching_files,
@@ -178,3 +180,32 @@ class SvnSubProject(SubProject):
     def get_default_branch(self) -> str:
         """Get the default branch of this repository."""
         return SvnRepo.DEFAULT_BRANCH
+
+    def list_of_branches(self) -> list[str]:
+        """Return trunk plus any branches found under ``branches/``."""
+        return [SvnRepo.DEFAULT_BRANCH, *self._remote_repo.list_of_branches()]
+
+    @contextlib.contextmanager
+    def browse_tree(self, version: str = "") -> Generator[LsFn, None, None]:
+        """Yield an ls_fn that lists SVN tree contents for *version*.
+
+        Resolves *version* to the correct remote path (trunk,
+        ``branches/<version>``, or ``tags/<version>``), then delegates
+        directory listing to ``svn ls``.
+        """
+        version = version or SvnRepo.DEFAULT_BRANCH
+        if version == SvnRepo.DEFAULT_BRANCH:
+            base_url = f"{self.remote}/{SvnRepo.DEFAULT_BRANCH}"
+        else:
+            branches_url = f"{self.remote}/branches/{version}"
+            try:
+                SvnRepo.get_info_from_target(branches_url)
+                base_url = branches_url
+            except RuntimeError:
+                base_url = f"{self.remote}/tags/{version}"
+
+        def ls_fn(path: str = "") -> list[tuple[str, bool]]:
+            url = f"{base_url}/{path}" if path else base_url
+            return self._remote_repo.ls_tree(url)
+
+        yield ls_fn

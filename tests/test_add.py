@@ -517,6 +517,188 @@ def test_add_command_interactive_run_update():
 
 
 # ---------------------------------------------------------------------------
+# Add command – interactive mode (SVN)
+# ---------------------------------------------------------------------------
+
+_SVN_URL = "svn://example.com/myrepo"
+
+
+def _make_svn_subproject(
+    branches: list[str] | None = None,
+    tags: list[str] | None = None,
+) -> Mock:
+    """Return a Mock SVN SubProject with ``trunk`` as default branch."""
+    all_branches = branches if branches is not None else ["trunk"]
+    return _make_subproject(
+        default_branch="trunk",
+        branches=all_branches,
+        tags=tags if tags is not None else [],
+    )
+
+
+def test_add_command_interactive_svn_trunk():
+    """SVN interactive add: accepting the default trunk branch."""
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
+    fake_superproject.manifest.remotes = []
+    fake_superproject.root_directory = Path("/some")
+
+    fake_subproject = _make_svn_subproject()
+
+    # Prompts: name, dst, version (trunk), src, ignore
+    answers = iter(["myrepo", "myrepo", "trunk", "", ""])
+
+    with patch(
+        "dfetch.commands.add.create_super_project", return_value=fake_superproject
+    ):
+        with patch(
+            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
+        ):
+            with patch(
+                "dfetch.commands.add.Prompt.ask",
+                side_effect=lambda *a, **kw: next(answers),
+            ):
+                with patch(
+                    "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
+                ):
+                    with patch(
+                        "dfetch.commands.add.append_entry_manifest_file"
+                    ) as mock_append:
+                        Add()(_make_args(_SVN_URL, interactive=True))
+
+    mock_append.assert_called_once()
+    entry: ProjectEntry = mock_append.call_args[0][1]
+    assert entry.name == "myrepo"
+    assert entry.branch == "trunk"
+
+
+def test_add_command_interactive_svn_custom_branch():
+    """SVN interactive add: selecting a branch from ``branches/``."""
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
+    fake_superproject.manifest.remotes = []
+    fake_superproject.root_directory = Path("/some")
+
+    fake_subproject = _make_svn_subproject(branches=["trunk", "feature-x"])
+
+    # Prompts: name, dst, version (feature-x), src, ignore
+    answers = iter(["myrepo", "myrepo", "feature-x", "", ""])
+
+    with patch(
+        "dfetch.commands.add.create_super_project", return_value=fake_superproject
+    ):
+        with patch(
+            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
+        ):
+            with patch(
+                "dfetch.commands.add.Prompt.ask",
+                side_effect=lambda *a, **kw: next(answers),
+            ):
+                with patch(
+                    "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
+                ):
+                    with patch(
+                        "dfetch.commands.add.append_entry_manifest_file"
+                    ) as mock_append:
+                        Add()(_make_args(_SVN_URL, interactive=True))
+
+    entry: ProjectEntry = mock_append.call_args[0][1]
+    assert entry.branch == "feature-x"
+
+
+def test_add_command_interactive_svn_tag():
+    """SVN interactive add: selecting a tag."""
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
+    fake_superproject.manifest.remotes = []
+    fake_superproject.root_directory = Path("/some")
+
+    fake_subproject = _make_svn_subproject(tags=["v1.0", "v2.0"])
+
+    # Prompts: name, dst, version (v2.0 by name), src, ignore
+    answers = iter(["myrepo", "myrepo", "v2.0", "", ""])
+
+    with patch(
+        "dfetch.commands.add.create_super_project", return_value=fake_superproject
+    ):
+        with patch(
+            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
+        ):
+            with patch(
+                "dfetch.commands.add.Prompt.ask",
+                side_effect=lambda *a, **kw: next(answers),
+            ):
+                with patch(
+                    "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
+                ):
+                    with patch(
+                        "dfetch.commands.add.append_entry_manifest_file"
+                    ) as mock_append:
+                        Add()(_make_args(_SVN_URL, interactive=True))
+
+    entry: ProjectEntry = mock_append.call_args[0][1]
+    assert entry.tag == "v2.0"
+    assert entry.branch == ""
+
+
+def test_add_command_interactive_svn_branch_by_number():
+    """SVN interactive add: selecting a branch by its number in the pick list."""
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
+    fake_superproject.manifest.remotes = []
+    fake_superproject.root_directory = Path("/some")
+
+    # choices order: trunk (default, index 1), feature-x (index 2)
+    fake_subproject = _make_svn_subproject(branches=["trunk", "feature-x"])
+
+    answers = iter(["myrepo", "myrepo", "2", "", ""])
+
+    with patch(
+        "dfetch.commands.add.create_super_project", return_value=fake_superproject
+    ):
+        with patch(
+            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
+        ):
+            with patch(
+                "dfetch.commands.add.Prompt.ask",
+                side_effect=lambda *a, **kw: next(answers),
+            ):
+                with patch(
+                    "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
+                ):
+                    with patch(
+                        "dfetch.commands.add.append_entry_manifest_file"
+                    ) as mock_append:
+                        Add()(_make_args(_SVN_URL, interactive=True))
+
+    entry: ProjectEntry = mock_append.call_args[0][1]
+    assert entry.branch == "feature-x"
+
+
+def test_add_command_interactive_svn_force():
+    """SVN non-interactive (--force) add defaults to trunk."""
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
+    fake_superproject.manifest.remotes = []
+    fake_superproject.root_directory = Path("/some")
+
+    fake_subproject = _make_svn_subproject()
+
+    with patch(
+        "dfetch.commands.add.create_super_project", return_value=fake_superproject
+    ):
+        with patch(
+            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
+        ):
+            with patch("dfetch.commands.add.append_entry_manifest_file") as mock_append:
+                Add()(_make_args(_SVN_URL, force=True))
+
+    mock_append.assert_called_once()
+    entry: ProjectEntry = mock_append.call_args[0][1]
+    assert entry.branch == "trunk"
+
+
+# ---------------------------------------------------------------------------
 # Add command – remote matching
 # ---------------------------------------------------------------------------
 
