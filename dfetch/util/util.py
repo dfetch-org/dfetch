@@ -13,13 +13,7 @@ from typing import Any
 
 from _hashlib import HASH
 
-#: Glob patterns used to identify license files by filename.
-LICENSE_GLOBS = ["licen[cs]e*", "copying*", "copyright*"]
-
-
-def is_license_file(filename: str) -> bool:
-    """Return *True* when *filename* matches a known license file pattern."""
-    return any(fnmatch.fnmatch(filename.lower(), pattern) for pattern in LICENSE_GLOBS)
+from dfetch.util.license import is_license_file
 
 
 def _copy_entry(src_entry: str, dest_entry: str, root: str) -> None:

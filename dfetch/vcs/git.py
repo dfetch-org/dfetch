@@ -13,9 +13,9 @@ from pathlib import Path
 from dfetch.log import get_logger
 from dfetch.terminal import LsFunction
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
+from dfetch.util.license import is_license_file
 from dfetch.util.util import (
     in_directory,
-    is_license_file,
     move_directory_contents,
     safe_rm,
     strip_glob_prefix,

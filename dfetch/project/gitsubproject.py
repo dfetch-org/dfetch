@@ -8,7 +8,8 @@ from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.metadata import Dependency
 from dfetch.project.subproject import SubProject
-from dfetch.util.util import LICENSE_GLOBS, safe_rm
+from dfetch.util.license import LICENSE_GLOBS
+from dfetch.util.util import safe_rm
 from dfetch.vcs.git import CheckoutOptions, GitLocalRepo, GitRemote, get_git_version
 
 logger = get_logger(__name__)

@@ -1,5 +1,6 @@
 """*Dfetch* uses *Infer-License* to guess licenses from files."""
 
+import fnmatch
 from dataclasses import dataclass
 from os import PathLike
 
@@ -8,6 +9,15 @@ from infer_license.types import License as InferredLicense
 
 # Limit license file size to below number of bytes to prevent memory issues with large files
 MAX_LICENSE_FILE_SIZE = 1024 * 1024  # 1 MB
+
+
+#: Glob patterns used to identify license files by filename.
+LICENSE_GLOBS = ["licen[cs]e*", "copying*", "copyright*"]
+
+
+def is_license_file(filename: str) -> bool:
+    """Return *True* when *filename* matches a known license file pattern."""
+    return any(fnmatch.fnmatch(filename.lower(), pattern) for pattern in LICENSE_GLOBS)
 
 
 @dataclass

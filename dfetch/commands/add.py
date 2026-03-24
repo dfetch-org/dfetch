@@ -334,12 +334,14 @@ def _interactive_flow(  # pylint: disable=too-many-arguments,too-many-positional
 # Individual prompt helpers
 # ---------------------------------------------------------------------------
 
+_PROMPT_FORMAT = "  [green]?[/green] [bold]{label}[/bold]"
+
 
 def _prompt(label: str, default: str) -> str:
     """Single-line prompt with TTY ghost text or rich fallback."""
     if terminal.is_tty():
         return terminal.ghost_prompt(f"  ? {label}", default).strip()
-    return Prompt.ask(f"  ? [bold]{label}[/bold]", default=default).strip()
+    return Prompt.ask(_PROMPT_FORMAT.format(label), default=default).strip()
 
 
 def _unique_name(base: str, existing: set[str]) -> str:
@@ -422,7 +424,8 @@ def _ask_src(ls_function: LsFunction) -> str:
         )
 
     return Prompt.ask(
-        "  ? [bold]Source path[/bold]  (sub-path/glob, or Enter to fetch whole repo)",
+        _PROMPT_FORMAT.format(label="Source path")
+        + "  (sub-path/glob, or Enter to fetch whole repo)",
         default="",
     ).strip()
 
@@ -467,7 +470,8 @@ def _ask_ignore(ls_function: LsFunction, src: str = "") -> list[str]:
                 return ignore
 
     raw = Prompt.ask(
-        "  ? [bold]Ignore paths[/bold]  (comma-separated paths to ignore, or Enter to skip)",
+        _PROMPT_FORMAT.format(label="Ignore paths")
+        + "  (comma-separated paths to ignore, or Enter to skip)",
         default="",
     ).strip()
     return [p.strip() for p in raw.split(",") if p.strip()] if raw else []
@@ -578,7 +582,7 @@ def _text_version_pick(
 
     while True:
         raw = Prompt.ask(
-            "  ? [bold]Version[/bold]  (number, branch, tag, or SHA)",
+            _PROMPT_FORMAT.format(label="Version") + "  (number, branch, tag, or SHA)",
             default=default_branch,
         ).strip()
 
