@@ -60,6 +60,21 @@ class SvnRemote:
         except RuntimeError:
             return False
 
+    def list_of_branches(self) -> list[str]:
+        """List branch names from the ``branches/`` directory."""
+        try:
+            result = run_on_cmdline(
+                logger,
+                ["svn", "ls", "--non-interactive", f"{self._remote}/branches"],
+            )
+            return [
+                line.strip("/\r")
+                for line in result.stdout.decode().splitlines()
+                if line.strip("/\r")
+            ]
+        except (SubprocessCommandError, RuntimeError):
+            return []
+
     def list_of_tags(self) -> list[str]:
         """Get list of all available tags."""
         result = run_on_cmdline(
@@ -68,6 +83,23 @@ class SvnRemote:
         return [
             str(tag).strip("/\r") for tag in result.stdout.decode().split("\n") if tag
         ]
+
+    def ls_tree(self, url_path: str) -> list[tuple[str, bool]]:
+        """List immediate children of *url_path* as ``(name, is_dir)`` pairs."""
+        try:
+            result = run_on_cmdline(
+                logger, ["svn", "ls", "--non-interactive", url_path]
+            )
+            entries: list[tuple[str, bool]] = []
+            for line in result.stdout.decode().splitlines():
+                line = line.strip("\r")
+                if not line:
+                    continue
+                is_dir = line.endswith("/")
+                entries.append((line.rstrip("/"), is_dir))
+            return entries
+        except (SubprocessCommandError, RuntimeError):
+            return []
 
 
 class SvnRepo:
