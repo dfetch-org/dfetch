@@ -282,7 +282,7 @@ def _interactive_flow(  # pylint: disable=too-many-arguments,too-many-positional
     manifest: Manifest,
 ) -> ProjectEntry:
     """Guide the user through every manifest field and return a ``ProjectEntry``."""
-    logger.print_info_line(default_name, f"Adding {remote_url}")
+    logger.print_info_line(remote_url, "Adding project through interactive wizard")
 
     name = _ask_name(default_name, manifest)
 
@@ -335,11 +335,11 @@ def _interactive_flow(  # pylint: disable=too-many-arguments,too-many-positional
 # ---------------------------------------------------------------------------
 
 
-def _prompt(tty_label: str, rich_label: str, default: str) -> str:
+def _prompt(label: str, default: str) -> str:
     """Single-line prompt with TTY ghost text or rich fallback."""
     if terminal.is_tty():
-        return terminal.ghost_prompt(tty_label, default).strip()
-    return Prompt.ask(rich_label, default=default).strip()
+        return terminal.ghost_prompt(f"  ? {label}", default).strip()
+    return Prompt.ask(f"  ? [bold]{label}[/bold]", default=default).strip()
 
 
 def _unique_name(base: str, existing: set[str]) -> str:
@@ -357,7 +357,7 @@ def _ask_name(default: str, manifest: Manifest) -> str:
     existing_names = {p.name for p in manifest.projects}
     suggested = _unique_name(default, existing_names)
     while True:
-        name = _prompt("  ? Name", "  ? [bold]Name[/bold]", suggested)
+        name = _prompt("Name", suggested)
         try:
             manifest.validate_project_name(name)
         except ValueError as exc:
@@ -373,11 +373,7 @@ def _ask_dst(name: str, default: str) -> str:
     """Prompt for the destination path, re-asking on path-traversal attempts."""
     suggested = default or name
     while True:
-        dst = _prompt(
-            "  ? Destination",
-            "  ? [bold]Destination[/bold] (path relative to manifest)",
-            suggested,
-        )
+        dst = _prompt("Destination", suggested)
         if not dst:
             dst = name  # fall back to project name
         try:

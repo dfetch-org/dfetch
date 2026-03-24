@@ -8,10 +8,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .ansi import BOLD, DIM, GREEN, RESET, VIEWPORT, YELLOW, strip_ansi
-from .keys import read_key
-from .screen import Screen
-from .types import LsFunction
+from dfetch.terminal.ansi import BOLD, DIM, GREEN, RESET, VIEWPORT, strip_ansi
+from dfetch.terminal.keys import read_key
+from dfetch.terminal.screen import Screen
+from dfetch.terminal.types import LsFunction
 
 
 @dataclass
@@ -67,7 +67,7 @@ def _render_tree_lines(
         node = nodes[i]
         indent = "  " * node.depth
         icon = ("▾ " if node.expanded else "▸ ") if node.is_dir else "  "
-        cursor = f"{YELLOW}▶{RESET}" if i == idx else " "
+        cursor = f"{GREEN}▶{RESET}" if i == idx else " "
         if multi_select:
             name = f"{DIM}{node.name}{RESET}" if not node.selected else node.name
             lines.append(f"  {cursor} {indent}{icon}{name}")
@@ -285,22 +285,22 @@ def deselected_paths(nodes: list[TreeNode]) -> list[str]:
 
     A deselected directory is emitted as a single entry when all its loaded
     descendants are also deselected (or it was never expanded).  This keeps
-    the list short.  Individual deselected files are listed when their
+    the list short. Individual deselected files are listed when their
     parent directory is only partially deselected.
     """
     paths: list[str] = []
-    ignored_dirs: set[str] = set()
+    dirs: set[str] = set()
 
     for i, node in enumerate(nodes):
         if node.selected:
             continue
-        if any(node.path.startswith(d + "/") for d in ignored_dirs):
+        if any(node.path.startswith(d + "/") for d in dirs):
             continue
         if node.is_dir and (
             not node.children_loaded or all_descendants_deselected(nodes, i)
         ):
             paths.append(node.path)
-            ignored_dirs.add(node.path)
+            dirs.add(node.path)
         elif not node.is_dir:
             paths.append(node.path)
 

@@ -1,8 +1,8 @@
 """Scrollable single/multi-select pick list widget."""
 
-from .ansi import BOLD, DIM, GREEN, RESET, VIEWPORT, YELLOW
-from .keys import read_key
-from .screen import Screen
+from dfetch.terminal.ansi import BOLD, DIM, GREEN, RESET, VIEWPORT
+from dfetch.terminal.keys import read_key
+from dfetch.terminal.screen import Screen
 
 
 def _advance_pick_idx(key: str, idx: int, n: int) -> int:
@@ -56,7 +56,7 @@ def _render_pick_item(
     i: int, idx: int, item: str, selected: set[int], multi: bool
 ) -> str:
     """Format a single row for the pick widget."""
-    cursor = f"{YELLOW}▶{RESET}" if i == idx else " "
+    cursor = f"{GREEN}▶{RESET}" if i == idx else " "
     check = f"{GREEN}✓ {RESET}" if (multi and i in selected) else "  "
     is_highlighted = (i in selected) if multi else (i == idx)
     styled = f"{BOLD}{item}{RESET}" if is_highlighted else item

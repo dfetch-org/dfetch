@@ -2,8 +2,8 @@
 
 import sys
 
-from .ansi import DIM, RESET
-from .keys import read_key
+from dfetch.terminal.ansi import DIM, RESET
+from dfetch.terminal.keys import read_key
 
 
 def _ghost_handle_backspace(buf: list[str], ghost_active: bool, ghost_len: int) -> bool:
