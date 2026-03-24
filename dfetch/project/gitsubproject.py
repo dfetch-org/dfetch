@@ -1,17 +1,13 @@
 """Git specific implementation."""
 
-import contextlib
 import pathlib
-import shutil
-import tempfile
-from collections.abc import Generator
 from functools import lru_cache
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.metadata import Dependency
-from dfetch.project.subproject import LsFn, SubProject
+from dfetch.project.subproject import SubProject
 from dfetch.util.util import LICENSE_GLOBS, safe_rm
 from dfetch.vcs.git import CheckoutOptions, GitLocalRepo, GitRemote, get_git_version
 
@@ -47,33 +43,6 @@ class GitSubProject(SubProject):
     def list_of_branches(self) -> list[str]:
         """Get list of all available branches."""
         return [str(branch) for branch in self._remote_repo.list_of_branches()]
-
-    @contextlib.contextmanager
-    def browse_tree(self, version: str = "") -> Generator[LsFn, None, None]:
-        """Shallow-clone the remote and yield a tree-listing callable.
-
-        The yielded ``LsFn`` calls ``git ls-tree HEAD`` on a temporary
-        blobless clone.  The clone is removed on context exit.
-        """
-        tmpdir = tempfile.mkdtemp(prefix="dfetch_browse_")
-        cloned = False
-        try:
-            self._remote_repo.fetch_for_tree_browse(
-                tmpdir, version or self._remote_repo.get_default_branch()
-            )
-            cloned = True
-        except Exception:  # pylint: disable=broad-exception-caught  # nosec B110
-            pass
-
-        def ls_fn(path: str = "") -> list[tuple[str, bool]]:
-            if cloned:
-                return GitRemote.ls_tree(tmpdir, path=path)
-            return []
-
-        try:
-            yield ls_fn
-        finally:
-            shutil.rmtree(tmpdir, ignore_errors=True)
 
     @staticmethod
     def revision_is_enough() -> bool:

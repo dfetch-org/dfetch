@@ -239,7 +239,7 @@ root_packages = ["dfetch"]
 #       ↓
 #  dfetch.manifest | dfetch.vcs  (independent lower-level modules)
 #       ↓
-#  dfetch.util | dfetch.log      (foundational utilities)
+#  dfetch.util | dfetch.log | dfetch.terminal      (foundational utilities)
 
 [[tool.importlinter.contracts]]
 name = "C4 architecture layers"
@@ -249,5 +249,5 @@ layers = [
     "dfetch.reporting",
     "dfetch.project",
     "dfetch.manifest | dfetch.vcs",
-    "dfetch.util | dfetch.log",
+    "dfetch.util | dfetch.log | dfetch.terminal",
 ]
