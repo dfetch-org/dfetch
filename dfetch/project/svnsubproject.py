@@ -9,10 +9,10 @@ from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.metadata import Dependency
 from dfetch.project.subproject import SubProject
+from dfetch.util.license import is_license_file
 from dfetch.util.util import (
     find_matching_files,
     find_non_matching_files,
-    is_license_file,
     safe_rm,
 )
 from dfetch.vcs.svn import SvnRemote, SvnRepo, get_svn_version

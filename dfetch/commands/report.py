@@ -15,8 +15,7 @@ from dfetch.manifest.project import ProjectEntry
 from dfetch.project import create_super_project
 from dfetch.project.metadata import Metadata
 from dfetch.reporting import REPORTERS, ReportTypes
-from dfetch.util.license import License, guess_license_in_file
-from dfetch.util.util import is_license_file
+from dfetch.util.license import License, guess_license_in_file, is_license_file
 
 logger = get_logger(__name__)
 
