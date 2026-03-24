@@ -3,7 +3,7 @@
 import sys
 from collections.abc import Sequence
 
-from .keys import is_tty
+from dfetch.terminal.keys import is_tty
 
 
 def erase_last_line() -> None:
