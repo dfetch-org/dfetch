@@ -10,6 +10,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from dfetch.util.cmdline import SubprocessCommandError
+from dfetch.util.util import unique_parent_dirs
 from dfetch.vcs.git import (
     GitLocalRepo,
     GitRemote,
@@ -17,7 +18,7 @@ from dfetch.vcs.git import (
 )
 
 # ---------------------------------------------------------------------------
-# GitLocalRepo._collect_source_dirs
+# unique_parent_dirs  (dfetch.util.util)
 # ---------------------------------------------------------------------------
 
 
@@ -32,9 +33,9 @@ from dfetch.vcs.git import (
         ("deduplication preserves order", ["a/x.c", "a/y.c"], [False, False], ["a"]),
     ],
 )
-def test_collect_source_dirs(name, paths, isdir_results, expected):
-    with patch("dfetch.vcs.git.os.path.isdir", side_effect=isdir_results):
-        assert GitLocalRepo._collect_source_dirs(paths) == expected
+def test_unique_parent_dirs(name, paths, isdir_results, expected):
+    with patch("dfetch.util.util.os.path.isdir", side_effect=isdir_results):
+        assert unique_parent_dirs(paths) == expected
 
 
 # ---------------------------------------------------------------------------
