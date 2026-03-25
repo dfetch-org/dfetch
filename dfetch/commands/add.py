@@ -45,6 +45,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import re
 from collections.abc import Generator
 
 from rich.prompt import Confirm, Prompt
@@ -298,7 +299,7 @@ def _interactive_flow(  # pylint: disable=too-many-arguments,too-many-positional
     ).as_yaml()
     for key in ("name", "remote", "url", "repo-path"):
         if key in seed and isinstance(seed[key], (str, list)):
-            logger.print_yaml_field(key, seed[key])  # type: ignore[arg-type]
+            logger.print_yaml_field(key, seed[key], first=key == "name")  # type: ignore[arg-type]
 
     dst = _ask_dst(name, default_dst)
     if dst != name:
@@ -340,7 +341,9 @@ _PROMPT_FORMAT = "  [green]?[/green] [bold]{label}[/bold]"
 def _prompt(label: str, default: str) -> str:
     """Single-line prompt with TTY ghost text or rich fallback."""
     if terminal.is_tty():
-        return terminal.ghost_prompt(f"  ? {label}", default).strip()
+        return terminal.ghost_prompt(
+            f"  {terminal.GREEN}?{terminal.RESET} {label}", default
+        ).strip()
     return Prompt.ask(_PROMPT_FORMAT.format(label), default=default).strip()
 
 
@@ -419,9 +422,7 @@ def _ask_src(ls_function: LsFunction) -> str:
     Outside a TTY falls back to a free-text prompt.
     """
     if terminal.is_tty():
-        return tree_single_pick(
-            ls_function, "Source path  (Enter to select, Esc to skip)"
-        )
+        return tree_single_pick(ls_function, "Source path", dirs_selectable=True)
 
     return Prompt.ask(
         _PROMPT_FORMAT.format(label="Source path")
@@ -459,7 +460,7 @@ def _ask_ignore(ls_function: LsFunction, src: str = "") -> list[str]:
         while True:
             _, all_nodes = run_tree_browser(
                 browse_fn,
-                "Ignore  (Space deselects → ignored, Enter confirms, Esc skips)",
+                "Ignore",
                 multi=True,
                 all_selected=True,
             )
@@ -556,14 +557,19 @@ def _ask_version_tree(
     numbered text picker on Esc or when the path can't be resolved.
     """
     ls = _version_ls_function(branches, tags, default_branch)
-    selected = tree_single_pick(ls, "Version  (Enter to select · Esc to type freely)")
+    selected = tree_single_pick(ls, "Version", esc_label="free-type")
+
+    # Strip the display suffixes added by _version_ls_function: " branch", " tag",
+    # and the optional " (default)" marker so the clean name matches the original sets.
+    clean = re.sub(r"\s+\(default\)\s*$", "", selected).strip()
+    clean = re.sub(r"\s+(branch|tag)\s*$", "", clean).strip()
 
     branch_set = set(branches)
     tag_set = set(tags)
-    if selected in branch_set:
-        return VersionRef("branch", selected)
-    if selected in tag_set:
-        return VersionRef("tag", selected)
+    if clean in branch_set:
+        return VersionRef("branch", clean)
+    if clean in tag_set:
+        return VersionRef("tag", clean)
 
     return _text_version_pick(choices, default_branch, branches, tags)
 
