@@ -352,18 +352,7 @@ class GitLocalRepo:
 
     @staticmethod
     def _collect_source_dirs(matched_paths: list[str]) -> list[str]:
-        """Collect unique parent directories from a list of matched paths.
-
-        For each path, if it is a directory it is used directly; if it is a file,
-        its parent directory is used instead.  Ordering is preserved and duplicates
-        are removed.
-
-        Args:
-            matched_paths: Sorted list of glob-matched filesystem paths.
-
-        Returns:
-            Ordered list of unique directory paths.
-        """
+        """Return unique parent directories for each matched path, preserving order."""
         dirs: list[str] = []
         for src_dir_path in matched_paths:
             if os.path.isdir(src_dir_path):
@@ -419,8 +408,8 @@ class GitLocalRepo:
                 f"Only considering files in '{unique_dirs[0]}'."
             )
 
-        for src_dir_path in unique_dirs[:1]:
-            GitLocalRepo._move_directory_contents(src_dir_path, remote, src)
+        if unique_dirs:
+            GitLocalRepo._move_directory_contents(unique_dirs[0], remote, src)
 
     @staticmethod
     def _determine_ignore_paths(
@@ -472,33 +461,14 @@ class GitLocalRepo:
 
     @staticmethod
     def _build_hash_args(old_hash: str | None, new_hash: str | None) -> list[str]:
-        """Build the git-diff positional hash arguments.
-
-        Returns a list containing the old hash (and optionally the new hash) to
-        be appended to a ``git diff`` command.
-
-        Args:
-            old_hash: The base commit SHA, or ``None`` to diff against the working tree.
-            new_hash: The target commit SHA, or ``None`` to omit it.
-
-        Returns:
-            A list of zero, one, or two SHA strings.
-        """
+        """Return the SHA positional arguments for git diff (zero, one, or two hashes)."""
         if not old_hash:
             return []
         return [old_hash, new_hash] if new_hash else [old_hash]
 
     @staticmethod
     def _build_ignore_args(ignore: Sequence[str] | None) -> list[str]:
-        """Build the git-diff pathspec arguments that exclude ignored paths.
-
-        Args:
-            ignore: Sequence of glob patterns to exclude, or ``None`` for no exclusions.
-
-        Returns:
-            A list of pathspec arguments starting with ``-- .`` followed by
-            ``:(exclude)<pattern>`` entries, or an empty list when *ignore* is falsy.
-        """
+        """Return git-diff pathspec arguments that exclude each pattern in *ignore*."""
         if not ignore:
             return []
         return ["--", "."] + [f":(exclude){p}" for p in ignore]
@@ -556,7 +526,7 @@ class GitLocalRepo:
 
     @staticmethod
     def any_changes_or_untracked(path: str) -> bool:
-        """List of any changed files."""
+        """Return True if the repo at *path* has any changed or untracked files."""
         if not Path(path).exists():
             raise RuntimeError("Path does not exist.")
 
