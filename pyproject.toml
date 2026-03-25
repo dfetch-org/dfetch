@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm==9.2.2", "wheel"]
+requires = ["setuptools", "setuptools-scm==10.0.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -74,7 +74,7 @@ development = [
     'mypy==1.19.1',
     #'flake8==5.0.4', # version 6.x.x requires python >= 3.8.1 (but 3.7 support window is until 2023-06-27)
     'bandit==1.9.4',
-    'vulture==2.15',
+    'vulture==2.16',
     'pyroma==5.0.1',
     'isort==8.0.1',
     'pylint==4.0.5',
@@ -103,7 +103,7 @@ casts = ['asciinema==2.4.0']
 build = [
     'nuitka==4.0.7',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml]
-    "setuptools-scm==9.2.2", # For determining version
+    "setuptools-scm==10.0.2", # For determining version
 ]
 sbom = ["cyclonedx-bom==7.2.2"]
 
