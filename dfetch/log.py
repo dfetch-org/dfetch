@@ -122,14 +122,22 @@ class DLogger(logging.Logger):
         """Print a field with corresponding value."""
         self.print_report_line(field_name, field if field else "<none>")
 
-    def print_yaml_field(self, key: str, value: str | list[str]) -> None:
-        """Print one manifest field in YAML style."""
+    def print_yaml_field(
+        self, key: str, value: str | list[str], *, first: bool = False
+    ) -> None:
+        """Print one manifest field in YAML style.
+
+        When *first* is True the line is prefixed with ``- `` (YAML sequence
+        entry marker) and subsequent fields are indented with four spaces so
+        the output mirrors the manifest on disk.
+        """
+        prefix = "  - " if first else "    "
         if isinstance(value, list):
-            self.info(f"  [blue]{key}:[/blue]")
+            self.info(f"{prefix}[blue]{key}:[/blue]")
             for item in value:
-                self.info(f"    - {item}")
+                self.info(f"      - {item}")
         else:
-            self.info(f"  [blue]{key}:[/blue] {value}")
+            self.info(f"{prefix}[blue]{key}:[/blue] {value}")
 
     def warning(self, msg: object, *args: Any, **kwargs: Any) -> None:
         """Log warning."""

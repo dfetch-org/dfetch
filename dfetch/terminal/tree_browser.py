@@ -107,7 +107,7 @@ def _build_tree_frame(  # pylint: disable=too-many-arguments,too-many-positional
 ) -> list[str]:
     """Build all display lines for one render frame of the tree browser."""
     n = len(nodes)
-    header = [f"  {BOLD}{title}{RESET}"]
+    header = [f"  {GREEN}?{RESET} {BOLD}{title}:{RESET}"]
     if top > 0:
         header.append(f"    {DIM}↑ {top} more above{RESET}")
     body = _render_tree_lines(nodes, idx, top, multi_select=multi_select)
@@ -162,13 +162,24 @@ def _handle_tree_space(
 
 
 def _handle_tree_enter(
-    nodes: list[TreeNode], idx: int, ls_function: LsFunction, multi: bool
+    nodes: list[TreeNode],
+    idx: int,
+    ls_function: LsFunction,
+    multi: bool,
+    *,
+    dirs_selectable: bool = False,
 ) -> tuple[int, list[str] | None]:
-    """Handle ENTER: confirm selection (multi), expand/collapse dir, or pick file."""
+    """Handle ENTER key.
+
+    Confirms selection (multi), picks any node (dirs_selectable),
+    expands/collapses a dir, or picks a leaf file (single).
+    """
     node = nodes[idx]
     if multi:
         return idx, [n.path for n in nodes if n.selected]
     if node.is_dir:
+        if dirs_selectable:
+            return idx, [node.path]
         if node.expanded:
             _collapse_node(nodes, idx)
         else:
@@ -177,12 +188,14 @@ def _handle_tree_enter(
     return idx, [node.path]
 
 
-def _handle_tree_action(
+def _handle_tree_action(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-return-statements
     key: str,
     nodes: list[TreeNode],
     idx: int,
     ls_function: LsFunction,
     multi: bool,
+    *,
+    dirs_selectable: bool = False,
 ) -> tuple[int, list[str] | None]:
     """Dispatch non-navigation keypresses.
 
@@ -197,20 +210,50 @@ def _handle_tree_action(
     if key == "LEFT":
         return _handle_tree_left(nodes, idx), None
     if key == "SPACE":
+        if not multi and node.is_dir:
+            return _handle_tree_enter(
+                nodes, idx, ls_function, multi, dirs_selectable=dirs_selectable
+            )
         return idx, _handle_tree_space(nodes, idx, multi)
     if key == "ENTER":
-        return _handle_tree_enter(nodes, idx, ls_function, multi)
+        return _handle_tree_enter(
+            nodes, idx, ls_function, multi, dirs_selectable=dirs_selectable
+        )
     if key == "ESC":
         return idx, []
     return idx, None
 
 
-def run_tree_browser(
+def _build_nav_hint(multi: bool, esc_label: str) -> str:
+    """Return the bottom navigation hint line for the tree browser."""
+    if multi:
+        return f"↑/↓ navigate  Space toggle  Enter confirm  →/← expand/collapse  Esc {esc_label}"
+    return f"↑/↓ navigate  Enter select  →/← expand/collapse  Esc {esc_label}"
+
+
+def _nudge_scroll_after_expand(nodes: list[TreeNode], idx: int, top: int) -> int:
+    """Nudge *top* down by one when a just-expanded dir sits at the viewport bottom.
+
+    This makes the first child immediately visible without moving the cursor.
+    """
+    if (
+        nodes[idx].is_dir
+        and nodes[idx].expanded
+        and idx == top + VIEWPORT - 1
+        and idx + 1 < len(nodes)
+    ):
+        return top + 1
+    return top
+
+
+def run_tree_browser(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     ls_function: LsFunction,
     title: str,
     *,
     multi: bool,
     all_selected: bool = False,
+    dirs_selectable: bool = False,
+    esc_label: str = "skip",
 ) -> tuple[list[str], list[TreeNode]]:  # pragma: no cover - interactive TTY only
     """Core tree browser loop.
 
@@ -232,11 +275,6 @@ def run_tree_browser(
         )
         for name, is_dir in root_entries
     ]
-    hint = (
-        "↑/↓ navigate  Space select  Enter confirm  →/← expand/collapse  Esc skip"
-        if multi
-        else "↑/↓ navigate  Enter/Space select  →/← expand/collapse  Esc skip"
-    )
     screen = Screen()
     idx, top = 0, 0
 
@@ -248,7 +286,14 @@ def run_tree_browser(
         idx = max(0, min(idx, n - 1))
         top = _adjust_scroll(idx, top)
         screen.draw(
-            _build_tree_frame(title, nodes, idx, top, hint, multi_select=all_selected)
+            _build_tree_frame(
+                title,
+                nodes,
+                idx,
+                top,
+                _build_nav_hint(multi, esc_label),
+                multi_select=multi,
+            )
         )
         key = read_key()
 
@@ -257,15 +302,30 @@ def run_tree_browser(
             idx = new_idx
             continue
 
-        idx, result = _handle_tree_action(key, nodes, idx, ls_function, multi)
+        idx, result = _handle_tree_action(
+            key, nodes, idx, ls_function, multi, dirs_selectable=dirs_selectable
+        )
         if result is not None:
             screen.clear()
             return result, nodes
+        top = _nudge_scroll_after_expand(nodes, idx, top)
 
 
-def tree_single_pick(ls_function: LsFunction, title: str) -> str:
+def tree_single_pick(
+    ls_function: LsFunction,
+    title: str,
+    *,
+    dirs_selectable: bool = False,
+    esc_label: str = "skip",
+) -> str:
     """Browse a remote tree and return a single selected path (``""`` on skip)."""
-    result, _ = run_tree_browser(ls_function, title, multi=False)
+    result, _ = run_tree_browser(
+        ls_function,
+        title,
+        multi=False,
+        dirs_selectable=dirs_selectable,
+        esc_label=esc_label,
+    )
     return result[0] if result else ""
 
 
