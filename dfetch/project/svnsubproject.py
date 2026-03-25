@@ -136,15 +136,14 @@ class SvnSubProject(SubProject):
 
         if self.source:
             root_branch_path = "/".join([self.remote, branch_path]).strip("/")
-
-            for file in SvnSubProject._license_files(root_branch_path):
+            license_files = SvnSubProject._license_files(root_branch_path)
+            if license_files:
                 dest = (
                     self.local_path
                     if os.path.isdir(self.local_path)
                     else os.path.dirname(self.local_path)
                 )
-                SvnRepo.export(f"{root_branch_path}/{file}", rev_arg, dest)
-                break
+                SvnRepo.export(f"{root_branch_path}/{license_files[0]}", rev_arg, dest)
 
         if self.ignore:
             self._remove_ignored_files()

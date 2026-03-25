@@ -200,6 +200,19 @@ class ArchiveRemote:
 
     _MAX_REDIRECTS = 10
 
+    @staticmethod
+    def _stream_response_to_file(
+        resp: http.client.HTTPResponse,
+        dest_path: str,
+        hasher: hashlib._Hash | None,
+    ) -> None:
+        """Write the response body to *dest_path*, updating *hasher* for each chunk."""
+        with open(dest_path, "wb") as fh:
+            while chunk := resp.read(65536):
+                fh.write(chunk)
+                if hasher:
+                    hasher.update(chunk)
+
     def _http_download(
         self,
         parsed: urllib.parse.ParseResult,
@@ -232,11 +245,7 @@ class ArchiveRemote:
                     raise RuntimeError(
                         f"HTTP {resp.status} when downloading '{self.url}'"
                     )
-                with open(dest_path, "wb") as fh:
-                    while chunk := resp.read(65536):
-                        fh.write(chunk)
-                        if hasher:
-                            hasher.update(chunk)
+                self._stream_response_to_file(resp, dest_path, hasher)
                 return
             except (OSError, http.client.HTTPException) as exc:
                 raise RuntimeError(
