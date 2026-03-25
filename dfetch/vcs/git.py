@@ -7,7 +7,7 @@ import re
 import tempfile
 from collections.abc import Generator, Sequence
 from dataclasses import dataclass
-from pathlib import Path, PurePath
+from pathlib import Path
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -386,21 +386,25 @@ class GitLocalRepo:
             )
             return
 
-        dirs = unique_parent_dirs(safe_matched)
+        # Resolve to canonical absolute paths so downstream steps use stable paths
+        # regardless of any '..' components in the original glob results.
+        resolved_dirs = [Path(d).resolve() for d in unique_parent_dirs(safe_matched)]
 
-        if len(dirs) > 1:
+        if len(resolved_dirs) > 1:
             logger.warning(
                 f"The 'src:' filter '{src}' matches multiple directories from '{remote}'. "
-                f"Only considering files in '{dirs[0]}'."
+                f"Only considering files in '{resolved_dirs[0]}'."
             )
 
-        if dirs:
+        if resolved_dirs:
+            chosen = resolved_dirs[0]
             try:
-                move_directory_contents(dirs[0], ".")
-                safe_rm(PurePath(dirs[0]).parts[0])
+                move_directory_contents(str(chosen), ".")
+                top = repo_root / chosen.relative_to(repo_root).parts[0]
+                safe_rm(top, within=repo_root)
             except FileNotFoundError:
                 logger.warning(
-                    f"The 'src:' filter '{dirs[0]}' didn't match any files from '{remote}'"
+                    f"The 'src:' filter '{chosen}' didn't match any files from '{remote}'"
                 )
 
     @staticmethod
