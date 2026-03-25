@@ -17,6 +17,67 @@ from dfetch.vcs.git import (
 )
 
 
+# ---------------------------------------------------------------------------
+# GitLocalRepo._collect_source_dirs
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "name, paths, isdir_results, expected",
+    [
+        ("empty input", [], [], []),
+        ("all directories", ["a", "b"], [True, True], ["a", "b"]),
+        ("all files with parent", ["a/x.c", "b/y.c"], [False, False], ["a", "b"]),
+        ("file at root — no parent dir", ["x.c"], [False], []),
+        ("mixed dir and file in same parent", ["a", "a/y.c"], [True, False], ["a"]),
+        ("deduplication preserves order", ["a/x.c", "a/y.c"], [False, False], ["a"]),
+    ],
+)
+def test_collect_source_dirs(name, paths, isdir_results, expected):
+    with patch("dfetch.vcs.git.os.path.isdir", side_effect=isdir_results):
+        assert GitLocalRepo._collect_source_dirs(paths) == expected
+
+
+# ---------------------------------------------------------------------------
+# GitLocalRepo._build_hash_args
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "name, old_hash, new_hash, expected",
+    [
+        ("no hashes", None, None, []),
+        ("old hash only", "abc123", None, ["abc123"]),
+        ("both hashes", "abc123", "def456", ["abc123", "def456"]),
+        ("new hash without old hash is ignored", None, "def456", []),
+    ],
+)
+def test_build_hash_args(name, old_hash, new_hash, expected):
+    assert GitLocalRepo._build_hash_args(old_hash, new_hash) == expected
+
+
+# ---------------------------------------------------------------------------
+# GitLocalRepo._build_ignore_args
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "name, ignore, expected",
+    [
+        ("None", None, []),
+        ("empty sequence", [], []),
+        ("single pattern", ["*.txt"], ["--", ".", ":(exclude)*.txt"]),
+        (
+            "multiple patterns",
+            ["*.txt", "build/"],
+            ["--", ".", ":(exclude)*.txt", ":(exclude)build/"],
+        ),
+    ],
+)
+def test_build_ignore_args(name, ignore, expected):
+    assert GitLocalRepo._build_ignore_args(ignore) == expected
+
+
 @pytest.mark.parametrize(
     "name, cmd_result, expectation",
     [
