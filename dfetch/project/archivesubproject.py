@@ -41,17 +41,14 @@ Example manifest entries::
 
 from __future__ import annotations
 
-import contextlib
-import os
 import pathlib
-import tempfile
-from collections.abc import Generator
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.metadata import Dependency
 from dfetch.project.subproject import SubProject
+from dfetch.util.util import temp_file
 from dfetch.vcs.archive import (
     ARCHIVE_EXTENSIONS,
     ArchiveLocalRepo,
@@ -70,20 +67,6 @@ def _suffix_for_url(url: str) -> str:
         if lower.endswith(ext):
             return ext
     return ".archive"
-
-
-@contextlib.contextmanager
-def _temp_file(suffix: str) -> Generator[str, None, None]:
-    """Create a temporary file, yield its path, and always delete it on exit."""
-    fd, tmp_path = tempfile.mkstemp(suffix=suffix)
-    os.close(fd)
-    try:
-        yield tmp_path
-    finally:
-        try:
-            os.remove(tmp_path)
-        except OSError:
-            pass
 
 
 class ArchiveSubProject(SubProject):
@@ -142,7 +125,7 @@ class ArchiveSubProject(SubProject):
         """
         effective_url = url if url is not None else self.remote
         remote = ArchiveRemote(effective_url) if url is not None else self._remote_repo
-        with _temp_file(_suffix_for_url(effective_url)) as tmp_path:
+        with temp_file(_suffix_for_url(effective_url)) as tmp_path:
             hex_digest = remote.download(tmp_path, algorithm=algorithm)
             return IntegrityHash(algorithm, hex_digest)
 
@@ -191,7 +174,7 @@ class ArchiveSubProject(SubProject):
 
         pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
 
-        with _temp_file(_suffix_for_url(self.remote)) as tmp_path:
+        with temp_file(_suffix_for_url(self.remote)) as tmp_path:
             expected = IntegrityHash.parse(revision)
             if expected:
                 actual_hex = self._remote_repo.download(

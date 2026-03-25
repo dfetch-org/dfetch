@@ -4,7 +4,6 @@ import functools
 import glob
 import os
 import re
-import shutil
 import tempfile
 from collections.abc import Generator, Sequence
 from dataclasses import dataclass
@@ -12,7 +11,14 @@ from pathlib import Path, PurePath
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
-from dfetch.util.util import in_directory, is_license_file, safe_rm, strip_glob_prefix
+from dfetch.util.util import (
+    in_directory,
+    is_license_file,
+    move_directory_contents,
+    safe_rm,
+    strip_glob_prefix,
+    unique_parent_dirs,
+)
 from dfetch.vcs.patch import Patch, PatchType
 
 logger = get_logger(__name__)
@@ -351,35 +357,6 @@ class GitLocalRepo:
         return [s for s in submodules if os.path.exists(s.path)]
 
     @staticmethod
-    def _collect_source_dirs(matched_paths: list[str]) -> list[str]:
-        """Return unique parent directories for each matched path, preserving order."""
-        dirs: list[str] = []
-        for src_dir_path in matched_paths:
-            if os.path.isdir(src_dir_path):
-                dirs.append(src_dir_path)
-            else:
-                dir_path = os.path.dirname(src_dir_path)
-                if dir_path:
-                    dirs.append(dir_path)
-        return list(dict.fromkeys(dirs))
-
-    @staticmethod
-    def _move_directory_contents(src_dir_path: str, remote: str) -> None:
-        """Move every file inside *src_dir_path* into the current working directory.
-
-        After all files have been moved the top-level ancestor of *src_dir_path*
-        is removed.
-        """
-        try:
-            for file_to_copy in os.listdir(src_dir_path):
-                shutil.move(src_dir_path + "/" + file_to_copy, ".")
-            safe_rm(PurePath(src_dir_path).parts[0])
-        except FileNotFoundError:
-            logger.warning(
-                f"The 'src:' filter '{src_dir_path}' didn't match any files from '{remote}'"
-            )
-
-    @staticmethod
     def _move_src_folder_up(remote: str, src: str) -> None:
         """Move the files from the src folder into the root of the project.
 
@@ -395,16 +372,22 @@ class GitLocalRepo:
             )
             return
 
-        unique_dirs = GitLocalRepo._collect_source_dirs(matched_paths)
+        dirs = unique_parent_dirs(matched_paths)
 
-        if len(unique_dirs) > 1:
+        if len(dirs) > 1:
             logger.warning(
                 f"The 'src:' filter '{src}' matches multiple directories from '{remote}'. "
-                f"Only considering files in '{unique_dirs[0]}'."
+                f"Only considering files in '{dirs[0]}'."
             )
 
-        if unique_dirs:
-            GitLocalRepo._move_directory_contents(unique_dirs[0], remote)
+        if dirs:
+            try:
+                move_directory_contents(dirs[0], ".")
+                safe_rm(PurePath(dirs[0]).parts[0])
+            except FileNotFoundError:
+                logger.warning(
+                    f"The 'src:' filter '{dirs[0]}' didn't match any files from '{remote}'"
+                )
 
     @staticmethod
     def _determine_ignore_paths(

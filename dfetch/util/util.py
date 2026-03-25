@@ -5,6 +5,7 @@ import hashlib
 import os
 import shutil
 import stat
+import tempfile
 from collections.abc import Generator, Iterator, Sequence
 from contextlib import contextmanager
 from pathlib import Path, PurePath
@@ -346,3 +347,44 @@ def resolve_absolute_path(path: str | Path) -> Path:
         - Handles Windows drive-relative paths and expands '~'.
     """
     return Path(os.path.realpath(Path(path).expanduser()))
+
+
+@contextmanager
+def temp_file(suffix: str = "") -> Generator[str, None, None]:
+    """Create a temporary file, yield its path, and always delete it on exit."""
+    fd, tmp_path = tempfile.mkstemp(suffix=suffix)
+    os.close(fd)
+    try:
+        yield tmp_path
+    finally:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
+
+
+def unique_parent_dirs(paths: list[str]) -> list[str]:
+    """Return the unique parent directories for a list of paths, preserving order.
+
+    For each path that is a directory, the path itself is used.  For a file,
+    its parent directory is used.  Root-level files (no parent) are skipped.
+    Duplicates are removed while preserving the first-seen order.
+    """
+    dirs: list[str] = []
+    for path in paths:
+        if os.path.isdir(path):
+            dirs.append(path)
+        else:
+            parent = os.path.dirname(path)
+            if parent:
+                dirs.append(parent)
+    return list(dict.fromkeys(dirs))
+
+
+def move_directory_contents(src_dir: str, dest_dir: str) -> None:
+    """Move every entry in *src_dir* directly into *dest_dir*.
+
+    Complements :func:`copy_directory_contents`.
+    """
+    for entry in os.listdir(src_dir):
+        shutil.move(os.path.join(src_dir, entry), dest_dir)
