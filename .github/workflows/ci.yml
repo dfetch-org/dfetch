@@ -41,6 +41,7 @@ jobs:
     uses: ./.github/workflows/test.yml
     permissions:
       contents: read
+    secrets: inherit
 
   docs:
     uses: ./.github/workflows/docs.yml
