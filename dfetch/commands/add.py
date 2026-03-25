@@ -64,6 +64,7 @@ from dfetch.project.subproject import SubProject
 from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.terminal import LsFunction
 from dfetch.terminal.tree_browser import (
+    BrowserConfig,
     TreeNode,
     deselected_paths,
     run_tree_browser,
@@ -461,8 +462,7 @@ def _ask_ignore(ls_function: LsFunction, src: str = "") -> list[str]:
             _, all_nodes = run_tree_browser(
                 browse_fn,
                 "Ignore",
-                multi=True,
-                all_selected=True,
+                BrowserConfig(multi=True, all_selected=True),
             )
             ignore = deselected_paths(all_nodes)
             if not ignore:
