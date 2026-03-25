@@ -31,6 +31,17 @@ class Submodule:
     tag: str
 
 
+@dataclass
+class CheckoutOptions:
+    """Options for checking out a specific version from a remote git repository."""
+
+    remote: str
+    version: str
+    src: str | None = None
+    must_keeps: list[str] | None = None
+    ignore: Sequence[str] | None = None
+
+
 def get_git_version() -> tuple[str, str]:
     """Get the name and version of git."""
     result = run_on_cmdline(logger, ["git", "--version"])
@@ -270,35 +281,28 @@ class GitLocalRepo:
 
             f.write("\n".join(map(str, patterns)) + "\n")
 
-    def checkout_version(  # pylint: disable=too-many-arguments
+    def checkout_version(
         self,
-        *,
-        remote: str,
-        version: str,
-        src: str | None = None,
-        must_keeps: list[str] | None = None,
-        ignore: Sequence[str] | None = None,
+        options: CheckoutOptions,
     ) -> tuple[str, list[Submodule]]:
         """Checkout a specific version from a given remote.
 
         Args:
-            remote (str): Url or path to a remote git repository
-            version (str): A target to checkout, can be branch, tag or sha
-            src (Optional[str]): Optional path to subdirectory or file in repo
-            must_keeps (Optional[List[str]]): Optional list of glob patterns to keep
-            ignore (Optional[Sequence[str]]): Optional sequence of glob patterns to ignore (relative to src)
+            options: A :class:`CheckoutOptions` instance describing what to fetch.
         """
         with in_directory(self._path):
             run_on_cmdline(logger, ["git", "init"])
-            run_on_cmdline(logger, ["git", "remote", "add", "origin", remote])
+            run_on_cmdline(logger, ["git", "remote", "add", "origin", options.remote])
             run_on_cmdline(logger, ["git", "checkout", "-b", "dfetch-local-branch"])
 
-            if src or ignore:
-                self._configure_sparse_checkout(src, must_keeps or [], ignore)
+            if options.src or options.ignore:
+                self._configure_sparse_checkout(
+                    options.src, options.must_keeps or [], options.ignore
+                )
 
             run_on_cmdline(
                 logger,
-                ["git", "fetch", "--depth", "1", "origin", version],
+                ["git", "fetch", "--depth", "1", "origin", options.version],
                 env=_extend_env_for_non_interactive_mode(),
             )
             run_on_cmdline(logger, ["git", "reset", "--hard", "FETCH_HEAD"])
@@ -317,7 +321,9 @@ class GitLocalRepo:
                 .strip()
             )
 
-            submodules = self._apply_src_and_ignore(remote, src, ignore, submodules)
+            submodules = self._apply_src_and_ignore(
+                options.remote, options.src, options.ignore, submodules
+            )
 
             return str(current_sha), submodules
 
@@ -345,6 +351,51 @@ class GitLocalRepo:
         return [s for s in submodules if os.path.exists(s.path)]
 
     @staticmethod
+    def _collect_source_dirs(matched_paths: list[str]) -> list[str]:
+        """Collect unique parent directories from a list of matched paths.
+
+        For each path, if it is a directory it is used directly; if it is a file,
+        its parent directory is used instead.  Ordering is preserved and duplicates
+        are removed.
+
+        Args:
+            matched_paths: Sorted list of glob-matched filesystem paths.
+
+        Returns:
+            Ordered list of unique directory paths.
+        """
+        dirs: list[str] = []
+        for src_dir_path in matched_paths:
+            if os.path.isdir(src_dir_path):
+                dirs.append(src_dir_path)
+            else:
+                dir_path = os.path.dirname(src_dir_path)
+                if dir_path:
+                    dirs.append(dir_path)
+        return list(dict.fromkeys(dirs))
+
+    @staticmethod
+    def _move_directory_contents(src_dir_path: str, remote: str, src: str) -> None:
+        """Move every file inside *src_dir_path* into the current working directory.
+
+        After all files have been moved the top-level ancestor of *src_dir_path*
+        is removed.
+
+        Args:
+            src_dir_path: Path to the directory whose contents should be moved.
+            remote: Remote name used only for warning messages.
+            src: Original src filter used only for warning messages.
+        """
+        try:
+            for file_to_copy in os.listdir(src_dir_path):
+                shutil.move(src_dir_path + "/" + file_to_copy, ".")
+            safe_rm(PurePath(src_dir_path).parts[0])
+        except FileNotFoundError:
+            logger.warning(
+                f"The 'src:' filter '{src_dir_path}' didn't match any files from '{remote}'"
+            )
+
+    @staticmethod
     def _move_src_folder_up(remote: str, src: str) -> None:
         """Move the files from the src folder into the root of the project.
 
@@ -360,15 +411,7 @@ class GitLocalRepo:
             )
             return
 
-        dirs = []
-        for src_dir_path in matched_paths:
-            if os.path.isdir(src_dir_path):
-                dirs.append(src_dir_path)
-            else:
-                if dir_path := os.path.dirname(src_dir_path):
-                    dirs.append(dir_path)
-
-        unique_dirs = list(dict.fromkeys(dirs))
+        unique_dirs = GitLocalRepo._collect_source_dirs(matched_paths)
 
         if len(unique_dirs) > 1:
             logger.warning(
@@ -377,15 +420,7 @@ class GitLocalRepo:
             )
 
         for src_dir_path in unique_dirs[:1]:
-            try:
-                for file_to_copy in os.listdir(src_dir_path):
-                    shutil.move(src_dir_path + "/" + file_to_copy, ".")
-                safe_rm(PurePath(src_dir_path).parts[0])
-            except FileNotFoundError:
-                logger.warning(
-                    f"The 'src:' filter '{src_dir_path}' didn't match any files from '{remote}'"
-                )
-            continue
+            GitLocalRepo._move_directory_contents(src_dir_path, remote, src)
 
     @staticmethod
     def _determine_ignore_paths(
@@ -435,6 +470,39 @@ class GitLocalRepo:
 
         return decoded_result
 
+    @staticmethod
+    def _build_hash_args(old_hash: str | None, new_hash: str | None) -> list[str]:
+        """Build the git-diff positional hash arguments.
+
+        Returns a list containing the old hash (and optionally the new hash) to
+        be appended to a ``git diff`` command.
+
+        Args:
+            old_hash: The base commit SHA, or ``None`` to diff against the working tree.
+            new_hash: The target commit SHA, or ``None`` to omit it.
+
+        Returns:
+            A list of zero, one, or two SHA strings.
+        """
+        if not old_hash:
+            return []
+        return [old_hash, new_hash] if new_hash else [old_hash]
+
+    @staticmethod
+    def _build_ignore_args(ignore: Sequence[str] | None) -> list[str]:
+        """Build the git-diff pathspec arguments that exclude ignored paths.
+
+        Args:
+            ignore: Sequence of glob patterns to exclude, or ``None`` for no exclusions.
+
+        Returns:
+            A list of pathspec arguments starting with ``-- .`` followed by
+            ``:(exclude)<pattern>`` entries, or an empty list when *ignore* is falsy.
+        """
+        if not ignore:
+            return []
+        return ["--", "."] + [f":(exclude){p}" for p in ignore]
+
     def create_diff(
         self,
         old_hash: str | None,
@@ -456,15 +524,9 @@ class GitLocalRepo:
             if reverse:
                 cmd.extend(["-R", "--src-prefix=b/", "--dst-prefix=a/"])
 
-            if old_hash:
-                cmd.append(old_hash)
-                if new_hash:
-                    cmd.append(new_hash)
+            cmd.extend(GitLocalRepo._build_hash_args(old_hash, new_hash))
+            cmd.extend(GitLocalRepo._build_ignore_args(ignore))
 
-            if ignore:
-                cmd.extend(["--", "."])
-                for ignore_path in ignore:
-                    cmd.append(f":(exclude){ignore_path}")
             result = run_on_cmdline(logger, cmd)
 
         return str(result.stdout.decode())
@@ -646,26 +708,26 @@ class GitLocalRepo:
 
         return "" if not branches else branches[0]
 
-    def get_username(self) -> str:
-        """Get the username of the local git repo."""
+    def _get_git_config_value(self, key: str) -> str:
+        """Read a single git config value from the local repo.
+
+        Args:
+            key: The git config key to query (e.g. ``user.name``).
+
+        Returns:
+            The stripped config value, or an empty string if the key is absent.
+        """
         try:
             with in_directory(self._path):
-                result = run_on_cmdline(
-                    logger,
-                    ["git", "config", "user.name"],
-                )
+                result = run_on_cmdline(logger, ["git", "config", key])
             return str(result.stdout.decode().strip())
         except SubprocessCommandError:
             return ""
 
+    def get_username(self) -> str:
+        """Get the username of the local git repo."""
+        return self._get_git_config_value("user.name")
+
     def get_useremail(self) -> str:
         """Get the user email of the local git repo."""
-        try:
-            with in_directory(self._path):
-                result = run_on_cmdline(
-                    logger,
-                    ["git", "config", "user.email"],
-                )
-            return str(result.stdout.decode().strip())
-        except SubprocessCommandError:
-            return ""
+        return self._get_git_config_value("user.email")

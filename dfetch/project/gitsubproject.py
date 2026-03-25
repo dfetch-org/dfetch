@@ -9,7 +9,7 @@ from dfetch.manifest.version import Version
 from dfetch.project.metadata import Dependency
 from dfetch.project.subproject import SubProject
 from dfetch.util.util import LICENSE_GLOBS, safe_rm
-from dfetch.vcs.git import GitLocalRepo, GitRemote, get_git_version
+from dfetch.vcs.git import CheckoutOptions, GitLocalRepo, GitRemote, get_git_version
 
 logger = get_logger(__name__)
 
@@ -70,11 +70,13 @@ class GitSubProject(SubProject):
 
         local_repo = GitLocalRepo(self.local_path)
         fetched_sha, submodules = local_repo.checkout_version(
-            remote=self.remote,
-            version=rev_or_branch_or_tag,
-            src=self.source,
-            must_keeps=license_globs + [".gitmodules"],
-            ignore=self.ignore,
+            CheckoutOptions(
+                remote=self.remote,
+                version=rev_or_branch_or_tag,
+                src=self.source,
+                must_keeps=license_globs + [".gitmodules"],
+                ignore=self.ignore,
+            )
         )
 
         vcs_deps = []
