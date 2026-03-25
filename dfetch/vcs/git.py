@@ -364,16 +364,11 @@ class GitLocalRepo:
         return list(dict.fromkeys(dirs))
 
     @staticmethod
-    def _move_directory_contents(src_dir_path: str, remote: str, src: str) -> None:
+    def _move_directory_contents(src_dir_path: str, remote: str) -> None:
         """Move every file inside *src_dir_path* into the current working directory.
 
         After all files have been moved the top-level ancestor of *src_dir_path*
         is removed.
-
-        Args:
-            src_dir_path: Path to the directory whose contents should be moved.
-            remote: Remote name used only for warning messages.
-            src: Original src filter used only for warning messages.
         """
         try:
             for file_to_copy in os.listdir(src_dir_path):
@@ -409,7 +404,7 @@ class GitLocalRepo:
             )
 
         if unique_dirs:
-            GitLocalRepo._move_directory_contents(unique_dirs[0], remote, src)
+            GitLocalRepo._move_directory_contents(unique_dirs[0], remote)
 
     @staticmethod
     def _determine_ignore_paths(
