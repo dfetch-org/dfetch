@@ -364,15 +364,29 @@ class GitLocalRepo:
             remote (str): Name of the root
             src (str): Src folder to move up
         """
-        matched_paths = sorted(glob.glob(src))
+        if os.path.isabs(src):
+            logger.warning(
+                f"The 'src:' filter '{src}' is an absolute path; skipping for '{remote}'"
+            )
+            return
 
-        if not matched_paths:
+        repo_root = Path(os.getcwd()).resolve()
+        safe_matched: list[str] = []
+        for p in sorted(glob.glob(src)):
+            if Path(p).resolve().is_relative_to(repo_root):
+                safe_matched.append(p)
+            else:
+                logger.warning(
+                    f"The 'src:' filter '{src}' matched '{p}' outside the repo root; skipping"
+                )
+
+        if not safe_matched:
             logger.warning(
                 f"The 'src:' filter '{src}' didn't match any files from '{remote}'"
             )
             return
 
-        dirs = unique_parent_dirs(matched_paths)
+        dirs = unique_parent_dirs(safe_matched)
 
         if len(dirs) > 1:
             logger.warning(

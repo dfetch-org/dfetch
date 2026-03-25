@@ -78,6 +78,32 @@ def test_build_ignore_args(name, ignore, expected):
     assert GitLocalRepo._build_ignore_args(ignore) == expected
 
 
+# ---------------------------------------------------------------------------
+# GitLocalRepo._move_src_folder_up — path-traversal guards
+# ---------------------------------------------------------------------------
+
+
+def test_move_src_folder_up_rejects_absolute_src(tmp_path):
+    """An absolute src pattern must be rejected without touching the filesystem."""
+    with patch("dfetch.vcs.git.move_directory_contents") as mock_move:
+        with patch("dfetch.vcs.git.os.getcwd", return_value=str(tmp_path)):
+            GitLocalRepo._move_src_folder_up("my-remote", "/etc")
+    mock_move.assert_not_called()
+
+
+def test_move_src_folder_up_rejects_traversal_src(tmp_path):
+    """A src pattern that resolves outside the repo root must be skipped."""
+    outside = tmp_path.parent / "outside"
+    outside.mkdir()
+    (outside / "secret.txt").write_text("data")
+
+    with patch("dfetch.vcs.git.move_directory_contents") as mock_move:
+        with patch("dfetch.vcs.git.glob.glob", return_value=[str(outside)]):
+            with patch("dfetch.vcs.git.os.getcwd", return_value=str(tmp_path)):
+                GitLocalRepo._move_src_folder_up("my-remote", "../outside")
+    mock_move.assert_not_called()
+
+
 @pytest.mark.parametrize(
     "name, cmd_result, expectation",
     [
