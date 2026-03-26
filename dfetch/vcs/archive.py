@@ -28,6 +28,7 @@ import http.client
 import os
 import pathlib
 import shutil
+import stat
 import sys
 import tarfile
 import tempfile
@@ -353,7 +354,8 @@ class ArchiveLocalRepo:
 
         Raises:
             RuntimeError: When any member contains an absolute path, a ``..``
-                component, or when the archive exceeds the size/count limits.
+                component, a symlink with an unsafe target, or when the archive
+                exceeds the size/count limits.
         """
         members = zf.infolist()
         ArchiveLocalRepo._check_archive_limits(
@@ -361,7 +363,30 @@ class ArchiveLocalRepo:
         )
         for info in members:
             ArchiveLocalRepo._check_archive_member_path(info.filename)
+            ArchiveLocalRepo._check_zip_member_type(info, zf)
         return members
+
+    @staticmethod
+    def _check_zip_member_type(info: zipfile.ZipInfo, zf: zipfile.ZipFile) -> None:
+        """Reject dangerous ZIP member types (mirrors :meth:`_check_tar_member_type`).
+
+        Detects Unix symlinks encoded in the ``external_attr`` high word and
+        validates their targets with the same rules applied to TAR symlinks:
+        absolute targets and targets containing ``..`` are rejected.
+
+        Raises:
+            RuntimeError: When *info* is a symlink with an unsafe target.
+        """
+        unix_mode = info.external_attr >> 16
+        if stat.S_ISLNK(unix_mode):
+            target = zf.read(info).decode(errors="replace")
+            if os.path.isabs(target) or any(
+                part == ".." for part in pathlib.PurePosixPath(target).parts
+            ):
+                raise RuntimeError(
+                    f"Archive contains a symlink with an unsafe target: "
+                    f"{info.filename!r} -> {target!r}"
+                )
 
     @staticmethod
     def _check_tar_member_type(member: tarfile.TarInfo) -> None:

@@ -395,6 +395,11 @@ class Manifest:
     @staticmethod
     def validate_destination(dst: str) -> None:
         """Raise ValueError if *dst* is not a safe manifest destination path."""
+        if Path(dst).is_absolute():
+            raise ValueError(
+                f"Destination '{dst}' is an absolute path. "
+                "Paths must be relative to the manifest directory."
+            )
         if any(part == ".." for part in Path(dst).parts):
             raise ValueError(
                 f"Destination '{dst}' contains '..'. "

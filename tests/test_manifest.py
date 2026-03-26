@@ -216,3 +216,26 @@ def test_get_manifest_location(name, manifest, project_name, result) -> None:
             manifest.find_name_in_manifest(project_name)
     else:
         assert manifest.find_name_in_manifest(project_name) == result
+
+
+# ---------------------------------------------------------------------------
+# validate_destination – security: absolute paths must be rejected
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "dst",
+    ["/etc/passwd", "/tmp/evil"],
+)
+def test_validate_destination_rejects_absolute_paths(dst) -> None:
+    with pytest.raises(ValueError, match="absolute"):
+        Manifest.validate_destination(dst)
+
+
+def test_validate_destination_rejects_dotdot() -> None:
+    with pytest.raises(ValueError):
+        Manifest.validate_destination("sub/../../../etc/passwd")
+
+
+def test_validate_destination_accepts_relative() -> None:
+    Manifest.validate_destination("external/mylib")  # must NOT raise

@@ -315,11 +315,23 @@ class SvnRepo:
 
     @staticmethod
     def export(url: str, rev: str = "", dst: str = ".") -> None:
-        """Export the given revision from url to destination."""
+        """Export the given revision from url to destination.
+
+        Args:
+            url: Repository URL to export from.
+            rev: Bare revision number (digits only) or empty string for HEAD.
+                Must not include flag names such as ``--revision``.
+            dst: Local destination path.
+
+        Raises:
+            ValueError: If *rev* is non-empty and contains non-digit characters.
+        """
+        if rev and not rev.isdigit():
+            raise ValueError(f"SVN revision must be digits only, got: {rev!r}")
         run_on_cmdline(
             logger,
             ["svn", "export", "--non-interactive", "--force"]
-            + (rev.split(" ") if rev else [])
+            + (["--revision", rev] if rev else [])
             + [url, dst],
         )
 

@@ -116,7 +116,6 @@ class SvnSubProject(SubProject):
     def _fetch_impl(self, version: Version) -> tuple[Version, list[Dependency]]:
         """Get the revision of the remote and place it at the local path."""
         branch, branch_path, revision = self._determine_what_to_fetch(version)
-        rev_arg = f"--revision {revision}" if revision else ""
 
         complete_path = "/".join(
             filter(None, [self.remote, branch_path.strip(), self.source])
@@ -129,7 +128,7 @@ class SvnSubProject(SubProject):
 
         complete_path, file_pattern = self._parse_file_pattern(complete_path)
 
-        SvnRepo.export(complete_path, rev_arg, self.local_path)
+        SvnRepo.export(complete_path, revision, self.local_path)
 
         if file_pattern:
             for file in find_non_matching_files(self.local_path, (file_pattern,)):
@@ -148,7 +147,7 @@ class SvnSubProject(SubProject):
                     if os.path.isdir(self.local_path)
                     else os.path.dirname(self.local_path)
                 )
-                SvnRepo.export(f"{root_branch_path}/{license_files[0]}", rev_arg, dest)
+                SvnRepo.export(f"{root_branch_path}/{license_files[0]}", revision, dest)
 
         if self.ignore:
             self._remove_ignored_files()
