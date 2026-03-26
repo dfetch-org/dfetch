@@ -4,6 +4,7 @@ import hashlib
 import io
 import os
 import pathlib
+import stat as _stat
 import tarfile
 import tempfile
 import zipfile
@@ -134,6 +135,37 @@ def test_check_zip_members_absolute():
     zf = _make_zip(["/etc/passwd"])
     with pytest.raises(RuntimeError, match="unsafe member path"):
         _check_zip_members(zf)
+
+
+def _make_zip_with_symlink(link_name: str, link_target: str) -> zipfile.ZipFile:
+    """Return an in-memory ZIP whose sole member is a Unix symlink."""
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        info = zipfile.ZipInfo(link_name)
+        info.external_attr = (_stat.S_IFLNK | 0o777) << 16
+        zf.writestr(info, link_target)  # content == symlink target
+    buf.seek(0)
+    return zipfile.ZipFile(buf)
+
+
+def test_check_zip_members_symlink_absolute_target():
+    """ZIP symlink pointing to an absolute path must be rejected."""
+    zf = _make_zip_with_symlink("link", "/etc/passwd")
+    with pytest.raises(RuntimeError, match="symlink"):
+        _check_zip_members(zf)
+
+
+def test_check_zip_members_symlink_dotdot_target():
+    """ZIP symlink pointing outside extraction dir via .. must be rejected."""
+    zf = _make_zip_with_symlink("link", "../../etc/shadow")
+    with pytest.raises(RuntimeError, match="symlink"):
+        _check_zip_members(zf)
+
+
+def test_check_zip_members_symlink_safe_relative():
+    """ZIP symlink with a safe relative target must be accepted (mirrors TAR behaviour)."""
+    zf = _make_zip_with_symlink("link", "relative/safe/target")
+    _check_zip_members(zf)  # must NOT raise
 
 
 # ---------------------------------------------------------------------------
