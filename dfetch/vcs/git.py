@@ -391,9 +391,10 @@ class GitLocalRepo:
         resolved_dirs = [Path(d).resolve() for d in unique_parent_dirs(safe_matched)]
 
         if len(resolved_dirs) > 1:
+            display = resolved_dirs[0].relative_to(repo_root)
             logger.warning(
                 f"The 'src:' filter '{src}' matches multiple directories from '{remote}'. "
-                f"Only considering files in '{resolved_dirs[0]}'."
+                f"Only considering files in '{display}'."
             )
 
         if resolved_dirs:

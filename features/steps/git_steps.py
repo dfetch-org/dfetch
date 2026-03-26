@@ -26,6 +26,7 @@ def create_repo():
 
     subprocess.check_call(["git", "config", "user.email", "you@example.com"])
     subprocess.check_call(["git", "config", "user.name", "John Doe"])
+    subprocess.check_call(["git", "config", "commit.gpgsign", "false"])
 
     if os.name == "nt":
         # Creates zombie fsmonitor-daemon process that holds files
