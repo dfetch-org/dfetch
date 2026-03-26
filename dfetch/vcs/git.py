@@ -401,8 +401,9 @@ class GitLocalRepo:
             chosen = resolved_dirs[0]
             try:
                 move_directory_contents(str(chosen), ".")
-                top = repo_root / chosen.relative_to(repo_root).parts[0]
-                safe_rm(top, within=repo_root)
+                parts = chosen.relative_to(repo_root).parts
+                if parts:
+                    safe_rm(repo_root / parts[0], within=repo_root)
             except FileNotFoundError:
                 logger.warning(
                     f"The 'src:' filter '{chosen}' didn't match any files from '{remote}'"
