@@ -1,4 +1,4 @@
-"""*Dfetch* can convert your Git submodules or SVN externals based project to Dfetch.
+"""*Dfetch* can convert your Git submodules, SVN externals, or CMake FetchContent/ExternalProject based project to Dfetch.
 
 Dfetch will look for all submodules or externals in the current project and generate
 a manifest with the current versions of the repository.
@@ -78,6 +78,15 @@ Migrating from SVN externals
 
 .. scenario-include:: ../features/import-from-svn.feature
 
+Migrating from CMake FetchContent / ExternalProject
+====================================================
+
+* Make sure your repository is up-to-date.
+* Generate a manifest using :ref:`dfetch import --detect-cmake<import>`.
+* Remove or disable the CMake dependency declarations.
+* Download all your projects using :ref:`dfetch update<update>`.
+* Commit your projects as part of your project.
+
 """
 
 import argparse
@@ -85,6 +94,7 @@ import os
 import re
 from collections.abc import Sequence
 from itertools import combinations
+from pathlib import Path
 
 import dfetch.commands.command
 from dfetch import DEFAULT_MANIFEST_NAME
@@ -93,25 +103,38 @@ from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.remote import Remote
 from dfetch.project import determine_superproject_vcs
+from dfetch.vcs.cmake import CMakeExternalDependency, find_cmake_dependencies
 
 logger = get_logger(__name__)
 
+_SHA_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
+
 
 class Import(dfetch.commands.command.Command):
-    """Generate manifest from existing submodules or externals.
+    """Generate manifest from existing submodules, externals, or CMake dependencies.
 
-    Look for submodules in a git project or externals in a svn project
-    and create a manifest based on that.
+    Look for submodules in a git project, externals in a svn project, or
+    FetchContent/ExternalProject declarations in CMake files and create a
+    manifest based on that.
     """
 
     @staticmethod
     def create_menu(subparsers: dfetch.commands.command.SubparserActionType) -> None:
         """Add the parser menu for this action."""
-        dfetch.commands.command.Command.parser(subparsers, Import)
+        parser = dfetch.commands.command.Command.parser(subparsers, Import)
+        parser.add_argument(
+            "--detect-cmake",
+            action="store_true",
+            default=False,
+            help="Also detect CMake FetchContent and ExternalProject dependencies",
+        )
 
-    def __call__(self, _: argparse.Namespace) -> None:
+    def __call__(self, args: argparse.Namespace) -> None:
         """Perform the import."""
-        projects = determine_superproject_vcs(".").import_projects()
+        projects = list(determine_superproject_vcs(".").import_projects())
+
+        if getattr(args, "detect_cmake", False):
+            projects.extend(_import_cmake_projects())
 
         if not projects:
             raise RuntimeError(f"No submodules found in {os.getcwd()}!")
@@ -132,6 +155,33 @@ class Import(dfetch.commands.command.Command):
 
         manifest.dump(DEFAULT_MANIFEST_NAME)
         logger.info(f"Created manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}")
+
+
+def _import_cmake_projects() -> list[ProjectEntry]:
+    """Return ProjectEntry objects from CMake FetchContent/ExternalProject declarations."""
+    projects = []
+    for dep in find_cmake_dependencies(Path(".")):
+        entry = _cmake_dep_to_project_entry(dep)
+        if entry is not None:
+            projects.append(entry)
+    return projects
+
+
+def _cmake_dep_to_project_entry(dep: CMakeExternalDependency) -> ProjectEntry | None:
+    """Convert a cmake external dependency to a ProjectEntry."""
+    url = dep.git_repository or dep.url
+    if not url:
+        return None
+
+    tag, revision = _classify_git_ref(dep.git_tag)
+    return ProjectEntry({"name": dep.name, "url": url, "tag": tag, "revision": revision})
+
+
+def _classify_git_ref(ref: str) -> tuple[str, str]:
+    """Return (tag, revision) for *ref*; exactly one will be non-empty (or both empty)."""
+    if _SHA_RE.match(ref):
+        return "", ref
+    return ref, ""
 
 
 def _create_remotes(projects: Sequence[ProjectEntry]) -> Sequence[Remote]:
