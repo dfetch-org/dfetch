@@ -7,9 +7,9 @@ Parses ``FetchContent_Declare`` and ``ExternalProject_Add`` calls from
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
 
 from dfetch.log import get_logger
 

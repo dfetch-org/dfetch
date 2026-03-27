@@ -1,10 +1,11 @@
-"""*Dfetch* can convert your Git submodules, SVN externals, or CMake FetchContent/ExternalProject based project to Dfetch.
+"""*Dfetch* can convert an existing project's dependencies to a dfetch manifest.
 
-Dfetch will look for all submodules or externals in the current project and generate
-a manifest with the current versions of the repository.
+Dfetch will look for all submodules, externals, or third-party dependency
+declarations in the current project and generate a manifest with the current
+versions of the repositories.
 
-After importing, you will need to remove the submodules or externals, and then you can let Dfetch
-update by running :ref:`dfetch update <update>`.
+After importing, remove the original dependency declarations and let dfetch
+manage vendoring by running :ref:`dfetch update <update>`.
 
 Migrating from git submodules
 =============================
@@ -12,7 +13,8 @@ Migrating from git submodules
 * Make sure your repository is up-to-date.
 * Make sure your submodules are up-to-date (``git submodules update --init``).
 * Generate a manifest using :ref:`dfetch import<import>`.
-* Remove all git submodules (see `How do I remove a submodule <https://stackoverflow.com/questions/1260748/>`_ ).
+* Remove all git submodules (see `How do I remove a submodule
+  <https://stackoverflow.com/questions/1260748/>`_ ).
 * Download all your projects using :ref:`dfetch update<update>`.
 * Commit your projects as part of your project.
 
@@ -20,16 +22,17 @@ Migrating from git submodules
 
 Switching branches
 ~~~~~~~~~~~~~~~~~~
-After importing submodules into a manifest within a branch, you might encounter difficulties when switching branches.
-If one branch has submodules located where your *DFetched* project dependencies should be, or vice versa.
-In both situations below, assume a branch ``feature/use-dfetch`` with a manifest and ``master`` with the original
-submodules in their place.
+After importing submodules into a manifest within a branch, you might encounter
+difficulties when switching branches.  If one branch has submodules located
+where your *DFetched* project dependencies should be, or vice versa.
+In both situations below, assume a branch ``feature/use-dfetch`` with a
+manifest and ``master`` with the original submodules in their place.
 
 Switching from branch with submodules to branch with manifest
 -------------------------------------------------------------
-When switching from branch with submodules to one without, git will warn that the
-*Dfetched* project dependencies will overwrite the submodule that is currently in the
-same location.
+When switching from branch with submodules to one without, git will warn that
+the *Dfetched* project dependencies will overwrite the submodule that is
+currently in the same location.
 
 .. code-block:: console
 
@@ -48,7 +51,8 @@ However, ``git status`` will show nothing:
 
     nothing to commit, working tree clean
 
-To overcome this, remove the submodule folder and checkout branch ``feature/use-dfetch``:
+To overcome this, remove the submodule folder and checkout branch
+``feature/use-dfetch``:
 
 .. code-block:: console
 
@@ -57,8 +61,8 @@ To overcome this, remove the submodule folder and checkout branch ``feature/use-
 
 Switching from branch with manifest to branch with submodules
 -------------------------------------------------------------
-This situation gives no problem, *but* the submodules are gone and need to be initialized again.
-To solve this:
+This situation gives no problem, *but* the submodules are gone and need to be
+initialized again.  To solve this:
 
 .. code-block:: console
 
@@ -72,7 +76,8 @@ Migrating from SVN externals
 
 * Make sure your repository is up-to-date.
 * Generate a manifest using :ref:`dfetch import<import>`.
-* Remove all svn externals (see `How do I remove svn::externals <https://stackoverflow.com/questions/1044649/>`_ ).
+* Remove all svn externals (see `How do I remove svn::externals
+  <https://stackoverflow.com/questions/1044649/>`_ ).
 * Download all your projects using :ref:`dfetch update<update>`.
 * Commit your projects as part of your project.
 
@@ -82,10 +87,12 @@ Migrating from CMake FetchContent / ExternalProject
 ====================================================
 
 * Make sure your repository is up-to-date.
-* Generate a manifest using :ref:`dfetch import --detect-cmake<import>`.
+* Generate a manifest using ``dfetch import --detect cmake``.
 * Remove or disable the CMake dependency declarations.
 * Download all your projects using :ref:`dfetch update<update>`.
 * Commit your projects as part of your project.
+
+.. scenario-include:: ../features/import-from-cmake.feature
 
 """
 
@@ -98,24 +105,24 @@ from pathlib import Path
 
 import dfetch.commands.command
 from dfetch import DEFAULT_MANIFEST_NAME
+from dfetch.commands import detectors
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.remote import Remote
 from dfetch.project import determine_superproject_vcs
-from dfetch.vcs.cmake import CMakeExternalDependency, find_cmake_dependencies
 
 logger = get_logger(__name__)
 
-_SHA_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
+_AVAILABLE_DETECTORS = detectors.names()
 
 
 class Import(dfetch.commands.command.Command):
-    """Generate manifest from existing submodules, externals, or CMake dependencies.
+    """Generate manifest from existing submodules, externals, or declared dependencies.
 
-    Look for submodules in a git project, externals in a svn project, or
-    FetchContent/ExternalProject declarations in CMake files and create a
-    manifest based on that.
+    Look for submodules in a git project, externals in an svn project, or use
+    ``--detect`` to also scan third-party dependency declaration files (e.g.
+    CMake FetchContent).  All found dependencies are written to a manifest.
     """
 
     @staticmethod
@@ -123,75 +130,83 @@ class Import(dfetch.commands.command.Command):
         """Add the parser menu for this action."""
         parser = dfetch.commands.command.Command.parser(subparsers, Import)
         parser.add_argument(
-            "--detect-cmake",
+            "--detect",
+            nargs="+",
+            choices=_AVAILABLE_DETECTORS,
+            metavar="SOURCE",
+            default=[],
+            help=(
+                "Additional project-file formats to scan for dependencies. "
+                f"Available sources: {', '.join(_AVAILABLE_DETECTORS)}. "
+                "May be repeated or combined, e.g. ``--detect cmake``."
+            ),
+        )
+        parser.add_argument(
+            "--clean-sources",
             action="store_true",
             default=False,
-            help="Also detect CMake FetchContent and ExternalProject dependencies",
+            help=(
+                "After detecting, comment out or remove the found declarations "
+                "from their source files.  Requires ``--detect``.  "
+                "Support depends on the chosen SOURCE."
+            ),
         )
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the import."""
         projects = list(determine_superproject_vcs(".").import_projects())
 
-        if getattr(args, "detect_cmake", False):
-            projects.extend(_import_cmake_projects())
+        detect_names: list[str] = getattr(args, "detect", []) or []
+        for detector_name in detect_names:
+            projects.extend(detectors.get(detector_name).detect(Path(".")))
 
         if not projects:
-            raise RuntimeError(f"No submodules found in {os.getcwd()}!")
+            raise RuntimeError(f"No projects found in {os.getcwd()}!")
 
         remotes = _create_remotes(projects)
 
         for project in projects:
-            # To choose the best match, prefer longest remote url.
-            # e.g. Prefer git@git.github.com:some-org over git@git.github.com
-            for remote in reversed(sorted(remotes, key=lambda remote: len(remote.url))):
+            # Prefer the longest matching remote URL to minimise the repo-path.
+            # e.g. prefer git@git.github.com:some-org over git@git.github.com
+            for remote in reversed(sorted(remotes, key=lambda r: len(r.url))):
                 if project.remote_url.startswith(remote.url):
                     project.set_remote(remote)
                     break
 
+        if getattr(args, "clean_sources", False):
+            _clean_detected_sources(detect_names)
+
         manifest = Manifest(
             {"version": "0.0", "remotes": remotes, "projects": projects}
         )
-
         manifest.dump(DEFAULT_MANIFEST_NAME)
         logger.info(f"Created manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}")
 
 
-def _import_cmake_projects() -> list[ProjectEntry]:
-    """Return ProjectEntry objects from CMake FetchContent/ExternalProject declarations."""
-    projects = []
-    for dep in find_cmake_dependencies(Path(".")):
-        entry = _cmake_dep_to_project_entry(dep)
-        if entry is not None:
-            projects.append(entry)
-    return projects
+def _clean_detected_sources(detect_names: list[str]) -> None:
+    """Invoke clean_sources on each detector, logging a warning if unsupported.
 
-
-def _cmake_dep_to_project_entry(dep: CMakeExternalDependency) -> ProjectEntry | None:
-    """Convert a cmake external dependency to a ProjectEntry."""
-    url = dep.git_repository or dep.url
-    if not url:
-        return None
-
-    tag, revision = _classify_git_ref(dep.git_tag)
-    return ProjectEntry({"name": dep.name, "url": url, "tag": tag, "revision": revision})
-
-
-def _classify_git_ref(ref: str) -> tuple[str, str]:
-    """Return (tag, revision) for *ref*; exactly one will be non-empty (or both empty)."""
-    if _SHA_RE.match(ref):
-        return "", ref
-    return ref, ""
+    Args:
+        detect_names: List of detector names whose sources should be cleaned.
+    """
+    for name in detect_names:
+        detector = detectors.get(name)
+        if detector.supports_clean_sources:
+            detector.clean_sources(Path("."))
+        else:
+            logger.warning(
+                f"--clean-sources is not yet supported for '{name}'; skipping."
+            )
 
 
 def _create_remotes(projects: Sequence[ProjectEntry]) -> Sequence[Remote]:
-    """Create a list of Remotes optimized for least amount of entries and smallest manifest.
+    """Create a list of Remotes optimised for the fewest entries and smallest manifest.
 
     Args:
-        projects (List[ProjectEntry]): A list of projects.
+        projects: A list of projects.
 
     Returns:
-        List[Remote]: A list of remotes.
+        A list of remotes.
     """
     return [
         Remote(
@@ -208,7 +223,14 @@ def _create_remotes(projects: Sequence[ProjectEntry]) -> Sequence[Remote]:
 
 
 def _generate_remote_name(remote_url: str) -> str:
-    """Generate a kind-of human readable name based on a url."""
+    """Generate a kind-of human readable name based on a url.
+
+    Args:
+        remote_url: URL to derive a name from.
+
+    Returns:
+        A slug-style name derived from the URL.
+    """
     filtered = (
         re.sub(r"[./\\@:\^]", "-", remote_url).replace("https", "").replace("http", "")
     )
@@ -216,59 +238,52 @@ def _generate_remote_name(remote_url: str) -> str:
 
 
 def _determine_best_remotes(projects_urls: set[str]) -> tuple[str, ...]:
-    """Determine the smallest amount of remotes, that cover the most urls.
+    """Determine the smallest set of remotes that covers all project URLs.
 
     Args:
-        projects_urls (Set[str]): A list of urls of projects.
+        projects_urls: A set of project URLs.
 
     Returns:
-        Tuple[str, ...]: A set of remote urls.
+        A tuple of remote URL strings.
     """
     max_remote_length = 50
     max_remotes = 5
 
-    # Determine all possible remotes
     potential_remotes: set[str] = set()
     for url in projects_urls:
         potential_remotes.add(url[:max_remote_length].rsplit("/", maxsplit=1)[0])
         potential_remotes.add(url[:max_remote_length].rsplit("/", maxsplit=2)[0])
         potential_remotes.add(url[:max_remote_length].rsplit(":", maxsplit=1)[0])
 
-    useless_potential = {"http", "https"}
-    potential_remotes = potential_remotes - useless_potential
+    potential_remotes -= {"http", "https"}
 
-    # For each permutation of any length, calculate the solution score
     solutions: list[tuple[int, tuple[str, ...]]] = []
     for i in range(min(len(potential_remotes), max_remotes)):
         for solution in combinations(potential_remotes, i):
-            score = _calculate_solution_score(solution, projects_urls)
-            solutions += [(score, solution)]
+            solutions.append(
+                (_calculate_solution_score(solution, projects_urls), solution)
+            )
 
-    # Select the solution with the lowest score
     return min(solutions)[1]
 
 
 def _calculate_solution_score(
     solution: tuple[str, ...], projects_urls: set[str]
 ) -> int:
-    """Calculate a score with the given solution.
+    """Calculate a score for the given remote solution (lower is better).
 
     Args:
-        solution (Tuple[str, ...]): A set of remote urls
-        projects_urls (Set[str]): A set of projects urls
+        solution: A candidate set of remote URL strings.
+        projects_urls: The full set of project URLs to cover.
 
     Returns:
-        int: Lower score is a better solution
+        An integer score; lower is a better solution.
     """
-    # Less remotes, is better
     score = len(solution)
-
-    # Shortest url for projects, is better
     for url in projects_urls:
         minimum = len(url)
         for remote in solution:
             if url.startswith(remote):
                 minimum = min(minimum, len(url) - len(remote))
         score += minimum
-
     return score

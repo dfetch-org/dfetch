@@ -5,15 +5,13 @@
 
 import argparse
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
-from dfetch.commands.import_ import (
-    Import,
-    _classify_git_ref,
-    _cmake_dep_to_project_entry,
-)
+from dfetch.commands.detectors.cmake import CmakeDetector, _classify_git_ref, _dep_to_entry
+from dfetch.commands.detectors._base import Detector, get, names, register
+from dfetch.commands.import_ import Import
 from dfetch.vcs.cmake import (
     CMakeExternalDependency,
     _extract_body,
@@ -22,7 +20,7 @@ from dfetch.vcs.cmake import (
 )
 
 # ---------------------------------------------------------------------------
-# cmake.py unit tests
+# cmake.py parser unit tests (dfetch.vcs.cmake)
 # ---------------------------------------------------------------------------
 
 FETCH_CONTENT_GIT = """\
@@ -132,8 +130,7 @@ def test_commented_declarations_are_ignored():
 def test_multiple_dependencies_in_one_file():
     deps = list(_find_dependencies_in_text(MULTIPLE_DEPS))
     assert len(deps) == 2
-    names = {d.name for d in deps}
-    assert names == {"dep1", "dep2"}
+    assert {d.name for d in deps} == {"dep1", "dep2"}
 
 
 def test_commands_are_case_insensitive():
@@ -160,7 +157,6 @@ def test_empty_text_yields_no_deps():
 
 def test_extract_body_balanced_parens():
     text = "outer(inner(a) b)"
-    # start at position after first '(', i.e. index 6
     body = _extract_body(text, 6)
     assert body == "inner(a) b"
 
@@ -170,12 +166,11 @@ def test_parse_body_none_when_no_name():
 
 
 def test_parse_body_none_when_no_url():
-    result = _parse_body("myname SOME_FLAG ON")
-    assert result is None
+    assert _parse_body("myname SOME_FLAG ON") is None
 
 
 # ---------------------------------------------------------------------------
-# _classify_git_ref tests
+# CmakeDetector unit tests (dfetch.commands.detectors.cmake)
 # ---------------------------------------------------------------------------
 
 
@@ -204,21 +199,16 @@ def test_classify_empty_ref():
     assert revision == ""
 
 
-# ---------------------------------------------------------------------------
-# _cmake_dep_to_project_entry tests
-# ---------------------------------------------------------------------------
-
-
 def test_git_dep_uses_git_repository_as_url():
     dep = CMakeExternalDependency(
         name="json",
         git_repository="https://github.com/nlohmann/json.git",
         git_tag="v3.11.2",
     )
-    entry = _cmake_dep_to_project_entry(dep)
+    entry = _dep_to_entry(dep)
     assert entry is not None
     assert entry.name == "json"
-    assert "v3.11.2" in str(entry.as_yaml().get("tag", ""))
+    assert entry.as_yaml().get("tag") == "v3.11.2"
 
 
 def test_url_dep_uses_url():
@@ -226,7 +216,7 @@ def test_url_dep_uses_url():
         name="catch2",
         url="https://example.com/catch2.tar.gz",
     )
-    entry = _cmake_dep_to_project_entry(dep)
+    entry = _dep_to_entry(dep)
     assert entry is not None
     assert entry.name == "catch2"
 
@@ -238,7 +228,7 @@ def test_dep_with_sha_uses_revision():
         git_repository="https://example.com/lib.git",
         git_tag=sha,
     )
-    entry = _cmake_dep_to_project_entry(dep)
+    entry = _dep_to_entry(dep)
     assert entry is not None
     yaml = entry.as_yaml()
     assert yaml.get("revision") == sha
@@ -246,16 +236,79 @@ def test_dep_with_sha_uses_revision():
 
 
 def test_dep_without_url_returns_none():
-    dep = CMakeExternalDependency(name="nourl")
-    assert _cmake_dep_to_project_entry(dep) is None
+    assert _dep_to_entry(CMakeExternalDependency(name="nourl")) is None
+
+
+def test_cmake_detector_name():
+    assert CmakeDetector.name == "cmake"
+
+
+def test_cmake_detector_is_registered():
+    assert "cmake" in names()
+    assert get("cmake") is CmakeDetector
+
+
+def test_cmake_detector_detect_returns_entries(tmp_path):
+    cmake = tmp_path / "CMakeLists.txt"
+    cmake.write_text(
+        "FetchContent_Declare(mylib\n"
+        "    GIT_REPOSITORY https://github.com/org/mylib.git\n"
+        "    GIT_TAG v1.0\n"
+        ")\n"
+    )
+    entries = list(CmakeDetector.detect(tmp_path))
+    assert len(entries) == 1
+    assert entries[0].name == "mylib"
+
+
+def test_cmake_detector_empty_directory(tmp_path):
+    assert list(CmakeDetector.detect(tmp_path)) == []
 
 
 # ---------------------------------------------------------------------------
-# Import command integration tests with --detect-cmake
+# Detector registry unit tests (dfetch.commands.detectors._base)
 # ---------------------------------------------------------------------------
 
 
-def _make_cmake_dep(name="json", repo="https://github.com/nlohmann/json.git", tag="v3.11.2"):
+def test_register_and_get_round_trip():
+    class _FakeDetector(Detector):
+        name = "_test_fake_detector_round_trip"
+
+        @classmethod
+        def detect(cls, directory: Path):
+            return []
+
+    register(_FakeDetector)
+    assert get("_test_fake_detector_round_trip") is _FakeDetector
+
+
+def test_register_raises_on_empty_name():
+    class _UnnamedDetector(Detector):
+        name = ""
+
+        @classmethod
+        def detect(cls, directory: Path):
+            return []
+
+    with pytest.raises(ValueError, match="non-empty"):
+        register(_UnnamedDetector)
+
+
+def test_clean_sources_raises_not_implemented():
+    with pytest.raises(NotImplementedError, match="cmake"):
+        CmakeDetector.clean_sources(Path("."))
+
+
+# ---------------------------------------------------------------------------
+# Import command integration tests
+# ---------------------------------------------------------------------------
+
+
+def _make_cmake_dep(
+    name="json",
+    repo="https://github.com/nlohmann/json.git",
+    tag="v3.11.2",
+):
     return CMakeExternalDependency(name=name, git_repository=repo, git_tag=tag)
 
 
@@ -269,20 +322,19 @@ def test_import_with_detect_cmake_creates_manifest():
                 "dfetch.project.gitsuperproject.GitLocalRepo.submodules", return_value=[]
             ):
                 with patch(
-                    "dfetch.commands.import_.find_cmake_dependencies",
+                    "dfetch.commands.detectors.cmake.find_cmake_dependencies",
                     return_value=cmake_deps,
                 ):
-                    with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
-                        import_(argparse.Namespace(detect_cmake=True))
+                    with patch("dfetch.commands.import_.Manifest") as mock_manifest:
+                        import_(argparse.Namespace(detect=["cmake"], clean_sources=False))
 
-                        mocked_manifest.assert_called_once()
-                        args = mocked_manifest.call_args_list[0][0][0]
-                        project_names = [p.name for p in args["projects"]]
-                        assert "json" in project_names
-                        mocked_manifest.return_value.dump.assert_called_once()
+                        mock_manifest.assert_called_once()
+                        args = mock_manifest.call_args_list[0][0][0]
+                        assert any(p.name == "json" for p in args["projects"])
+                        mock_manifest.return_value.dump.assert_called_once()
 
 
-def test_import_without_detect_cmake_ignores_cmake_files():
+def test_import_without_detect_ignores_cmake_files():
     import_ = Import()
 
     with patch("dfetch.project.svnsuperproject.SvnRepo.is_svn", return_value=False):
@@ -291,15 +343,14 @@ def test_import_without_detect_cmake_ignores_cmake_files():
                 "dfetch.project.gitsuperproject.GitLocalRepo.submodules", return_value=[]
             ):
                 with patch(
-                    "dfetch.commands.import_.find_cmake_dependencies"
+                    "dfetch.commands.detectors.cmake.find_cmake_dependencies"
                 ) as mock_cmake:
                     with pytest.raises(RuntimeError):
-                        import_(argparse.Namespace(detect_cmake=False))
+                        import_(argparse.Namespace(detect=[], clean_sources=False))
                     mock_cmake.assert_not_called()
 
 
 def test_import_cmake_combined_with_submodules():
-    """CMake deps are appended to any existing submodule-derived projects."""
     from dfetch.vcs.git import Submodule
 
     submodule = Submodule(
@@ -321,19 +372,19 @@ def test_import_cmake_combined_with_submodules():
                 return_value=[submodule],
             ):
                 with patch(
-                    "dfetch.commands.import_.find_cmake_dependencies",
+                    "dfetch.commands.detectors.cmake.find_cmake_dependencies",
                     return_value=[cmake_dep],
                 ):
-                    with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
-                        import_(argparse.Namespace(detect_cmake=True))
+                    with patch("dfetch.commands.import_.Manifest") as mock_manifest:
+                        import_(argparse.Namespace(detect=["cmake"], clean_sources=False))
 
-                        args = mocked_manifest.call_args_list[0][0][0]
+                        args = mock_manifest.call_args_list[0][0][0]
                         project_names = [p.name for p in args["projects"]]
                         assert "existing" in project_names
                         assert "cmake-dep" in project_names
 
 
-def test_import_cmake_no_deps_and_no_submodules_raises():
+def test_import_no_projects_raises():
     import_ = Import()
     with patch("dfetch.project.svnsuperproject.SvnRepo.is_svn", return_value=False):
         with patch("dfetch.project.gitsuperproject.GitLocalRepo.is_git", return_value=True):
@@ -341,7 +392,30 @@ def test_import_cmake_no_deps_and_no_submodules_raises():
                 "dfetch.project.gitsuperproject.GitLocalRepo.submodules", return_value=[]
             ):
                 with patch(
-                    "dfetch.commands.import_.find_cmake_dependencies", return_value=[]
+                    "dfetch.commands.detectors.cmake.find_cmake_dependencies",
+                    return_value=[],
                 ):
-                    with pytest.raises(RuntimeError):
-                        import_(argparse.Namespace(detect_cmake=True))
+                    with pytest.raises(RuntimeError, match="No projects found"):
+                        import_(argparse.Namespace(detect=["cmake"], clean_sources=False))
+
+
+def test_import_clean_sources_warns_when_unsupported(caplog):
+    import_ = Import()
+    cmake_deps = [_make_cmake_dep()]
+
+    with patch("dfetch.project.svnsuperproject.SvnRepo.is_svn", return_value=False):
+        with patch("dfetch.project.gitsuperproject.GitLocalRepo.is_git", return_value=True):
+            with patch(
+                "dfetch.project.gitsuperproject.GitLocalRepo.submodules", return_value=[]
+            ):
+                with patch(
+                    "dfetch.commands.detectors.cmake.find_cmake_dependencies",
+                    return_value=cmake_deps,
+                ):
+                    with patch("dfetch.commands.import_.Manifest"):
+                        with patch("dfetch.commands.import_.logger") as mock_logger:
+                            import_(
+                                argparse.Namespace(detect=["cmake"], clean_sources=True)
+                            )
+                            mock_logger.warning.assert_called_once()
+                            assert "cmake" in mock_logger.warning.call_args[0][0]
