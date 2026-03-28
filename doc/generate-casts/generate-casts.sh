@@ -11,6 +11,7 @@ export TZ=UTC
 
 rm -rf ../asciicasts/*
 
+asciinema rec --overwrite -c "./interactive-add-demo.sh" ../asciicasts/interactive-add.cast
 asciinema rec --overwrite -c "./basic-demo.sh" ../asciicasts/basic.cast
 asciinema rec --overwrite -c "./init-demo.sh" ../asciicasts/init.cast
 asciinema rec --overwrite -c "./add-demo.sh" ../asciicasts/add.cast
