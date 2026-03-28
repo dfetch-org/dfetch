@@ -78,14 +78,14 @@ Feature: Add a project to the manifest via the CLI
                   url: some-remote-server/existing.git
             """
         When I interactively add "some-remote-server/MyLib.git" with inputs
-            | prompt_contains           | answer   |
-            | Project name              | my-lib   |
-            | Destination path          | libs/my  |
-            | Version                   | master   |
-            | Source path               |          |
-            | Ignore paths              |          |
-            | Add project to manifest?  | y        |
-            | Run update                | n        |
+            | Question                  | Answer  |
+            | Project name              | my-lib  |
+            | Destination path          | libs/my |
+            | Version                   | master  |
+            | Source path               |         |
+            | Ignore paths              |         |
+            | Add project to manifest?  | y       |
+            | Run update                | n       |
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: my-lib
@@ -104,14 +104,14 @@ Feature: Add a project to the manifest via the CLI
                   url: some-remote-server/existing.git
             """
         When I interactively add "some-remote-server/MyLib.git" with inputs
-            | prompt_contains           | answer   |
-            | Project name              | my-lib   |
-            | Destination path          | my-lib   |
-            | Version                   | v1       |
-            | Source path               |          |
-            | Ignore paths              |          |
-            | Add project to manifest?  | y        |
-            | Run update                | n        |
+            | Question                  | Answer |
+            | Project name              | my-lib |
+            | Destination path          | my-lib |
+            | Version                   | v1     |
+            | Source path               |        |
+            | Ignore paths              |        |
+            | Add project to manifest?  | y      |
+            | Run update                | n      |
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: my-lib
@@ -129,14 +129,14 @@ Feature: Add a project to the manifest via the CLI
                   url: some-remote-server/existing.git
             """
         When I interactively add "some-remote-server/MyLib.git" with inputs
-            | prompt_contains           | answer      |
-            | Project name              | my-lib      |
-            | Destination path          | my-lib      |
-            | Version                   | master      |
-            | Source path               | docs/api    |
-            | Ignore paths              |             |
-            | Add project to manifest?  | y           |
-            | Run update                | n           |
+            | Question                  | Answer     |
+            | Project name              | my-lib     |
+            | Destination path          | my-lib     |
+            | Version                   | master     |
+            | Source path               | docs/api   |
+            | Ignore paths              |            |
+            | Add project to manifest?  | y          |
+            | Run update                | n          |
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: my-lib
@@ -155,7 +155,7 @@ Feature: Add a project to the manifest via the CLI
                   url: some-remote-server/existing.git
             """
         When I interactively add "some-remote-server/MyLib.git" with inputs
-            | prompt_contains           | answer       |
+            | Question                  | Answer       |
             | Project name              | my-lib       |
             | Destination path          | my-lib       |
             | Version                   | master       |
@@ -183,14 +183,14 @@ Feature: Add a project to the manifest via the CLI
                 url: some-remote-server/existing.git
             """
         When I interactively add "some-remote-server/MyLib.git" with inputs
-            | prompt_contains           | answer  |
-            | Project name              | MyLib   |
-            | Destination path          | MyLib   |
-            | Version                   | master  |
-            | Source path               |         |
-            | Ignore paths              |         |
-            | Add project to manifest?  | y       |
-            | Run update                | y       |
+            | Question                  | Answer |
+            | Project name              | MyLib  |
+            | Destination path          | MyLib  |
+            | Version                   | master |
+            | Source path               |        |
+            | Ignore paths              |        |
+            | Add project to manifest?  | y      |
+            | Run update                | y      |
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: MyLib
@@ -209,13 +209,13 @@ Feature: Add a project to the manifest via the CLI
                   url: some-remote-server/existing.git
             """
         When I interactively add "some-remote-server/MyLib.git" with inputs
-            | prompt_contains           | answer   |
-            | Project name              | MyLib    |
-            | Destination path          | MyLib    |
-            | Version                   | master   |
-            | Source path               |          |
-            | Ignore paths              |          |
-            | Add project to manifest?  | n        |
+            | Question                  | Answer |
+            | Project name              | MyLib  |
+            | Destination path          | MyLib  |
+            | Version                   | master |
+            | Source path               |        |
+            | Ignore paths              |        |
+            | Add project to manifest?  | n      |
         Then the manifest 'dfetch.yaml' is replaced with
             """
             manifest:
@@ -224,3 +224,29 @@ Feature: Add a project to the manifest via the CLI
                 - name: existing
                   url: some-remote-server/existing.git
             """
+
+    Scenario: Interactive add with empty src (repo root) does not add src field
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+              projects:
+                - name: existing
+                  url: some-remote-server/existing.git
+            """
+        When I interactively add "some-remote-server/MyLib.git" with inputs
+            | Question                  | Answer |
+            | Project name              | MyLib  |
+            | Destination path          | MyLib  |
+            | Version                   | master |
+            | Source path               |        |
+            | Ignore paths              |        |
+            | Add project to manifest?  | y      |
+            | Run update                | n      |
+        Then the manifest 'dfetch.yaml' contains entry
+            """
+              - name: MyLib
+                url: some-remote-server/MyLib.git
+                branch: master
+            """
+        And the manifest 'dfetch.yaml' does not contain 'src:'

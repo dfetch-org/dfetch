@@ -88,16 +88,22 @@ def browse_tree(subproject: SubProject, version: str = "") -> Generator[LsFuncti
 
     Adapts the VCS-level ``(name, is_dir)`` tuples into :class:`~dfetch.terminal.Entry`
     objects so the terminal tree browser has no knowledge of VCS internals.
+
+    Adds '.' as the first entry to allow selecting the repo root (which is
+    treated as empty src).
     """
     if isinstance(subproject, (GitSubProject, SvnSubProject)):
         remote = subproject._remote_repo  # pylint: disable=protected-access
         with remote.browse_tree(version) as vcs_ls:
 
             def ls(path: str = "") -> list[Entry]:
-                return [
+                entries = [
                     Entry(display=name, has_children=is_dir)
                     for name, is_dir in vcs_ls(path)
                 ]
+                if not path:
+                    return [Entry(display=".", has_children=True, value=".")] + entries
+                return entries
 
             yield ls
     else:
@@ -281,7 +287,7 @@ def _build_entry(  # pylint: disable=too-many-arguments
         dst=dst,
     )
     entry_dict[kind] = value  # type: ignore[literal-required]
-    if src:
+    if src and src != ".":
         entry_dict["src"] = src
     if ignore:
         entry_dict["ignore"] = ignore
