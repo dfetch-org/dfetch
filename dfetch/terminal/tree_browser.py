@@ -1,17 +1,18 @@
 """Generic scrollable tree browser for remote VCS trees.
 
-Provides :func:`run_tree_browser` and :func:`tree_single_pick` — interactive
-terminal widgets that work with any :data:`~dfetch.terminal.LsFunction`.
+Provides :func:`run_tree_browser`, :func:`tree_single_pick`, and
+:func:`tree_pick_from_names` — interactive terminal widgets that work with
+any :data:`~dfetch.terminal.LsFunction`.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-from dfetch.terminal.ansi import BOLD, DIM, GREEN, RESET, VIEWPORT, strip_ansi
+from dfetch.terminal.ansi import BOLD, DIM, GREEN, RESET, VIEWPORT
 from dfetch.terminal.keys import read_key
 from dfetch.terminal.screen import Screen
-from dfetch.terminal.types import LsFunction
+from dfetch.terminal.types import Entry, LsFunction
 
 
 @dataclass
@@ -56,46 +57,30 @@ class TreeBrowser:
 
     @property
     def nodes(self) -> list[TreeNode]:
-        """Current node list (populated after :meth:`run` or :meth:`seed`)."""
+        """Current node list (populated after :meth:`run`)."""
         return self._nodes
 
-    @property
-    def idx(self) -> int:
-        """Current cursor index."""
-        return self._idx
+    # ------------------------------------------------------------------
+    # Scroll
+    # ------------------------------------------------------------------
 
-    @property
-    def top(self) -> int:
-        """Current scroll offset (index of the topmost visible node)."""
-        return self._top
-
-    def seed(self, nodes: list[TreeNode], *, idx: int = 0, top: int = 0) -> None:
-        """Pre-load node state without running the TTY loop.
-
-        Intended for headless driving and unit tests.  Cursor and scroll are
-        clamped to valid ranges automatically.
-        """
-        self._nodes = list(nodes)
-        self._idx = max(0, min(idx, len(nodes) - 1)) if nodes else 0
-        self._top = top
-
-    def feed_key(self, key: str) -> list[str] | None:
-        """Process one keypress without rendering.
-
-        Returns the selected-path list when the browser would exit (an empty
-        list for ESC/skip), or ``None`` to indicate the loop should continue.
-        Intended for headless driving and unit tests.
-        """
-        if self._handle_nav(key):
-            return None
-        return self._handle_action(key)
-
-    def adjust_scroll(self) -> None:
+    def _adjust_scroll(self) -> None:
         """Ensure the cursor index is within the visible viewport."""
         if self._idx < self._top:
             self._top = self._idx
         elif self._idx >= self._top + VIEWPORT:
             self._top = self._idx - VIEWPORT + 1
+
+    def _scroll_to_reveal_first_child(self) -> None:
+        """Scroll down one row when an expanded dir sits at the viewport bottom."""
+        node = self._nodes[self._idx]
+        if (
+            node.is_dir
+            and node.expanded
+            and self._idx == self._top + VIEWPORT - 1
+            and self._idx + 1 < len(self._nodes)
+        ):
+            self._top += 1
 
     # ------------------------------------------------------------------
     # Node mutation
@@ -107,13 +92,13 @@ class TreeBrowser:
         if not node.children_loaded:
             children = [
                 TreeNode(
-                    name=name,
-                    path=f"{node.path}/{strip_ansi(name)}",
-                    is_dir=is_dir,
+                    name=entry.display,
+                    path=f"{node.path}/{entry.value}",
+                    is_dir=entry.has_children,
                     depth=node.depth + 1,
                     selected=node.selected,
                 )
-                for name, is_dir in self._ls_function(node.path)
+                for entry in self._ls_function(node.path)
             ]
             self._nodes[idx + 1 : idx + 1] = children
             node.children_loaded = True
@@ -151,50 +136,36 @@ class TreeBrowser:
             )
         return f"↑/↓ navigate  Enter select  →/← expand/collapse  Esc {esc}"
 
+    def _render_node(self, i: int, node: TreeNode) -> str:
+        """Render a single node row for the visible viewport."""
+        indent = "  " * node.depth
+        icon = ("▾ " if node.expanded else "▸ ") if node.is_dir else "  "
+        cursor = f"{GREEN}▶{RESET}" if i == self._idx else " "
+        if self._config.multi:
+            name = f"{DIM}{node.name}{RESET}" if not node.selected else node.name
+            return f"  {cursor} {indent}{icon}{name}"
+        check = f"{GREEN}✓ {RESET}" if node.selected else "  "
+        name = f"{BOLD}{node.name}{RESET}" if i == self._idx else node.name
+        return f"  {cursor} {check}{indent}{icon}{name}"
+
     def _render_lines(self) -> list[str]:
         """Build display strings for the visible viewport slice."""
-        lines: list[str] = []
-        for i in range(self._top, min(self._top + VIEWPORT, len(self._nodes))):
-            node = self._nodes[i]
-            indent = "  " * node.depth
-            icon = ("▾ " if node.expanded else "▸ ") if node.is_dir else "  "
-            cursor = f"{GREEN}▶{RESET}" if i == self._idx else " "
-            if self._config.multi:
-                name = f"{DIM}{node.name}{RESET}" if not node.selected else node.name
-                lines.append(f"  {cursor} {indent}{icon}{name}")
-            else:
-                check = f"{GREEN}✓ {RESET}" if node.selected else "  "
-                name = f"{BOLD}{node.name}{RESET}" if i == self._idx else node.name
-                lines.append(f"  {cursor} {check}{indent}{icon}{name}")
-        return lines
+        return [
+            self._render_node(i, self._nodes[i])
+            for i in range(self._top, min(self._top + VIEWPORT, len(self._nodes)))
+        ]
 
     def _build_frame(self) -> list[str]:
         """Build all display lines for one render frame."""
-        n = len(self._nodes)
         header = [f"  {GREEN}?{RESET} {BOLD}{self._title}:{RESET}"]
         if self._top > 0:
             header.append(f"    {DIM}↑ {self._top} more above{RESET}")
         footer: list[str] = []
-        remaining = n - (self._top + VIEWPORT)
-        if remaining > 0:
-            footer.append(f"    {DIM}↓ {remaining} more below{RESET}")
+        hidden_below = len(self._nodes) - (self._top + VIEWPORT)
+        if hidden_below > 0:
+            footer.append(f"    {DIM}↓ {hidden_below} more below{RESET}")
         footer.append(f"  {DIM}{self._nav_hint()}{RESET}")
         return header + self._render_lines() + footer
-
-    # ------------------------------------------------------------------
-    # Scroll helpers
-    # ------------------------------------------------------------------
-
-    def _nudge_scroll_after_expand(self) -> None:
-        """Scroll down 1 when a just-expanded dir sits at the viewport bottom."""
-        node = self._nodes[self._idx]
-        if (
-            node.is_dir
-            and node.expanded
-            and self._idx == self._top + VIEWPORT - 1
-            and self._idx + 1 < len(self._nodes)
-        ):
-            self._top += 1
 
     # ------------------------------------------------------------------
     # Key handlers
@@ -252,19 +223,21 @@ class TreeBrowser:
             return None
         return [node.path]
 
+    def _handle_right(self, node: TreeNode) -> None:
+        """Expand the current directory on RIGHT, if not already open."""
+        if node.is_dir and not node.expanded:
+            self._expand(self._idx)
+
     def _handle_action(self, key: str) -> list[str] | None:
         """Dispatch a non-navigation keypress; return a result list or None to continue."""
         node = self._nodes[self._idx]
         if key == "RIGHT":
-            if node.is_dir and not node.expanded:
-                self._expand(self._idx)
+            self._handle_right(node)
         elif key == "LEFT":
             self._handle_left()
         elif key == "SPACE":
             return (
-                self._handle_enter()
-                if not self._config.multi and node.is_dir
-                else self._handle_space()
+                self._handle_enter() if not self._config.multi else self._handle_space()
             )
         elif key == "ENTER":
             return self._handle_enter()
@@ -284,22 +257,19 @@ class TreeBrowser:
 
         self._nodes = [
             TreeNode(
-                name=name,
-                path=strip_ansi(name),
-                is_dir=is_dir,
+                name=entry.display,
+                path=entry.value,
+                is_dir=entry.has_children,
                 depth=0,
                 selected=self._config.all_selected,
             )
-            for name, is_dir in root_entries
+            for entry in root_entries
         ]
         screen = Screen()
 
         while True:
-            if not self._nodes:
-                screen.clear()
-                return []
             self._idx = max(0, min(self._idx, len(self._nodes) - 1))
-            self.adjust_scroll()
+            self._adjust_scroll()
             screen.draw(self._build_frame())
             key = read_key()
 
@@ -310,7 +280,12 @@ class TreeBrowser:
             if result is not None:
                 screen.clear()
                 return result
-            self._nudge_scroll_after_expand()
+            self._scroll_to_reveal_first_child()
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
 
 
 def run_tree_browser(
@@ -334,12 +309,17 @@ def tree_single_pick(
     *,
     dirs_selectable: bool = False,
     esc_label: str = "skip",
-) -> str:
+) -> str:  # pragma: no cover - interactive TTY only
     """Browse a remote tree and return a single selected path (``""`` on skip)."""
     config = BrowserConfig(dirs_selectable=dirs_selectable, esc_label=esc_label)
     browser = TreeBrowser(ls_function, title, config)
     result = browser.run()
     return result[0] if result else ""
+
+
+# ---------------------------------------------------------------------------
+# Tree analysis helpers
+# ---------------------------------------------------------------------------
 
 
 def all_descendants_deselected(nodes: list[TreeNode], parent_idx: int) -> bool:
@@ -351,6 +331,11 @@ def all_descendants_deselected(nodes: list[TreeNode], parent_idx: int) -> bool:
         if nodes[i].selected:
             return False
     return True
+
+
+def _is_covered_by_dir(path: str, dirs: set[str]) -> bool:
+    """Return True if *path* is nested under any directory in *dirs*."""
+    return any(path.startswith(d + "/") for d in dirs)
 
 
 def deselected_paths(nodes: list[TreeNode]) -> list[str]:
@@ -367,7 +352,7 @@ def deselected_paths(nodes: list[TreeNode]) -> list[str]:
     for i, node in enumerate(nodes):
         if node.selected:
             continue
-        if any(node.path.startswith(d + "/") for d in dirs):
+        if _is_covered_by_dir(node.path, dirs):
             continue
         if node.is_dir and (
             not node.children_loaded or all_descendants_deselected(nodes, i)
@@ -378,3 +363,86 @@ def deselected_paths(nodes: list[TreeNode]) -> list[str]:
             paths.append(node.path)
 
     return paths
+
+
+# ---------------------------------------------------------------------------
+# Flat-name tree browser
+# ---------------------------------------------------------------------------
+
+
+class _FlatNamesLs:  # pylint: disable=too-few-public-methods
+    """LsFunction that exposes a flat list of slash-separated names as a tree.
+
+    Leaf nodes carry a dim annotation label so they are visually distinct from
+    directory segments.  The tree browser uses ``Entry.value`` (the plain name)
+    rather than ``Entry.display`` (which may contain markup).
+    """
+
+    def __init__(
+        self, labels: dict[str, str], all_names: list[str], priority_path: str
+    ) -> None:
+        """Store pre-built lookup tables and the path to sort first."""
+        self._labels = labels
+        self._all_names = all_names
+        self._priority_path = priority_path
+
+    def _segments(self, prefix: str) -> dict[str, bool]:
+        """Return first-level path segments under *prefix* mapped to has_children."""
+        seen: dict[str, bool] = {}
+        for name in self._all_names:
+            if not name.startswith(prefix):
+                continue
+            rest = name[len(prefix) :]
+            seg = rest.split("/")[0]
+            if seg and seg not in seen:
+                full = prefix + seg
+                seen[seg] = any(n.startswith(full + "/") for n in self._all_names)
+        return seen
+
+    def _sort_key(self, seg: str, prefix: str) -> tuple[int, str]:
+        """Sort priority path first, then alphabetically."""
+        full = prefix + seg
+        on_priority = full == self._priority_path or self._priority_path.startswith(
+            full + "/"
+        )
+        return (0 if on_priority else 1, seg)
+
+    def _leaf_entry(self, seg: str, full: str) -> Entry:
+        """Build a leaf Entry with dim annotation label and optional default marker."""
+        label = self._labels[full]
+        marker = f" {DIM}(default){RESET}" if full == self._priority_path else ""
+        return Entry(
+            display=f"{seg} {DIM}{label}{RESET}{marker}",
+            has_children=False,
+            value=seg,
+        )
+
+    def __call__(self, path: str) -> list[Entry]:
+        """Return entries for *path*, building the tree one level at a time."""
+        prefix = (path + "/") if path else ""
+        seen = self._segments(prefix)
+        result: list[Entry] = []
+        for seg in sorted(seen, key=lambda s: self._sort_key(s, prefix)):
+            full = prefix + seg
+            if seen[seg]:
+                result.append(Entry(display=seg, has_children=True))
+            else:
+                result.append(self._leaf_entry(seg, full))
+        return result
+
+
+def tree_pick_from_names(
+    labels: dict[str, str],
+    title: str,
+    *,
+    priority_path: str = "",
+    esc_label: str = "skip",
+) -> str:  # pragma: no cover - interactive TTY only
+    """Browse a flat dict of ``name → label`` as a tree and return the picked name.
+
+    Names are split on ``/`` to form a navigable hierarchy.  Leaf nodes show
+    their label as a dim annotation.  *priority_path* is sorted to the top.
+    Returns ``""`` when the user presses Esc.
+    """
+    ls = _FlatNamesLs(labels, list(labels), priority_path)
+    return tree_single_pick(ls, title, esc_label=esc_label)

@@ -4,12 +4,11 @@ import contextlib
 import os
 import pathlib
 import re
-from collections.abc import Generator, Sequence
+from collections.abc import Callable, Generator, Sequence
 from pathlib import Path
 from typing import NamedTuple
 
 from dfetch.log import get_logger
-from dfetch.terminal import LsFunction
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.util import in_directory
 from dfetch.vcs.patch import Patch, PatchType
@@ -87,12 +86,14 @@ class SvnRemote:
         ]
 
     @contextlib.contextmanager
-    def browse_tree(self, version: str = "") -> Generator[LsFunction, None, None]:
-        """Yield an ls_function that lists SVN tree contents for *version*.
+    def browse_tree(
+        self, version: str = ""
+    ) -> Generator[Callable[[str], list[tuple[str, bool]]], None, None]:
+        """Yield a callable that lists SVN tree contents for *version*.
 
         Resolves *version* to the correct remote path (trunk,
         ``branches/<version>``, or ``tags/<version>``), then delegates
-        directory listing to ``svn ls``.
+        directory listing to ``svn ls``.  The callable returns ``(name, is_dir)`` pairs.
         """
         version = version or SvnRepo.DEFAULT_BRANCH
         if version == SvnRepo.DEFAULT_BRANCH:
@@ -105,11 +106,11 @@ class SvnRemote:
             except RuntimeError:
                 base_url = f"{self._remote}/tags/{version}"
 
-        def ls_function(path: str = "") -> list[tuple[str, bool]]:
+        def ls(path: str = "") -> list[tuple[str, bool]]:
             url = f"{base_url}/{path}" if path else base_url
             return self.ls_tree(url)
 
-        yield ls_function
+        yield ls
 
     def ls_tree(self, url_path: str) -> list[tuple[str, bool]]:
         """List immediate children of *url_path* as ``(name, is_dir)`` pairs."""

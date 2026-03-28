@@ -122,6 +122,14 @@ class DLogger(logging.Logger):
         """Print a field with corresponding value."""
         self.print_report_line(field_name, field if field else "<none>")
 
+    def print_yaml(self, fields: dict[str, Any]) -> None:
+        """Print all str and list values in *fields* in YAML style."""
+        first = True
+        for key, value in fields.items():
+            if isinstance(value, (str, list)):
+                self.print_yaml_field(key, value, first=first)
+                first = False
+
     def print_yaml_field(
         self, key: str, value: str | list[str], *, first: bool = False
     ) -> None:

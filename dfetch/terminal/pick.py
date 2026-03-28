@@ -43,6 +43,17 @@ def _pick_outcome(
     return False, None
 
 
+def _initial_selection(
+    multi: bool, all_selected: bool, n: int, default_idx: int
+) -> set[int]:
+    """Return the initial selected-indices set for a pick list."""
+    if multi and all_selected:
+        return set(range(n))
+    if multi:
+        return set()
+    return {default_idx}
+
+
 def _clamp_scroll(idx: int, top: int) -> int:
     """Return an updated *top* offset so that *idx* is visible in the viewport."""
     if idx < top:
@@ -113,11 +124,7 @@ def scrollable_pick(
     idx = default_idx
     top = 0
     n = len(display_items)
-    selected: set[int] = (
-        set(range(n))
-        if (multi and all_selected)
-        else ({default_idx} if not multi else set())
-    )
+    selected = _initial_selection(multi, all_selected, n, default_idx)
 
     while True:
         idx = max(0, min(idx, n - 1))

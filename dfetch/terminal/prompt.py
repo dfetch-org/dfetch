@@ -2,8 +2,16 @@
 
 import sys
 
-from dfetch.terminal.ansi import DIM, RESET
-from dfetch.terminal.keys import read_key
+from rich.console import Console
+from rich.prompt import Prompt
+
+from dfetch.terminal.ansi import DIM, GREEN, RESET
+from dfetch.terminal.keys import is_tty, read_key
+from dfetch.terminal.types import Entry
+
+_console = Console()
+
+_PROMPT_FORMAT = "  [green]?[/green] [bold]{label}[/bold]"
 
 
 def _ghost_handle_backspace(buf: list[str], ghost_active: bool, ghost_len: int) -> bool:
@@ -57,3 +65,53 @@ def ghost_prompt(label: str, default: str = "") -> str:  # pragma: no cover
         ch = " " if key == "SPACE" else key
         if len(ch) == 1 and ch.isprintable():
             ghost_active = _ghost_handle_char(ch, buf, ghost_active, len(default))
+
+
+def numbered_prompt(
+    entries: list[Entry],
+    label: str,
+    hint: str,
+    default: str = "",
+    note: str = "",
+) -> str:
+    """Display *entries* then prompt until the user picks one or types freely.
+
+    Each entry is printed as ``  N  <display>`` where *N* is its 1-based
+    index.  An optional *note* line (e.g. a truncation message) is printed
+    after the entries without a number.
+
+    If the user enters a digit in ``[1, len(entries)]`` returns the
+    corresponding ``entry.value``.  Any other non-empty input is returned
+    as-is.  Out-of-range numbers loop with a warning.
+    """
+    for i, entry in enumerate(entries, start=1):
+        _console.print(f"  [bold white]{i:>2}[/bold white]  {entry.display}")
+    if note:
+        _console.print(note)
+
+    n = len(entries)
+    while True:
+        raw = Prompt.ask(
+            _PROMPT_FORMAT.format(label=label) + f"  ({hint})",
+            default=default,
+        ).strip()
+
+        if raw.isdigit():
+            idx = int(raw) - 1
+            if 0 <= idx < n:
+                return entries[idx].value
+            _console.print(f"  [dim]Pick a number between 1 and {n}.[/dim]")
+            continue
+
+        return raw
+
+
+def prompt(label: str, default: str = "") -> str:
+    """Single-line prompt that adapts to the terminal environment.
+
+    In a TTY shows ghost text via :func:`ghost_prompt`.
+    Outside a TTY (CI, pipe, tests) uses a Rich fallback.
+    """
+    if is_tty():
+        return ghost_prompt(f"  {GREEN}?{RESET} {label}", default).strip()
+    return Prompt.ask(_PROMPT_FORMAT.format(label=label), default=default).strip()

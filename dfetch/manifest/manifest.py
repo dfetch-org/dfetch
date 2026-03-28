@@ -417,9 +417,9 @@ class Manifest:
             return ""
 
         if len(destinations) == 1:
-            parent = str(Path(common_path).parent)
-            if parent and parent != ".":
-                return (Path(parent) / project_name).as_posix()
+            parent_path = Path(common_path).parent
+            if parent_path != Path("."):
+                return (parent_path / project_name).as_posix()
             return ""
 
         return (Path(common_path) / project_name).as_posix()

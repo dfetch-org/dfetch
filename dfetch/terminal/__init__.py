@@ -20,15 +20,17 @@ from .ansi import (
 )
 from .keys import is_tty, read_key
 from .pick import scrollable_pick
-from .prompt import ghost_prompt
+from .prompt import ghost_prompt, numbered_prompt, prompt
 from .screen import Screen, erase_last_line
-from .types import LsFunction
+from .tree_browser import tree_pick_from_names
+from .types import Entry, LsFunction
 
 __all__ = [
     "BOLD",
     "CYAN",
     "DIM",
     "GREEN",
+    "Entry",
     "LsFunction",
     "MAGENTA",
     "RESET",
@@ -38,8 +40,11 @@ __all__ = [
     "Screen",
     "erase_last_line",
     "ghost_prompt",
+    "numbered_prompt",
+    "prompt",
     "is_tty",
     "read_key",
     "scrollable_pick",
     "strip_ansi",
+    "tree_pick_from_names",
 ]
