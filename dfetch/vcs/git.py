@@ -5,13 +5,13 @@ import functools
 import glob
 import os
 import re
+import shutil
 import tempfile
-from collections.abc import Generator, Sequence
+from collections.abc import Callable, Generator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 from dfetch.log import get_logger
-from dfetch.terminal import LsFunction
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.license import is_license_file
 from dfetch.util.util import (
@@ -224,11 +224,13 @@ class GitRemote:
         )
 
     @contextlib.contextmanager
-    def browse_tree(self, version: str = "") -> Generator[LsFunction, None, None]:
+    def browse_tree(
+        self, version: str = ""
+    ) -> Generator[Callable[[str], list[tuple[str, bool]]], None, None]:
         """Shallow-clone the remote and yield a tree-listing callable.
 
-        The yielded ``LsFunction`` calls ``git ls-tree`` on a blobless temporary
-        clone.  The clone is removed on context exit.
+        The yielded callable accepts a path and returns ``(name, is_dir)`` pairs.
+        The clone is removed on context exit.
         """
         tmpdir = tempfile.mkdtemp(prefix="dfetch_browse_")
         cloned = False
@@ -238,13 +240,11 @@ class GitRemote:
         except Exception:  # pylint: disable=broad-exception-caught  # nosec B110
             pass
 
-        def ls_function(path: str = "") -> list[tuple[str, bool]]:
-            if cloned:
-                return GitRemote.ls_tree(tmpdir, path=path)
-            return []
+        def ls(path: str = "") -> list[tuple[str, bool]]:
+            return GitRemote.ls_tree(tmpdir, path=path) if cloned else []
 
         try:
-            yield ls_function
+            yield ls
         finally:
             shutil.rmtree(tmpdir, ignore_errors=True)
 
@@ -259,8 +259,8 @@ class GitRemote:
     def ls_tree(local_path: str, path: str = "") -> list[tuple[str, bool]]:
         """List the contents of the HEAD tree at *path* in a local clone.
 
-        Returns a list of ``(name, is_dir)`` pairs sorted with directories
-        first (alphabetically), then files (alphabetically).
+        Returns entries sorted with directories first (alphabetically),
+        then files (alphabetically).
         """
         cmd = ["git", "-C", local_path, "ls-tree", "FETCH_HEAD"]
         if path:
@@ -273,9 +273,8 @@ class GitRemote:
                 for line in result.stdout.decode().splitlines()
                 if line.strip()
             ]
-            dirs: list[tuple[str, bool]] = sorted((n, d) for n, d in entries if d)
-            files: list[tuple[str, bool]] = sorted((n, d) for n, d in entries if not d)
-            return dirs + files
+            entries.sort(key=lambda e: (not e[1], e[0]))  # dirs first, then files
+            return entries
         except SubprocessCommandError:
             return []
 

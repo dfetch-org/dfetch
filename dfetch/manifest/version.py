@@ -24,6 +24,15 @@ class Version(NamedTuple):
 
         return bool(self.branch == other.branch and self.revision == other.revision)
 
+    @property
+    def field(self) -> tuple[str, str]:
+        """Return ``(kind, value)`` for the active field: tag, revision, or branch."""
+        if self.tag:
+            return "tag", self.tag
+        if self.revision:
+            return "revision", self.revision
+        return "branch", self.branch
+
     def __repr__(self) -> str:
         """Get the string representing this version."""
         if self.tag:

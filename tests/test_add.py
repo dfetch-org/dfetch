@@ -222,14 +222,17 @@ def test_add_command_user_aborts():
     mock_append.assert_not_called()
 
 
-def test_add_command_raises_on_duplicate_name():
-    """Trying to add a project whose name already exists must raise."""
+def test_add_command_suffixes_duplicate_name(tmp_path):
+    """Non-interactive add with a clashing name must append a numbered suffix."""
+    manifest_file = tmp_path / "dfetch.yaml"
+    manifest_file.write_text("")
+
     fake_superproject = Mock()
     fake_superproject.manifest = mock_manifest(
-        [{"name": "myrepo"}], path="/some/dfetch.yaml"
+        [{"name": "myrepo"}], path=str(manifest_file)
     )
     fake_superproject.manifest.remotes = []
-    fake_superproject.root_directory = Path("/some")
+    fake_superproject.root_directory = tmp_path
 
     fake_subproject = _make_subproject()
 
@@ -239,8 +242,9 @@ def test_add_command_raises_on_duplicate_name():
         with patch(
             "dfetch.commands.add.create_sub_project", return_value=fake_subproject
         ):
-            with pytest.raises(RuntimeError, match="already exists"):
-                Add()(_make_args("https://github.com/org/myrepo.git", force=True))
+            Add()(_make_args("https://github.com/org/myrepo.git", force=True))
+
+    assert "myrepo-1" in manifest_file.read_text()
 
 
 # ---------------------------------------------------------------------------

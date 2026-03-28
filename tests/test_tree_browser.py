@@ -1,10 +1,10 @@
 # pyright: reportCallIssue=false
 """Hypothesis tests for the TreeBrowser state machine.
 
-``TreeBrowser.run()`` is TTY-only (pragma: no cover).  All tests here drive
-the browser through its headless public interface: :meth:`~TreeBrowser.seed`,
-:meth:`~TreeBrowser.feed_key`, and the :attr:`~TreeBrowser.idx` /
-:attr:`~TreeBrowser.top` / :attr:`~TreeBrowser.nodes` properties.
+``TreeBrowser.run()`` is TTY-only and not exercised here.  Tests drive the
+browser through :class:`_HeadlessBrowser`, a thin subclass that seeds state,
+feeds keys, and exposes internal state — keeping all test-only scaffolding out
+of the production class.
 """
 
 from __future__ import annotations
@@ -20,10 +20,57 @@ from dfetch.terminal.tree_browser import (
     all_descendants_deselected,
     deselected_paths,
 )
+from dfetch.terminal.types import Entry
 
 settings.register_profile("ci", max_examples=30, deadline=None)
 settings.register_profile("dev", max_examples=100, deadline=None)
 settings.load_profile("dev")
+
+
+# ---------------------------------------------------------------------------
+# Headless test subclass — all test-only scaffolding lives here
+# ---------------------------------------------------------------------------
+
+
+class _HeadlessBrowser(TreeBrowser):
+    """TreeBrowser subclass for headless testing.
+
+    Adds :meth:`seed` and :meth:`feed_key` to drive the state machine
+    without a TTY, and exposes :attr:`nodes`, :attr:`idx`, :attr:`top` so
+    tests can inspect internal state.  Rendering (Screen / read_key) is
+    never called.
+    """
+
+    def seed(self, nodes: list[TreeNode], *, idx: int = 0, top: int = 0) -> None:
+        """Pre-load node state; clamp cursor and scroll to valid ranges."""
+        self._nodes = list(nodes)
+        self._idx = max(0, min(idx, len(nodes) - 1)) if nodes else 0
+        self._top = top
+
+    def feed_key(self, key: str) -> list[str] | None:
+        """Process one keypress without rendering.
+
+        Returns the selected-path list when the browser would exit, or
+        ``None`` to continue.
+        """
+        if self._handle_nav(key):
+            return None
+        return self._handle_action(key)
+
+    def adjust_scroll(self) -> None:
+        """Expose the private scroll-adjustment for direct testing."""
+        self._adjust_scroll()
+
+    @property
+    def idx(self) -> int:
+        """Current cursor index."""
+        return self._idx
+
+    @property
+    def top(self) -> int:
+        """Current scroll offset."""
+        return self._top
+
 
 # ---------------------------------------------------------------------------
 # Strategies
@@ -79,15 +126,15 @@ def _proper_tree_st(draw, _prefix: str = "", _depth: int = 0) -> list[TreeNode]:
 @st.composite
 def _dir_with_children_st(
     draw,
-) -> tuple[list[TreeNode], list[tuple[str, bool]]]:
+) -> tuple[list[TreeNode], list[Entry]]:
     """Draw an unexpanded dir node at index 0, optional siblings, and a children spec."""
     dir_name = draw(_NAME)
     dir_node = TreeNode(name=dir_name, path=dir_name, is_dir=True, depth=0)
     siblings = draw(st.lists(_node_st(depth=0), min_size=0, max_size=5))
 
     child_names = draw(st.lists(_NAME, min_size=1, max_size=8))
-    children: list[tuple[str, bool]] = [
-        (name, draw(st.booleans())) for name in child_names
+    children: list[Entry] = [
+        Entry(display=name, has_children=draw(st.booleans())) for name in child_names
     ]
     return [dir_node] + siblings, children
 
@@ -105,16 +152,16 @@ def _browser(
     idx: int = 0,
     top: int = 0,
     config: BrowserConfig = BrowserConfig(),
-    children: list[tuple[str, bool]] | None = None,
-) -> TreeBrowser:
-    """Return a seeded TreeBrowser backed by *children* (or empty) for expansions."""
+    children: list[Entry] | None = None,
+) -> _HeadlessBrowser:
+    """Return a seeded _HeadlessBrowser backed by *children* (or empty) for expansions."""
     dir_path = nodes[0].path if nodes else ""
     ls = (
         (lambda path: children if path == dir_path else [])
         if children
         else (lambda _: [])
     )
-    browser = TreeBrowser(ls, "test", config)
+    browser = _HeadlessBrowser(ls, "test", config)
     browser.seed(nodes, idx=idx, top=top)
     return browser
 

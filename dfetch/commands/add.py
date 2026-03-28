@@ -45,7 +45,6 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-import re
 from collections.abc import Generator
 
 from rich.prompt import Confirm, Prompt
@@ -58,21 +57,23 @@ from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest, append_entry_manifest_file
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote
+from dfetch.manifest.version import Version
 from dfetch.project import create_sub_project, create_super_project
 from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.subproject import SubProject
+from dfetch.project.superproject import SuperProject
 from dfetch.project.svnsubproject import SvnSubProject
-from dfetch.terminal import LsFunction
+from dfetch.terminal import Entry, LsFunction
 from dfetch.terminal.tree_browser import (
     BrowserConfig,
     TreeNode,
     deselected_paths,
     run_tree_browser,
+    tree_pick_from_names,
     tree_single_pick,
 )
 from dfetch.util.purl import vcs_url_to_purl
 from dfetch.util.versions import (
-    VersionRef,
     is_commit_sha,
     prioritise_default,
     sort_tags_newest_first,
@@ -83,14 +84,25 @@ logger = get_logger(__name__)
 
 @contextlib.contextmanager
 def browse_tree(subproject: SubProject, version: str = "") -> Generator[LsFunction]:
-    """Yield an ``LsFunction`` for interactively browsing *subproject*'s remote tree."""
+    """Yield an ``LsFunction`` for interactively browsing *subproject*'s remote tree.
+
+    Adapts the VCS-level ``(name, is_dir)`` tuples into :class:`~dfetch.terminal.Entry`
+    objects so the terminal tree browser has no knowledge of VCS internals.
+    """
     if isinstance(subproject, (GitSubProject, SvnSubProject)):
         remote = subproject._remote_repo  # pylint: disable=protected-access
-        with remote.browse_tree(version) as ls_function:
-            yield ls_function
+        with remote.browse_tree(version) as vcs_ls:
+
+            def ls(path: str = "") -> list[Entry]:
+                return [
+                    Entry(display=name, has_children=is_dir)
+                    for name, is_dir in vcs_ls(path)
+                ]
+
+            yield ls
     else:
 
-        def _empty(_path: str = "") -> list[tuple[str, bool]]:
+        def _empty(_path: str = "") -> list[Entry]:
             return []
 
         yield _empty
@@ -152,8 +164,7 @@ class Add(dfetch.commands.command.Command):
         # Determines VCS type; tries to reach the remote.
         subproject = create_sub_project(probe_entry)
 
-        if not args.interactive:
-            superproject.manifest.check_name_uniqueness(probe_entry.name)
+        existing_names = {p.name for p in superproject.manifest.projects}
 
         remote_to_use = superproject.manifest.find_remote_for_url(
             probe_entry.remote_url
@@ -178,51 +189,61 @@ class Add(dfetch.commands.command.Command):
             )
         else:
             project_entry = _non_interactive_entry(
-                name=probe_entry.name,
+                name=_unique_name(probe_entry.name, existing_names),
                 remote_url=remote_url,
                 branch=default_branch,
                 dst=guessed_dst,
                 remote_to_use=remote_to_use,
             )
+            logger.print_info_line(remote_url, "Adding project to manifest")
+            logger.print_yaml(project_entry.as_yaml())
 
         if project_entry is None:
             return
 
-        if not args.force and not Confirm.ask("Add project to manifest?", default=True):
-            logger.info(
-                "  [bold bright_yellow]> Aborting add of project[/bold bright_yellow]"
-            )
-            return
-
-        append_entry_manifest_file(
-            (superproject.root_directory / superproject.manifest.path).absolute(),
-            project_entry,
-        )
-
-        logger.print_info_line(
-            project_entry.name,
-            f"Added '{project_entry.name}' to manifest '{superproject.manifest.path}'",
-        )
-
-        # Offer to run update immediately (only when we already prompted the user,
-        # i.e. not in --force mode where we want zero interaction).
-        if not args.force and Confirm.ask(
-            f"Run 'dfetch update {project_entry.name}' now?", default=True
-        ):
-            # pylint: disable=import-outside-toplevel
-            from dfetch.commands.update import Update  # local import avoids circular
-
-            update_args = argparse.Namespace(
-                projects=[project_entry.name],
-                force=False,
-                no_recommendations=False,
-            )
-            Update()(update_args)
+        _finalize_add(project_entry, args, superproject)
 
 
 # ---------------------------------------------------------------------------
 # Entry construction
 # ---------------------------------------------------------------------------
+
+
+def _finalize_add(
+    project_entry: ProjectEntry,
+    args: argparse.Namespace,
+    superproject: SuperProject,
+) -> None:
+    """Write *project_entry* to the manifest and optionally run update."""
+    if not args.force and not Confirm.ask("Add project to manifest?", default=True):
+        logger.info(
+            "  [bold bright_yellow]> Aborting add of project[/bold bright_yellow]"
+        )
+        return
+
+    append_entry_manifest_file(
+        (superproject.root_directory / superproject.manifest.path).absolute(),
+        project_entry,
+    )
+    logger.print_info_line(
+        project_entry.name,
+        f"Added '{project_entry.name}' to manifest '{superproject.manifest.path}'",
+    )
+
+    # Offer to run update immediately (only when we already prompted the user,
+    # i.e. not in --force mode where we want zero interaction).
+    if not args.force and Confirm.ask(
+        f"Run 'dfetch update {project_entry.name}' now?", default=True
+    ):
+        # pylint: disable=import-outside-toplevel
+        from dfetch.commands.update import Update  # local import avoids circular
+
+        update_args = argparse.Namespace(
+            projects=[project_entry.name],
+            force=False,
+            no_recommendations=False,
+        )
+        Update()(update_args)
 
 
 def _non_interactive_entry(
@@ -247,18 +268,19 @@ def _build_entry(  # pylint: disable=too-many-arguments
     name: str,
     remote_url: str,
     dst: str,
-    version: VersionRef,
+    version: Version,
     src: str,
     ignore: list[str],
     remote_to_use: Remote | None,
 ) -> ProjectEntry:
     """Assemble a ``ProjectEntry`` from the fields collected by the wizard."""
+    kind, value = version.field
     entry_dict: ProjectEntryDict = ProjectEntryDict(
         name=name,
         url=remote_url,
         dst=dst,
     )
-    entry_dict[version.kind] = version.value  # type: ignore[literal-required]
+    entry_dict[kind] = value  # type: ignore[literal-required]
     if src:
         entry_dict["src"] = src
     if ignore:
@@ -274,6 +296,24 @@ def _build_entry(  # pylint: disable=too-many-arguments
 # ---------------------------------------------------------------------------
 
 
+def _show_url_fields(
+    name: str, remote_url: str, default_branch: str, remote_to_use: Remote | None
+) -> None:
+    """Print the fields determined solely by the URL (name, remote, url, repo-path)."""
+    seed = _build_entry(
+        name=name,
+        remote_url=remote_url,
+        dst=name,
+        version=Version(branch=default_branch),
+        src="",
+        ignore=[],
+        remote_to_use=remote_to_use,
+    ).as_yaml()
+    logger.print_yaml(
+        {k: seed[k] for k in ("name", "remote", "url", "repo-path") if k in seed}
+    )
+
+
 def _interactive_flow(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     remote_url: str,
     default_name: str,
@@ -287,20 +327,7 @@ def _interactive_flow(  # pylint: disable=too-many-arguments,too-many-positional
     logger.print_info_line(remote_url, "Adding project through interactive wizard")
 
     name = _ask_name(default_name, manifest)
-
-    # Show the fields that are fixed by the URL right after the name is confirmed.
-    seed = _build_entry(
-        name=name,
-        remote_url=remote_url,
-        dst=name,
-        version=VersionRef("branch", default_branch),
-        src="",
-        ignore=[],
-        remote_to_use=remote_to_use,
-    ).as_yaml()
-    for key in ("name", "remote", "url", "repo-path"):
-        if key in seed and isinstance(seed[key], (str, list)):
-            logger.print_yaml_field(key, seed[key], first=key == "name")  # type: ignore[arg-type]
+    _show_url_fields(name, remote_url, default_branch, remote_to_use)
 
     dst = _ask_dst(name, default_dst)
     if dst != name:
@@ -311,9 +338,10 @@ def _interactive_flow(  # pylint: disable=too-many-arguments,too-many-positional
         subproject.list_of_branches(),
         subproject.list_of_tags(),
     )
-    logger.print_yaml_field(version.kind, version.value)
+    version_kind, version_value = version.field
+    logger.print_yaml_field(version_kind, version_value)
 
-    with browse_tree(subproject, version.value) as ls_function:
+    with browse_tree(subproject, version_value) as ls_function:
         src = _ask_src(ls_function)
         if src:
             logger.print_yaml_field("src", src)
@@ -339,15 +367,6 @@ def _interactive_flow(  # pylint: disable=too-many-arguments,too-many-positional
 _PROMPT_FORMAT = "  [green]?[/green] [bold]{label}[/bold]"
 
 
-def _prompt(label: str, default: str) -> str:
-    """Single-line prompt with TTY ghost text or rich fallback."""
-    if terminal.is_tty():
-        return terminal.ghost_prompt(
-            f"  {terminal.GREEN}?{terminal.RESET} {label}", default
-        ).strip()
-    return Prompt.ask(_PROMPT_FORMAT.format(label), default=default).strip()
-
-
 def _unique_name(base: str, existing: set[str]) -> str:
     """Return *base* if unused, otherwise append *-1*, *-2*, … until unique."""
     if base not in existing:
@@ -363,7 +382,7 @@ def _ask_name(default: str, manifest: Manifest) -> str:
     existing_names = {p.name for p in manifest.projects}
     suggested = _unique_name(default, existing_names)
     while True:
-        name = _prompt("Name", suggested)
+        name = terminal.prompt("Name", suggested)
         try:
             manifest.validate_project_name(name)
         except ValueError as exc:
@@ -379,7 +398,7 @@ def _ask_dst(name: str, default: str) -> str:
     """Prompt for the destination path, re-asking on path-traversal attempts."""
     suggested = default or name
     while True:
-        dst = _prompt("Destination", suggested)
+        dst = terminal.prompt("Destination", suggested)
         if not dst:
             dst = name  # fall back to project name
         try:
@@ -395,24 +414,21 @@ def _ask_version(
     default_branch: str,
     branches: list[str],
     tags: list[str],
-) -> VersionRef:
-    """Choose a version (branch / tag / SHA) and return it as a ``VersionRef``.
+) -> Version:
+    """Choose a version (branch / tag / SHA) and return it as a :class:`~dfetch.manifest.version.Version`.
 
     In a TTY shows a hierarchical tree browser (names split on '/').
     Outside a TTY (CI, pipe, tests) falls back to a numbered text menu.
     """
-    ordered_branches = prioritise_default(branches, default_branch)
-    ordered_tags = sort_tags_newest_first(tags)
-
-    choices: list[VersionRef] = [
-        *[VersionRef("branch", b) for b in ordered_branches],
-        *[VersionRef("tag", t) for t in ordered_tags],
+    choices: list[Version] = [
+        *[Version(branch=b) for b in prioritise_default(branches, default_branch)],
+        *[Version(tag=t) for t in sort_tags_newest_first(tags)],
     ]
 
     if terminal.is_tty() and choices:
-        return _ask_version_tree(default_branch, branches, tags, choices)
+        return _ask_version_tree(default_branch, choices)
 
-    return _text_version_pick(choices, default_branch, branches, tags)
+    return _text_version_pick(choices, default_branch)
 
 
 def _ask_src(ls_function: LsFunction) -> str:
@@ -452,7 +468,7 @@ def _ask_ignore(ls_function: LsFunction, src: str = "") -> list[str]:
     to the repo root.
     """
 
-    def _scoped_ls(path: str = "") -> list[tuple[str, bool]]:
+    def _scoped_ls(path: str = "") -> list[Entry]:
         return ls_function(f"{src}/{path}" if path else src)
 
     browse_fn: LsFunction = _scoped_ls if src else ls_function
@@ -475,7 +491,7 @@ def _ask_ignore(ls_function: LsFunction, src: str = "") -> list[str]:
         + "  (comma-separated paths to ignore, or Enter to skip)",
         default="",
     ).strip()
-    return [p.strip() for p in raw.split(",") if p.strip()] if raw else []
+    return [p.strip() for p in raw.split(",") if p.strip()]
 
 
 # ---------------------------------------------------------------------------
@@ -483,149 +499,66 @@ def _ask_ignore(ls_function: LsFunction, src: str = "") -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def _version_ls_function(
-    branches: list[str],
-    tags: list[str],
-    default_branch: str,
-) -> LsFunction:
-    """Build a ls_function that exposes branches and tags as a /-split tree.
+def _resolve_raw_version(raw: str, choices: list[Version]) -> Version | None:
+    """Return the matching :class:`Version` from *choices*, or ``None`` when *raw* is empty.
 
-    Leaf nodes carry a dim kind label (``branch`` / ``tag``) so they are
-    visually distinct from directory segments.  The tree browser strips ANSI
-    when building ``node.path``, so the stored path is always the clean name.
+    Checks choices first (preserving branch/tag distinction), then falls back
+    to SHA detection, then treats the input as an unknown branch name.
     """
-    leaf_kind: dict[str, str] = {b: "branch" for b in branches}
-    leaf_kind.update({t: "tag" for t in tags})
-    all_names: list[str] = sorted(leaf_kind)
+    if not raw:
+        return None
+    for v in choices:
+        if v.field[1] == raw:
+            return v
+    if is_commit_sha(raw):
+        return Version(revision=raw)
+    return Version(branch=raw)
 
-    def ls(path: str) -> list[tuple[str, bool]]:
-        prefix = (path + "/") if path else ""
-        seen: dict[str, bool] = {}  # first segment → is_dir
 
-        for name in all_names:
-            if not name.startswith(prefix):
-                continue
-            rest = name[len(prefix) :]
-            if not rest:
-                continue
-            seg = rest.split("/")[0]
-            if seg in seen:
-                continue
-            full = prefix + seg
-            seen[seg] = any(n.startswith(full + "/") for n in all_names)
+_MAX_LISTED = 30
 
-        def _sort_key(seg: str) -> tuple[int, str]:
-            full = prefix + seg
-            on_default_path = full == default_branch or default_branch.startswith(
-                full + "/"
-            )
-            return (0 if on_default_path else 1, seg)
 
-        result: list[tuple[str, bool]] = []
-        for seg in sorted(seen, key=_sort_key):
-            full = prefix + seg
-            if seen[seg]:  # is_dir
-                result.append((seg, True))
-            else:
-                kind = leaf_kind[full]
-                default_marker = (
-                    f" {terminal.DIM}(default){terminal.RESET}"
-                    if full == default_branch
-                    else ""
-                )
-                result.append(
-                    (
-                        f"{seg} {terminal.DIM}{kind}{terminal.RESET}{default_marker}",
-                        False,
-                    )
-                )
+def _version_menu_entries(choices: list[Version], default_branch: str) -> list[Entry]:
+    """Build the numbered branch/tag pick list as :class:`~dfetch.terminal.Entry` objects."""
+    entries: list[Entry] = []
+    for ref in choices[:_MAX_LISTED]:
+        kind, value = ref.field
+        marker = (
+            "  [dim](default)[/dim]"
+            if value == default_branch and kind == "branch"
+            else ""
+        )
+        display = f"{value}{marker}  [dim]{kind}[/dim]"
+        entries.append(Entry(display=display, has_children=False, value=value))
+    return entries
 
-        return result
 
-    return ls
+def _text_version_pick(choices: list[Version], default_branch: str) -> Version:
+    """Numbered text-based version picker (non-TTY fallback and Esc fallback in TTY)."""
+    entries = _version_menu_entries(choices, default_branch)
+    hidden = len(choices) - len(entries)
+    note = f"  [dim]  … and {hidden} more (type name directly)[/dim]" if hidden else ""
+
+    raw = terminal.numbered_prompt(
+        entries, "Version", "number, branch, tag, or SHA", default_branch, note=note
+    )
+    return _resolve_raw_version(raw, choices) or Version(branch=default_branch)
 
 
 def _ask_version_tree(
     default_branch: str,
-    branches: list[str],
-    tags: list[str],
-    choices: list[VersionRef],
-) -> VersionRef:  # pragma: no cover - interactive TTY only
+    choices: list[Version],
+) -> Version:  # pragma: no cover - interactive TTY only
     """Branch/tag picker using the hierarchical tree browser.
 
     Splits names by '/' to build a navigable tree.  Falls back to the
-    numbered text picker on Esc or when the path can't be resolved.
+    numbered text picker on Esc or when the selected path isn't in *choices*.
     """
-    ls = _version_ls_function(branches, tags, default_branch)
-    selected = tree_single_pick(ls, "Version", esc_label="free-type")
-
-    # Strip the display suffixes added by _version_ls_function: " branch", " tag",
-    # and the optional " (default)" marker so the clean name matches the original sets.
-    clean = re.sub(r"\s+\(default\)\s*$", "", selected).strip()
-    clean = re.sub(r"\s+(branch|tag)\s*$", "", clean).strip()
-
-    branch_set = set(branches)
-    tag_set = set(tags)
-    if clean in branch_set:
-        return VersionRef("branch", clean)
-    if clean in tag_set:
-        return VersionRef("tag", clean)
-
-    return _text_version_pick(choices, default_branch, branches, tags)
-
-
-def _text_version_pick(
-    choices: list[VersionRef],
-    default_branch: str,
-    branches: list[str],
-    tags: list[str],
-) -> VersionRef:
-    """Numbered text-based version picker (non-TTY fallback)."""
-    _print_version_menu(choices, default_branch)
-
-    branch_set = set(branches)
-    tag_set = set(tags)
-
-    while True:
-        raw = Prompt.ask(
-            _PROMPT_FORMAT.format(label="Version") + "  (number, branch, tag, or SHA)",
-            default=default_branch,
-        ).strip()
-
-        if raw.isdigit():
-            idx = int(raw) - 1
-            if 0 <= idx < len(choices):
-                return choices[idx]
-            logger.warning(f"  Pick a number between 1 and {len(choices)}.")
-            continue
-
-        if raw in branch_set:
-            return VersionRef("branch", raw)
-        if raw in tag_set:
-            return VersionRef("tag", raw)
-        if is_commit_sha(raw):
-            return VersionRef("revision", raw)
-        if raw:
-            return VersionRef("branch", raw)
-
-        logger.warning("  Please enter a number or a version value.")
-
-
-def _print_version_menu(choices: list[VersionRef], default_branch: str) -> None:
-    """Render the numbered branch/tag pick list (text fallback)."""
-    if not choices:
-        return
-
-    lines: list[str] = []
-    for i, ref in enumerate(choices, start=1):
-        marker = (
-            " (default)" if ref.value == default_branch and ref.kind == "branch" else ""
-        )
-        colour = "cyan" if ref.kind == "branch" else "magenta"
-        lines.append(
-            f"  [bold white]{i:>2}[/bold white]"
-            f"  [{colour}]{ref.value}[/{colour}]{marker}"
-            f"  [dim]{ref.kind}[/dim]"
-        )
-
-    logger.info("\n".join(lines))
+    labels = {v.field[1]: v.field[0] for v in choices}
+    selected = tree_pick_from_names(
+        labels, "Version", priority_path=default_branch, esc_label="list"
+    )
+    for v in choices:
+        if v.field[1] == selected:
+            return v
+    return _text_version_pick(choices, default_branch)

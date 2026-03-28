@@ -237,9 +237,9 @@ root_packages = ["dfetch"]
 #       ↓
 #  dfetch.project    (core domain — knows about manifest & vcs)
 #       ↓
-#  dfetch.manifest | dfetch.vcs  (independent lower-level modules)
+#  dfetch.manifest | dfetch.vcs  (independent domain services)
 #       ↓
-#  dfetch.util | dfetch.log | dfetch.terminal      (foundational utilities)
+#  dfetch.util | dfetch.log | dfetch.terminal  (foundational — siblings cannot import each other)
 
 [[tool.importlinter.contracts]]
 name = "C4 architecture layers"
