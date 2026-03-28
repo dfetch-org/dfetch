@@ -265,6 +265,10 @@ class TreeBrowser:
             )
             for entry in root_entries
         ]
+
+        if len(self._nodes) == 1 and self._nodes[0].is_dir:
+            self._expand(0)
+
         screen = Screen()
 
         while True:

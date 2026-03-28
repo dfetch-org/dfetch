@@ -42,11 +42,11 @@ def step_impl(context, remote_url):
     prompt_answers: deque[str] = deque()
 
     for row in context.table:
-        prompt = row["prompt_contains"]
-        answer = row["answer"]
-        if "Add project to manifest" in prompt:
+        question = row["Question"]
+        answer = row["Answer"]
+        if "Add project to manifest" in question:
             add_confirm = answer.lower() not in ("n", "no", "false")
-        elif "update" in prompt.lower() and "run" in prompt.lower():
+        elif "update" in question.lower() and "run" in question.lower():
             update_confirm = answer.lower() not in ("n", "no", "false")
         else:
             prompt_answers.append(answer)
@@ -100,3 +100,14 @@ def step_impl(context, message):
     assert (
         message in context.cmd_output
     ), f"Expected error message '{message}' not found in output:\n{context.cmd_output}"
+
+
+@then("the manifest '{name}' does not contain '{text}'")
+def step_impl(_, name, text):
+    with open(name, "r", encoding="utf-8") as fh:
+        actual = fh.read()
+
+    if text in actual:
+        print("Actual manifest:")
+        print(actual)
+        assert False, f"Expected text '{text}' should not be in manifest"
