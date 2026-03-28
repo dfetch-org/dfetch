@@ -31,7 +31,7 @@ Feature: Add a project to the manifest via the CLI
                 dst: ext/MyLib
             """
 
-    Scenario: Duplicate project name is rejected
+    Scenario: Duplicate project name is auto-renamed in non-interactive mode
         Given the manifest 'dfetch.yaml'
             """
             manifest:
@@ -41,7 +41,12 @@ Feature: Add a project to the manifest via the CLI
                   url: some-remote-server/MyLib.git
             """
         When I add "some-remote-server/MyLib.git" with force
-        Then the command fails with "already exists in manifest"
+        Then the manifest 'dfetch.yaml' contains entry
+            """
+              - name: MyLib-1
+                url: some-remote-server/MyLib.git
+                branch: master
+            """
 
     Scenario: Destination is guessed from common prefix of existing projects
         Given the manifest 'dfetch.yaml'
@@ -113,6 +118,86 @@ Feature: Add a project to the manifest via the CLI
                 url: some-remote-server/MyLib.git
                 tag: v1
             """
+
+    Scenario: Interactive add with src subpath
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+              projects:
+                - name: existing
+                  url: some-remote-server/existing.git
+            """
+        When I interactively add "some-remote-server/MyLib.git" with inputs
+            | prompt_contains           | answer      |
+            | Project name              | my-lib      |
+            | Destination path          | my-lib      |
+            | Version                   | master      |
+            | Source path               | docs/api    |
+            | Ignore paths              |             |
+            | Add project to manifest?  | y           |
+            | Run update                | n           |
+        Then the manifest 'dfetch.yaml' contains entry
+            """
+              - name: my-lib
+                url: some-remote-server/MyLib.git
+                branch: master
+                src: docs/api
+            """
+
+    Scenario: Interactive add with ignore list
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+              projects:
+                - name: existing
+                  url: some-remote-server/existing.git
+            """
+        When I interactively add "some-remote-server/MyLib.git" with inputs
+            | prompt_contains           | answer       |
+            | Project name              | my-lib       |
+            | Destination path          | my-lib       |
+            | Version                   | master       |
+            | Source path               |              |
+            | Ignore paths              | docs, tests  |
+            | Add project to manifest?  | y            |
+            | Run update                | n            |
+        Then the manifest 'dfetch.yaml' contains entry
+            """
+              - name: my-lib
+                url: some-remote-server/MyLib.git
+                branch: master
+                ignore:
+                - docs
+                - tests
+            """
+
+    Scenario: Interactive add triggers immediate fetch when update is accepted
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+              projects:
+              - name: existing
+                url: some-remote-server/existing.git
+            """
+        When I interactively add "some-remote-server/MyLib.git" with inputs
+            | prompt_contains           | answer  |
+            | Project name              | MyLib   |
+            | Destination path          | MyLib   |
+            | Version                   | master  |
+            | Source path               |         |
+            | Ignore paths              |         |
+            | Add project to manifest?  | y       |
+            | Run update                | y       |
+        Then the manifest 'dfetch.yaml' contains entry
+            """
+              - name: MyLib
+                url: some-remote-server/MyLib.git
+                branch: master
+            """
+        And 'MyLib/README.md' exists
 
     Scenario: Interactive add with abort does not modify manifest
         Given the manifest 'dfetch.yaml'
