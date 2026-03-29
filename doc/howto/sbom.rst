@@ -9,7 +9,7 @@ dependency with its URL, revision, and auto-detected license.  Downstream
 tools can use the SBOM to monitor for known vulnerabilities or enforce a
 license policy across an organisation.
 
-.. asciinema:: asciicasts/sbom.cast
+.. asciinema:: ../asciicasts/sbom.cast
 
 .. code-block:: sh
 

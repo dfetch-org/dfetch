@@ -61,7 +61,7 @@ path based on your existing projects.
 
     dfetch add https://github.com/some-org/some-repo.git
 
-.. asciinema:: asciicasts/add.cast
+.. asciinema:: ../asciicasts/add.cast
 
 Override individual fields with flags:
 
@@ -90,7 +90,7 @@ inside the remote repository, or configure which paths to ignore.
 
     dfetch add -i https://github.com/some-org/some-repo.git
 
-.. asciinema:: asciicasts/interactive-add.cast
+.. asciinema:: ../asciicasts/interactive-add.cast
 
 The wizard walks through each field in turn:
 

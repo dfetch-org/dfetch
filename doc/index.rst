@@ -43,36 +43,36 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    :maxdepth: 2
    :caption: Tutorials
 
-   installation
-   getting_started
+   tutorials/installation
+   tutorials/getting_started
 
 .. toctree::
    :maxdepth: 2
    :caption: How-to Guides
 
-   migration
-   adding-a-project
-   updating-projects
-   patching
-   check-ci
-   sbom
-   troubleshooting
-   contributing
+   howto/migration
+   howto/adding-a-project
+   howto/updating-projects
+   howto/patching
+   howto/check-ci
+   howto/sbom
+   howto/troubleshooting
+   howto/contributing
 
 .. toctree::
    :maxdepth: 2
    :caption: Reference
 
-   manifest
-   commands
-   cli_cheatsheet
-   changelog
-   legal
+   reference/manifest
+   reference/commands
+   reference/cli_cheatsheet
+   reference/changelog
+   reference/legal
 
 .. toctree::
    :maxdepth: 2
    :caption: Explanation
 
-   vendoring
-   alternatives
-   internal
+   explanation/vendoring
+   explanation/alternatives
+   explanation/internal
