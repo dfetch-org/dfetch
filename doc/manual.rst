@@ -4,9 +4,8 @@ Manual
 ======
 
 *Dfetch* acts on the projects listed in the :ref:`Manifest`.
-Each action is a separate sub-command. Commands are grouped here from the
-core day-to-day workflow through patch management and CI/CD integration.
-For a step-by-step walkthrough see :doc:`getting_started`.
+Each action is a separate sub-command.
+For step-by-step guides see :doc:`getting_started` and :doc:`patching`.
 
 .. program-output:: dfetch --help
    :shell:
@@ -85,10 +84,7 @@ Update
 Patching
 --------
 
-*Dfetch* has a first-class patch workflow. ``dfetch diff`` captures local
-changes as numbered patch files that are re-applied automatically on every
-``dfetch update``. When a fix is ready to share upstream, ``dfetch
-format-patch`` produces a contributor-ready unified diff.
+See :doc:`patching` for a step-by-step guide to the full patch workflow.
 
 Diff
 ~~~~
@@ -100,8 +96,6 @@ Diff
 
 .. asciinema:: asciicasts/diff.cast
 
-.. automodule:: dfetch.commands.diff
-
 Update patch
 ~~~~~~~~~~~~
 .. argparse::
@@ -112,8 +106,6 @@ Update patch
 
 .. asciinema:: asciicasts/update-patch.cast
 
-.. automodule:: dfetch.commands.update_patch
-
 Format patch
 ~~~~~~~~~~~~
 .. argparse::
@@ -123,8 +115,6 @@ Format patch
    :path: format-patch
 
 .. asciinema:: asciicasts/format-patch.cast
-
-.. automodule:: dfetch.commands.format_patch
 
 ----
 
