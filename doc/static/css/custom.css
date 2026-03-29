@@ -580,177 +580,278 @@ h1::after {
 }
 
 /* ============================================================
-   CLI Cheatsheet
+   CLI Cheatsheet — dark terminal card with syntax colouring
    ============================================================ */
+
+/* Outer card */
 .cheatsheet {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  margin: 1.5rem 0 2.5rem;
-}
-
-.cs-group {
-  border: 1px solid var(--border);
-  border-radius: var(--r);
+  background: linear-gradient(150deg, #1c1410 0%, #281a0f 100%);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shad-xl);
   overflow: hidden;
-  box-shadow: var(--shad-sm);
-  background: #fff;
-  break-inside: avoid;
-  page-break-inside: avoid;
+  margin: 2rem 0 3rem;
+  font-family: inherit;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
-/* -- group header -- */
-.cs-header {
-  padding: 0.55rem 1rem;
+/* ── Masthead ─────────────────────────────────────────── */
+.cs-masthead {
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem 0.9rem;
+  background: rgba(194, 98, 10, 0.12);
+  border-bottom: 1px solid rgba(194, 98, 10, 0.25);
 }
 
-.cs-title {
-  font-family: "Inter", sans-serif;
+.cs-masthead-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+/* "df" logo badge */
+.cs-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-family: "JetBrains Mono", monospace;
   font-size: 0.875rem;
   font-weight: 700;
+  letter-spacing: -0.04em;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(194, 98, 10, 0.5);
+}
+
+.cs-masthead-title {
+  font-family: "Inter", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #f0e8dc;
   letter-spacing: -0.01em;
   line-height: 1.3;
 }
 
-.cs-sub {
+.cs-masthead-tagline {
   font-family: "Inter", sans-serif;
-  font-size: 0.6875rem;
-  font-weight: 400;
-  opacity: 0.72;
+  font-size: 0.7rem;
+  color: rgba(240, 232, 220, 0.45);
+  margin-top: 0.1rem;
 }
 
-.cs-primary { background: var(--primary);  color: #fff; }
-.cs-accent  { background: var(--accent);   color: #fff; }
-.cs-dark    { background: #1e1610;         color: #f0e8dc; }
-.cs-muted   {
-  background: var(--bg-tint);
-  color: var(--text);
-  border-bottom: 2px solid var(--border);
-}
-.cs-muted .cs-sub { opacity: 0.5; }
-
-/* -- command rows -- */
-.cs-table {
-  width: 100%;
-  border-collapse: collapse;
-  /* override the general table.docutils rules */
-  margin: 0 !important;
-  box-shadow: none !important;
-  border: none !important;
-  border-radius: 0 !important;
-}
-
-.cs-table tr {
-  border-bottom: 1px solid var(--border);
-}
-
-.cs-table tr:last-child {
-  border-bottom: none;
-}
-
-.cs-table tr:nth-child(even) td {
-  background: rgba(254, 248, 240, 0.4) !important;
-}
-
-.cs-cmd {
-  padding: 0.3rem 0.5rem 0.3rem 1rem;
-  vertical-align: middle;
-  width: 50%;
-  white-space: nowrap;
-}
-
-/* the <code> inside .cs-cmd should look like plain mono, not a styled badge */
-.cs-cmd code {
-  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace !important;
-  font-size: 0.775rem !important;
-  font-weight: 500;
-  color: var(--primary-dark) !important;
+.cs-masthead-tagline code {
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: 0.7rem !important;
   background: none !important;
   border: none !important;
   padding: 0 !important;
-  line-height: 1.5;
+  color: rgba(194, 98, 10, 0.8) !important;
 }
 
-/* optional/variable parts shown in muted style */
-.cs-cmd em {
-  font-style: normal;
-  color: var(--text-muted);
-  font-weight: 400;
+/* Syntax legend in the top-right */
+.cs-masthead-legend {
+  display: flex;
+  gap: 0.625rem;
+  flex-shrink: 0;
 }
 
-.cs-desc {
-  padding: 0.3rem 1rem 0.3rem 0.5rem;
+/* ── Token sample pills in the legend ── */
+.cs-tok {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.cs-tok-sc { background: rgba(232, 144, 74, 0.18); color: #e8904a; }
+.cs-tok-fl { background: rgba(122, 168, 197, 0.18); color: #7aa8c5; }
+.cs-tok-ag { background: rgba(160, 144, 128, 0.14); color: #9b8e85; }
+
+/* ── Two-column body ──────────────────────────────────── */
+.cs-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 1.25rem 1.5rem 1.25rem;
+  column-gap: 0;
+}
+
+.cs-col {
+  /* hairline divider between columns */
+  padding: 0 1.25rem;
+}
+
+.cs-col:first-child {
+  padding-left: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.cs-col:last-child {
+  padding-right: 0;
+}
+
+/* ── Section labels ───────────────────────────────────── */
+.cs-section {
+  margin-bottom: 1.25rem;
+}
+
+.cs-section:last-child {
+  margin-bottom: 0;
+}
+
+.cs-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  margin-bottom: 0.2rem;
   font-family: "Inter", sans-serif;
-  font-size: 0.775rem;
-  color: var(--text-muted);
-  line-height: 1.5;
-  vertical-align: middle;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom: 1px solid;
 }
 
-/* collapse to single column on narrow viewports */
-@media (max-width: 700px) {
-  .cheatsheet {
+.cs-label-pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cs-label-sub {
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.65;
+  margin-left: auto;
+  font-size: 0.6rem;
+}
+
+/* Colour variants */
+.cs-l-primary {
+  color: #e8904a;
+  border-color: rgba(232, 144, 74, 0.3);
+}
+.cs-l-primary .cs-label-pip { background: #e8904a; }
+
+.cs-l-accent {
+  color: #7aa8c5;
+  border-color: rgba(122, 168, 197, 0.3);
+}
+.cs-l-accent .cs-label-pip { background: #7aa8c5; }
+
+.cs-l-ci {
+  color: #b08ac0;
+  border-color: rgba(176, 138, 192, 0.3);
+}
+.cs-l-ci .cs-label-pip { background: #b08ac0; }
+
+.cs-l-utility {
+  color: #8ba88b;
+  border-color: rgba(139, 168, 139, 0.3);
+}
+.cs-l-utility .cs-label-pip { background: #8ba88b; }
+
+/* ── Command rows ─────────────────────────────────────── */
+.cs-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.28rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.cs-row:last-child {
+  border-bottom: none;
+}
+
+.cs-syn {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-size: 0.775rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+/* Token colours */
+.cs-kw { color: rgba(240, 232, 220, 0.38); } /* dfetch — dim, always same */
+.cs-sc { color: #e8904a; font-weight: 600; } /* subcommand — amber hero  */
+.cs-fl { color: #7aa8c5; }                   /* --flag / -f — accent blue */
+.cs-ag { color: #9b8e85; }                   /* <arg> / [opt] — muted     */
+
+.cs-dsc {
+  font-family: "Inter", sans-serif;
+  font-size: 0.75rem;
+  color: rgba(240, 232, 220, 0.52);
+  line-height: 1.45;
+  min-width: 0;
+}
+
+/* inline code inside descriptions */
+.cs-dsc code {
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: 0.7rem !important;
+  background: rgba(194, 98, 10, 0.15) !important;
+  border: none !important;
+  padding: 0.05em 0.3em !important;
+  border-radius: 3px !important;
+  color: #d97a3a !important;
+}
+
+/* ── Footer ───────────────────────────────────────────── */
+.cs-footer {
+  padding: 0.6rem 1.5rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: "Inter", sans-serif;
+  font-size: 0.6875rem;
+  color: rgba(240, 232, 220, 0.3);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 720px) {
+  .cs-body {
     grid-template-columns: 1fr;
   }
+  .cs-col:first-child {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    padding-left: 0;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .cs-masthead {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
-/* ============================================================
-   Print — cheatsheet
-   Forces background colours, removes shadows, 2-col on paper.
-   ============================================================ */
+/* ── Print ────────────────────────────────────────────── */
 @media print {
-  body {
-    background-image: none !important;
-  }
-
-  div.documentwrapper,
-  div.body {
+  body, div.documentwrapper, div.body {
     background-image: none !important;
   }
 
   .cheatsheet {
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-  }
-
-  .cs-group {
     box-shadow: none;
-    border: 0.5pt solid #ccc;
-  }
-
-  /* Force header background colours to print */
-  .cs-primary {
-    background: #c2620a !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .cs-accent {
-    background: #4e7fa0 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .cs-dark {
-    background: #1e1610 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .cs-muted {
-    background: #fef8f0 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .cs-table tr:nth-child(even) td {
-    background: rgba(254, 248, 240, 0.5) !important;
+    border: 0.5pt solid #3a2a1e;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
   /* suppress link-URL decoration that browsers add on print */
-  a::after {
-    content: none !important;
-  }
+  a::after { content: none !important; }
 }
