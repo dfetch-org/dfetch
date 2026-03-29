@@ -185,31 +185,36 @@ class Add(dfetch.commands.command.Command):
         guessed_dst = superproject.manifest.guess_destination(probe_entry.name)
         default_branch = subproject.get_default_branch()
 
-        if args.interactive:
-            project_entry = _interactive_flow(
-                remote_url=remote_url,
-                default_name=probe_entry.name,
-                default_dst=guessed_dst,
-                default_branch=default_branch,
-                subproject=subproject,
-                remote_to_use=remote_to_use,
-                manifest=superproject.manifest,
-            )
-        else:
-            project_entry = _non_interactive_entry(
-                name=_unique_name(probe_entry.name, existing_names),
-                remote_url=remote_url,
-                branch=default_branch,
-                dst=guessed_dst,
-                remote_to_use=remote_to_use,
-            )
-            logger.print_info_line(remote_url, "Adding project to manifest")
-            logger.print_yaml(project_entry.as_yaml())
+        try:
+            if args.interactive:
+                project_entry = _interactive_flow(
+                    remote_url=remote_url,
+                    default_name=probe_entry.name,
+                    default_dst=guessed_dst,
+                    default_branch=default_branch,
+                    subproject=subproject,
+                    remote_to_use=remote_to_use,
+                    manifest=superproject.manifest,
+                )
+            else:
+                project_entry = _non_interactive_entry(
+                    name=_unique_name(probe_entry.name, existing_names),
+                    remote_url=remote_url,
+                    branch=default_branch,
+                    dst=guessed_dst,
+                    remote_to_use=remote_to_use,
+                )
+                logger.print_info_line(remote_url, "Adding project to manifest")
+                logger.print_yaml(project_entry.as_yaml())
 
-        if project_entry is None:
-            return
+            if project_entry is None:
+                return
 
-        _finalize_add(project_entry, args, superproject)
+            _finalize_add(project_entry, args, superproject)
+        except KeyboardInterrupt:
+            logger.info(
+                "  [bold bright_yellow]> Aborting add of project[/bold bright_yellow]"
+            )
 
 
 # ---------------------------------------------------------------------------
