@@ -1,23 +1,22 @@
 
 
 .. meta::
-   :description: Dfetch is a VCS-agnostic tool that simplifies dependency management by retrieving
-                 source-only dependencies from various repositories, promoting upstream changes and
-                 allowing local customizations.
-   :keywords: dfetch, dependency management, embedded development, fetch tool, vendoring, multi-repo, dependencies, git, svn, package manager, multi-project, monorepo
+   :description: Dfetch vendors source code from Git or SVN repositories or plain archives directly
+                 into your project. No submodules, no lock-in, fully self-contained. Supply-chain ready.
+   :keywords: dfetch, dependency management, vendoring, git, svn, archive, embedded development, source-only dependencies, multi-repo, supply chain, sbom, license compliance
    :author: Dfetch Contributors
    :google-site-verification: yCnoTogJMh7Nm5gxlREDuONIXT4ijHcj972Y5k9p-sU
 
 .. raw:: html
 
-   <meta property="og:title" content="Dfetch - a source-only no-hassle project-dependency aggregator">
-   <meta property="og:description" content="VCS-agnostic tool to simplify using source-only dependencies of multiple repositories.">
+   <meta property="og:title" content="Dfetch — Vendor dependencies without the pain">
+   <meta property="og:description" content="VCS-agnostic source-only dependency management. Works with Git and SVN. No submodules, no lock-in, supply-chain ready.">
    <meta property="og:image" content="https://dfetch.rtfd.io/static/dfetch-logo.png">
    <meta property="og:url" content="https://dfetch.rtfd.io">
 
    <meta name="twitter:card" content="summary_large_image">
-   <meta name="twitter:title" content="Dfetch - a source-only no-hassle project-dependency aggregator">
-   <meta name="twitter:description" content="VCS-agnostic tool to simplify using source-only dependencies of multiple repositories.">
+   <meta name="twitter:title" content="Dfetch — Vendor dependencies without the pain">
+   <meta name="twitter:description" content="VCS-agnostic source-only dependency management. Works with Git and SVN. No submodules, no lock-in, supply-chain ready.">
    <meta name="twitter:image" content="https://dfetch.rtfd.io/static/dfetch-logo.png">
 
 
@@ -25,16 +24,16 @@
    :width: 100%
    :align: center
 
-Dfetch — *a source-only no-hassle project-dependency aggregator*
-================================================================
+Dfetch — *vendor dependencies without the pain*
+================================================
 
-We make products that can last 15+ years; because of this we want to be able to have all sources
-available to build the entire project from source without depending on external resources.
-For this, we needed a dependency manager flexible enough to retrieve dependencies as plain text
-from various sources. `svn externals`, `git submodules` and `git subtrees` solve a similar
-problem, but not in a VCS-agnostic or completely user-friendly way.
-Dfetch must promote upstreaming changes, but allow for local customisations.
-See :ref:`vendoring` for background on why this matters.
+**Dfetch** copies source code directly into your project — no Git submodules, no SVN externals,
+no hidden external links. Fetch from Git, SVN, or plain archive URLs. Dependencies live as plain,
+readable files inside your own repository. You stay in full control of every line.
+
+Dfetch is supply-chain ready out of the box: generate SBOMs, detect licenses, and export
+reports for Jenkins, SARIF, and Code Climate. Apply local patches and keep them syncable with
+upstream. See :ref:`vendoring` for background on the problem this solves.
 
 .. asciinema:: asciicasts/basic.cast
 
