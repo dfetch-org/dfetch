@@ -23,3 +23,30 @@ manifest:
     patch:
      - doc/_ext/patches/001-autoformat-sphinxcontrib.asciinema.patch
      - doc/_ext/patches/002-fix-options-sphinxcontrib.asciinema.patch
+
+  - name: inter-font
+    remote: github
+    vcs: archive
+    src: web/
+    dst: doc/static/fonts/inter
+    repo-path: rsms/inter/releases/download/v4.1/Inter-4.1.zip
+    ignore:
+      - inter.css
+      - InterDisplay-*
+      - InterVariable*
+      - Inter*Italic*
+      - Inter-Black*
+
+  - name: jetbrains-mono-font
+    remote: github
+    vcs: archive
+    src: fonts/webfonts/
+    dst: doc/static/fonts/jetbrains-mono
+    repo-path: JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip
+    ignore:
+      - JetBrainsMono-Bold*
+      - JetBrainsMono-Extra*
+      - JetBrainsMono-Light*
+      - JetBrainsMono-Semi*
+      - JetBrainsMono-Thin*
+      - JetBrainsMono-*Italic*

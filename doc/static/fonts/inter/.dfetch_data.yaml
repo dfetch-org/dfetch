@@ -1,0 +1,10 @@
+# This is a generated file by dfetch. Don't edit this, but edit the manifest.
+# For more info see https://dfetch.rtfd.io/en/latest/getting_started.html
+dfetch:
+  branch: ''
+  hash: 428a1aa8c0009c0c0583bbb49edd99b7
+  last_fetch: 29/03/2026, 18:08:23
+  patch: ''
+  remote_url: https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip
+  revision: https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip
+  tag: ''
