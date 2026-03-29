@@ -32,7 +32,7 @@ See [alternatives](https://dfetch.readthedocs.io/en/latest/alternatives.html) fo
 The broader concept is known as [*vendoring*](https://dfetch.readthedocs.io/en/latest/vendoring.html).
 
 [**Getting started**](https://dfetch.readthedocs.io/en/latest/getting_started.html) |
-[**Manual**](https://dfetch.readthedocs.io/en/latest/manual.html) |
+[**Commands**](https://dfetch.readthedocs.io/en/latest/commands.html) |
 [**Troubleshooting**](https://dfetch.readthedocs.io/en/latest/troubleshooting.html)  |
 [**Contributing**](https://dfetch.readthedocs.io/en/latest/contributing.html)
 
