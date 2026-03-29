@@ -123,6 +123,10 @@ html_css_files = [
     "css/custom.css",
 ]
 
+html_js_files = [
+    "js/diataxis.js",
+]
+
 html_logo = "images/dfetch_logo.png"
 
 # Theme options are theme-specific and customize the look and feel of a theme

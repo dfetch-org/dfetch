@@ -380,6 +380,63 @@ All flow and mindmap diagrams must use the shared skinparam block from
      - Arial, 12 pt, ``#1c1917``
      - Matches ``--text``
 
+Diataxis section colours
+''''''''''''''''''''''''
+
+Each of the four Diataxis sections has its own accent colour. These are
+applied automatically by ``doc/static/js/diataxis.js``: it adds a CSS class
+to ``<body>`` and to the sidebar caption elements so both the top page strip
+and the sidebar navigation header reflect the section.
+
+.. raw:: html
+
+   <div class="dg-palette" style="grid-template-columns:repeat(4,1fr);">
+
+     <div class="dg-swatch">
+       <div class="dg-swatch-color" style="background:#c2620a;"></div>
+       <div class="dg-swatch-body">
+         <div class="dg-swatch-token">--dxt-tutorial</div>
+         <div class="dg-swatch-hex">#c2620a</div>
+         <div class="dg-swatch-label">Tutorials</div>
+         <div class="dg-swatch-usage">Same as <code>--primary</code>; warm amber for learning-oriented pages</div>
+       </div>
+     </div>
+
+     <div class="dg-swatch">
+       <div class="dg-swatch-color" style="background:#4e7fa0;"></div>
+       <div class="dg-swatch-body">
+         <div class="dg-swatch-token">--dxt-howto</div>
+         <div class="dg-swatch-hex">#4e7fa0</div>
+         <div class="dg-swatch-label">How-to Guides</div>
+         <div class="dg-swatch-usage">Same as <code>--accent</code>; slate blue for task-oriented pages</div>
+       </div>
+     </div>
+
+     <div class="dg-swatch">
+       <div class="dg-swatch-color" style="background:#4a7a62;"></div>
+       <div class="dg-swatch-body">
+         <div class="dg-swatch-token">--dxt-reference</div>
+         <div class="dg-swatch-hex">#4a7a62</div>
+         <div class="dg-swatch-label">Reference</div>
+         <div class="dg-swatch-usage">Sage green; neutral, precise tone for information pages</div>
+       </div>
+     </div>
+
+     <div class="dg-swatch">
+       <div class="dg-swatch-color" style="background:#7a5a9a;"></div>
+       <div class="dg-swatch-body">
+         <div class="dg-swatch-token">--dxt-explanation</div>
+         <div class="dg-swatch-hex">#7a5a9a</div>
+         <div class="dg-swatch-label">Explanation</div>
+         <div class="dg-swatch-usage">Soft purple; contemplative tone for conceptual pages</div>
+       </div>
+     </div>
+
+   </div>
+
+To add a new page to a section, add its filename (without ``.rst``) to the
+``PAGE_SECTIONS`` map in ``doc/static/js/diataxis.js``.
+
 Releasing
 ---------
 
