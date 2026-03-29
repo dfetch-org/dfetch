@@ -19,6 +19,8 @@
     getting_started:"tutorial",
     migration:       "howto",
     patching:        "howto",
+    "check-ci":      "howto",
+    sbom:            "howto",
     troubleshooting:"howto",
     contributing:   "howto",
     manifest:       "reference",
