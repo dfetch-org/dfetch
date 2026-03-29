@@ -25,41 +25,48 @@
    :width: 100%
    :align: center
 
+Dfetch — *a source-only no-hassle project-dependency aggregator*
+================================================================
+
+We make products that can last 15+ years; because of this we want to be able to have all sources
+available to build the entire project from source without depending on external resources.
+For this, we needed a dependency manager flexible enough to retrieve dependencies as plain text
+from various sources. `svn externals`, `git submodules` and `git subtrees` solve a similar
+problem, but not in a VCS-agnostic or completely user-friendly way.
+Dfetch must promote upstreaming changes, but allow for local customisations.
+See :ref:`vendoring` for background on why this matters.
+
+.. asciinema:: asciicasts/basic.cast
+
+----
+
 .. toctree::
    :maxdepth: 2
+   :caption: Tutorials
 
    installation
    getting_started
-   manifest
-   manual
+
+.. toctree::
+   :maxdepth: 2
+   :caption: How-to Guides
+
    troubleshooting
    contributing
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference
+
+   manifest
+   manual
    changelog
-   alternatives
-   vendoring
    legal
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Explanation
+
+   vendoring
+   alternatives
    internal
-
-Dfetch - *a source-only no-hassle project-dependency aggregator*
-================================================================
-
-What is Dfetch?
----------------
-
-We make products that can last 15+ years; because of this we want to be able to have all sources available
-to build the entire project from source without depending on external resources.
-For this, we needed a dependency manager that was flexible enough to retrieve dependencies as plain text
-from various sources. `svn externals`, `git submodules` and `git subtrees` solve a similar
-problem, but not in a VCS-agnostic way or completely user-friendly way.
-We want self-contained code repositories without any hassle for end-users.
-Dfetch must promote upstreaming changes, but allow for local customizations.
-The problem is described thoroughly in `managing external dependencies <https://embeddedartistry.com/blog/2020/06/22/qa-on-managing-external-dependencies/>`_ and sometimes
-is also known as :ref:`vendoring`.
-
-Other tools that do similar things are ``Zephyr's West``, ``CMake ExternalProject`` and other meta tools.
-See :ref:`alternatives` for a complete list.
-
-Basic usage
------------
-
-.. asciinema:: asciicasts/basic.cast

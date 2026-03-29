@@ -1,44 +1,286 @@
-@import url("https://fonts.googleapis.com/css?family=Roboto:100,300,300i,400,500,700,900");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
 
+/* ============================================================
+   Design Tokens — mirrors the landing page palette exactly
+   ============================================================ */
+:root {
+  --primary:      #c2620a;
+  --primary-dark: #a0510a;
+  --accent:       #4e7fa0;
+  --accent-dark:  #3a6682;
+  --text:         #1c1917;
+  --text-2:       #3d3530;
+  --text-muted:   #78716c;
+  --bg-tint:      #fef8f0;
+  --bg-mint:      #eff6fa;
+  --border:       #e7e0d8;
+  --grad:         linear-gradient(135deg, #c2620a 0%, #7a3a0a 100%);
+  --shad-sm:      0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+  --shad-md:      0 4px 6px -1px rgba(0,0,0,.10), 0 2px 4px -2px rgba(0,0,0,.10);
+  --shad-lg:      0 10px 15px -3px rgba(0,0,0,.10), 0 4px 6px -4px rgba(0,0,0,.10);
+  --r:            12px;
+  --r-sm:         8px;
+  --r-lg:         20px;
+  --ease:         0.22s ease;
+}
+
+/* ============================================================
+   Keyframes
+   ============================================================ */
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+html, body {
+  overflow-x: clip;
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text);
+  background-color: #fff;
+  /* Subtle dot-grid background — same formula as landing page */
+  background-image:
+    linear-gradient(to right, #fff 0%, transparent 10%, transparent 90%, #fff 100%),
+    radial-gradient(circle, rgba(194, 98, 10, 0.22) 1.5px, transparent 1.5px);
+  background-size: 100% 100%, 28px 28px;
+  background-repeat: no-repeat, repeat;
+}
+
+/* Keep content areas transparent so body dot-grid shows through */
+div.documentwrapper,
+div.body {
+  background-color: transparent;
+  /* Soft amber glow at the top of each page */
+  background-image: radial-gradient(
+    ellipse 120% 40% at 50% 0%,
+    rgba(194, 98, 10, 0.07) 0%,
+    transparent 65%
+  );
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* ============================================================
+   Typography
+   ============================================================ */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+  line-height: 1.25 !important;
+  color: var(--text) !important;
+}
+
+h1 { font-size: 2rem !important; }
+h2 { font-size: 1.5rem !important; margin-top: 2.5rem !important; }
+h3 { font-size: 1.2rem !important; margin-top: 2rem !important; }
+
+.body p,
+.body dd,
+.body li {
+  font-family: "Inter", sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.8;
+  color: var(--text-2);
+  text-align: left;
+}
+
+strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Links */
+a {
+  color: var(--primary) !important;
+  text-decoration: none;
+  transition: color var(--ease), opacity var(--ease);
+}
+a:hover {
+  color: var(--primary-dark) !important;
+  opacity: 0.85;
+}
+
+img {
+  height: auto;
+  max-width: 100%;
+  border-radius: var(--r-sm);
+}
+
+/* ============================================================
+   Code Blocks
+   ============================================================ */
+div.highlight {
+  border-radius: var(--r-sm) !important;
+  overflow: hidden !important;
+  box-shadow: var(--shad-sm) !important;
+  border: 1px solid var(--border) !important;
+}
+
+div.highlight pre {
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Consolas, monospace !important;
+  font-size: 0.875rem !important;
+  line-height: 1.7 !important;
+  padding: 1.25rem 1.5rem !important;
+}
+
+/* Inline code */
+code, .pre, tt {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace !important;
+  font-size: 0.875em;
+  background: var(--bg-tint);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  color: var(--primary-dark);
+}
+
+/* ============================================================
+   Admonitions
+   ============================================================ */
+div.admonition {
+  border: none !important;
+  border-radius: var(--r-sm) !important;
+  border-left: 4px solid var(--accent) !important;
+  box-shadow: var(--shad-sm) !important;
+  font-family: "Inter", sans-serif;
+  padding: 1.25rem 1.5rem !important;
+  background: var(--bg-mint) !important;
+  transition: box-shadow var(--ease) !important;
+  margin: 1.5rem 0 !important;
+}
+
+div.admonition.warning,
+div.admonition.caution {
+  border-left-color: var(--primary) !important;
+  background: var(--bg-tint) !important;
+}
+
+div.admonition.danger,
+div.admonition.error {
+  border-left-color: #c0544a !important;
+  background: #fff5f4 !important;
+}
+
+div.admonition.tip,
+div.admonition.hint {
+  border-left-color: #7aad6b !important;
+  background: #f3faf2 !important;
+}
+
+div.admonition p.admonition-title {
+  font-family: "Inter", sans-serif;
+  font-weight: 700 !important;
+  color: var(--accent) !important;
+  margin: 0 0 0.5rem 0 !important;
+  font-size: 0.95rem !important;
+}
+
+div.admonition.warning p.admonition-title,
+div.admonition.caution p.admonition-title  { color: var(--primary) !important; }
+div.admonition.danger  p.admonition-title,
+div.admonition.error   p.admonition-title  { color: #c0544a !important; }
+div.admonition.tip     p.admonition-title,
+div.admonition.hint    p.admonition-title  { color: #5a9a50 !important; }
+
+div.admonition p {
+  font-weight: 400 !important;
+  margin-top: 0.5rem !important;
+  color: var(--text-2);
+}
+
+.admonition a {
+  font-weight: 500;
+}
+
+/* ============================================================
+   Tables
+   ============================================================ */
+table.docutils {
+  border-collapse: collapse;
+  width: 100%;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  box-shadow: var(--shad-sm);
+  border: 1px solid var(--border) !important;
+  margin: 1.5rem 0;
+}
+
+table.docutils thead tr th {
+  background: var(--bg-tint);
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text) !important;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--border) !important;
+}
+
+table.docutils tbody tr td {
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--border) !important;
+  font-size: 0.9375rem;
+  color: var(--text-2);
+}
+
+table.docutils tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+table.docutils tbody tr:nth-child(even) td {
+  background: rgba(254, 248, 240, 0.4);
+}
+
+/* ============================================================
+   Sidebar
+   ============================================================ */
 .sphinxsidebar .caption-text {
-  font-size: 130%;
+  font-family: "Inter", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted) !important;
+}
+
+.sphinxsidebarwrapper .caption-text {
+  font-size: 0.8rem;
 }
 
 .logo {
   width: 100%;
 }
 
+.sphinxsidebarwrapper .logo-name {
+  display: none;
+}
+
+.sphinxsidebarwrapper .logo {
+  margin-bottom: 2em;
+}
+
 .sphinxsidebarwrapper .internal,
 .sphinxsidebarwrapper .external {
-  font-weight: 300;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 0.9rem;
 }
 
-body {
-  font-family: Roboto;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: Roboto !important;
-  font-weight: 300 !important;
-}
-
-.toctree-l1 {
-  padding-bottom: 0.5em;
-}
-
-.body p,
-.body dd,
-.body li {
-  font-family: Roboto;
-  font-size: 1em;
-  font-weight: 300;
-  line-height: 2;
-  text-align: justify;
+/* Sidebar active link */
+.sphinxsidebarwrapper a.current {
+  color: var(--primary) !important;
+  font-weight: 600;
 }
 
 .search {
@@ -50,61 +292,163 @@ h6 {
 }
 
 .sphinxsidebar input[type="submit"] {
-  font-family: "Roboto", serif;
+  font-family: "Inter", sans-serif;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background var(--ease);
+}
+
+.sphinxsidebar input[type="submit"]:hover {
+  background: var(--primary-dark);
+}
+
+/* ============================================================
+   Toctree / Navigation
+   ============================================================ */
+.toctree-l1 {
+  padding-bottom: 0.5em;
 }
 
 .caption {
-  margin-top: 1em;
+  margin-top: 1.5em;
 }
 
 .caption-text {
-  font-weight: 500;
+  font-family: "Inter", sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted) !important;
 }
 
-.sphinxsidebarwrapper .logo-name {
-  display: none;
+/* Diataxis section colour-coding in sidebar captions */
+/* Tutorials → amber/primary */
+.toctree-wrapper p.caption:nth-of-type(1) .caption-text,
+p.caption[id*="tutorial"] .caption-text   { color: var(--primary) !important; }
+
+/* How-to → accent */
+.toctree-wrapper p.caption:nth-of-type(2) .caption-text,
+p.caption[id*="how-to"] .caption-text     { color: var(--accent) !important; }
+
+/* Reference → text */
+.toctree-wrapper p.caption:nth-of-type(3) .caption-text,
+p.caption[id*="reference"] .caption-text  { color: var(--text) !important; }
+
+/* Explanation → muted */
+.toctree-wrapper p.caption:nth-of-type(4) .caption-text,
+p.caption[id*="explanation"] .caption-text { color: var(--text-muted) !important; }
+
+/* ============================================================
+   Asciinema Player — match landing page terminal theme
+   ============================================================ */
+.asciinema-player-wrapper {
+  border-radius: var(--r) !important;
+  overflow: hidden !important;
+  box-shadow: var(--shad-lg) !important;
+  margin: 1.5rem 0 !important;
 }
 
-.sphinxsidebarwrapper .logo {
-  margin-bottom: 2em;
+.asciinema-player-theme-monokai {
+  --term-color-background: #1e1610;
+  --term-color-foreground: #f0e8dc;
+  --term-color-0:  #2d2018;
+  --term-color-1:  #c0544a;
+  --term-color-2:  #7aad6b;
+  --term-color-3:  #c2820a;
+  --term-color-4:  #4e7fa0;
+  --term-color-5:  #9b6eb0;
+  --term-color-6:  #5da0b5;
+  --term-color-7:  #e8ddd0;
+  --term-color-8:  #6b5e54;
+  --term-color-9:  #e07060;
+  --term-color-10: #c2620a;
+  --term-color-11: #d9a44a;
+  --term-color-12: #7aa8c5;
+  --term-color-13: #b08ac0;
+  --term-color-14: #7dc0d5;
+  --term-color-15: #f0e8dc;
 }
 
-img {
-  height: auto;
-  max-width: 100%;
+/* ============================================================
+   Miscellaneous
+   ============================================================ */
+
+/* Section permalink anchors — subtle */
+a.headerlink {
+  color: var(--border) !important;
+  font-size: 0.8em;
+  transition: color var(--ease) !important;
+}
+a.headerlink:hover {
+  color: var(--primary) !important;
+  opacity: 1 !important;
 }
 
-div.admonition {
+/* Horizontal rule */
+hr {
   border: none;
-  border-radius: 0;
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12),
-    0 3px 1px -2px rgba(0, 0, 0, 0.2);
-  font-family: Roboto;
-  padding: 2em;
-  position: relative;
-  transition: box-shadow 0.25s;
+  height: 2px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(194, 98, 10, 0.3) 0,
+    rgba(194, 98, 10, 0.3) 2px,
+    transparent 2px,
+    transparent 24px
+  );
+  margin: 2.5rem 0;
 }
 
-div.admonition p.admonition-title {
-  font-family: "Roboto", serif;
-  font-weight: 300;
-  margin: 0 0 5px 0;
+/* Field lists (option tables) */
+table.field-list th {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.875rem;
 }
 
-div.admonition p {
-  font-weight: 300;
-  margin-top: 1em;
+/* Sphinx "rubric" headings */
+p.rubric {
+  font-family: "Inter", sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted) !important;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+  margin-bottom: 1rem;
 }
 
-.admonition a {
-  font-weight: 300;
+/* Page title (h1) accent underline */
+h1::after {
+  content: "";
+  display: block;
+  width: 3rem;
+  height: 3px;
+  background: var(--grad);
+  border-radius: 2px;
+  margin-top: 0.5rem;
 }
 
-strong {
-  font-weight: 400;
+/* Sphinx tabs — match palette */
+.sphinx-tabs-tab {
+  font-family: "Inter", sans-serif !important;
+  font-weight: 500 !important;
 }
 
-.pre {
-  padding-left: 0.2em;
-  padding-right: 0.2em;
+.sphinx-tabs-tab[aria-selected="true"] {
+  color: var(--primary) !important;
+  border-bottom-color: var(--primary) !important;
+}
+
+/* JSON schema tables */
+.json-schema-description p {
+  font-size: 0.9375rem;
+  line-height: 1.7;
 }
