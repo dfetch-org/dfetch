@@ -411,7 +411,10 @@ class Manifest:
         if not destinations:
             return ""
 
-        common_path = os.path.commonpath(destinations)
+        try:
+            common_path = os.path.commonpath(destinations)
+        except ValueError:
+            return ""
         if not common_path or common_path == os.path.sep:
             return ""
 
