@@ -24,7 +24,7 @@ Sub-manifests
 
 It is possible that fetched projects have manifests of their own.
 When these projects are fetched (with ``dfetch update``), the manifests are read as well
-and will be checked to look for further dependencies. If you don't what recommendations, you can prevent *Dfetch*
+and will be checked to look for further dependencies. If you don't want recommendations, you can prevent *Dfetch*
 checking sub-manifests with ``--no-recommendations``.
 
 .. scenario-include:: ../features/updated-project-has-dependencies.feature
@@ -84,20 +84,28 @@ class Update(dfetch.commands.command.Command):
             "-f",
             "--force",
             action="store_true",
-            help="Always perform update, ignoring version check or local changes.",
+            help=(
+                "Re-fetch and overwrite even if the project is already at the "
+                "requested version or has local modifications. "
+                "Any unsaved local changes in the destination directory will be lost."
+            ),
         )
         parser.add_argument(
             "-N",
             "--no-recommendations",
             action="store_true",
-            help="Ignore recommendations from fetched projects.",
+            help=(
+                "Do not check sub-manifests found inside fetched projects. "
+                "By default, dfetch.yaml files discovered in fetched dependencies "
+                "are also checked for outdated entries."
+            ),
         )
         parser.add_argument(
             "projects",
             metavar="<project>",
             type=str,
             nargs="*",
-            help="Specific project(s) to update",
+            help="Specific project(s) to update (default: all projects in manifest)",
         )
 
     def __call__(self, args: argparse.Namespace) -> None:

@@ -89,8 +89,6 @@ Check
 
 .. asciinema:: asciicasts/check.cast
 
-.. uml:: /static/uml/check.puml
-
 .. automodule:: dfetch.commands.check
 
 Update
@@ -102,8 +100,6 @@ Update
    :path: update
 
 .. asciinema:: asciicasts/update.cast
-
-.. uml:: /static/uml/update.puml
 
 .. automodule:: dfetch.commands.update
 

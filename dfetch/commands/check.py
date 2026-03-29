@@ -64,32 +64,36 @@ class Check(dfetch.commands.command.Command):
             "--no-recommendations",
             "-N",
             action="store_true",
-            help="Ignore recommendations from fetched projects.",
+            help=(
+                "Do not check sub-manifests found inside fetched projects. "
+                "By default, dfetch.yaml files discovered in fetched dependencies "
+                "are also checked for outdated entries."
+            ),
         )
         parser.add_argument(
             "projects",
             metavar="<project>",
             type=str,
             nargs="*",
-            help="Specific project(s) to check",
+            help="Specific project(s) to check (default: all projects in manifest)",
         )
         parser.add_argument(
             "--jenkins-json",
             metavar="outfile",
             type=str,
-            help="Generate a JSON that can be parsed by Jenkins.",
+            help="Write a Jenkins warnings-ng JSON report to <outfile>.",
         )
         parser.add_argument(
             "--sarif",
             metavar="outfile",
             type=str,
-            help="Generate a Sarif JSON that can be parsed by Github.",
+            help="Write a SARIF 2.1.0 report to <outfile> (GitHub Advanced Security).",
         )
         parser.add_argument(
             "--code-climate",
             metavar="outfile",
             type=str,
-            help="Generate a code-climate JSON that can be parsed by Gitlab.",
+            help="Write a Code Climate JSON report to <outfile> (GitLab pipelines).",
         )
 
     def __call__(self, args: argparse.Namespace) -> None:

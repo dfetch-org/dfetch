@@ -1,6 +1,18 @@
-"""Note that you can validate your manifest using :ref:`validate`.
+"""*Dfetch* can validate a manifest without fetching anything.
 
-This will parse your :ref:`Manifest` and check if all fields can be parsed.
+``dfetch validate`` parses ``dfetch.yaml`` and checks every field against the
+manifest schema — project names, URLs, version strings, source paths, and
+integrity hashes are all verified. Any structural or type error is reported
+immediately with a clear message pointing at the offending field.
+
+This is useful in CI to catch manifest mistakes before a full ``dfetch update``
+run, or as a quick sanity-check after hand-editing the file.
+
+.. note::
+
+   Validation also runs automatically at the start of every ``dfetch update``
+   and ``dfetch check`` — a separate ``dfetch validate`` step is only needed
+   when you want to check the manifest without triggering a fetch.
 
 .. scenario-include:: ../features/validate-manifest.feature
 

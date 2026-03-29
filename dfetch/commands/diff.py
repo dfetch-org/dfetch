@@ -84,7 +84,13 @@ class Diff(dfetch.commands.command.Command):
             metavar="<oldrev>[:<newrev>]",
             type=str,
             default="",
-            help="Revision(s) to generate diff from",
+            help=(
+                "Revision(s) to generate diff from. "
+                "Omit to diff from the last fetched revision to the working copy. "
+                "Supply one revision to use it as the start point. "
+                "Supply two revisions separated by ':' (e.g. abc123:def456) for an "
+                "explicit range."
+            ),
         )
 
         parser.add_argument(
@@ -92,7 +98,10 @@ class Diff(dfetch.commands.command.Command):
             metavar="<project>",
             type=str,
             nargs=1,
-            help="Project to generate diff from",
+            help=(
+                "Project to generate diff from. "
+                "Output is written to <project>.patch in the superproject root."
+            ),
         )
 
     def __call__(self, args: argparse.Namespace) -> None:
