@@ -428,8 +428,10 @@ class Manifest:
 
     def find_remote_for_url(self, remote_url: str) -> Remote | None:
         """Return the first remote whose base URL is a prefix of *remote_url*."""
+        target = remote_url.rstrip("/")
         for remote in self.remotes:
-            if remote_url.startswith(remote.url):
+            remote_base = remote.url.rstrip("/")
+            if target.startswith(remote_base):
                 return remote
         return None
 

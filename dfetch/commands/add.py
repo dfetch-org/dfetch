@@ -313,12 +313,12 @@ def _finalize_add(
 
 def _non_interactive_entry(ctx: _AddContext, overrides: _Overrides) -> ProjectEntry:
     """Build a ``ProjectEntry`` using inferred defaults (no user interaction)."""
-    version = (
-        _resolve_raw_version(overrides.version, [])
-        or Version(branch=ctx.default_branch)
-        if overrides.version
-        else Version(branch=ctx.default_branch)
-    )
+    if overrides.version:
+        version = _resolve_raw_version(overrides.version, []) or Version(
+            branch=ctx.default_branch
+        )
+    else:
+        version = Version(branch=ctx.default_branch)
     existing_names = {p.name for p in ctx.manifest.projects}
     return _build_entry(
         name=overrides.name or _unique_name(ctx.default_name, existing_names),

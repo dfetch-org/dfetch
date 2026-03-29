@@ -178,14 +178,14 @@ jobs:
     - run: |
        git add -A
        git commit -m "Fetched dependencies"
-       echo "An extra line" >> jsmn/README.md
-       git add jsmn/README.md
+       echo "An extra line" >> test-repo/README.md
+       git add test-repo/README.md
        git commit -m "Update README.md"
-    - run: dfetch diff jsmn
+    - run: dfetch diff test-repo
     - run: |
-       echo "    patch: jsmn.patch" >> dfetch.yaml
+       echo "    patch: test-repo.patch" >> dfetch.yaml
        git add -A
-       git commit -m "Patch jsmn"
+       git commit -m "Patch test-repo"
     - run: dfetch update-patch
     - run: dfetch format-patch
     - run: dfetch report -t sbom
