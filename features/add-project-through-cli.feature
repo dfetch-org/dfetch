@@ -24,7 +24,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: ext/existing
                   url: some-remote-server/existing.git
             """
-        When I add "some-remote-server/MyLib.git"
+        When I run "dfetch add some-remote-server/MyLib.git"
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: MyLib
@@ -42,7 +42,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: MyLib
                   url: some-remote-server/MyLib.git
             """
-        When I add "some-remote-server/MyLib.git"
+        When I run "dfetch add some-remote-server/MyLib.git"
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: MyLib-1
@@ -61,7 +61,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: ext/lib-b
                   url: some-remote-server/lib-b.git
             """
-        When I add "some-remote-server/MyLib.git"
+        When I run "dfetch add some-remote-server/MyLib.git"
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: MyLib
@@ -79,7 +79,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: ext/existing
                   url: some-remote-server/existing.git
             """
-        When I interactively add "some-remote-server/MyLib.git" with inputs
+        When I run "dfetch add -i some-remote-server/MyLib.git" with inputs
             | Question                  | Answer  |
             | Project name              | my-lib  |
             | Destination path          | libs/my |
@@ -105,7 +105,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: existing
                   url: some-remote-server/existing.git
             """
-        When I interactively add "some-remote-server/MyLib.git" with inputs
+        When I run "dfetch add -i some-remote-server/MyLib.git" with inputs
             | Question                  | Answer |
             | Project name              | my-lib |
             | Destination path          | my-lib |
@@ -130,7 +130,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: existing
                   url: some-remote-server/existing.git
             """
-        When I interactively add "some-remote-server/MyLib.git" with inputs
+        When I run "dfetch add -i some-remote-server/MyLib.git" with inputs
             | Question                  | Answer     |
             | Project name              | my-lib     |
             | Destination path          | my-lib     |
@@ -156,7 +156,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: existing
                   url: some-remote-server/existing.git
             """
-        When I interactively add "some-remote-server/MyLib.git" with inputs
+        When I run "dfetch add -i some-remote-server/MyLib.git" with inputs
             | Question                  | Answer       |
             | Project name              | my-lib       |
             | Destination path          | my-lib       |
@@ -184,7 +184,7 @@ Feature: Add a project to the manifest via the CLI
               - name: existing
                 url: some-remote-server/existing.git
             """
-        When I interactively add "some-remote-server/MyLib.git" with inputs
+        When I run "dfetch add -i some-remote-server/MyLib.git" with inputs
             | Question                  | Answer |
             | Project name              | MyLib  |
             | Destination path          | MyLib  |
@@ -210,7 +210,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: existing
                   url: some-remote-server/existing.git
             """
-        When I interactively add "some-remote-server/MyLib.git" with inputs
+        When I run "dfetch add -i some-remote-server/MyLib.git" with inputs
             | Question                  | Answer |
             | Project name              | MyLib  |
             | Destination path          | MyLib  |
@@ -236,7 +236,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: existing
                   url: some-remote-server/existing.git
             """
-        When I interactively add "some-remote-server/MyLib.git" with inputs
+        When I run "dfetch add -i some-remote-server/MyLib.git" with inputs
             | Question                  | Answer |
             | Project name              | MyLib  |
             | Destination path          | MyLib  |
@@ -258,9 +258,11 @@ Feature: Add a project to the manifest via the CLI
             """
             manifest:
               version: '0.0'
-              projects: []
+              projects:
+                - name: ext/existing
+                  url: some-remote-server/existing.git
             """
-        When I add "some-remote-server/MyLib.git" with options "--name my-lib --dst libs/my-lib"
+        When I run "dfetch add some-remote-server/MyLib.git --name my-lib --dst libs/my-lib"
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: my-lib
@@ -278,7 +280,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: existing
                   url: some-remote-server/existing.git
             """
-        When I interactively add "some-remote-server/MyLib.git" with options "--name my-lib --dst libs/my" and inputs
+        When I run "dfetch add -i some-remote-server/MyLib.git --name my-lib --dst libs/my" with inputs
             | Question                  | Answer  |
             | Version                   | master  |
             | Source path               |         |

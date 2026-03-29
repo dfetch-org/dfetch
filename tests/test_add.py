@@ -867,6 +867,7 @@ def test_add_create_menu_field_overrides():
     parsed = parser.parse_args(
         [
             "add",
+            "https://example.com/repo.git",
             "--name",
             "mylib",
             "--dst",
@@ -878,7 +879,6 @@ def test_add_create_menu_field_overrides():
             "--ignore",
             "docs",
             "tests",
-            "https://example.com/repo.git",
         ]
     )
     assert parsed.name == "mylib"

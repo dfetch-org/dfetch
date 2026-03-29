@@ -1,7 +1,7 @@
 """Steps for the 'dfetch add' feature tests."""
 
-# pylint: disable=function-redefined, missing-function-docstring, import-error, not-callable
-# pyright: reportRedeclaration=false, reportAttributeAccessIssue=false, reportCallIssue=false
+# pylint: disable=missing-function-docstring, import-error, not-callable
+# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
 
 from collections import deque
 from unittest.mock import patch
@@ -15,18 +15,6 @@ from features.steps.manifest_steps import apply_manifest_substitutions
 def _resolve_url(url: str, context) -> str:
     """Replace 'some-remote-server' with the actual temp file:// URL."""
     return url.replace("some-remote-server", f"file:///{remote_server_path(context)}")
-
-
-@when('I add "{remote_url}"')
-def step_impl(context, remote_url):
-    url = _resolve_url(remote_url, context)
-    call_command(context, ["add", url])
-
-
-@when('I add "{remote_url}" with options "{options}"')
-def step_impl(context, remote_url, options):
-    url = _resolve_url(remote_url, context)
-    call_command(context, ["add"] + options.split() + [url])
 
 
 def _run_interactive_add(context, cmd: list[str]) -> None:
@@ -70,20 +58,16 @@ def _run_interactive_add(context, cmd: list[str]) -> None:
             call_command(context, cmd)
 
 
-@when('I interactively add "{remote_url}" with options "{options}" and inputs')
-def step_impl(context, remote_url, options):
-    url = _resolve_url(remote_url, context)
-    _run_interactive_add(context, ["add", "--interactive"] + options.split() + [url])
-
-
-@when('I interactively add "{remote_url}" with inputs')
-def step_impl(context, remote_url):
-    url = _resolve_url(remote_url, context)
-    _run_interactive_add(context, ["add", "--interactive", url])
+@when('I run "dfetch {add_args}" with inputs')
+def step_interactive_add(context, add_args):
+    resolved = add_args.replace(
+        "some-remote-server", f"file:///{remote_server_path(context)}"
+    )
+    _run_interactive_add(context, resolved.split())
 
 
 @then("the manifest '{name}' contains entry")
-def step_impl(context, name):
+def step_manifest_contains_entry(context, name):
     expected = apply_manifest_substitutions(context, context.text)
     with open(name, "r", encoding="utf-8") as fh:
         actual = fh.read()
@@ -105,7 +89,7 @@ def step_impl(context, name):
 
 
 @then('the command fails with "{message}"')
-def step_impl(context, message):
+def step_command_fails_with(context, message):
     assert context.cmd_returncode != 0, "Expected command to fail, but it succeeded"
     assert (
         message in context.cmd_output
@@ -113,7 +97,7 @@ def step_impl(context, message):
 
 
 @then("the manifest '{name}' does not contain '{text}'")
-def step_impl(_, name, text):
+def step_manifest_not_contain(_, name, text):
     with open(name, "r", encoding="utf-8") as fh:
         actual = fh.read()
 

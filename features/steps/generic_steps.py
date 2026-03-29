@@ -365,7 +365,10 @@ def step_impl(context, path=None):
 @when('I run "dfetch {args}"')
 def step_impl(context, args, path=None):
     """Call a command."""
-    call_command(context, args.split(), path)
+    resolved = args.replace(
+        "some-remote-server", f"file:///{remote_server_path(context)}"
+    )
+    call_command(context, resolved.split(), path)
 
 
 @given('"{path}" in {directory} is changed locally')
