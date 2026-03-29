@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 # Demo of dfetch add -i (interactive wizard mode).
 #
 # Uses the real cpputest repository so the viewer sees dfetch fetching live
