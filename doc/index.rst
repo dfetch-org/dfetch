@@ -59,6 +59,7 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
 
    manifest
    manual
+   cli_cheatsheet
    changelog
    legal
 
