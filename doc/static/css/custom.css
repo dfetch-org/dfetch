@@ -203,6 +203,114 @@ div.admonition p {
 }
 
 /* ============================================================
+   Full-bleed Color Bands (sphinx_design .. div:: band-tint / band-mint)
+   ============================================================ */
+.band-tint,
+.band-mint {
+  position: relative;
+  padding: 3rem 0;
+  margin: 2.5rem 0;
+  z-index: 0;
+}
+
+.band-tint::before,
+.band-mint::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 80vw;
+  z-index: -1;
+}
+
+/* Bleeds to left viewport edge — rounded corner on the right */
+.band-tint::before {
+  left: calc(50% - 50vw);
+  border-radius: 0 var(--r-lg) var(--r-lg) 0;
+  background: rgba(254, 248, 240, 0.55);
+}
+
+/* Bleeds to right viewport edge — rounded corner on the left */
+.band-mint::before {
+  left: calc(50% - 30vw);
+  border-radius: var(--r-lg) 0 0 var(--r-lg);
+  background: rgba(239, 246, 250, 0.55);
+}
+
+/* Lead paragraph inside a band */
+.band-tint > p,
+.band-mint > p {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem !important;
+  line-height: 1.3 !important;
+}
+
+/* ============================================================
+   Cards — sphinx_design
+   ============================================================ */
+.sd-card {
+  border: 1px solid var(--border) !important;
+  border-top: 3px solid var(--primary) !important;
+  border-radius: var(--r) !important;
+  box-shadow: var(--shad-sm) !important;
+  transition: box-shadow var(--ease), transform var(--ease) !important;
+  overflow: hidden !important;
+  background: #fff !important;
+}
+
+/* Extra spacing for standalone (non-grid) cards */
+:not(.sd-col) > .sd-card {
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.sd-card:hover {
+  box-shadow: var(--shad-lg) !important;
+  transform: translateY(-3px);
+}
+
+.sd-card-body {
+  padding: 1.5rem 2rem !important;
+}
+
+.sd-card-title {
+  font-family: "Inter", sans-serif !important;
+  font-size: 1.0625rem !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+  margin-bottom: 0.75rem !important;
+  letter-spacing: -0.01em;
+}
+
+/* Tinted variant */
+.card-tinted {
+  background: var(--bg-tint) !important;
+}
+
+/* Dark variant */
+.sd-bg-dark {
+  background: linear-gradient(150deg, #1e1610 0%, #2d2018 100%) !important;
+  border-top-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+.sd-bg-dark .sd-card-title { color: #fff !important; }
+.sd-bg-dark p              { color: rgba(255,255,255,0.78) !important; }
+.sd-bg-dark strong         { color: #fff !important; font-weight: 600; }
+
+/* Stat cards (small centred grid items) */
+.stat-card .sd-card-title {
+  font-size: 1rem !important;
+}
+
+/* sd-text-primary maps to accent blue on the landing page */
+.sd-text-primary {
+  color: var(--accent) !important;
+}
+
+/* ============================================================
    Tables
    ============================================================ */
 table.docutils {
