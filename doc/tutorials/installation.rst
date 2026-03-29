@@ -80,4 +80,4 @@ Run the following command to verify the installation
 
     dfetch environment
 
-.. asciinema:: asciicasts/environment.cast
+.. asciinema:: ../asciicasts/environment.cast

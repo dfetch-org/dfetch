@@ -19,7 +19,7 @@ This shows missing or incompatible dependencies. Run:
 
 Compare the output to the expected tools your commands require.
 
-.. asciinema:: asciicasts/environment.cast
+.. asciinema:: ../asciicasts/environment.cast
 
 Step 2: Use verbose mode
 ------------------------

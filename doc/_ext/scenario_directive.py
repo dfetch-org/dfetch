@@ -59,9 +59,18 @@ class ScenarioIncludeDirective(Directive):
 
     def run(self):
         """Generate the same literalinclude block for every scenario."""
+        env = self.state.document.settings.env
         feature_file = self.arguments[0].strip()
 
         scenarios_available = self.list_of_scenarios(feature_file)
+
+        # Compute a path for literalinclude that is relative to the current
+        # RST document's directory.  literalinclude resolves relative to the
+        # source file, while list_of_scenarios uses srcdir as the base — these
+        # differ once RST files are in sub-directories.
+        feature_abs = os.path.abspath(os.path.join(env.app.srcdir, feature_file))
+        current_doc_dir = os.path.dirname(os.path.join(env.app.srcdir, env.docname))
+        include_path = os.path.relpath(feature_abs, current_doc_dir)
 
         scenario_titles = [
             title.strip()
@@ -84,7 +93,7 @@ class ScenarioIncludeDirective(Directive):
    <details>
    <summary><strong>Example</strong>: {html.escape(scenario_title)}</summary>
 
-.. literalinclude:: {feature_file}
+.. literalinclude:: {include_path}
     :language: gherkin
     :caption: {feature_file}
     :force:

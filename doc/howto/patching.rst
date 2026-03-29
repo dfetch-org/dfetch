@@ -37,7 +37,7 @@ run:
 metadata file and writes a patch file named ``some-project.patch`` (or
 ``some-project-N.patch`` if multiple patches already exist).
 
-.. asciinema:: asciicasts/diff.cast
+.. asciinema:: ../asciicasts/diff.cast
 
 **Controlling which revisions are compared**
 
@@ -100,7 +100,7 @@ This regenerates the last patch for ``some-project`` from the current working
 tree, keeping the upstream revision unchanged.  It is safe to run repeatedly
 as you iterate on the fix.
 
-.. asciinema:: asciicasts/update-patch.cast
+.. asciinema:: ../asciicasts/update-patch.cast
 
 .. tabs::
 
@@ -148,7 +148,7 @@ You can verify the formatted patch applies cleanly before submitting:
 
             svn patch formatted-some-project.patch
 
-.. asciinema:: asciicasts/format-patch.cast
+.. asciinema:: ../asciicasts/format-patch.cast
 
 .. tabs::
 

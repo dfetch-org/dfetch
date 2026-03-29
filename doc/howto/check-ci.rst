@@ -22,7 +22,7 @@ Running dfetch check in CI
 
 .. automodule:: dfetch.reporting.check.reporter
 
-.. asciinema:: asciicasts/check-ci.cast
+.. asciinema:: ../asciicasts/check-ci.cast
 
 Without extra flags the results are printed to stdout and the build fails if
 any issue is found:
@@ -45,7 +45,7 @@ Jenkins (warnings-ng)
 *Dfetch* writes a report in the `warnings-ng native JSON format`_ that the
 `warnings-ng plugin`_ can ingest directly.
 
-.. asciinema:: asciicasts/check.cast
+.. asciinema:: ../asciicasts/check.cast
 
 **Severity mapping**
 
@@ -61,12 +61,12 @@ Jenkins (warnings-ng)
 
 Jenkins will show an overview of all issues:
 
-.. image:: images/out-of-date-jenkins2.png
+.. image:: ../images/out-of-date-jenkins2.png
    :alt: Cpputest is out-of-date and requires updating.
 
 Clicking an issue navigates to the exact line in the manifest:
 
-.. image:: images/out-of-date-jenkins.png
+.. image:: ../images/out-of-date-jenkins.png
    :alt: Cpputest is out-of-date and requires updating.
 
 **Pipeline snippet**
@@ -114,17 +114,17 @@ findings appear inline in pull requests.
 
 Results appear on the Actions summary:
 
-.. image:: images/github-actions-result.png
+.. image:: ../images/github-actions-result.png
    :alt: Github action has run during a pull request.
 
 A locally changed project surfaces like this:
 
-.. image:: images/local-change-github.png
+.. image:: ../images/local-change-github.png
    :alt: A project was locally changed.
 
 Clicking *details* brings you to the manifest entry:
 
-.. image:: images/local-change-github-details.png
+.. image:: ../images/local-change-github-details.png
    :alt: A project was locally changed.
 
 **GitHub Actions workflow**
@@ -195,12 +195,12 @@ branch.
 
 GitLab shows the results on the pipeline page:
 
-.. image:: images/gitlab-check-pipeline-result.png
+.. image:: ../images/gitlab-check-pipeline-result.png
    :alt: Gitlab detected issues.
 
 Clicking an issue navigates to the manifest:
 
-.. image:: images/gitlab-highlighted-manifest.png
+.. image:: ../images/gitlab-highlighted-manifest.png
    :alt: Gitlab highlights the project in the manifest with the issue.
 
 **``.gitlab-ci.yml`` snippet**

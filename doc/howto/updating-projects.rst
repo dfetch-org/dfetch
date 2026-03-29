@@ -25,7 +25,7 @@ Run without arguments to fetch every project in the manifest:
 
     dfetch update
 
-.. asciinema:: asciicasts/update.cast
+.. asciinema:: ../asciicasts/update.cast
 
 *Dfetch* reads ``dfetch.yaml``, resolves each project's VCS type, and writes
 the requested revision into the destination folder.  A ``.dfetch_data.yaml``

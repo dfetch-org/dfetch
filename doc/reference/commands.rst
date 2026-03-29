@@ -10,7 +10,7 @@ downward.
 
 This page is the complete CLI reference — flags, arguments, and
 behaviour for every subcommand. If you are new to *Dfetch*, start with
-:doc:`getting_started` instead. For specific tasks the How-to Guides
+:doc:`../tutorials/getting_started` instead. For specific tasks the How-to Guides
 in the sidebar go further.
 
 .. program-output:: dfetch --help
@@ -24,7 +24,7 @@ Init
    :prog: dfetch
    :path: init
 
-.. asciinema:: asciicasts/init.cast
+.. asciinema:: ../asciicasts/init.cast
 
 .. automodule:: dfetch.commands.init
 
@@ -36,11 +36,11 @@ Import
    :prog: dfetch
    :path: import
 
-.. asciinema:: asciicasts/import.cast
+.. asciinema:: ../asciicasts/import.cast
 
 .. automodule:: dfetch.commands.import_
 
-.. seealso:: :doc:`migration` — step-by-step guide for switching from Git submodules or SVN externals.
+.. seealso:: :doc:`../howto/migration` — step-by-step guide for switching from Git submodules or SVN externals.
 
 Add
 ---
@@ -52,7 +52,7 @@ Add
 
 .. automodule:: dfetch.commands.add
 
-.. seealso:: :doc:`adding-a-project` — walks through adding a new dependency from start to finish.
+.. seealso:: :doc:`../howto/adding-a-project` — walks through adding a new dependency from start to finish.
 
 Check
 -----
@@ -62,11 +62,11 @@ Check
    :prog: dfetch
    :path: check
 
-.. asciinema:: asciicasts/check.cast
+.. asciinema:: ../asciicasts/check.cast
 
 .. automodule:: dfetch.commands.check
 
-.. seealso:: :doc:`check-ci` — how to run dependency checks in CI pipelines and interpret the output formats.
+.. seealso:: :doc:`../howto/check-ci` — how to run dependency checks in CI pipelines and interpret the output formats.
 
 Update
 ------
@@ -76,11 +76,11 @@ Update
    :prog: dfetch
    :path: update
 
-.. asciinema:: asciicasts/update.cast
+.. asciinema:: ../asciicasts/update.cast
 
 .. automodule:: dfetch.commands.update
 
-.. seealso:: :doc:`updating-projects` — covers the update workflow, pinning versions, and force-fetching.
+.. seealso:: :doc:`../howto/updating-projects` — covers the update workflow, pinning versions, and force-fetching.
 
 Diff
 ----
@@ -90,9 +90,9 @@ Diff
    :prog: dfetch
    :path: diff
 
-.. asciinema:: asciicasts/diff.cast
+.. asciinema:: ../asciicasts/diff.cast
 
-.. seealso:: :doc:`patching` — creating, applying, and maintaining patches across upstream version bumps.
+.. seealso:: :doc:`../howto/patching` — creating, applying, and maintaining patches across upstream version bumps.
 
 Update patch
 ------------
@@ -102,7 +102,9 @@ Update patch
    :prog: dfetch
    :path: update-patch
 
-.. asciinema:: asciicasts/update-patch.cast
+.. asciinema:: ../asciicasts/update-patch.cast
+
+.. _format-patch:
 
 Format patch
 ------------
@@ -112,7 +114,7 @@ Format patch
    :prog: dfetch
    :path: format-patch
 
-.. asciinema:: asciicasts/format-patch.cast
+.. asciinema:: ../asciicasts/format-patch.cast
 
 Report
 ------
@@ -122,11 +124,11 @@ Report
    :prog: dfetch
    :path: report
 
-.. asciinema:: asciicasts/report.cast
+.. asciinema:: ../asciicasts/report.cast
 
 .. automodule:: dfetch.reporting.stdout_reporter
 
-.. seealso:: :doc:`sbom` — generating a Software Bill of Materials with ``dfetch report``.
+.. seealso:: :doc:`../howto/sbom` — generating a Software Bill of Materials with ``dfetch report``.
 
 Freeze
 ------
@@ -136,7 +138,7 @@ Freeze
    :prog: dfetch
    :path: freeze
 
-.. asciinema:: asciicasts/freeze.cast
+.. asciinema:: ../asciicasts/freeze.cast
 
 .. automodule:: dfetch.commands.freeze
 
@@ -148,7 +150,7 @@ Environment
    :prog: dfetch
    :path: environment
 
-.. asciinema:: asciicasts/environment.cast
+.. asciinema:: ../asciicasts/environment.cast
 
 .. automodule:: dfetch.commands.environment
 
@@ -160,6 +162,6 @@ Validate
    :prog: dfetch
    :path: validate
 
-.. asciinema:: asciicasts/validate.cast
+.. asciinema:: ../asciicasts/validate.cast
 
 .. automodule:: dfetch.commands.validate
