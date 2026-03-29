@@ -1,7 +1,7 @@
 
 .. _sbom:
 
-Generate a SBoM
+Generate an SBOM
 ===============
 
 ``dfetch report`` generates a `CycloneDX`_ SBOM listing every vendored
