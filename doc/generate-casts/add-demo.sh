@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
-source ./demo-magic/demo-magic.sh
+source "$(dirname "${BASH_SOURCE[0]}")/demo-magic/demo-magic.sh"
 
 PROMPT_TIMEOUT=1
 
