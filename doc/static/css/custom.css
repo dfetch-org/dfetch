@@ -855,3 +855,207 @@ h1::after {
   /* suppress link-URL decoration that browsers add on print */
   a::after { content: none !important; }
 }
+
+/* ============================================================
+   Design Guide — colour swatches, type specimens, tokens
+   ============================================================ */
+
+/* ── Colour palette grid ─────────────────────────────────── */
+.dg-palette {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.dg-swatch {
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--shad-sm);
+}
+
+.dg-swatch-color {
+  height: 72px;
+  width: 100%;
+}
+
+.dg-swatch-body {
+  padding: 0.6rem 0.75rem 0.7rem;
+  background: #fff;
+}
+
+.dg-swatch-token {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  color: var(--primary);
+  letter-spacing: -0.01em;
+  margin-bottom: 0.1rem;
+}
+
+.dg-swatch-hex {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+.dg-swatch-label {
+  font-family: "Inter", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.1rem;
+}
+
+.dg-swatch-usage {
+  font-family: "Inter", sans-serif;
+  font-size: 0.675rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ── Typography specimens ────────────────────────────────── */
+.dg-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin: 1.5rem 0 2rem;
+}
+
+@media (max-width: 640px) {
+  .dg-type-grid { grid-template-columns: 1fr; }
+}
+
+.dg-type-card {
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shad-sm);
+}
+
+.dg-type-header {
+  padding: 0.6rem 0.875rem;
+  background: var(--bg-tint);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.dg-type-name {
+  font-family: "Inter", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+}
+
+.dg-type-meta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.dg-type-body {
+  padding: 1rem 0.875rem 0.875rem;
+  background: #fff;
+}
+
+.dg-type-specimen {
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.dg-type-specimen-mono {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.dg-type-weights {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.dg-type-weight-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.dg-weight-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  width: 2.5rem;
+  flex-shrink: 0;
+}
+
+.dg-weight-sample {
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1;
+}
+
+/* ── Token reference table ───────────────────────────────── */
+.dg-tokens {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0 2rem;
+  font-size: 0.8rem;
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shad-sm) !important;
+  border: none !important;
+}
+
+.dg-tokens th {
+  background: var(--bg-tint) !important;
+  color: var(--text) !important;
+  font-family: "Inter", sans-serif !important;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 0.55rem 0.875rem !important;
+  border-bottom: 2px solid var(--border) !important;
+  text-align: left !important;
+}
+
+.dg-tokens td {
+  padding: 0.5rem 0.875rem !important;
+  border-bottom: 1px solid var(--border) !important;
+  vertical-align: middle !important;
+  background: #fff !important;
+  color: var(--text) !important;
+}
+
+.dg-tokens tr:last-child td { border-bottom: none !important; }
+
+.dg-tokens code {
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: 0.75rem !important;
+  background: var(--bg-tint) !important;
+  border: none !important;
+  padding: 0.1em 0.35em !important;
+  border-radius: 4px !important;
+  color: var(--primary) !important;
+}
+
+.dg-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 0.4rem;
+  border: 1px solid rgba(0,0,0,.08);
+}
