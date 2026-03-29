@@ -107,12 +107,17 @@ class DLogger(logging.Logger):
         """Print an overview of fields."""
         self.print_info_line(name, title)
         for key, value in info.items():
+            safe_key = markup_escape(str(key))
             if isinstance(value, list):
-                self.info(f"      [blue]{key + ':':20s}[/blue]")
+                self.info(f"      [blue]{safe_key + ':':20s}[/blue]")
                 for item in value:
-                    self.info(f"      {'':20s}[white]- {item}[/white]")
+                    self.info(
+                        f"      {'':20s}[white]- {markup_escape(str(item))}[/white]"
+                    )
             else:
-                self.info(f"      [blue]{key + ':':20s}[/blue][white] {value}[/white]")
+                self.info(
+                    f"      [blue]{safe_key + ':':20s}[/blue][white] {markup_escape(str(value))}[/white]"
+                )
 
     def print_title(self) -> None:
         """Print the DFetch tool title and version."""
@@ -141,11 +146,13 @@ class DLogger(logging.Logger):
         """
         prefix = "  - " if first else "    "
         if isinstance(value, list):
-            self.info(f"{prefix}[blue]{key}:[/blue]")
+            self.info(f"{prefix}[blue]{markup_escape(key)}:[/blue]")
             for item in value:
-                self.info(f"      - {item}")
+                self.info(f"      - {markup_escape(item)}")
         else:
-            self.info(f"{prefix}[blue]{key}:[/blue] {value}")
+            self.info(
+                f"{prefix}[blue]{markup_escape(key)}:[/blue] {markup_escape(value)}"
+            )
 
     def warning(self, msg: object, *args: Any, **kwargs: Any) -> None:
         """Log warning."""

@@ -237,8 +237,8 @@ class GitRemote:
         try:
             self.fetch_for_tree_browse(tmpdir, version or self.get_default_branch())
             cloned = True
-        except Exception:  # pylint: disable=broad-exception-caught  # nosec B110
-            pass
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.debug("Failed to fetch remote tree for '%s': %s", self._remote, e)
 
         def ls(path: str = "") -> list[tuple[str, bool]]:
             return GitRemote.ls_tree(tmpdir, path=path) if cloned else []

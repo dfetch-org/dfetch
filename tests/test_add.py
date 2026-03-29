@@ -72,7 +72,7 @@ def _make_subproject(
 def test_check_name_uniqueness_raises_when_duplicate():
     m = Mock()
     m.projects = [_make_project("foo"), _make_project("bar")]
-    with pytest.raises(RuntimeError, match="already exists"):
+    with pytest.raises(ValueError, match="already exists"):
         Manifest.check_name_uniqueness(m, "foo")
 
 
@@ -740,6 +740,11 @@ def test_add_command_matches_existing_remote():
                 )
 
     mock_append.assert_called_once()
+    entry: ProjectEntry = mock_append.call_args[0][1]
+    yaml_data = entry.as_yaml()
+    assert yaml_data.get("remote") == "github"
+    assert "org/myrepo" in yaml_data.get("repo-path", "")
+    assert "url" not in yaml_data
 
 
 # ---------------------------------------------------------------------------

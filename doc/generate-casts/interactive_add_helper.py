@@ -88,7 +88,9 @@ def _fake_prompt_ask(prompt_markup: str, *, default: str = "", **_kw: object) ->
     suffix = f" [{default}]" if default else ""
     _console.print(f"{prompt_markup}{suffix}: ", end="")
 
-    raw = _PROMPT_ANSWERS.popleft() if _PROMPT_ANSWERS else None
+    raw = (
+        _PROMPT_ANSWERS.popleft() if _PROMPT_ANSWERS else None
+    )  # IndexError if queue is exhausted
     answer = raw if raw is not None else default
     _type_out(answer)
     return answer
@@ -101,7 +103,9 @@ def _fake_confirm_ask(
     yn_hint = "y" if default else "n"
     _console.print(f"{prompt_markup} [y/n] ({yn_hint}): ", end="")
 
-    val = _CONFIRM_ANSWERS.popleft() if _CONFIRM_ANSWERS else default
+    val = (
+        _CONFIRM_ANSWERS.popleft() if _CONFIRM_ANSWERS else default
+    )  # IndexError if queue is exhausted
     _type_out("y" if val else "n")
     return val
 

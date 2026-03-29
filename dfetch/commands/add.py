@@ -93,7 +93,7 @@ def browse_tree(subproject: SubProject, version: str = "") -> Generator[LsFuncti
     treated as empty src).
     """
     if isinstance(subproject, (GitSubProject, SvnSubProject)):
-        remote = subproject._remote_repo  # pylint: disable=protected-access
+        remote = subproject.remote_repo
         with remote.browse_tree(version) as vcs_ls:
 
             def ls(path: str = "") -> list[Entry]:
@@ -102,7 +102,9 @@ def browse_tree(subproject: SubProject, version: str = "") -> Generator[LsFuncti
                     for name, is_dir in vcs_ls(path)
                 ]
                 if not path:
-                    return [Entry(display=".", has_children=True, value=".")] + entries
+                    # Prepend "." as a selectable leaf so Enter accepts the
+                    # whole repo by default; no path normalization needed.
+                    return [Entry(display=".", has_children=False)] + entries
                 return entries
 
             yield ls
@@ -445,7 +447,8 @@ def _ask_src(ls_function: LsFunction) -> str:
     Outside a TTY falls back to a free-text prompt.
     """
     if terminal.is_tty():
-        return tree_single_pick(ls_function, "Source path", dirs_selectable=True)
+        src = tree_single_pick(ls_function, "Source path", dirs_selectable=True)
+        return "" if src == "." else src
 
     return Prompt.ask(
         _PROMPT_FORMAT.format(label="Source path")
