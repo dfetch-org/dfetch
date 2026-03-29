@@ -3,18 +3,25 @@
 Manual
 ======
 
-Introduction
-------------
-*Dfetch* can perform various actions based on the projects listed in the `manifest <manifest>`_.
-Each of these actions are a separate command. Below an overview of all available commands and
-their usage. For detailed information on each command, please refer to the respective sections below.
-For a step-by-step guide see the `Getting Started <getting_started>`_.
+*Dfetch* acts on the projects listed in the :ref:`Manifest`.
+Each action is a separate sub-command. Commands are grouped here from the
+core day-to-day workflow through patch management and CI/CD integration.
+For a step-by-step walkthrough see :doc:`getting_started`.
 
 .. program-output:: dfetch --help
    :shell:
 
+----
+
+Foundational
+------------
+
+These five commands cover the complete everyday workflow: create or migrate a
+manifest, register new dependencies, check for newer versions upstream, and
+fetch them into your repository.
+
 Init
------
+~~~~
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -26,7 +33,7 @@ Init
 .. automodule:: dfetch.commands.init
 
 Import
-------
+~~~~~~
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -37,8 +44,41 @@ Import
 
 .. automodule:: dfetch.commands.import_
 
+Add
+~~~
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: add
+
+.. automodule:: dfetch.commands.add
+
+Non-interactive
+```````````````
+
+Pass a URL and *Dfetch* fills in sensible defaults (name, destination, default
+branch) and appends the entry immediately — no prompts, no confirmation.
+Use ``--name``, ``--dst``, ``--version``, ``--src``, and ``--ignore`` to
+override individual fields.
+
+.. asciinema:: asciicasts/add.cast
+
+.. scenario-include:: ../features/add-project-through-cli.feature
+
+Interactive
+```````````
+
+Pass ``--interactive`` / ``-i`` to be guided step-by-step through every
+manifest field.  Pre-fill fields with the flag options above and those prompts
+are skipped.  At the end you can optionally run ``dfetch update`` immediately.
+
+.. asciinema:: asciicasts/interactive-add.cast
+
+.. scenario-include:: ../features/interactive-add.feature
+
 Check
------
+~~~~~
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -49,8 +89,76 @@ Check
 
 .. automodule:: dfetch.commands.check
 
+Update
+~~~~~~
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: update
+
+.. asciinema:: asciicasts/update.cast
+
+.. automodule:: dfetch.commands.update
+
+----
+
+Patching
+--------
+
+*Dfetch* has a first-class patch workflow. ``dfetch diff`` captures local
+changes as numbered patch files that are re-applied automatically on every
+``dfetch update``. When a fix is ready to share upstream, ``dfetch
+format-patch`` produces a contributor-ready unified diff.
+
+Diff
+~~~~
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: diff
+
+.. asciinema:: asciicasts/diff.cast
+
+.. automodule:: dfetch.commands.diff
+
+Update patch
+~~~~~~~~~~~~
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: update-patch
+
+.. asciinema:: asciicasts/update-patch.cast
+
+.. automodule:: dfetch.commands.update_patch
+
+Format patch
+~~~~~~~~~~~~
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: format-patch
+
+.. asciinema:: asciicasts/format-patch.cast
+
+.. automodule:: dfetch.commands.format_patch
+
+----
+
+CI/CD Integration
+-----------------
+
+These commands are designed to plug into automated pipelines. Use ``dfetch
+check`` report formats to surface stale or vulnerable dependencies in your
+existing security toolchain. Use ``dfetch report`` to generate SBOMs and
+inventory lists for compliance audits.
+
 Reporting
-`````````
+~~~~~~~~~
 .. automodule:: dfetch.reporting.check.reporter
 
 Jenkins reporter
@@ -67,20 +175,8 @@ Code-climate reporter
 '''''''''''''''''''''
 .. automodule:: dfetch.reporting.check.code_climate_reporter
 
-Update
-------
-.. argparse::
-   :module: dfetch.__main__
-   :func: create_parser
-   :prog: dfetch
-   :path: update
-
-.. asciinema:: asciicasts/update.cast
-
-.. automodule:: dfetch.commands.update
-
 Report
-------
+~~~~~~
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -92,53 +188,26 @@ Report
 .. automodule:: dfetch.commands.report
 
 List (default)
-``````````````
+''''''''''''''
 .. automodule:: dfetch.reporting.stdout_reporter
 
 Software Bill-of-Materials
-``````````````````````````
+''''''''''''''''''''''''''
 .. automodule:: dfetch.reporting.sbom_reporter
 
 .. asciinema:: asciicasts/sbom.cast
 
-Diff
 ----
-.. argparse::
-   :module: dfetch.__main__
-   :func: create_parser
-   :prog: dfetch
-   :path: diff
 
-.. asciinema:: asciicasts/diff.cast
+Utilities
+---------
 
-.. automodule:: dfetch.commands.diff
-
-Update patch
-------------
-.. argparse::
-   :module: dfetch.__main__
-   :func: create_parser
-   :prog: dfetch
-   :path: update-patch
-
-.. asciinema:: asciicasts/update-patch.cast
-
-.. automodule:: dfetch.commands.update_patch
-
-Format patch
-------------
-.. argparse::
-   :module: dfetch.__main__
-   :func: create_parser
-   :prog: dfetch
-   :path: format-patch
-
-.. asciinema:: asciicasts/format-patch.cast
-
-.. automodule:: dfetch.commands.format_patch
+Supporting commands for day-to-day maintenance: pin all versions to their
+current state, verify your environment is correctly set up, and validate a
+manifest without running a fetch.
 
 Freeze
-------
+~~~~~~
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -150,7 +219,7 @@ Freeze
 .. automodule:: dfetch.commands.freeze
 
 Environment
------------
+~~~~~~~~~~~
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -162,7 +231,7 @@ Environment
 .. automodule:: dfetch.commands.environment
 
 Validate
---------
+~~~~~~~~
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -173,91 +242,97 @@ Validate
 
 .. automodule:: dfetch.commands.validate
 
-Add
----
-.. argparse::
-   :module: dfetch.__main__
-   :func: create_parser
-   :prog: dfetch
-   :path: add
-
-.. automodule:: dfetch.commands.add
-
-Non-interactive
-~~~~~~~~~~~~~~~
-
-Pass a URL and *Dfetch* fills in sensible defaults (name, destination, default
-branch) and appends the entry immediately — no prompts, no confirmation.
-Use ``--name``, ``--dst``, ``--version``, ``--src``, and ``--ignore`` to
-override individual fields.
-
-.. asciinema:: asciicasts/add.cast
-
-.. scenario-include:: ../features/add-project-through-cli.feature
-
-Interactive
-~~~~~~~~~~~
-
-Pass ``--interactive`` / ``-i`` to be guided step-by-step through every
-manifest field.  Pre-fill fields with the flag options above and those prompts
-are skipped.  At the end you can optionally run ``dfetch update`` immediately.
-
-.. asciinema:: asciicasts/interactive-add.cast
-
-.. scenario-include:: ../features/interactive-add.feature
-
+----
 
 CLI Cheatsheet
 --------------
 
-A source-only, no-hassle project-dependency aggregator.
-It uses a **manifest file** to describe your project's dependencies and fetches them into your codebase.
-Also called vendoring. More info: `<https://dfetch.readthedocs.io/en/latest/getting_started.html>`_.
+A quick-reference card for the most common *Dfetch* operations. All commands
+discover ``dfetch.yaml`` automatically by searching up from the current directory.
 
-- Start a new manifest (`dfetch.yaml`) with placeholder content:
+**Foundational**
+
+- Initialise a new manifest:
 
   .. code-block:: console
 
      dfetch init
 
-- Add a new project to the manifest (interactive step-by-step wizard):
+- Add a dependency interactively or non-interactively:
 
   .. code-block:: console
 
      dfetch add -i <url>
-
-  or non-interactively (auto-accept defaults, skip confirmation):
-
-  .. code-block:: console
-
      dfetch add <url>
 
-- Generate a manifest from existing git submodules or svn externals:
+- Migrate from git submodules or SVN externals:
 
   .. code-block:: console
 
      dfetch import
 
-- Check for newer versions of dependencies and create a machine parseable report for your CI:
+- Check which dependencies have newer versions available:
 
   .. code-block:: console
 
-     dfetch check [--jenkins-json] [--sarif] [--code-climate] [project]
+     dfetch check [project]
 
-- Download one or all projects from the manifest:
+- Fetch / update one or all dependencies:
 
   .. code-block:: console
 
      dfetch update [-f] [project]
 
-- Freeze all projects to their current version:
+**Patching**
+
+- Capture local changes to a vendored dependency as a patch file:
+
+  .. code-block:: console
+
+     dfetch diff [project]
+
+- Re-apply updated patches after an upstream bump:
+
+  .. code-block:: console
+
+     dfetch update-patch [project]
+
+- Export a patch as a contributor-ready unified diff:
+
+  .. code-block:: console
+
+     dfetch format-patch [project]
+
+**CI/CD Integration**
+
+- Check and emit a machine-readable report for your CI:
+
+  .. code-block:: console
+
+     dfetch check [--jenkins-json] [--sarif] [--code-climate] [project]
+
+- Generate an inventory list or SBOM:
+
+  .. code-block:: console
+
+     dfetch report [-o <file>] [-t {sbom,list}] [project]
+
+**Utilities**
+
+- Pin all dependencies to their currently fetched version:
 
   .. code-block:: console
 
      dfetch freeze
 
-- Report about the current state of the project(s):
+- Verify the environment (VCS tools, versions):
 
   .. code-block:: console
 
-     dfetch report [-o <filename>] [-t {sbom,list}] [project]
+     dfetch environment
+
+- Validate a manifest without fetching:
+
+  .. code-block:: console
+
+     dfetch validate
