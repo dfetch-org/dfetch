@@ -17,37 +17,34 @@
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/11245/badge)](https://www.bestpractices.dev/projects/11245)
 
 
-**DFetch can manage dependencies**
+**Vendor dependencies without the pain.**
 
-We make products that can last 15+ years; because of this we want to be able to have all sources available
-to build the entire project from source without depending on external resources.
-For this, we needed a dependency manager that was flexible enough to retrieve dependencies as plain text
-from various sources. `svn externals`, `git submodules` and `git subtrees` solve a similar
-problem, but not in a VCS-agnostic way or completely user-friendly way.
-We want self-contained code repositories without any hassle for end-users.
-Dfetch must promote upstreaming changes, but allow for local customizations.
-The problem is described thoroughly in [managing external dependencies](https://embeddedartistry.com/blog/2020/06/22/qa-on-managing-external-dependencies/) and sometimes
-is also known as [*vendoring*](https://dfetch.readthedocs.io/en/latest/vendoring.html).
+**Dfetch** copies source code directly into your project — no Git submodules, no SVN externals,
+no hidden external links. Fetch from Git, SVN, or plain archive URLs. Dependencies live as plain,
+readable files inside your own repository. You stay in full control of every line.
 
-Dfetch supports three source types: **Git**, **SVN**, and **archive files** (`.tar.gz`, `.tgz`, `.tar.bz2`, `.tar.xz`, `.zip`). Archives can be verified with a cryptographic hash (`sha256`, `sha384`, or `sha512`) to guarantee integrity on every fetch.
+Dfetch supports **Git**, **SVN**, and **archive files** (`.tar.gz`, `.tgz`, `.tar.bz2`, `.tar.xz`, `.zip`).
+Archives can be verified with a cryptographic hash (`sha256`, `sha384`, or `sha512`) to guarantee
+integrity on every fetch. No proprietary formats, no lock-in — switch tools any time.
 
-Other tools that do similar things are ``Zephyr's West``, ``CMake ExternalProject`` and other meta tools.
+Other tools that do similar things are Zephyr's West, CMake ExternalProject, and other meta tools.
 See [alternatives](https://dfetch.readthedocs.io/en/latest/alternatives.html) for a complete list.
+The broader concept is known as [*vendoring*](https://dfetch.readthedocs.io/en/latest/vendoring.html).
 
 [**Getting started**](https://dfetch.readthedocs.io/en/latest/getting_started.html) |
 [**Manual**](https://dfetch.readthedocs.io/en/latest/manual.html) |
 [**Troubleshooting**](https://dfetch.readthedocs.io/en/latest/troubleshooting.html)  |
 [**Contributing**](https://dfetch.readthedocs.io/en/latest/contributing.html)
 
-## Problems DFetch Solves
+## What Dfetch Does
 
-* Declarative code reuse across projects ([inner sourcing](https://about.gitlab.com/topics/version-control/what-is-innersource/))
-* Compose multi-repo code bases into a single working tree
-* Vendoring dependencies for reproducible builds
-* Apply local patches while keeping upstream syncable
-* VCS-agnostic dependency management (Git, SVN, and plain archives)
+* Vendor source-only dependencies — fully self-contained, no external links at build time
+* VCS-agnostic: mix Git, SVN, and plain archive URLs freely in one manifest
 * Fetch and verify archives with cryptographic integrity checks
-* Self-contained exports for releases or audits
+* Apply local patches while keeping upstream syncable (`dfetch diff` / `dfetch format-patch`)
+* Supply-chain ready: SBOM generation, license detection, multi-format CI reports
+* Migrate from Git submodules or SVN externals in seconds (`dfetch import`)
+* Declarative code reuse across projects ([inner sourcing](https://about.gitlab.com/topics/version-control/what-is-innersource/))
 
 ## Install
 
@@ -122,10 +119,10 @@ manifest:
       hash: sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 ```
 
-## Github Action
+## GitHub Action
 
-You can use DFetch in your Github Actions workflow to check your dependencies.
-The results will be uploaded to Github. Add the following to your workflow file:
+You can use Dfetch in your GitHub Actions workflow to check your dependencies.
+The results will be uploaded to GitHub. Add the following to your workflow file:
 
 ```yaml
 jobs:
