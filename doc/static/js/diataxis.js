@@ -17,6 +17,7 @@
   var PAGE_SECTIONS = {
     installation:   "tutorial",
     getting_started:"tutorial",
+    migration:       "howto",
     troubleshooting:"howto",
     contributing:   "howto",
     manifest:       "reference",
