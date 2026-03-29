@@ -38,8 +38,9 @@ jobs:
         run: pip install .
 
       - run: dfetch environment
-      - run: dfetch validate
+      - run: dfetch environment
       - run: dfetch add https://github.com/dfetch-org/test-repo
+      - run: dfetch validate
       - run: dfetch check
       - run: dfetch update
       - run: dfetch update
