@@ -578,3 +578,179 @@ h1::after {
   font-size: 0.9375rem;
   line-height: 1.7;
 }
+
+/* ============================================================
+   CLI Cheatsheet
+   ============================================================ */
+.cheatsheet {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin: 1.5rem 0 2.5rem;
+}
+
+.cs-group {
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shad-sm);
+  background: #fff;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* -- group header -- */
+.cs-header {
+  padding: 0.55rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.cs-title {
+  font-family: "Inter", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.cs-sub {
+  font-family: "Inter", sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  opacity: 0.72;
+}
+
+.cs-primary { background: var(--primary);  color: #fff; }
+.cs-accent  { background: var(--accent);   color: #fff; }
+.cs-dark    { background: #1e1610;         color: #f0e8dc; }
+.cs-muted   {
+  background: var(--bg-tint);
+  color: var(--text);
+  border-bottom: 2px solid var(--border);
+}
+.cs-muted .cs-sub { opacity: 0.5; }
+
+/* -- command rows -- */
+.cs-table {
+  width: 100%;
+  border-collapse: collapse;
+  /* override the general table.docutils rules */
+  margin: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.cs-table tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.cs-table tr:last-child {
+  border-bottom: none;
+}
+
+.cs-table tr:nth-child(even) td {
+  background: rgba(254, 248, 240, 0.4) !important;
+}
+
+.cs-cmd {
+  padding: 0.3rem 0.5rem 0.3rem 1rem;
+  vertical-align: middle;
+  width: 50%;
+  white-space: nowrap;
+}
+
+/* the <code> inside .cs-cmd should look like plain mono, not a styled badge */
+.cs-cmd code {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace !important;
+  font-size: 0.775rem !important;
+  font-weight: 500;
+  color: var(--primary-dark) !important;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  line-height: 1.5;
+}
+
+/* optional/variable parts shown in muted style */
+.cs-cmd em {
+  font-style: normal;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.cs-desc {
+  padding: 0.3rem 1rem 0.3rem 0.5rem;
+  font-family: "Inter", sans-serif;
+  font-size: 0.775rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  vertical-align: middle;
+}
+
+/* collapse to single column on narrow viewports */
+@media (max-width: 700px) {
+  .cheatsheet {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   Print — cheatsheet
+   Forces background colours, removes shadows, 2-col on paper.
+   ============================================================ */
+@media print {
+  body {
+    background-image: none !important;
+  }
+
+  div.documentwrapper,
+  div.body {
+    background-image: none !important;
+  }
+
+  .cheatsheet {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .cs-group {
+    box-shadow: none;
+    border: 0.5pt solid #ccc;
+  }
+
+  /* Force header background colours to print */
+  .cs-primary {
+    background: #c2620a !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cs-accent {
+    background: #4e7fa0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cs-dark {
+    background: #1e1610 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cs-muted {
+    background: #fef8f0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .cs-table tr:nth-child(even) td {
+    background: rgba(254, 248, 240, 0.5) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* suppress link-URL decoration that browsers add on print */
+  a::after {
+    content: none !important;
+  }
+}

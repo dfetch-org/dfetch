@@ -247,92 +247,119 @@ Validate
 CLI Cheatsheet
 --------------
 
-A quick-reference card for the most common *Dfetch* operations. All commands
-discover ``dfetch.yaml`` automatically by searching up from the current directory.
+All commands discover ``dfetch.yaml`` automatically by searching up from the
+current working directory. *Italicised* arguments are optional.
 
-**Foundational**
+.. raw:: html
 
-- Initialise a new manifest:
+   <div class="cheatsheet">
 
-  .. code-block:: console
+     <!-- Foundational -->
+     <div class="cs-group">
+       <div class="cs-header cs-primary">
+         <span class="cs-title">Foundational</span>
+         <span class="cs-sub">Core workflow &middot; daily use</span>
+       </div>
+       <table class="cs-table">
+         <tr>
+           <td class="cs-cmd"><code>dfetch init</code></td>
+           <td class="cs-desc">Create a new <code>dfetch.yaml</code> manifest</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch add <em>&lt;url&gt;</em></code></td>
+           <td class="cs-desc">Add a dependency, auto-fill defaults</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch add -i <em>&lt;url&gt;</em></code></td>
+           <td class="cs-desc">Add interactively, step-by-step wizard</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch import</code></td>
+           <td class="cs-desc">Migrate from git submodules / SVN externals</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch check <em>[project]</em></code></td>
+           <td class="cs-desc">Show dependencies with newer versions available</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch update <em>[-f] [project]</em></code></td>
+           <td class="cs-desc">Fetch / update one or all dependencies</td>
+         </tr>
+       </table>
+     </div>
 
-     dfetch init
+     <!-- Patching -->
+     <div class="cs-group">
+       <div class="cs-header cs-accent">
+         <span class="cs-title">Patching</span>
+         <span class="cs-sub">Local changes &middot; upstream sync</span>
+       </div>
+       <table class="cs-table">
+         <tr>
+           <td class="cs-cmd"><code>dfetch diff <em>[project]</em></code></td>
+           <td class="cs-desc">Capture local changes as a patch file</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch update-patch <em>[project]</em></code></td>
+           <td class="cs-desc">Re-apply patches after upstream version bump</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch format-patch <em>[project]</em></code></td>
+           <td class="cs-desc">Export contributor-ready unified diff for upstream PR</td>
+         </tr>
+       </table>
+     </div>
 
-- Add a dependency interactively or non-interactively:
+     <!-- CI/CD Integration -->
+     <div class="cs-group">
+       <div class="cs-header cs-dark">
+         <span class="cs-title">CI/CD Integration</span>
+         <span class="cs-sub">Reports &middot; SBOM &middot; security</span>
+       </div>
+       <table class="cs-table">
+         <tr>
+           <td class="cs-cmd"><code>dfetch check --jenkins-json</code></td>
+           <td class="cs-desc">Jenkins-compatible JSON report</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch check --sarif</code></td>
+           <td class="cs-desc">SARIF report (GitHub Advanced Security&nbsp;etc.)</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch check --code-climate</code></td>
+           <td class="cs-desc">Code Climate / GitLab report</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch report</code></td>
+           <td class="cs-desc">Print a dependency inventory list</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch report -t sbom</code></td>
+           <td class="cs-desc">Generate a Software Bill of Materials</td>
+         </tr>
+       </table>
+     </div>
 
-  .. code-block:: console
+     <!-- Utilities -->
+     <div class="cs-group">
+       <div class="cs-header cs-muted">
+         <span class="cs-title">Utilities</span>
+         <span class="cs-sub">Maintenance &middot; setup &middot; validation</span>
+       </div>
+       <table class="cs-table">
+         <tr>
+           <td class="cs-cmd"><code>dfetch freeze</code></td>
+           <td class="cs-desc">Pin all dependencies to currently fetched version</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch environment</code></td>
+           <td class="cs-desc">Verify VCS tools and environment setup</td>
+         </tr>
+         <tr>
+           <td class="cs-cmd"><code>dfetch validate</code></td>
+           <td class="cs-desc">Validate the manifest without fetching</td>
+         </tr>
+       </table>
+     </div>
 
-     dfetch add -i <url>
-     dfetch add <url>
-
-- Migrate from git submodules or SVN externals:
-
-  .. code-block:: console
-
-     dfetch import
-
-- Check which dependencies have newer versions available:
-
-  .. code-block:: console
-
-     dfetch check [project]
-
-- Fetch / update one or all dependencies:
-
-  .. code-block:: console
-
-     dfetch update [-f] [project]
-
-**Patching**
-
-- Capture local changes to a vendored dependency as a patch file:
-
-  .. code-block:: console
-
-     dfetch diff [project]
-
-- Re-apply updated patches after an upstream bump:
-
-  .. code-block:: console
-
-     dfetch update-patch [project]
-
-- Export a patch as a contributor-ready unified diff:
-
-  .. code-block:: console
-
-     dfetch format-patch [project]
-
-**CI/CD Integration**
-
-- Check and emit a machine-readable report for your CI:
-
-  .. code-block:: console
-
-     dfetch check [--jenkins-json] [--sarif] [--code-climate] [project]
-
-- Generate an inventory list or SBOM:
-
-  .. code-block:: console
-
-     dfetch report [-o <file>] [-t {sbom,list}] [project]
-
-**Utilities**
-
-- Pin all dependencies to their currently fetched version:
-
-  .. code-block:: console
-
-     dfetch freeze
-
-- Verify the environment (VCS tools, versions):
-
-  .. code-block:: console
-
-     dfetch environment
-
-- Validate a manifest without fetching:
-
-  .. code-block:: console
-
-     dfetch validate
+   </div>
