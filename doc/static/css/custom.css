@@ -1,4 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
+/* Inter — vendored from doc/static/fonts/inter/ */
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 300; font-display: swap; src: url('../fonts/inter/Inter-Light.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/inter/Inter-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('../fonts/inter/Inter-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('../fonts/inter/Inter-SemiBold.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 700; font-display: swap; src: url('../fonts/inter/Inter-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 800; font-display: swap; src: url('../fonts/inter/Inter-ExtraBold.woff2') format('woff2'); }
+
+/* JetBrains Mono — vendored from doc/static/fonts/jetbrains-mono/ */
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('../fonts/jetbrains-mono/JetBrainsMono-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url('../fonts/jetbrains-mono/JetBrainsMono-Medium.woff2') format('woff2'); }
 
 /* ============================================================
    Design Tokens — mirrors the landing page palette exactly
