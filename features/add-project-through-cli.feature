@@ -5,7 +5,6 @@ Feature: Add a project to the manifest via the CLI
     fills in sensible defaults (name, destination, default branch), shows a
     preview, and appends the entry to ``dfetch.yaml`` after confirmation.
 
-    Pass ``--force`` / ``-f`` to skip the confirmation prompt.
     Pass ``--interactive`` / ``-i`` to be guided step-by-step through every
     manifest field (name, destination, branch/tag/revision, optional src,
     optional ignore list).
@@ -22,7 +21,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: ext/existing
                   url: some-remote-server/existing.git
             """
-        When I add "some-remote-server/MyLib.git" with force
+        When I add "some-remote-server/MyLib.git"
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: MyLib
@@ -40,7 +39,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: MyLib
                   url: some-remote-server/MyLib.git
             """
-        When I add "some-remote-server/MyLib.git" with force
+        When I add "some-remote-server/MyLib.git"
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: MyLib-1
@@ -59,7 +58,7 @@ Feature: Add a project to the manifest via the CLI
                 - name: ext/lib-b
                   url: some-remote-server/lib-b.git
             """
-        When I add "some-remote-server/MyLib.git" with force
+        When I add "some-remote-server/MyLib.git"
         Then the manifest 'dfetch.yaml' contains entry
             """
               - name: MyLib
