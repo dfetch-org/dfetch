@@ -1,7 +1,7 @@
 
 
-Troubleshooting
-===============
+Troubleshoot common problems
+============================
 
 Sometimes *Dfetch* may not behave as expected. This is could be because it relies on
 standard command-line tools such as ``git`` to be available on your system. This section will help you

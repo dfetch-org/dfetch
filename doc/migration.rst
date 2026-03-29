@@ -1,8 +1,8 @@
 
 .. _migration:
 
-Migrating to Dfetch
-===================
+Migrate to Dfetch
+=================
 
 *Dfetch* can convert an existing project that uses Git submodules or SVN
 externals into a Dfetch-managed project.  The :ref:`dfetch import <import>`

@@ -1,8 +1,8 @@
 
 .. _updating-projects:
 
-Updating projects
-=================
+Update projects
+===============
 
 ``dfetch update`` fetches every dependency listed in ``dfetch.yaml`` and
 places the requested version in its destination folder.  VCS type (Git, SVN,
