@@ -155,7 +155,7 @@ div.highlight pre {
 }
 
 /* Inline code */
-code, .pre, tt {
+code, tt {
   font-family: "JetBrains Mono", "Fira Code", Consolas, monospace !important;
   font-size: 0.875em;
   background: var(--bg-tint);
@@ -163,6 +163,18 @@ code, .pre, tt {
   border-radius: 4px;
   padding: 0.1em 0.35em;
   color: var(--primary-dark);
+}
+
+/* Sphinx wraps each word in <span class="pre"> inside inline code — strip the
+   per-word styling so only the outer <code> element gets the box. */
+code .pre, tt .pre {
+  font-family: inherit;
+  font-size: inherit;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  color: inherit;
 }
 
 /* ============================================================
