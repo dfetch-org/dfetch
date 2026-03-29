@@ -377,7 +377,7 @@ class Manifest:
     def check_name_uniqueness(self, project_name: str) -> None:
         """Raise if *project_name* is already used in the manifest."""
         if project_name in {project.name for project in self.projects}:
-            raise RuntimeError(
+            raise ValueError(
                 f"Project with name '{project_name}' already exists in manifest!"
             )
 
@@ -390,8 +390,7 @@ class Manifest:
                 f"Name '{name}' contains characters not allowed in a manifest name. "
                 "Avoid: # : [ ] { } & * ! | > ' \" % @ `"
             )
-        if name in {p.name for p in self.projects}:
-            raise ValueError(f"Project with name '{name}' already exists in manifest!")
+        self.check_name_uniqueness(name)
 
     @staticmethod
     def validate_destination(dst: str) -> None:

@@ -9,6 +9,8 @@ of the production class.
 
 from __future__ import annotations
 
+import os
+
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -24,7 +26,7 @@ from dfetch.terminal.types import Entry
 
 settings.register_profile("ci", max_examples=30, deadline=None)
 settings.register_profile("dev", max_examples=100, deadline=None)
-settings.load_profile("dev")
+settings.load_profile("ci" if os.getenv("CI") else "dev")
 
 
 # ---------------------------------------------------------------------------

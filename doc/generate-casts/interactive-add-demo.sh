@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 # Demo of dfetch add -i (interactive wizard mode).
 #
 # Uses the real cpputest repository so the viewer sees dfetch fetching live
@@ -9,7 +10,7 @@ source ./demo-magic/demo-magic.sh
 PROMPT_TIMEOUT=1
 
 mkdir interactive-add
-pushd interactive-add
+pushd interactive-add || { echo 'pushd failed' >&2; exit 1; }
 
 # Start with a manifest that already has one dependency so the demo shows
 # adding to an existing project rather than starting from scratch.
@@ -36,5 +37,5 @@ wait
 
 pei ""
 
-popd
+popd || { echo 'popd failed' >&2; exit 1; }
 rm -rf interactive-add

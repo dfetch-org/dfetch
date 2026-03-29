@@ -30,6 +30,11 @@ class SvnSubProject(SubProject):
         super().__init__(project)
         self._remote_repo = SvnRemote(self.remote)
 
+    @property
+    def remote_repo(self) -> SvnRemote:
+        """Return the underlying remote repository object."""
+        return self._remote_repo
+
     def check(self) -> bool:
         """Check if is SVN."""
         return self._remote_repo.is_svn()

@@ -25,6 +25,11 @@ class GitSubProject(SubProject):
         super().__init__(project)
         self._remote_repo = GitRemote(self.remote)
 
+    @property
+    def remote_repo(self) -> GitRemote:
+        """Return the underlying remote repository object."""
+        return self._remote_repo
+
     def check(self) -> bool:
         """Check if is GIT."""
         return bool(self._remote_repo.is_git())

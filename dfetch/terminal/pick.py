@@ -124,6 +124,9 @@ def scrollable_pick(
     idx = default_idx
     top = 0
     n = len(display_items)
+    if n == 0:
+        screen.clear()
+        return [] if multi else None
     selected = _initial_selection(multi, all_selected, n, default_idx)
 
     while True:
