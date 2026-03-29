@@ -1,8 +1,8 @@
 
 .. _patching:
 
-Patch a vendored dependency
-===========================
+Patch a dependency
+==================
 
 *Dfetch* has a first-class patch workflow.  When you need to fix a bug or
 apply a customisation to a vendored dependency, you can track that change as a
