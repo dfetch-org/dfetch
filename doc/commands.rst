@@ -3,9 +3,15 @@
 Commands
 ========
 
-*Dfetch* acts on the projects listed in the :ref:`Manifest`.
-Each action is a separate sub-command.
-For step-by-step guides see :doc:`getting_started`, :doc:`patching`, :doc:`check-ci`, and :doc:`sbom`.
+*Dfetch* is driven entirely from the command line. Each subcommand
+operates on the projects listed in the :ref:`Manifest`, which
+*Dfetch* searches for automatically from the current directory recursively
+downward.
+
+This page is the complete CLI reference — flags, arguments, and
+behaviour for every subcommand. If you are new to *Dfetch*, start with
+:doc:`getting_started` instead. For specific tasks the How-to Guides
+in the sidebar go further.
 
 .. program-output:: dfetch --help
    :shell:
@@ -34,6 +40,8 @@ Import
 
 .. automodule:: dfetch.commands.import_
 
+.. seealso:: :doc:`migration` — step-by-step guide for switching from Git submodules or SVN externals.
+
 Add
 ---
 .. argparse::
@@ -43,6 +51,8 @@ Add
    :path: add
 
 .. automodule:: dfetch.commands.add
+
+.. seealso:: :doc:`adding-a-project` — walks through adding a new dependency from start to finish.
 
 Check
 -----
@@ -56,6 +66,8 @@ Check
 
 .. automodule:: dfetch.commands.check
 
+.. seealso:: :doc:`check-ci` — how to run dependency checks in CI pipelines and interpret the output formats.
+
 Update
 ------
 .. argparse::
@@ -68,6 +80,8 @@ Update
 
 .. automodule:: dfetch.commands.update
 
+.. seealso:: :doc:`updating-projects` — covers the update workflow, pinning versions, and force-fetching.
+
 Diff
 ----
 .. argparse::
@@ -77,6 +91,8 @@ Diff
    :path: diff
 
 .. asciinema:: asciicasts/diff.cast
+
+.. seealso:: :doc:`patching` — creating, applying, and maintaining patches across upstream version bumps.
 
 Update patch
 ------------
@@ -109,6 +125,8 @@ Report
 .. asciinema:: asciicasts/report.cast
 
 .. automodule:: dfetch.reporting.stdout_reporter
+
+.. seealso:: :doc:`sbom` — generating a Software Bill of Materials with ``dfetch report``.
 
 Freeze
 ------
