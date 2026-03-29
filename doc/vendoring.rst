@@ -1,5 +1,7 @@
 
 
+.. _vendoring:
+
 Vendoring
 =========
 
@@ -13,8 +15,9 @@ engineers see it as a practical way to gain control and reliability, while other
 have historically described it as an anti-pattern. Both views exist for good
 reasons, and understanding the trade-offs matters more than choosing a side.
 
+
 What People Mean by Vendoring
------------------------------
+------------------------------
 
 At a basic level, vendoring means that a project can be built using only what is
 present in its repository. No network access is required, no external registries
@@ -23,7 +26,7 @@ specific revision of the repository is sufficient to reproduce a build from that
 point in time.
 
 The term originally became common in communities that explicitly placed third-
-party code into directories named `vendor`. Over time, the word broadened to
+party code into directories named ``vendor``. Over time, the word broadened to
 describe any approach where dependency source code is copied into the project,
 regardless of directory layout or tooling.
 
@@ -31,63 +34,93 @@ Vendoring does not necessarily imply permanent forks or heavy modification of
 third-party code. In many cases, vendored dependencies are kept pristine and
 updated mechanically from upstream sources.
 
-Why Vendoring Can Be Helpful
-----------------------------
+----
 
-The strongest argument for vendoring is reproducibility.
+.. div:: band-tint
 
-When dependencies are fetched dynamically, builds implicitly depend on the
-continued availability and behavior of external services. Registries can go
-offline, packages can be removed or yanked, and transitive dependencies can change
-in ways that are difficult to predict. Vendoring removes these uncertainties by
-making the build inputs explicit and local.
+   :material-regular:`thumb_up;2em;sd-text-primary` **Why vendoring can be helpful**
 
-Vendoring also improves visibility. When dependency code lives in the same source
-tree, it is easier to inspect, debug, and understand. Developers can step into
-library code without context switching or relying on tooling to fetch sources on
-demand. This visibility can reveal how much code a project is actually relying on,
-especially when compared to the apparent simplicity of a short dependency list in
-a configuration file.
+   .. grid:: 1 1 2 2
+      :gutter: 3
 
-Another benefit is reduced exposure to supply chain risk. Vendoring does not make
-third-party code safe, but it shifts trust from live infrastructure to explicit
-review. The project decides when dependencies are updated and exactly what code is
-being included.
+      .. grid-item-card:: :material-regular:`replay;2em` Reproducibility
+         :text-align: center
+         :class-card: stat-card
 
-Some proponents also argue that vendoring creates a healthy friction around
-dependencies. When adding a dependency requires consciously pulling in its source
-code, teams may be more selective and more aware of the long-term cost of that
-decision.
+         When dependencies are fetched dynamically, builds implicitly depend on the
+         availability of external services. Vendoring makes build inputs **explicit and
+         local** — no registry, no CDN, no network required.
 
-The Costs and Risks of Vendoring
---------------------------------
+      .. grid-item-card:: :material-regular:`visibility;2em` Visibility
+         :text-align: center
+         :class-card: stat-card
 
-Vendoring introduces real downsides.
+         Dependency code lives in the same source tree.
+         Easier to **inspect, debug, and understand** — no context switching,
+         no tooling required to fetch sources on demand.
 
-One common criticism is that vendoring discards upstream version control history.
-When code is copied into another repository, its original commit history, tags,
-and branches are no longer directly visible. This can make updates harder,
-especially if vendored code has been locally modified.
+      .. grid-item-card:: :material-regular:`security;2em` Supply-chain trust
+         :text-align: center
+         :class-card: stat-card
 
-Vendoring can also encourage divergence. When dependency code is nearby and easy
-to change, there is a temptation to patch it locally rather than contribute fixes
-upstream. Over time, this can result in silent forks that are difficult to
-maintain or reconcile with new releases.
+         Vendoring shifts trust from live infrastructure to explicit review.
+         The project decides **when** dependencies are updated and **exactly what
+         code** is being included.
 
-Repository size and noise are practical concerns as well. Vendored dependencies
-increase clone size and can dominate diffs during updates. Large dependency
-refreshes can obscure meaningful changes to the project's own code, making review
-and merging more difficult.
+      .. grid-item-card:: :material-regular:`tune;2em` Healthy friction
+         :text-align: center
+         :class-card: stat-card
 
-Maintenance responsibility is another cost. Vendored dependencies do not update
-themselves. Security fixes, bug fixes, and compatibility updates must be pulled in
-manually. Without a clear policy and tooling support, vendored code can easily
-become outdated.
+         When adding a dependency requires consciously pulling in its source code,
+         teams become **more selective** and more aware of the long-term cost of
+         that decision.
+
+----
+
+.. div:: band-mint
+
+   :material-regular:`warning;2em;sd-text-primary` **The costs and risks of vendoring**
+
+   .. grid:: 1 1 2 2
+      :gutter: 3
+
+      .. grid-item-card:: :material-regular:`history_toggle_off;2em` History loss
+         :text-align: center
+         :class-card: stat-card
+
+         When code is copied into another repository, its original commit history,
+         tags, and branches are no longer directly visible. This can make updates
+         **harder**, especially if vendored code has been locally modified.
+
+      .. grid-item-card:: :material-regular:`call_split;2em` Divergence risk
+         :text-align: center
+         :class-card: stat-card
+
+         When dependency code is nearby and easy to change, there is a temptation
+         to patch it locally rather than contribute fixes upstream. Over time this
+         can create **silent forks** that are difficult to reconcile.
+
+      .. grid-item-card:: :material-regular:`storage;2em` Repository size
+         :text-align: center
+         :class-card: stat-card
+
+         Vendored dependencies increase clone size and can **dominate diffs**
+         during updates. Large dependency refreshes can obscure meaningful changes
+         to the project's own code, making review and merging harder.
+
+      .. grid-item-card:: :material-regular:`build;2em` Maintenance burden
+         :text-align: center
+         :class-card: stat-card
+
+         Vendored dependencies do not update themselves. Security fixes, bug fixes,
+         and compatibility updates must be **pulled in manually**. Without a clear
+         policy and tooling support, vendored code can easily become outdated.
+
 
 Transitive Dependencies
 -----------------------
 
-Vendoring becomes significantly more complex once transitive dependencies are
+:material-regular:`account_tree;1.2em;sd-text-primary` Vendoring becomes significantly more complex once transitive dependencies are
 considered.
 
 Vendoring a single library often requires vendoring everything that library
@@ -100,10 +133,11 @@ graphs, handling version conflicts, and sharing common dependencies across
 projects. Vendoring replaces that automation with explicit ownership, which is
 sometimes desirable and sometimes overwhelming.
 
+
 A Brief History
 ---------------
 
-Vendoring predates modern package managers.
+:material-regular:`history;1.2em;sd-text-primary` Vendoring predates modern package managers.
 
 Early C and C++ projects routinely shipped third-party libraries inline because
 there was no reliable way to depend on system-installed packages. Many Unix
@@ -121,230 +155,322 @@ costs of relying entirely on external infrastructure.
 
 Today, vendoring is best understood as a trade-off rather than a relic.
 
+
 Vendoring Across Languages
 --------------------------
 
-Different language ecosystems have adopted vendoring to very different degrees.
+:material-regular:`code;1.2em;sd-text-primary` Different language ecosystems have adopted vendoring to very different degrees.
 
-Go is strongly associated with vendoring. Early versions of Go lacked a central
-dependency manager, which made vendoring a practical solution. Even after the
-introduction of module support, vendoring remains a first-class workflow, with
-tooling that understands and prioritizes vendored dependencies. One of Go's proverbs
-is "A little copying is better than a little dependency."
+.. grid:: 1 1 3 3
+   :gutter: 2
 
-Rust supports vendoring but does not encourage it by default. The Rust ecosystem
-places a strong emphasis on reproducibility through its package registry and lock
-files, reducing the need for vendoring in everyday development. Vendoring is still
-common in embedded systems, regulated environments, and long-term-support
-projects.
+   .. grid-item-card:: Go
+      :text-align: center
+      :class-card: stat-card
 
-JavaScript occupies an unusual position. Dependency source code is typically
-present locally in directories such as `node_modules`, but it is rarely checked
-into version control due to size and churn. Fully vendoring dependencies is
-possible but uncommon.
+      :material-regular:`check_circle;1.5em;sd-text-primary`
 
-Python has a mixed history. Vendoring was common in earlier projects and remains
-common in small tools, embedded Python environments, and source-distributed
-applications. Modern Python development more often relies on virtual environments
-and lock files, but vendoring has never disappeared entirely.
+      Strongly associated with vendoring.
+      First-class workflow via ``go mod vendor``.
+      *"A little copying is better than a little dependency."*
 
-C and C++ continue to vendor dependencies frequently. The lack of a universal
-package manager, combined with ABI compatibility concerns and platform
-differences, makes vendoring a practical and sometimes unavoidable choice.
+   .. grid-item-card:: Rust
+      :text-align: center
+      :class-card: stat-card
+
+      :material-regular:`check_circle;1.5em;sd-text-primary`
+
+      Supported but not the default. Common in **embedded, regulated, and
+      long-term-support** projects where reproducibility is paramount.
+
+   .. grid-item-card:: C / C++
+      :text-align: center
+      :class-card: stat-card
+
+      :material-regular:`check_circle;1.5em;sd-text-primary`
+
+      **Frequent** vendoring due to the lack of a universal package manager,
+      ABI compatibility concerns, and platform differences.
+
+   .. grid-item-card:: JavaScript
+      :text-align: center
+      :class-card: stat-card
+
+      :material-regular:`warning;1.5em`
+
+      ``node_modules`` is local, but **rarely committed** due to size and churn.
+      Fully vendoring is possible but uncommon.
+
+   .. grid-item-card:: Python
+      :text-align: center
+      :class-card: stat-card
+
+      :material-regular:`warning;1.5em`
+
+      Mixed history. Common in **small tools and embedded environments**.
+      Modern development more often relies on virtual environments and lock files.
+
+   .. grid-item-card:: Java / JVM
+      :text-align: center
+      :class-card: stat-card
+
+      :material-regular:`remove_circle;1.5em`
+
+      Rarely vendored. Maven and Gradle ecosystems rely heavily on remote
+      repositories and dependency resolution.
+
 
 Conclusion
 ----------
 
-Vendoring is neither a best practice nor an anti-pattern.
+.. card::
+   :class-card: card-tinted
 
-It is a deliberate trade-off that exchanges convenience and automatic updates for
-control, predictability, and independence from external systems. In some contexts,
-that trade is clearly worthwhile. In others, it introduces more cost than benefit.
+   :material-regular:`balance;2em;sd-text-primary` **Vendoring is neither a best practice nor an anti-pattern.**
 
-Used intentionally and with an understanding of its limitations, vendoring is
-simply one tool among many for managing dependencies.
+   It is a deliberate trade-off that exchanges convenience and automatic updates for
+   control, predictability, and independence from external systems. In some contexts,
+   that trade is clearly worthwhile. In others, it introduces more cost than benefit.
+
+   Used intentionally and with an understanding of its limitations, vendoring is
+   simply one tool among many for managing dependencies.
+
+----
 
 Best Practices
 --------------
 
-The following practices are drawn from our own usage of *Dfetch* and real-world policies and respected guidelines.
-They *mitigate* vendoring risks; they do not eliminate them.
+The following practices are drawn from our own usage of *Dfetch* and real-world
+policies and respected guidelines. They *mitigate* vendoring risks; they do not
+eliminate them.
 
-.. admonition :: Explicit Version Pinning and Provenance
+.. card:: :material-regular:`push_pin;1.5em;sd-text-primary` Explicit Version Pinning and Provenance
 
-    Every vendored dependency must be pinned to an explicit version, tag, or commit, and its source must be documented.
+   Every vendored dependency must be pinned to an explicit version, tag, or commit,
+   and its source must be documented.
 
-    **Rationale** Vendored code is often added once and then forgotten. Without automation, vulnerabilities, license issues,
-    and inconsistencies can persist unnoticed long after initial inclusion.
+   **Rationale** Vendored code is often added once and then forgotten. Without
+   automation, vulnerabilities, license issues, and inconsistencies can persist
+   unnoticed long after initial inclusion.
 
-    * pip: `vendor.txt` tracks versions and sources
-    * Go/Kubernetes: `go.mod`, `go.sum`, `vendor/modules.txt`
-    * Cargo: `Cargo.lock` + vendored sources
-    * Guidelines: `OWASP SCVS <https://scvs.owasp.org/scvs/v1-inventory/>`_, OpenSSF, NIST SP 800-161, SLSA
+   * pip: ``vendor.txt`` tracks versions and sources
+   * Go/Kubernetes: ``go.mod``, ``go.sum``, ``vendor/modules.txt``
+   * Cargo: ``Cargo.lock`` + vendored sources
+   * Guidelines: `OWASP SCVS <https://scvs.owasp.org/scvs/v1-inventory/>`_, OpenSSF, NIST SP 800-161, SLSA
 
-    *Dfetch* addresses this by having a declarative :ref:`manifest` and the option to :ref:`freeze` dependences to make each
-    revision explicit.
+   *Dfetch* addresses this by having a declarative :ref:`manifest` and the option to :ref:`freeze`
+   dependencies to make each revision explicit.
 
-.. admonition :: Reproducible and Offline Builds
+.. card:: :material-regular:`offline_bolt;1.5em;sd-text-primary` Reproducible and Offline Builds
 
-    Vendoring must enable fully reproducible and offline builds.
+   Vendoring must enable fully reproducible and offline builds.
 
-    **Rationale** The point of vendoring code is to remove external dependencies, by making sure an offline build succeeds it is
-    proven that builds are not dependent on external sources.
+   **Rationale** The point of vendoring code is to remove external dependencies.
+   By making sure an offline build succeeds, it is proven that builds are not
+   dependent on external sources.
 
-    * Go: committed `vendor/`
-    * Cargo: `.cargo/config.toml` + `cargo vendor`
-    * pip: vendored wheels and pure-Python dependencies
-    * Guidelines: SLSA, OpenSSF
+   * Go: committed ``vendor/``
+   * Cargo: ``.cargo/config.toml`` + ``cargo vendor``
+   * pip: vendored wheels and pure-Python dependencies
+   * Guidelines: SLSA, OpenSSF
 
-    *Dfetch* doesn't directly address this, this is a policy to follow.
+   *Dfetch* doesn't directly address this — this is a policy to follow.
 
-.. admonition :: Trust Upstream After Due Diligence
+.. card:: :material-regular:`verified;1.5em;sd-text-primary` Trust Upstream After Due Diligence
 
-    Vendored dependencies are not reviewed line-by-line, upstream (unit) tests are not run.
-    Do not auto-format vendored code.
+   Vendored dependencies are not reviewed line-by-line; upstream unit tests are not
+   run. Do not auto-format vendored code.
 
-    **Rationale** Reviewing every line of external code is costly and rarely effective. By performing due diligence
-    on upstream sources, you can trust their correctness and security while minimizing maintenance burden.
+   **Rationale** Reviewing every line of external code is costly and rarely effective.
+   By performing due diligence on upstream sources, you can trust their correctness
+   and security while minimising maintenance burden.
 
-    Reviewers should verify:
+   Reviewers should verify:
 
-    * Version changes and pinning
-    * Changelogs and release notes for regressions or security issues
-    * License compatibility
-    * CI status and test results of the upstream project
-    * Evidence of active maintenance and community support
+   * Version changes and pinning
+   * Changelogs and release notes for regressions or security issues
+   * License compatibility
+   * CI status and test results of the upstream project
+   * Evidence of active maintenance and community support
 
-    Do not run upstream unit tests locally, apply formatting or style changes, or make cosmetic changes to vendored code.
+   Do not run upstream unit tests locally, apply formatting or style changes, or
+   make cosmetic changes to vendored code.
 
-    This principle is aligned with:
+   Aligned with: OWASP SCVS · Google Open Source Security Guidelines · OpenSSF Best Practices.
 
-    * OWASP Software Component Verification Standard
-    * Google Open Source Security Guidelines
-    * OpenSSF Best Practices
+   *Dfetch* supports this approach via its manifest and metadata file
+   (``.dfetch_data.yaml``), which can be reviewed independently of the vendored code itself.
 
-    *Dfetch* supports this approach via its manifest and metadata file (``.dfetch_data.yaml``), which can be reviewed independently
-    of the vendored code itself.
+.. card:: :material-regular:`compare_arrows;1.5em;sd-text-primary` Separation of Vendor Updates from Product Changes
+
+   Vendored dependency updates must be isolated from functional code changes.
+
+   * Separate PRs or commits
+   * Clear commit messages documenting versions and rationale
+
+   **Rationale** Separation reduces review noise, letting maintainers focus on
+   meaningful changes.
+
+   *Dfetch* doesn't address this directly.
+
+.. card:: :material-regular:`edit_off;1.5em;sd-text-primary` Minimize Local Modifications
+
+   Vendored code must not be modified directly unless unavoidable.
+
+   If modifications are required:
+
+   * Document patches explicitly
+   * Prefer patch/overlay mechanisms
+   * Upstream changes whenever possible
+   * Cargo: ``[patch]`` mechanism
+   * Guidelines: Google OSS, OWASP, OpenSSF
+
+   **Rationale** Keeping the vendored dependency identical to upstream makes it easy
+   to follow upstream updates. Upstreaming any changes lets others in the wider
+   community benefit from your fixes.
+
+   *Dfetch* addresses this by providing a ``dfetch diff`` (:ref:`Diff`) command and a
+   ``patch`` (:ref:`Patch`) attribute in the manifest. It also has a CI check to detect
+   local changes using :ref:`Check`.
+
+.. card:: :material-regular:`verified_user;1.5em;sd-text-primary` Continuous Automation and Security Scanning
+
+   Vendored dependencies must be continuously verified through automation.
+
+   * CI verifies vendor consistency
+   * Dependency and CVE scanning
+   * SBOM generation
+
+   **Rationale** By copy-pasting a dependency, there may be silent security
+   degradation since there are no automatic updates.
+
+   *Dfetch* addresses this by providing a ``dfetch check`` (:ref:`Check`) command to
+   see if vendored dependencies are out-of-date and various report formats (including
+   SBoM) to check vulnerabilities.
+
+.. card:: :material-regular:`gavel;1.5em;sd-text-primary` Track License and Legal Information
+
+   All vendored dependencies must have their license and legal information explicitly
+   recorded.
+
+   **Rationale** Ensuring license compliance prevents legal issues and maintains
+   compatibility with your project's license.
+
+   * Track license type for each vendored dependency
+   * Use machine-readable formats where possible (e.g. SPDX identifiers)
+   * Include license documentation alongside vendored code
+   * Guidelines: OWASP, OpenSSF, Google OSS best practices
+
+   *Dfetch* addresses this by retaining the license file even when only a subfolder
+   is fetched.
+
+.. card:: :material-regular:`filter_alt;1.5em;sd-text-primary` Vendor Only What You Need
+
+   Minimise vendored code to what is strictly necessary for your project.
+
+   **Rationale** Vendoring unnecessary code increases maintenance burden, security
+   risk, and potential for patch rot. Include only the specific modules, packages,
+   subfolder, or components your project depends on.
+
+   *Dfetch* enables this by allowing you to fetch only a subfolder using the ``src:``
+   attribute.
+
+.. card:: :material-regular:`workspaces;1.5em;sd-text-primary` Isolate Vendored Dependencies
+
+   Vendored dependencies must be clearly isolated from first-party code.
+
+   **Rationale** Isolation prevents accidental coupling, avoids namespace conflicts,
+   and makes audits, updates, and removals easier. Vendored code should be
+   unmistakably identifiable as third-party code.
+
+   * Place vendored dependencies in a clearly named directory (e.g. ``vendor/``, ``_vendor/``)
+   * Avoid mixing vendored code with product or library sources
+   * Use language-supported namespace or module isolation where available
+   * Keep vendored code mechanically separable to enable future un-vendoring
+
+   Follows established practices in: Go (``vendor/``) · pip (``pip/_vendor``) · Cargo (``vendor/``) · Google OSS / OpenSSF.
+
+   *Dfetch* enables this by allowing you to store the vendored dependency in a folder
+   using the ``dst:`` attribute.
+
+----
+
+.. div:: band-tint
+
+   :material-regular:`public;2em;sd-text-primary` **Real-world projects using vendoring**
+
+   .. grid:: 1 1 2 2
+      :gutter: 2
+
+      .. grid-item-card:: Dynaconf (Python)
+         :link: https://github.com/dynaconf/dynaconf/tree/master/dynaconf/vendor
+         :link-type: url
+
+         :material-regular:`code;1.2em` Python configuration management library.
+
+      .. grid-item-card:: pip (Python)
+         :link: https://github.com/pypa/pip/tree/main/src/pip/_vendor
+         :link-type: url
+
+         :material-regular:`code;1.2em` Python's own package installer vendors its dependencies.
+
+      .. grid-item-card:: Kubernetes (Go)
+         :link: https://github.com/kubernetes/kubernetes/tree/master/vendor
+         :link-type: url
+
+         :material-regular:`code;1.2em` The industry-standard container orchestrator.
+
+      .. grid-item-card:: Cargo (Rust)
+         :link: https://doc.rust-lang.org/cargo/commands/cargo-vendor.html
+         :link-type: url
+
+         :material-regular:`code;1.2em` Rust's package manager supports vendoring natively.
 
 
-.. admonition :: Separation of Vendor Updates from Product Changes
+.. div:: band-mint
 
-    Vendored dependency updates must be isolated from functional code changes.
+   :material-regular:`bolt;2em;sd-text-primary` **Real-world projects using Dfetch**
 
-    * Separate PRs or commits
-    * Clear commit messages documenting versions and rationale
+   .. grid:: 1 1 2 2
+      :gutter: 2
 
-    **Rationale** By separation the review noise will be reduced, letting maintainers focus on important changes.
+      .. grid-item-card:: Dfetch
+         :link: https://github.com/dfetch-org/dfetch
+         :link-type: url
 
-    *Dfetch* doesn't address this directly.
+         :material-regular:`hub;1.2em` Dfetch uses itself to vendor its own test fixtures.
 
-.. admonition :: Minimize Local Modifications
+      .. grid-item-card:: ModbusScope
+         :link: https://github.com/ModbusScope/ModbusScope
+         :link-type: url
 
-    Vendored code must not be modified directly unless unavoidable.
+         :material-regular:`hub;1.2em` Industrial Modbus visualisation tool.
 
-    If modifications are required:
+      .. grid-item-card:: Example Yocto
+         :link: https://github.com/dfetch-org/example-yocto
+         :link-type: url
 
-    * Document patches explicitly
-    * Prefer patch/overlay mechanisms
-    * Upstream changes whenever possible
-    * pip: documented adaptations
-    * Cargo: `[patch]` mechanism
-    * Guidelines: Google OSS, OWASP, OpenSSF
+         :material-regular:`hub;1.2em` Dfetch in a Yocto/embedded Linux build.
 
-    **Rationale** The vendored dependency may diverge, keeping it the same as upstream makes it easy to keep following
-    upstream updates. Also by upstreaming any changes, more people outside the project can profit from any fixes.
+      .. grid-item-card:: Example Zephyr
+         :link: https://github.com/dfetch-org/example-zephyr
+         :link-type: url
 
-    *Dfetch* addresses this by providing a ``dfetch diff`` (:ref:`Diff`) command and a ``patch`` (:ref:`Patch`) attribute in the manifest.
-    This attribute can point to one or more patches that should be applied to the vendored dependency.
-    Next to this there is a CI system to detect local changes using :ref:`Check`.
+         :material-regular:`hub;1.2em` Dfetch in a Zephyr RTOS project.
 
-.. admonition :: Continuous Automation and Security Scanning
-
-    Vendored dependencies must be continuously verified through automation.
-
-    * CI verifies vendor consistency
-    * Dependency and CVE scanning
-    * SBOM generation
-
-    **Rationale** By copy-pasting a dependency, there maybe silent security degradation since there is no automatic updates.
-
-    *Dfetch* addresses this by providing a ``dfetch check`` (:ref:`Check`) command to see if vendored dependencies are out-of-date and
-    various report formats (including SBoM) to check vulnerabilities.
-
-.. admonition :: Track License and Legal Information
-
-    All vendored dependencies must have their license and legal information explicitly recorded.
-
-    **Rationale** Ensuring license compliance prevents legal issues and maintains compatibility with your project's license.
-
-    * Track license type for each vendored dependency.
-    * Use machine-readable formats where possible (e.g., SPDX identifiers).
-    * Include license documentation alongside vendored code.
-    * Guidelines: OWASP, OpenSSF, Google OSS best practices.
-
-    *Dfetch* addresses this by even when only a subfolder is fetched, retaining the license file.
-
-.. admonition :: Vendor Only What You Need
-
-    Minimize vendored code to what is strictly necessary for your project.
-
-    **Rationale** Vendoring unnecessary code increases maintenance burden, security risk, and potential for patch rot.
-    Include only the specific modules, packages, subfolder or components your project depends on.
-
-    *Dfetch* enables this by allowing to fetch only a subfolder using the ``src:`` attribute.
-
-.. admonition :: Isolate Vendored Dependencies
-
-    Vendored dependencies must be clearly isolated from first-party code.
-
-    **Rationale** Isolation prevents accidental coupling, avoids namespace conflicts, and makes audits, updates, and
-    removals easier. Vendored code should be unmistakably identifiable as third-party code.
-
-    * Place vendored dependencies in a clearly named and well-known directory (e.g. ``vendor/``, ``_vendor/``).
-    * Avoid mixing vendored code with product or library sources.
-    * Use language-supported namespace or module isolation where available.
-    * Prevent accidental imports of vendored internals by first-party code.
-    * Keep vendored code mechanically separable to enable future un-vendoring.
-
-    This principle follows established practices in:
-
-    * Go (``vendor/`` directory)
-    * pip (``pip/_vendor``)
-    * Cargo (``vendor/`` layout)
-    * Google OSS and OpenSSF guidelines
-
-    *Dfetch* enables this by allowing to store the vendored dependency in a folder using the ``dst:`` attribute.
-
-Real-world projects using vendoring
------------------------------------
-
-- `Dynaconf - (Python) <https://github.com/dynaconf/dynaconf/tree/master/dynaconf/vendor>`_
-- `PIP - (Python) <https://github.com/pypa/pip/tree/main/src/pip/_vendor>`_
-- `Kubernetes - (Go) <https://github.com/kubernetes/kubernetes/tree/master/vendor>`_
-- `Cargo - (Rust) <https://doc.rust-lang.org/cargo/commands/cargo-vendor.html>`_
-
-Real world projects using Dfetch
---------------------------------
-
-Here are some links to example projects using *Dfetch*.
-
-- `Dfetch`: https://github.com/dfetch-org/dfetch
-- `ModbusScope`: https://github.com/ModbusScope/ModbusScope
-- `Red Jackets Jazzband`: https://github.com/red-jackets-jazzband/website
-- `Example Yocto`: https://github.com/dfetch-org/example-yocto
-- `Example Zephyr`: https://github.com/dfetch-org/example-zephyr
-
-Internally we use *Dfetch* for various projects and uses.
+   Internally we use *Dfetch* for various projects and uses.
 
 
 Further Reading
 ---------------
 
-- `Vendoring is a vile anti pattern - Michael F. Lamb <https://gist.github.com/datagrok/8577287>`_
-- `SO: What is "vendoring"? - Niels Bom <https://stackoverflow.com/questions/26217488/what-is-vendoring>`_
-- `Why we stopped vendoring our dependencies - Carlos Perez <https://web.archive.org/web/20180216205752/http://blog.bithound.io/why-we-stopped-vendoring-our-npm-dependencies/>`_
-- `Vendoring - Carson Gross <https://htmx.org/essays/vendoring/>`_
-- `Our Software Dependency Problem - Russ Cox <https://research.swtch.com/deps>`_
-- `On Managing External Dependencies - Phillip Johnston <https://embeddedartistry.com/blog/2020/06/22/qa-on-managing-external-dependencies/>`_
-- `PIP's vendoring policy <https://github.com/pypa/pip/blob/main/src/pip/_vendor/README.rst>`_
-- `SubPatch benefits <https://subpatch.net/exp/benefits/>`_
+:material-regular:`menu_book;1.2em;sd-text-primary`
+
+* `Vendoring is a vile anti pattern — Michael F. Lamb <https://gist.github.com/datagrok/8577287>`_
+* `SO: What is "vendoring"? — Niels Bom <https://stackoverflow.com/questions/26217488/what-is-vendoring>`_
+* `Why we stopped vendoring our dependencies — Carlos Perez <https://web.archive.org/web/20180216205752/http://blog.bithound.io/why-we-stopped-vendoring-our-npm-dependencies/>`_
+* `Vendoring — Carson Gross <https://htmx.org/essays/vendoring/>`_
+* `Our Software Dependency Problem — Russ Cox <https://research.swtch.com/deps>`_
+* `On Managing External Dependencies — Phillip Johnston <https://embeddedartistry.com/blog/2020/06/22/qa-on-managing-external-dependencies/>`_
+* `PIP's vendoring policy <https://github.com/pypa/pip/blob/main/src/pip/_vendor/README.rst>`_
+* `SubPatch benefits <https://subpatch.net/exp/benefits/>`_
