@@ -577,6 +577,10 @@ h1::after {
   border-radius: 2px;
   margin-top: 0.5rem;
 }
+body.dxt-tutorial    h1::after { background: var(--dxt-tutorial);    }
+body.dxt-howto       h1::after { background: var(--dxt-howto);       }
+body.dxt-reference   h1::after { background: var(--dxt-reference);   }
+body.dxt-explanation h1::after { background: var(--dxt-explanation); }
 
 /* Sphinx tabs — match palette */
 .sphinx-tabs-tab {
@@ -1196,3 +1200,12 @@ body.dxt-explanation div.body { border-top: 4px solid var(--dxt-explanation); }
 .sphinxsidebar ul.dxt-section-howto       .current > a { color: var(--dxt-howto);       font-weight: 600; }
 .sphinxsidebar ul.dxt-section-reference   .current > a { color: var(--dxt-reference);   font-weight: 600; }
 .sphinxsidebar ul.dxt-section-explanation .current > a { color: var(--dxt-explanation); font-weight: 600; }
+
+/* ── Gherkin syntax highlighting — diataxis section colours ── */
+/* Keywords (Given/When/Then/And/table pipes/docstring markers) */
+.highlight-gherkin .k { color: var(--primary); font-weight: bold; }
+
+body.dxt-tutorial    .highlight-gherkin .k { color: var(--dxt-tutorial);    }
+body.dxt-howto       .highlight-gherkin .k { color: var(--dxt-howto);       }
+body.dxt-reference   .highlight-gherkin .k { color: var(--dxt-reference);   }
+body.dxt-explanation .highlight-gherkin .k { color: var(--dxt-explanation); }
