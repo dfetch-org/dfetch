@@ -13,7 +13,7 @@ clear
 
 # Run the command
 pe "cat dfetch.yaml"
-pe "dfetch add -f https://github.com/dfetch-org/dfetch.git"
+pe "dfetch add https://github.com/dfetch-org/dfetch.git"
 pe "cat dfetch.yaml"
 
 PROMPT_TIMEOUT=3

@@ -209,7 +209,7 @@ Also called vendoring. More info: `<https://dfetch.readthedocs.io/en/latest/gett
 
   .. code-block:: console
 
-     dfetch add -f <url>
+     dfetch add <url>
 
 - Generate a manifest from existing git submodules or svn externals:
 

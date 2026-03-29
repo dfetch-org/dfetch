@@ -17,12 +17,6 @@ def _resolve_url(url: str, context) -> str:
     return url.replace("some-remote-server", f"file:///{remote_server_path(context)}")
 
 
-@when('I add "{remote_url}" with force')
-def step_impl(context, remote_url):
-    url = _resolve_url(remote_url, context)
-    call_command(context, ["add", "--force", url])
-
-
 @when('I add "{remote_url}"')
 def step_impl(context, remote_url):
     url = _resolve_url(remote_url, context)

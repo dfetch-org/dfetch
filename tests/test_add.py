@@ -36,12 +36,10 @@ def _make_remote(name: str, url: str) -> Mock:
 
 def _make_args(
     remote_url: str,
-    force: bool = False,
     interactive: bool = False,
 ) -> argparse.Namespace:
     return argparse.Namespace(
         remote_url=[remote_url],
-        force=force,
         interactive=interactive,
     )
 
@@ -143,12 +141,12 @@ def test_determine_remote_returns_none_for_empty_remotes():
 
 
 # ---------------------------------------------------------------------------
-# Add command – non-interactive (force)
+# Add command – non-interactive
 # ---------------------------------------------------------------------------
 
 
-def test_add_command_force_appends_entry():
-    """With --force the entry is appended without any prompts."""
+def test_add_command_non_interactive_appends_entry():
+    """Non-interactive add appends the entry to the manifest without any prompts."""
     fake_superproject = Mock()
     fake_superproject.manifest = mock_manifest(
         [{"name": "ext/existing"}], path="/some/dfetch.yaml"
@@ -165,61 +163,12 @@ def test_add_command_force_appends_entry():
             "dfetch.commands.add.create_sub_project", return_value=fake_subproject
         ):
             with patch("dfetch.commands.add.append_entry_manifest_file") as mock_append:
-                Add()(_make_args("https://github.com/org/myrepo.git", force=True))
+                Add()(_make_args("https://github.com/org/myrepo.git"))
 
     mock_append.assert_called_once()
     entry: ProjectEntry = mock_append.call_args[0][1]
     assert entry.name == "myrepo"
     assert entry.branch == "main"
-
-
-def test_add_command_user_confirms():
-    """Without --force the user is prompted; confirming proceeds and update is declined."""
-    fake_superproject = Mock()
-    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
-    fake_superproject.manifest.remotes = []
-    fake_superproject.root_directory = Path("/some")
-
-    fake_subproject = _make_subproject()
-
-    # First Confirm.ask → True (add), second → False (don't run update)
-    with patch(
-        "dfetch.commands.add.create_super_project", return_value=fake_superproject
-    ):
-        with patch(
-            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
-        ):
-            with patch("dfetch.commands.add.Confirm.ask", side_effect=[True, False]):
-                with patch(
-                    "dfetch.commands.add.append_entry_manifest_file"
-                ) as mock_append:
-                    Add()(_make_args("https://github.com/org/myrepo.git"))
-
-    mock_append.assert_called_once()
-
-
-def test_add_command_user_aborts():
-    """Without --force the user can abort; no manifest modification."""
-    fake_superproject = Mock()
-    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
-    fake_superproject.manifest.remotes = []
-    fake_superproject.root_directory = Path("/some")
-
-    fake_subproject = _make_subproject()
-
-    with patch(
-        "dfetch.commands.add.create_super_project", return_value=fake_superproject
-    ):
-        with patch(
-            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
-        ):
-            with patch("dfetch.commands.add.Confirm.ask", return_value=False):
-                with patch(
-                    "dfetch.commands.add.append_entry_manifest_file"
-                ) as mock_append:
-                    Add()(_make_args("https://github.com/org/myrepo.git"))
-
-    mock_append.assert_not_called()
 
 
 def test_add_command_suffixes_duplicate_name(tmp_path):
@@ -242,7 +191,7 @@ def test_add_command_suffixes_duplicate_name(tmp_path):
         with patch(
             "dfetch.commands.add.create_sub_project", return_value=fake_subproject
         ):
-            Add()(_make_args("https://github.com/org/myrepo.git", force=True))
+            Add()(_make_args("https://github.com/org/myrepo.git"))
 
     assert "myrepo-1" in manifest_file.read_text()
 
@@ -684,8 +633,8 @@ def test_add_command_interactive_svn_branch_by_number():
     assert entry.branch == "feature-x"
 
 
-def test_add_command_interactive_svn_force():
-    """SVN non-interactive (--force) add defaults to trunk."""
+def test_add_command_non_interactive_svn():
+    """SVN non-interactive add defaults to trunk."""
     fake_superproject = Mock()
     fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
     fake_superproject.manifest.remotes = []
@@ -700,7 +649,7 @@ def test_add_command_interactive_svn_force():
             "dfetch.commands.add.create_sub_project", return_value=fake_subproject
         ):
             with patch("dfetch.commands.add.append_entry_manifest_file") as mock_append:
-                Add()(_make_args(_SVN_URL, force=True))
+                Add()(_make_args(_SVN_URL))
 
     mock_append.assert_called_once()
     entry: ProjectEntry = mock_append.call_args[0][1]
@@ -735,7 +684,6 @@ def test_add_command_matches_existing_remote():
                 Add()(
                     _make_args(
                         "https://github.com/org/myrepo.git",
-                        force=True,
                     )
                 )
 
@@ -758,9 +706,9 @@ def test_add_create_menu():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
     Add.create_menu(subparsers)
-    parsed = parser.parse_args(["add", "-f", "https://example.com/repo.git"])
-    assert parsed.force is True
+    parsed = parser.parse_args(["add", "https://example.com/repo.git"])
     assert parsed.remote_url == ["https://example.com/repo.git"]
+    assert not hasattr(parsed, "force")
 
 
 def test_add_create_menu_interactive_flag():

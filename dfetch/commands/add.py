@@ -12,11 +12,7 @@ In the simplest form you just provide the URL::
 
 Dfetch fetches remote metadata (branches, tags), picks the default branch,
 guesses a destination path from your existing projects, shows a preview, and
-appends the entry to ``dfetch.yaml`` after a single confirmation prompt.
-
-Skip the confirmation with ``--force``::
-
-    dfetch add -f https://github.com/some-org/some-repo.git
+appends the entry to ``dfetch.yaml`` immediately without prompting.
 
 Interactive mode
 ----------------
@@ -142,13 +138,6 @@ class Add(dfetch.commands.command.Command):
         )
 
         parser.add_argument(
-            "-f",
-            "--force",
-            action="store_true",
-            help="Skip the confirmation prompt.",
-        )
-
-        parser.add_argument(
             "-i",
             "--interactive",
             action="store_true",
@@ -228,7 +217,7 @@ def _finalize_add(
     superproject: SuperProject,
 ) -> None:
     """Write *project_entry* to the manifest and optionally run update."""
-    if not args.force and not Confirm.ask("Add project to manifest?", default=True):
+    if args.interactive and not Confirm.ask("Add project to manifest?", default=True):
         logger.info(
             "  [bold bright_yellow]> Aborting add of project[/bold bright_yellow]"
         )
@@ -243,9 +232,8 @@ def _finalize_add(
         f"Added '{project_entry.name}' to manifest '{superproject.manifest.path}'",
     )
 
-    # Offer to run update immediately (only when we already prompted the user,
-    # i.e. not in --force mode where we want zero interaction).
-    if not args.force and Confirm.ask(
+    # Offer to run update immediately only in interactive mode.
+    if args.interactive and Confirm.ask(
         f"Run 'dfetch update {project_entry.name}' now?", default=True
     ):
         # pylint: disable=import-outside-toplevel
