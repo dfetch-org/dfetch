@@ -20,6 +20,16 @@ CLI Cheatsheet
          <span class="cs-tok cs-tok-fl">--flag</span>
          <span class="cs-tok cs-tok-ag">&lt;arg&gt;</span>
        </div>
+       <button class="cs-fullscreen-btn" onclick="window.print()" title="Print" aria-label="Print cheatsheet">
+         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+           <path d="M3 4V1h7v3M3 9H1V5h11v4h-2M3 7h7v5H3V7z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+         </svg>
+       </button>
+       <button class="cs-fullscreen-btn" id="cs-fs-btn" title="Fullscreen" aria-label="Toggle fullscreen">
+         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+           <path d="M1 4.5V1h3.5M8.5 1H12v3.5M12 8.5V12H8.5M4.5 12H1V8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+         </svg>
+       </button>
      </div>
 
      <!-- two-column body -->
@@ -142,3 +152,34 @@ CLI Cheatsheet
      </div>
 
    </div>
+
+   <script>
+   (function () {
+     var btn = document.getElementById('cs-fs-btn');
+     if (!btn) return;
+     var cs = document.querySelector('.cheatsheet');
+
+     function isFull() {
+       return !!(document.fullscreenElement || document.webkitFullscreenElement);
+     }
+
+     function updateBtn() {
+       var full = isFull();
+       btn.querySelector('path').setAttribute('d', full
+         ? 'M4.5 1v3.5H1M12 4.5H8.5V1M8.5 12V8.5H12M1 8.5h3.5V12'
+         : 'M1 4.5V1h3.5M8.5 1H12v3.5M12 8.5V12H8.5M4.5 12H1V8.5');
+       btn.title = full ? 'Exit fullscreen' : 'Fullscreen';
+     }
+
+     document.addEventListener('fullscreenchange', updateBtn);
+     document.addEventListener('webkitfullscreenchange', updateBtn);
+
+     btn.addEventListener('click', function () {
+       if (isFull()) {
+         (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+       } else {
+         (cs.requestFullscreen || cs.webkitRequestFullscreen).call(cs);
+       }
+     });
+   })();
+   </script>
