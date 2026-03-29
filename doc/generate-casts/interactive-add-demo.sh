@@ -5,11 +5,13 @@ set -euo pipefail
 # Uses the real cpputest repository so the viewer sees dfetch fetching live
 # branch/tag metadata and the wizard populating from it.
 
-source ./demo-magic/demo-magic.sh
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DIR/demo-magic/demo-magic.sh"
 
 PROMPT_TIMEOUT=1
 
 mkdir interactive-add
+trap 'popd 2>/dev/null; rm -rf interactive-add' EXIT
 pushd interactive-add || { echo 'pushd failed' >&2; exit 1; }
 
 # Start with a manifest that already has one dependency so the demo shows
