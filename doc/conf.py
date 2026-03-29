@@ -97,7 +97,7 @@ todo_include_todos = False
 autosectionlabel_maxdepth = 3
 
 # Suppress warnings about duplicate labels from argparse directive
-suppress_warnings = ["autosectionlabel.manual"]
+suppress_warnings = ["autosectionlabel.commands"]
 
 # Options for sphinx-autoissues
 issuetracker = "github"

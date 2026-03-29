@@ -1,7 +1,7 @@
 
 
-Manual
-======
+Commands
+========
 
 *Dfetch* acts on the projects listed in the :ref:`Manifest`.
 Each action is a separate sub-command.
@@ -10,19 +10,8 @@ For step-by-step guides see :doc:`getting_started`, :doc:`patching`, :doc:`check
 .. program-output:: dfetch --help
    :shell:
 
-.. uml:: /static/uml/commands.puml
-
-----
-
-Foundational
-------------
-
-These five commands cover the complete everyday workflow: create or migrate a
-manifest, register new dependencies, check for newer versions upstream, and
-fetch them into your repository.
-
 Init
-~~~~
+----
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -34,7 +23,7 @@ Init
 .. automodule:: dfetch.commands.init
 
 Import
-~~~~~~
+------
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -46,7 +35,7 @@ Import
 .. automodule:: dfetch.commands.import_
 
 Add
-~~~
+---
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -56,7 +45,7 @@ Add
 .. automodule:: dfetch.commands.add
 
 Check
-~~~~~
+-----
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -68,7 +57,7 @@ Check
 .. automodule:: dfetch.commands.check
 
 Update
-~~~~~~
+------
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -79,15 +68,8 @@ Update
 
 .. automodule:: dfetch.commands.update
 
-----
-
-Patching
---------
-
-See :doc:`patching` for a step-by-step guide to the full patch workflow.
-
 Diff
-~~~~
+----
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -97,7 +79,7 @@ Diff
 .. asciinema:: asciicasts/diff.cast
 
 Update patch
-~~~~~~~~~~~~
+------------
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -107,7 +89,7 @@ Update patch
 .. asciinema:: asciicasts/update-patch.cast
 
 Format patch
-~~~~~~~~~~~~
+------------
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -116,16 +98,8 @@ Format patch
 
 .. asciinema:: asciicasts/format-patch.cast
 
-----
-
-CI/CD Integration
------------------
-
-See :doc:`check-ci` for integration guides for Jenkins, GitHub Actions, and GitLab CI.
-See :doc:`sbom` for generating a Software Bill-of-Materials.
-
 Report
-~~~~~~
+------
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -134,21 +108,10 @@ Report
 
 .. asciinema:: asciicasts/report.cast
 
-List (default)
-''''''''''''''
 .. automodule:: dfetch.reporting.stdout_reporter
 
-----
-
-Utilities
----------
-
-Supporting commands for day-to-day maintenance: pin all versions to their
-current state, verify your environment is correctly set up, and validate a
-manifest without running a fetch.
-
 Freeze
-~~~~~~
+------
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -160,7 +123,7 @@ Freeze
 .. automodule:: dfetch.commands.freeze
 
 Environment
-~~~~~~~~~~~
+-----------
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser
@@ -172,7 +135,7 @@ Environment
 .. automodule:: dfetch.commands.environment
 
 Validate
-~~~~~~~~
+--------
 .. argparse::
    :module: dfetch.__main__
    :func: create_parser

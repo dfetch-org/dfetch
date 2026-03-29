@@ -64,7 +64,7 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    :caption: Reference
 
    manifest
-   manual
+   commands
    cli_cheatsheet
    changelog
    legal
