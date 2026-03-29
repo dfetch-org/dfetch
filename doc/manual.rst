@@ -5,7 +5,7 @@ Manual
 
 *Dfetch* acts on the projects listed in the :ref:`Manifest`.
 Each action is a separate sub-command.
-For step-by-step guides see :doc:`getting_started` and :doc:`patching`.
+For step-by-step guides see :doc:`getting_started`, :doc:`patching`, :doc:`check-ci`, and :doc:`sbom`.
 
 .. program-output:: dfetch --help
    :shell:
@@ -121,28 +121,8 @@ Format patch
 CI/CD Integration
 -----------------
 
-These commands are designed to plug into automated pipelines. Use ``dfetch
-check`` report formats to surface stale or vulnerable dependencies in your
-existing security toolchain. Use ``dfetch report`` to generate SBOMs and
-inventory lists for compliance audits.
-
-Reporting
-~~~~~~~~~
-.. automodule:: dfetch.reporting.check.reporter
-
-Jenkins reporter
-''''''''''''''''
-.. automodule:: dfetch.reporting.check.jenkins_reporter
-
-.. asciinema:: asciicasts/check-ci.cast
-
-Sarif reporter
-''''''''''''''
-.. automodule:: dfetch.reporting.check.sarif_reporter
-
-Code-climate reporter
-'''''''''''''''''''''
-.. automodule:: dfetch.reporting.check.code_climate_reporter
+See :doc:`check-ci` for integration guides for Jenkins, GitHub Actions, and GitLab CI.
+See :doc:`sbom` for generating a Software Bill-of-Materials.
 
 Report
 ~~~~~~
@@ -154,17 +134,9 @@ Report
 
 .. asciinema:: asciicasts/report.cast
 
-.. automodule:: dfetch.commands.report
-
 List (default)
 ''''''''''''''
 .. automodule:: dfetch.reporting.stdout_reporter
-
-Software Bill-of-Materials
-''''''''''''''''''''''''''
-.. automodule:: dfetch.reporting.sbom_reporter
-
-.. asciinema:: asciicasts/sbom.cast
 
 ----
 
