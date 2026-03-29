@@ -1,52 +1,10 @@
-"""*Dfetch* can add projects to the manifest through the CLI.
+"""Add a project to the manifest from the command line.
 
-Sometimes you want to add a project to your manifest, but you don't want to
-edit the manifest by hand. With ``dfetch add`` you can add a project to your
-manifest through the command line.
-
-Non-interactive mode
---------------------
-In the simplest form you just provide the URL::
-
-    dfetch add https://github.com/some-org/some-repo.git
-
-Dfetch fetches remote metadata (branches, tags), picks the default branch,
-guesses a destination path from your existing projects, shows a preview, and
-appends the entry to ``dfetch.yaml`` immediately without prompting.
-
-Override any field with explicit flags::
-
-    dfetch add --name mylib --dst ext/mylib --version v2.0 --src lib https://github.com/some-org/some-repo.git
-
-.. asciinema:: asciicasts/add.cast
+Use ``dfetch add <url>`` to append a project without prompts, or
+``dfetch add -i <url>`` for the interactive wizard.
+See :ref:`adding-a-project` for the full guide.
 
 .. scenario-include:: ../features/add-project-through-cli.feature
-
-Interactive mode
-----------------
-Use ``--interactive`` (``-i``) for a guided, step-by-step wizard::
-
-    dfetch add -i https://github.com/some-org/some-repo.git
-
-Pre-fill individual fields to skip specific prompts::
-
-    dfetch add -i --version main --src lib/core https://github.com/some-org/some-repo.git
-
-The wizard walks through:
-
-* **name** - defaults to the repository name extracted from the URL
-* **dst** - local destination; defaults to a path guessed from existing projects
-* **version** - scrollable list of all branches and tags (arrow keys to
-  navigate, Enter to select, Esc to fall back to free-text input)
-* **src** - optional sub-path; browse the remote tree with arrow keys,
-  expand/collapse folders with Enter/Right/Left
-* **ignore** - optional list of paths to exclude; same tree browser with
-  Space to toggle multiple selections and Enter to confirm
-
-After confirming the add you are offered to run ``dfetch update`` immediately
-so the dependency is materialised without a separate command.
-
-.. asciinema:: asciicasts/interactive-add.cast
 
 .. scenario-include:: ../features/interactive-add.feature
 
