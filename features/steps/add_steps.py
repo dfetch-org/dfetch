@@ -23,10 +23,14 @@ def step_impl(context, remote_url):
     call_command(context, ["add", url])
 
 
-@when('I interactively add "{remote_url}" with inputs')
-def step_impl(context, remote_url):
+@when('I add "{remote_url}" with options "{options}"')
+def step_impl(context, remote_url, options):
     url = _resolve_url(remote_url, context)
+    call_command(context, ["add"] + options.split() + [url])
 
+
+def _run_interactive_add(context, cmd: list[str]) -> None:
+    """Run an interactive add command, driving prompts from ``context.table``."""
     # Parse the answer table into three buckets:
     #   • "Add project to manifest?" → add_confirm (bool)
     #   • "Run" + "update" in prompt  → update_confirm (bool, default False)
@@ -63,7 +67,19 @@ def step_impl(context, remote_url):
 
     with patch("dfetch.commands.add.Prompt.ask", side_effect=_auto_prompt):
         with patch("dfetch.commands.add.Confirm.ask", side_effect=_auto_confirm):
-            call_command(context, ["add", "--interactive", url])
+            call_command(context, cmd)
+
+
+@when('I interactively add "{remote_url}" with options "{options}" and inputs')
+def step_impl(context, remote_url, options):
+    url = _resolve_url(remote_url, context)
+    _run_interactive_add(context, ["add", "--interactive"] + options.split() + [url])
+
+
+@when('I interactively add "{remote_url}" with inputs')
+def step_impl(context, remote_url):
+    url = _resolve_url(remote_url, context)
+    _run_interactive_add(context, ["add", "--interactive", url])
 
 
 @then("the manifest '{name}' contains entry")
