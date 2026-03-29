@@ -51,6 +51,7 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    :caption: How-to Guides
 
    migration
+   adding-a-project
    patching
    check-ci
    sbom
