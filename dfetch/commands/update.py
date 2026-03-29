@@ -1,51 +1,17 @@
-"""Update is the main functionality of dfetch.
+"""Fetch every project listed in the manifest.
 
-You can add Projects to your :ref:`Manifest` and update will fetch the version specified.
-It tries to determine what kind of vcs it is: git, svn or something else.
+VCS type (Git, SVN, archive) is detected automatically.
+See :ref:`updating-projects` for the full guide.
 
 .. uml:: /static/uml/update.puml
 
-.. tabs::
+.. scenario-include:: ../features/fetch-git-repo.feature
 
-   .. tab:: Git
+.. scenario-include:: ../features/fetch-svn-repo.feature
 
-      .. scenario-include:: ../features/fetch-git-repo.feature
-
-   .. tab:: SVN
-
-      .. scenario-include:: ../features/fetch-svn-repo.feature
-
-   .. tab:: Archive
-
-      .. scenario-include:: ../features/fetch-archive.feature
-
-Sub-manifests
-~~~~~~~~~~~~~~~
-
-It is possible that fetched projects have manifests of their own.
-When these projects are fetched (with ``dfetch update``), the manifests are read as well
-and will be checked to look for further dependencies. If you don't want recommendations, you can prevent *Dfetch*
-checking sub-manifests with ``--no-recommendations``.
+.. scenario-include:: ../features/fetch-archive.feature
 
 .. scenario-include:: ../features/updated-project-has-dependencies.feature
-
-Git submodules
-~~~~~~~~~~~~~~
-
-When a git dependency itself contains git submodules, *Dfetch* fetches and resolves
-them automatically, no extra manifest entries or ``git submodule`` commands are needed.
-
-Each submodule is checked out at the exact revision pinned by the parent repository.
-*Dfetch* reports every resolved submodule in the update output::
-
-   Dfetch (0.12.1)
-     my-project:
-     > Found & fetched submodule "./ext/vendor-lib"  (https://github.com/example/vendor-lib @ master - 79698c9…)
-     > Fetched master - e1fda19…
-
-Nested submodules (submodules of submodules) are resolved recursively. The pinned
-details for each submodule are recorded in the ``.dfetch_data.yaml`` metadata file
-and are visible in :ref:`Report`.
 
 .. scenario-include:: ../features/fetch-git-repo-with-submodule.feature
 

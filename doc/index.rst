@@ -52,6 +52,7 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
 
    migration
    adding-a-project
+   updating-projects
    patching
    check-ci
    sbom
