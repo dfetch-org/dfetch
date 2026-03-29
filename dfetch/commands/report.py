@@ -1,6 +1,28 @@
-"""*Dfetch* can generate multiple reports.
+"""*Dfetch* can generate reports about the projects in your manifest.
 
-There are several report types that *DFetch* can generate.
+Two report types are available via the ``-t`` / ``--type`` flag:
+
+``stdout`` (default)
+    Prints a dependency inventory to the terminal. For each project it shows
+    the remote URL, branch/tag/revision, last-fetch timestamp, applied patches,
+    and any licences detected in the fetched source tree.
+
+``sbom``
+    Generates a `CycloneDX 1.6 <https://cyclonedx.org/>`_ Software Bill of
+    Materials (SBOM) as a JSON file (``report.json`` by default, override with
+    ``-o``). The SBOM includes package URLs (PURLs), VCS references, licence
+    evidence, and — for archive projects — an optional SHA-256 integrity hash.
+
+    This can be uploaded to GitHub as a supply-chain asset or attached to a
+    GitLab pipeline as a ``cyclonedx`` artefact.
+
+Licence detection
+~~~~~~~~~~~~~~~~~
+*Dfetch* scans each fetched project for common licence files (``LICENSE``,
+``COPYING``, etc.) and uses a best-effort heuristic to identify the licence
+type. Only matches with a confidence of 80 % or higher are reported; ambiguous
+files are silently skipped.  If no licence is detected, the field is left
+empty rather than guessing.
 """
 
 import argparse

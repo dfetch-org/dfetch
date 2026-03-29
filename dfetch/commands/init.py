@@ -1,6 +1,13 @@
 """*Dfetch* can generate a starting manifest.
 
-It will be created in the current folder.
+Running ``dfetch init`` creates a ``dfetch.yaml`` file in the current
+directory. The file contains a minimal template that you can open and edit
+directly, or populate incrementally using :ref:`dfetch add <add>`.
+
+Once you have listed your dependencies, fetch them with :ref:`dfetch update <update>`.
+
+If a ``dfetch.yaml`` already exists in the current directory, *Dfetch*
+prints a warning and exits without overwriting it.
 """
 
 import argparse

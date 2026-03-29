@@ -1,4 +1,15 @@
-"""*Dfetch* can generate output about its working environment."""
+"""*Dfetch* can report information about its working environment.
+
+``dfetch environment`` prints:
+
+* **Platform** — operating system name and kernel version.
+* **VCS tool versions** — the version of each supported VCS client
+  (Git, SVN) found on ``PATH``.
+
+Run this command when setting up a new machine to confirm that the required
+VCS tools are installed and discoverable, or include the output when filing
+a bug report so that developers can reproduce your environment exactly.
+"""
 
 import argparse
 import platform

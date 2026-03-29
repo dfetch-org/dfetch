@@ -70,11 +70,26 @@ To solve this:
 Migrating from SVN externals
 ============================
 
-* Make sure your repository is up-to-date.
+* Make sure your working copy is up-to-date (``svn update``).
 * Generate a manifest using :ref:`dfetch import<import>`.
-* Remove all svn externals (see `How do I remove svn::externals <https://stackoverflow.com/questions/1044649/>`_ ).
+* Remove all SVN externals.  Externals are stored as ``svn:externals``
+  properties on directories.  To remove them::
+
+      svn propdel svn:externals <directory>
+      svn commit -m "Remove SVN externals (switching to Dfetch)"
+
+  Repeat for every directory that had an ``svn:externals`` property set.
+  See `How do I remove SVN externals <https://stackoverflow.com/questions/1044649/>`_
+  for more details.
 * Download all your projects using :ref:`dfetch update<update>`.
-* Commit your projects as part of your project.
+* Commit the fetched files as part of your project.
+
+.. note::
+
+   If your SVN externals themselves contain further externals (nested
+   externals), you will need to run ``dfetch import`` recursively and add
+   those entries to your manifest by hand, as *Dfetch* only inspects the
+   top-level ``svn:externals`` property.
 
 .. scenario-include:: ../features/import-from-svn.feature
 

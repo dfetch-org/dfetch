@@ -73,7 +73,11 @@ class FormatPatch(dfetch.commands.command.Command):
             metavar="<output_directory>",
             type=str,
             default=".",
-            help="Output directory for formatted patches",
+            help=(
+                "Directory to write formatted patches to "
+                "(default: current working directory). "
+                "The output file is named formatted-<project>.patch."
+            ),
         )
 
     def __call__(self, args: argparse.Namespace) -> None:
