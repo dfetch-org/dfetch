@@ -52,33 +52,41 @@
 
   var section = PAGE_SECTIONS[page] || null;
 
-  /* ── 1. Body class ──────────────────────────────────── */
-  if (section) {
-    document.body.classList.add("dxt-" + section);
+  function applyClasses() {
+    /* ── 1. Body class ──────────────────────────────────── */
+    if (section && document.body) {
+      document.body.classList.add("dxt-" + section);
+    }
+
+    /* ── 2. Floating badge ──────────────────────────────── */
+    if (section) {
+      var body = document.querySelector("div.body") || document.querySelector("div.document");
+      if (body) {
+        var badge = document.createElement("span");
+        badge.className = "dxt-badge dxt-badge-" + section;
+        badge.textContent = BADGE_LABELS[section];
+        body.insertBefore(badge, body.firstChild);
+      }
+    }
+
+    /* ── 3. Sidebar captions ────────────────────────────── */
+    var captions = document.querySelectorAll(".sphinxsidebar p.caption, .sphinxsidebarwrapper p.caption");
+    captions.forEach(function (el) {
+      var span = el.querySelector(".caption-text");
+      if (!span) return;
+      var key = CAPTION_SECTIONS[span.textContent.trim()];
+      if (!key) return;
+      el.classList.add("dxt-caption-" + key);
+      var ul = el.nextElementSibling;
+      if (ul && ul.tagName === "UL") {
+        ul.classList.add("dxt-section-" + key);
+      }
+    });
   }
 
-  /* ── 2. Floating badge ──────────────────────────────── */
-  if (section) {
-    var body = document.querySelector("div.body") || document.querySelector("div.document");
-    if (body) {
-      var badge = document.createElement("span");
-      badge.className = "dxt-badge dxt-badge-" + section;
-      badge.textContent = BADGE_LABELS[section];
-      body.insertBefore(badge, body.firstChild);
-    }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyClasses);
+  } else {
+    applyClasses();
   }
-
-  /* ── 3. Sidebar captions ────────────────────────────── */
-  var captions = document.querySelectorAll(".sphinxsidebar p.caption, .sphinxsidebarwrapper p.caption");
-  captions.forEach(function (el) {
-    var span = el.querySelector(".caption-text");
-    if (!span) return;
-    var key = CAPTION_SECTIONS[span.textContent.trim()];
-    if (!key) return;
-    el.classList.add("dxt-caption-" + key);
-    var ul = el.nextElementSibling;
-    if (ul && ul.tagName === "UL") {
-      ul.classList.add("dxt-section-" + key);
-    }
-  });
 })();
