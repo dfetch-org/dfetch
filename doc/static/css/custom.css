@@ -453,6 +453,24 @@ p.caption[id*="reference"] .caption-text  { color: var(--text) !important; }
 p.caption[id*="explanation"] .caption-text { color: var(--text-muted) !important; }
 
 /* ============================================================
+   PlantUML / plantweb flow diagrams
+   plantweb stores rendered images under _images/plantweb/ so
+   img[src*="plantweb"] selects exactly these and nothing else.
+   ============================================================ */
+img[src*="plantweb"] {
+  display: block;
+  margin: 2rem auto !important;
+  max-width: 620px;
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shad-md);
+  padding: 1.75rem 2rem;
+  box-sizing: border-box;
+}
+
+/* ============================================================
    Asciinema Player — match landing page terminal theme
    ============================================================ */
 .asciinema-player-wrapper {

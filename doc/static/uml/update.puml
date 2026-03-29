@@ -1,8 +1,34 @@
 @startuml
-start
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam defaultFontColor #1c1917
+skinparam shadowing false
+skinparam BackgroundColor transparent
+skinparam RoundCorner 8
 
-skinparam monochrome true
-skinparam defaultFontName Frutiger
+skinparam ActivityBackgroundColor #ffffff
+skinparam ActivityBorderColor #c2620a
+skinparam ActivityBorderThickness 1.5
+skinparam ActivityFontColor #1c1917
+skinparam ActivityFontSize 12
+skinparam ActivityFontName Arial
+skinparam ActivityArrowColor #78716c
+skinparam ActivityArrowFontColor #78716c
+skinparam ActivityArrowFontSize 11
+skinparam ActivityStartColor #c2620a
+skinparam ActivityEndColor #1c1917
+skinparam ActivityBarColor #c2620a
+skinparam ActivityDiamondBackgroundColor #eff6fa
+skinparam ActivityDiamondBorderColor #4e7fa0
+skinparam ActivityDiamondFontColor #3a6682
+
+skinparam PartitionBackgroundColor #fef8f0
+skinparam PartitionBorderColor #e7e0d8
+skinparam PartitionFontColor #78716c
+skinparam PartitionFontStyle bold
+skinparam PartitionFontSize 10
+
+start
 
 partition "Update required" {
 
@@ -14,12 +40,6 @@ partition "Update required" {
     else (no)
        stop
     endif
-
-    ' if (Hash on disk same\nas in metadata?) then (yes)
-    ' elseif (Force flag given?) then (yes)
-    ' else
-    '     stop
-    ' endif
 }
 
 partition "Prepare for update" {
