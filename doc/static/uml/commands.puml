@@ -1,0 +1,91 @@
+@startmindmap
+<style>
+mindmapDiagram {
+  BackgroundColor transparent
+  node {
+    BackgroundColor #ffffff
+    BorderColor #e7e0d8
+    BorderThickness 1.2
+    FontName Arial
+    FontSize 11
+    FontColor #3d3530
+    RoundCorner 7
+    Padding 5
+    Margin 3
+  }
+  rootNode {
+    BackgroundColor #c2620a
+    BorderColor #a0510a
+    FontColor #ffffff
+    FontName Arial
+    FontSize 13
+    FontStyle bold
+    Padding 10
+    RoundCorner 10
+  }
+  arrow {
+    LineColor #d1c4b8
+    LineThickness 1.5
+  }
+  leafNode {
+    BackgroundColor #fffcf8
+    BorderColor #e7e0d8
+    FontSize 10
+    FontColor #78716c
+    Padding 4
+    Margin 2
+  }
+  .foundational {
+    BackgroundColor #fef3e8
+    BorderColor #c2620a
+    FontColor #7a3a0a
+    FontStyle bold
+  }
+  .patching {
+    BackgroundColor #edf4f9
+    BorderColor #4e7fa0
+    FontColor #2a5272
+    FontStyle bold
+  }
+  .cicd {
+    BackgroundColor #f5f0fa
+    BorderColor #8a6aaa
+    FontColor #5a3a7a
+    FontStyle bold
+  }
+  .utility {
+    BackgroundColor #edf5ed
+    BorderColor #5a8a5a
+    FontColor #2a5a2a
+    FontStyle bold
+  }
+}
+</style>
+
+* dfetch
+** Foundational <<foundational>>
+*** init
+*** import
+*** add
+*** check
+*** update
+
+** Utilities <<utility>>
+*** freeze
+*** environment
+*** validate
+
+left side
+
+** Patching <<patching>>
+*** diff
+*** update-patch
+*** format-patch
+
+** CI / CD <<cicd>>
+*** check\n--jenkins-json
+*** check\n--sarif
+*** check\n--code-climate
+*** report
+
+@endmindmap

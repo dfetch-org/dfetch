@@ -11,6 +11,8 @@ For a step-by-step walkthrough see :doc:`getting_started`.
 .. program-output:: dfetch --help
    :shell:
 
+.. uml:: /static/uml/commands.puml
+
 ----
 
 Foundational
@@ -87,6 +89,8 @@ Check
 
 .. asciinema:: asciicasts/check.cast
 
+.. uml:: /static/uml/check.puml
+
 .. automodule:: dfetch.commands.check
 
 Update
@@ -98,6 +102,8 @@ Update
    :path: update
 
 .. asciinema:: asciicasts/update.cast
+
+.. uml:: /static/uml/update.puml
 
 .. automodule:: dfetch.commands.update
 
