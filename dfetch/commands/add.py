@@ -314,7 +314,16 @@ def _finalize_add(
 def _non_interactive_entry(ctx: _AddContext, overrides: _Overrides) -> ProjectEntry:
     """Build a ``ProjectEntry`` using inferred defaults (no user interaction)."""
     if overrides.version:
-        version = _resolve_raw_version(overrides.version, []) or Version(
+        branches = ctx.subproject.list_of_branches()
+        tags = ctx.subproject.list_of_tags()
+        choices: list[Version] = [
+            *[
+                Version(branch=b)
+                for b in prioritise_default(branches, ctx.default_branch)
+            ],
+            *[Version(tag=t) for t in sort_tags_newest_first(tags)],
+        ]
+        version = _resolve_raw_version(overrides.version, choices) or Version(
             branch=ctx.default_branch
         )
     else:
