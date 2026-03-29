@@ -14,11 +14,19 @@ Dfetch fetches remote metadata (branches, tags), picks the default branch,
 guesses a destination path from your existing projects, shows a preview, and
 appends the entry to ``dfetch.yaml`` immediately without prompting.
 
+Override any field with explicit flags::
+
+    dfetch add --name mylib --dst ext/mylib --version v2.0 --src lib https://github.com/some-org/some-repo.git
+
 Interactive mode
 ----------------
 Use ``--interactive`` (``-i``) for a guided, step-by-step wizard::
 
     dfetch add -i https://github.com/some-org/some-repo.git
+
+Pre-fill individual fields to skip specific prompts::
+
+    dfetch add -i --version main --src lib/core https://github.com/some-org/some-repo.git
 
 The wizard walks through:
 
@@ -41,6 +49,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import dataclasses
 from collections.abc import Generator
 
 from rich.prompt import Confirm, Prompt
@@ -76,6 +85,30 @@ from dfetch.util.versions import (
 )
 
 logger = get_logger(__name__)
+
+
+@dataclasses.dataclass
+class _AddContext:
+    """Remote metadata and manifest state gathered before running any flow."""
+
+    url: str
+    default_name: str
+    default_dst: str
+    default_branch: str
+    subproject: SubProject
+    remote_to_use: Remote | None
+    manifest: Manifest
+
+
+@dataclasses.dataclass
+class _Overrides:
+    """Fields explicitly supplied on the command line (``None`` = not given)."""
+
+    name: str | None = None
+    dst: str | None = None
+    version: str | None = None
+    src: str | None = None
+    ignore: list[str] | None = None
 
 
 @contextlib.contextmanager
@@ -148,6 +181,42 @@ class Add(dfetch.commands.command.Command):
             ),
         )
 
+        parser.add_argument(
+            "--name",
+            metavar="NAME",
+            default=None,
+            help="Project name (skips the name prompt in interactive mode).",
+        )
+
+        parser.add_argument(
+            "--dst",
+            metavar="PATH",
+            default=None,
+            help="Local destination path (skips the destination prompt in interactive mode).",
+        )
+
+        parser.add_argument(
+            "--version",
+            metavar="VERSION",
+            default=None,
+            help="Branch, tag, or revision (skips the version prompt in interactive mode).",
+        )
+
+        parser.add_argument(
+            "--src",
+            metavar="PATH",
+            default=None,
+            help="Sub-path or glob inside the remote repo (skips the source prompt in interactive mode).",
+        )
+
+        parser.add_argument(
+            "--ignore",
+            metavar="PATH",
+            nargs="+",
+            default=None,
+            help="Paths to ignore (skips the ignore prompt in interactive mode).",
+        )
+
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the add."""
         superproject = create_super_project()
@@ -155,13 +224,8 @@ class Add(dfetch.commands.command.Command):
         remote_url: str = args.remote_url[0]
         purl = vcs_url_to_purl(remote_url)
 
-        # Build a minimal entry so we can probe the remote.
         probe_entry = ProjectEntry(ProjectEntryDict(name=purl.name, url=remote_url))
-
-        # Determines VCS type; tries to reach the remote.
         subproject = create_sub_project(probe_entry)
-
-        existing_names = {p.name for p in superproject.manifest.projects}
 
         remote_to_use = superproject.manifest.find_remote_for_url(
             probe_entry.remote_url
@@ -171,29 +235,29 @@ class Add(dfetch.commands.command.Command):
                 f"Remote URL {probe_entry.remote_url} matches remote {remote_to_use.name}"
             )
 
-        guessed_dst = superproject.manifest.guess_destination(probe_entry.name)
-        default_branch = subproject.get_default_branch()
+        ctx = _AddContext(
+            url=remote_url,
+            default_name=probe_entry.name,
+            default_dst=superproject.manifest.guess_destination(probe_entry.name),
+            default_branch=subproject.get_default_branch(),
+            subproject=subproject,
+            remote_to_use=remote_to_use,
+            manifest=superproject.manifest,
+        )
+        overrides = _Overrides(
+            name=args.name,
+            dst=args.dst,
+            version=args.version,
+            src=args.src,
+            ignore=args.ignore,
+        )
 
         try:
             if args.interactive:
-                project_entry = _interactive_flow(
-                    remote_url=remote_url,
-                    default_name=probe_entry.name,
-                    default_dst=guessed_dst,
-                    default_branch=default_branch,
-                    subproject=subproject,
-                    remote_to_use=remote_to_use,
-                    manifest=superproject.manifest,
-                )
+                project_entry = _interactive_flow(ctx, overrides)
             else:
-                project_entry = _non_interactive_entry(
-                    name=_unique_name(probe_entry.name, existing_names),
-                    remote_url=remote_url,
-                    branch=default_branch,
-                    dst=guessed_dst,
-                    remote_to_use=remote_to_use,
-                )
-                logger.print_info_line(remote_url, "Adding project to manifest")
+                project_entry = _non_interactive_entry(ctx, overrides)
+                logger.print_info_line(ctx.url, "Adding project to manifest")
                 logger.print_yaml(project_entry.as_yaml())
 
             if project_entry is None:
@@ -247,21 +311,24 @@ def _finalize_add(
         Update()(update_args)
 
 
-def _non_interactive_entry(
-    *,
-    name: str,
-    remote_url: str,
-    branch: str,
-    dst: str,
-    remote_to_use: Remote | None,
-) -> ProjectEntry:
+def _non_interactive_entry(ctx: _AddContext, overrides: _Overrides) -> ProjectEntry:
     """Build a ``ProjectEntry`` using inferred defaults (no user interaction)."""
-    entry = ProjectEntry(
-        ProjectEntryDict(name=name, url=remote_url, branch=branch, dst=dst)
+    version = (
+        _resolve_raw_version(overrides.version, [])
+        or Version(branch=ctx.default_branch)
+        if overrides.version
+        else Version(branch=ctx.default_branch)
     )
-    if remote_to_use:
-        entry.set_remote(remote_to_use)
-    return entry
+    existing_names = {p.name for p in ctx.manifest.projects}
+    return _build_entry(
+        name=overrides.name or _unique_name(ctx.default_name, existing_names),
+        remote_url=ctx.url,
+        dst=overrides.dst or ctx.default_dst,
+        version=version,
+        src=overrides.src or "",
+        ignore=overrides.ignore or [],
+        remote_to_use=ctx.remote_to_use,
+    )
 
 
 def _build_entry(  # pylint: disable=too-many-arguments
@@ -315,49 +382,74 @@ def _show_url_fields(
     )
 
 
-def _interactive_flow(  # pylint: disable=too-many-arguments,too-many-positional-arguments
-    remote_url: str,
-    default_name: str,
-    default_dst: str,
-    default_branch: str,
-    subproject: SubProject,
-    remote_to_use: Remote | None,
-    manifest: Manifest,
-) -> ProjectEntry:
-    """Guide the user through every manifest field and return a ``ProjectEntry``."""
-    logger.print_info_line(remote_url, "Adding project through interactive wizard")
+def _pick_src_and_ignore(
+    subproject: SubProject, version_value: str, overrides: _Overrides
+) -> tuple[str, list[str]]:
+    """Browse the remote tree (if needed) and return ``(src, ignore)``."""
+    with browse_tree(subproject, version_value) as ls_function:
+        src = overrides.src if overrides.src is not None else _ask_src(ls_function)
+        if src:
+            logger.print_yaml_field("src", src)
+        ignore = (
+            overrides.ignore
+            if overrides.ignore is not None
+            else _ask_ignore(ls_function, src=src)
+        )
+        if ignore:
+            logger.print_yaml_field("ignore", ignore)
+    return src, ignore
 
-    name = _ask_name(default_name, manifest)
-    _show_url_fields(name, remote_url, default_branch, remote_to_use)
 
-    dst = _ask_dst(name, default_dst)
+def _interactive_flow(ctx: _AddContext, overrides: _Overrides) -> ProjectEntry:
+    """Guide the user through every manifest field and return a ``ProjectEntry``.
+
+    A field in *overrides* that is not ``None`` skips the corresponding prompt.
+    """
+    logger.print_info_line(ctx.url, "Adding project through interactive wizard")
+
+    if overrides.name is not None:
+        ctx.manifest.validate_project_name(overrides.name)
+        name = overrides.name
+    else:
+        name = _ask_name(ctx.default_name, ctx.manifest)
+    _show_url_fields(name, ctx.url, ctx.default_branch, ctx.remote_to_use)
+
+    if overrides.dst is not None:
+        Manifest.validate_destination(overrides.dst)
+        dst = overrides.dst
+    else:
+        dst = _ask_dst(name, ctx.default_dst)
     if dst != name:
         logger.print_yaml_field("dst", dst)
 
-    version = _ask_version(
-        default_branch,
-        subproject.list_of_branches(),
-        subproject.list_of_tags(),
-    )
+    branches = ctx.subproject.list_of_branches()
+    tags = ctx.subproject.list_of_tags()
+    if overrides.version is not None:
+        choices: list[Version] = [
+            *[
+                Version(branch=b)
+                for b in prioritise_default(branches, ctx.default_branch)
+            ],
+            *[Version(tag=t) for t in sort_tags_newest_first(tags)],
+        ]
+        version = _resolve_raw_version(overrides.version, choices) or Version(
+            branch=ctx.default_branch
+        )
+    else:
+        version = _ask_version(ctx.default_branch, branches, tags)
     version_kind, version_value = version.field
     logger.print_yaml_field(version_kind, version_value)
 
-    with browse_tree(subproject, version_value) as ls_function:
-        src = _ask_src(ls_function)
-        if src:
-            logger.print_yaml_field("src", src)
-        ignore = _ask_ignore(ls_function, src=src)
-        if ignore:
-            logger.print_yaml_field("ignore", ignore)
+    src, ignore = _pick_src_and_ignore(ctx.subproject, version_value, overrides)
 
     return _build_entry(
         name=name,
-        remote_url=remote_url,
+        remote_url=ctx.url,
         dst=dst,
         version=version,
         src=src,
         ignore=ignore,
-        remote_to_use=remote_to_use,
+        remote_to_use=ctx.remote_to_use,
     )
 
 

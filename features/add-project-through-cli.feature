@@ -9,6 +9,9 @@ Feature: Add a project to the manifest via the CLI
     manifest field (name, destination, branch/tag/revision, optional src,
     optional ignore list).
 
+    Use ``--name``, ``--dst``, ``--version``, ``--src``, ``--ignore`` to
+    pre-fill individual fields (works with and without ``-i``).
+
     Background:
         Given a git repository "MyLib.git"
 
@@ -249,3 +252,43 @@ Feature: Add a project to the manifest via the CLI
                 branch: master
             """
         And the manifest 'dfetch.yaml' does not contain 'src:'
+
+    Scenario: Non-interactive add with field overrides
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+              projects: []
+            """
+        When I add "some-remote-server/MyLib.git" with options "--name my-lib --dst libs/my-lib"
+        Then the manifest 'dfetch.yaml' contains entry
+            """
+              - name: my-lib
+                url: some-remote-server/MyLib.git
+                branch: master
+                dst: libs/my-lib
+            """
+
+    Scenario: Interactive add with pre-filled fields skips those prompts
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+              projects:
+                - name: existing
+                  url: some-remote-server/existing.git
+            """
+        When I interactively add "some-remote-server/MyLib.git" with options "--name my-lib --dst libs/my" and inputs
+            | Question                  | Answer  |
+            | Version                   | master  |
+            | Source path               |         |
+            | Ignore paths              |         |
+            | Add project to manifest?  | y       |
+            | Run update                | n       |
+        Then the manifest 'dfetch.yaml' contains entry
+            """
+              - name: my-lib
+                url: some-remote-server/MyLib.git
+                branch: master
+                dst: libs/my
+            """

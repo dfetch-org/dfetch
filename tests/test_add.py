@@ -37,10 +37,20 @@ def _make_remote(name: str, url: str) -> Mock:
 def _make_args(
     remote_url: str,
     interactive: bool = False,
+    name: str | None = None,
+    dst: str | None = None,
+    version: str | None = None,
+    src: str | None = None,
+    ignore: list[str] | None = None,
 ) -> argparse.Namespace:
     return argparse.Namespace(
         remote_url=[remote_url],
         interactive=interactive,
+        name=name,
+        dst=dst,
+        version=version,
+        src=src,
+        ignore=ignore,
     )
 
 
@@ -169,6 +179,42 @@ def test_add_command_non_interactive_appends_entry():
     entry: ProjectEntry = mock_append.call_args[0][1]
     assert entry.name == "myrepo"
     assert entry.branch == "main"
+
+
+def test_add_command_non_interactive_field_overrides():
+    """CLI field overrides are used directly in non-interactive mode."""
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
+    fake_superproject.manifest.remotes = []
+    fake_superproject.root_directory = Path("/some")
+
+    fake_subproject = _make_subproject("main", ["main", "dev"], ["v1.0"])
+
+    with patch(
+        "dfetch.commands.add.create_super_project", return_value=fake_superproject
+    ):
+        with patch(
+            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
+        ):
+            with patch("dfetch.commands.add.append_entry_manifest_file") as mock_append:
+                Add()(
+                    _make_args(
+                        "https://github.com/org/myrepo.git",
+                        name="custom-name",
+                        dst="ext/custom",
+                        version="v1.0",
+                        src="lib",
+                        ignore=["docs", "tests"],
+                    )
+                )
+
+    mock_append.assert_called_once()
+    entry: ProjectEntry = mock_append.call_args[0][1]
+    assert entry.name == "custom-name"
+    assert entry.destination == "ext/custom"
+    assert entry.tag == "v1.0"
+    assert entry.source == "lib"
+    assert entry.ignore == ["docs", "tests"]
 
 
 def test_add_command_suffixes_duplicate_name(tmp_path):
@@ -475,6 +521,102 @@ def test_add_command_interactive_run_update():
 
 
 # ---------------------------------------------------------------------------
+# Add command – interactive mode with CLI overrides
+# ---------------------------------------------------------------------------
+
+
+def test_add_command_interactive_with_overrides():
+    """CLI overrides skip their corresponding interactive prompts."""
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
+    fake_superproject.manifest.remotes = []
+    fake_superproject.root_directory = Path("/some")
+
+    fake_subproject = _make_subproject("main", ["main", "dev"], ["v2.0"])
+
+    # Only src and ignore prompts should be reached; name, dst, version are overridden.
+    prompt_answers = iter(["", ""])  # src="", ignore=""
+
+    with patch(
+        "dfetch.commands.add.create_super_project", return_value=fake_superproject
+    ):
+        with patch(
+            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
+        ):
+            with patch(
+                "dfetch.commands.add.Prompt.ask",
+                side_effect=lambda *a, **kw: next(prompt_answers),
+            ):
+                with patch(
+                    "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
+                ):
+                    with patch(
+                        "dfetch.commands.add.append_entry_manifest_file"
+                    ) as mock_append:
+                        Add()(
+                            _make_args(
+                                "https://github.com/org/myrepo.git",
+                                interactive=True,
+                                name="overridden-name",
+                                dst="ext/overridden",
+                                version="dev",
+                            )
+                        )
+
+    mock_append.assert_called_once()
+    entry: ProjectEntry = mock_append.call_args[0][1]
+    assert entry.name == "overridden-name"
+    assert entry.destination == "ext/overridden"
+    assert entry.branch == "dev"
+
+
+def test_add_command_interactive_with_all_overrides():
+    """All CLI overrides skip all interactive prompts."""
+    fake_superproject = Mock()
+    fake_superproject.manifest = mock_manifest([], path="/some/dfetch.yaml")
+    fake_superproject.manifest.remotes = []
+    fake_superproject.root_directory = Path("/some")
+
+    fake_subproject = _make_subproject("main", ["main"], ["v2.0"])
+
+    with patch(
+        "dfetch.commands.add.create_super_project", return_value=fake_superproject
+    ):
+        with patch(
+            "dfetch.commands.add.create_sub_project", return_value=fake_subproject
+        ):
+            with patch(
+                "dfetch.commands.add.Prompt.ask",
+            ) as mock_prompt:
+                with patch(
+                    "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
+                ):
+                    with patch(
+                        "dfetch.commands.add.append_entry_manifest_file"
+                    ) as mock_append:
+                        Add()(
+                            _make_args(
+                                "https://github.com/org/myrepo.git",
+                                interactive=True,
+                                name="mylib",
+                                dst="ext/mylib",
+                                version="v2.0",
+                                src="lib/core",
+                                ignore=["docs"],
+                            )
+                        )
+
+    mock_prompt.assert_not_called()
+    mock_append.assert_called_once()
+    entry: ProjectEntry = mock_append.call_args[0][1]
+    assert entry.name == "mylib"
+    assert entry.destination == "ext/mylib"
+    assert entry.tag == "v2.0"
+    assert entry.source == "lib/core"
+    assert entry.ignore == ["docs"]
+
+
+# ---------------------------------------------------------------------------
 # Add command – interactive mode (SVN)
 # ---------------------------------------------------------------------------
 
@@ -709,6 +851,41 @@ def test_add_create_menu():
     parsed = parser.parse_args(["add", "https://example.com/repo.git"])
     assert parsed.remote_url == ["https://example.com/repo.git"]
     assert not hasattr(parsed, "force")
+    assert parsed.name is None
+    assert parsed.dst is None
+    assert parsed.version is None
+    assert parsed.src is None
+    assert parsed.ignore is None
+
+
+def test_add_create_menu_field_overrides():
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+    Add.create_menu(subparsers)
+    parsed = parser.parse_args(
+        [
+            "add",
+            "--name",
+            "mylib",
+            "--dst",
+            "ext/mylib",
+            "--version",
+            "v2.0",
+            "--src",
+            "lib",
+            "--ignore",
+            "docs",
+            "tests",
+            "https://example.com/repo.git",
+        ]
+    )
+    assert parsed.name == "mylib"
+    assert parsed.dst == "ext/mylib"
+    assert parsed.version == "v2.0"
+    assert parsed.src == "lib"
+    assert parsed.ignore == ["docs", "tests"]
 
 
 def test_add_create_menu_interactive_flag():
