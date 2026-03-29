@@ -1,8 +1,8 @@
 
 .. _sbom:
 
-Generating a Software Bill-of-Materials
-========================================
+Generate a Software Bill-of-Materials
+======================================
 
 ``dfetch report`` generates a `CycloneDX`_ SBOM listing every vendored
 dependency with its URL, revision, and auto-detected license.  Downstream

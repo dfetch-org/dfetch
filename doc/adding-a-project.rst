@@ -1,8 +1,8 @@
 
 .. _adding-a-project:
 
-Adding a new project
-====================
+Add a project
+=============
 
 There are three ways to add a new dependency to your manifest — edit it
 directly, use the ``dfetch add`` command, or use the interactive wizard
