@@ -50,6 +50,7 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    :maxdepth: 2
    :caption: How-to Guides
 
+   migration
    troubleshooting
    contributing
 
