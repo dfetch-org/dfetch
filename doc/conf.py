@@ -34,6 +34,7 @@ sys.path.insert(0, ext_path)
 # ones.
 extensions = [
     "sphinx_sitemap",
+    "sphinx_design",
     "plantweb.directive",
     "scenario_directive",
     "sphinx.ext.autodoc",
