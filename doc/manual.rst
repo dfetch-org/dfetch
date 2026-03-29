@@ -56,29 +56,6 @@ Add
 
 .. automodule:: dfetch.commands.add
 
-Non-interactive
-```````````````
-
-Pass a URL and *Dfetch* fills in sensible defaults (name, destination, default
-branch) and appends the entry immediately — no prompts, no confirmation.
-Use ``--name``, ``--dst``, ``--version``, ``--src``, and ``--ignore`` to
-override individual fields.
-
-.. asciinema:: asciicasts/add.cast
-
-.. scenario-include:: ../features/add-project-through-cli.feature
-
-Interactive
-```````````
-
-Pass ``--interactive`` / ``-i`` to be guided step-by-step through every
-manifest field.  Pre-fill fields with the flag options above and those prompts
-are skipped.  At the end you can optionally run ``dfetch update`` immediately.
-
-.. asciinema:: asciicasts/interactive-add.cast
-
-.. scenario-include:: ../features/interactive-add.feature
-
 Check
 ~~~~~
 .. argparse::

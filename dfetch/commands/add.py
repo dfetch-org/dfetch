@@ -18,6 +18,10 @@ Override any field with explicit flags::
 
     dfetch add --name mylib --dst ext/mylib --version v2.0 --src lib https://github.com/some-org/some-repo.git
 
+.. asciinema:: asciicasts/add.cast
+
+.. scenario-include:: ../features/add-project-through-cli.feature
+
 Interactive mode
 ----------------
 Use ``--interactive`` (``-i``) for a guided, step-by-step wizard::
@@ -42,7 +46,10 @@ The wizard walks through:
 After confirming the add you are offered to run ``dfetch update`` immediately
 so the dependency is materialised without a separate command.
 
-.. scenario-include:: ../features/add-project-through-cli.feature
+.. asciinema:: asciicasts/interactive-add.cast
+
+.. scenario-include:: ../features/interactive-add.feature
+
 """
 
 from __future__ import annotations
