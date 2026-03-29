@@ -3,7 +3,7 @@ Feature: Add a project to the manifest via the CLI
     *DFetch* can add a new project entry to the manifest without requiring
     manual YAML editing. ``dfetch add <url>`` inspects the remote repository,
     fills in sensible defaults (name, destination, default branch), shows a
-    preview, and appends the entry to ``dfetch.yaml`` after confirmation.
+    preview, and appends the entry to ``dfetch.yaml``.
 
     Use ``--name``, ``--dst``, ``--version``, ``--src``, ``--ignore`` to
     pre-fill individual fields.
