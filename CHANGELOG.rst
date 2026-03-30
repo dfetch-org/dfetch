@@ -1,4 +1,4 @@
-Release 0.13.0 (unreleased)
+Release 0.13.0 (released 2026-03-30)
 ====================================
 
 * Add archive (``vcs: archive``) support for fetching dependencies from ``.tar.gz``, ``.tgz``, ``.tar.bz2``, ``.tar.xz`` and ``.zip`` files via HTTP, HTTPS or file URLs (#1058)
