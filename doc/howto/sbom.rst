@@ -2,7 +2,7 @@
 .. _sbom:
 
 Generate an SBOM
-===============
+================
 
 ``dfetch report`` generates a `CycloneDX`_ SBOM listing every vendored
 dependency with its URL, revision, and auto-detected license.  Downstream
