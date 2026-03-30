@@ -33,8 +33,6 @@ supply-chain integrity verification.
 .. scenario-include:: ../features/report-sbom-archive.feature
    :scenario: A fetched archive with sha256 hash generates a json sbom with hash
 
-----
-
 GitLab
 ------
 
@@ -52,8 +50,6 @@ dependency scanning dashboard.  See `GitLab dependency scanning`_ for details.
         reports:
           cyclonedx:
             - dfetch.cdx.json
-
-----
 
 GitHub Actions
 --------------
