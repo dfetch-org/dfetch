@@ -47,7 +47,12 @@ extensions = [
     "sphinxcontrib.programoutput",
     "sphinx_tabs.tabs",
     "sphinx_autoissues",
+    "sphinx_copybutton",
 ]
+
+# Strip shell prompts and Python REPL prompts from copied text
+copybutton_prompt_text = r"\$ |>>> |\.\.\. "
+copybutton_prompt_is_regexp = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

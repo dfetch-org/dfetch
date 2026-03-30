@@ -97,6 +97,7 @@ docs = [
     'sphinxcontrib-programoutput==0.19',
     'sphinx-tabs==3.5.0',
     'sphinx-autoissues==0.0.1',
+    'sphinx-copybutton==0.5.2',
 ]
 test = ['pytest==9.0.2', 'pytest-cov==7.1.0', 'behave==1.3.3']
 casts = ['asciinema==2.4.0']
