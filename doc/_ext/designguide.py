@@ -24,6 +24,7 @@ Register in conf.py::
     extensions = [..., "designguide"]
 """
 
+import html
 from typing import Any
 
 from docutils import nodes
@@ -51,17 +52,17 @@ class SwatchDirective(Directive):
         Returns:
             A list containing a single raw HTML node.
         """
-        color = self.arguments[0].strip()
-        token = self.options.get("token", "")
-        label = self.options.get("label", "")
-        usage = self.options.get("usage", "")
-        border = self.options.get("border", "")
+        color = html.escape(self.arguments[0].strip(), quote=True)
+        token = html.escape(self.options.get("token", ""))
+        label = html.escape(self.options.get("label", ""))
+        usage = html.escape(self.options.get("usage", ""))
+        border = html.escape(self.options.get("border", ""), quote=True)
 
         color_style = f"background:{color};"
         if border:
             color_style += f" border-bottom:1px solid {border};"
 
-        html = (
+        markup = (
             f'<div class="dg-swatch">'
             f'<div class="dg-swatch-color" style="{color_style}"></div>'
             f'<div class="dg-swatch-body">'
@@ -72,7 +73,7 @@ class SwatchDirective(Directive):
             f"</div>"
             f"</div>"
         )
-        return [nodes.raw("", html, format="html")]
+        return [nodes.raw("", markup, format="html")]
 
 
 class PaletteDirective(Directive):
