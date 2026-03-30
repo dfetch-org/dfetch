@@ -13,8 +13,6 @@ own report format so findings surface natively inside the platform's UI.
 - :ref:`check-ci-github` — upload SARIF results to GitHub code scanning
 - :ref:`check-ci-gitlab` — publish code-quality reports in GitLab merge requests
 
-----
-
 .. _check-ci-run:
 
 Running dfetch check in CI
@@ -34,8 +32,6 @@ any issue is found:
 Pass a ``--*-json`` flag to write a machine-readable report *and* continue
 collecting results before deciding the build outcome (each section below shows
 the exact flag).
-
-----
 
 .. _check-ci-jenkins:
 
@@ -89,8 +85,6 @@ the build fails — for example, allow pinned-out-of-date without failing.
 .. _`warnings-ng plugin`: https://plugins.jenkins.io/warnings-ng/
 .. _`warnings-ng native JSON format`: https://github.com/jenkinsci/warnings-ng-plugin/blob/master/doc/Documentation.md#export-your-issues-into-a-supported-format
 .. _`quality gate configuration`: https://github.com/jenkinsci/warnings-ng-plugin/blob/master/doc/Documentation.md#quality-gate-configuration
-
-----
 
 .. _check-ci-github:
 
@@ -169,8 +163,6 @@ For more information see the `GitHub SARIF documentation`_.
 .. scenario-include:: ../features/check-report-sarif.feature
 
 .. _`GitHub SARIF documentation`: https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning
-
-----
 
 .. _check-ci-gitlab:
 

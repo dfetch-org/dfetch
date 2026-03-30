@@ -32,8 +32,6 @@ Vendoring does not necessarily imply permanent forks or heavy modification of
 third-party code. In many cases, vendored dependencies are kept pristine and
 updated mechanically from upstream sources.
 
-----
-
 .. div:: band-tint
 
    :material-regular:`thumb_up;2em;sd-text-primary` **Why vendoring can be helpful**
@@ -72,8 +70,6 @@ updated mechanically from upstream sources.
          When adding a dependency requires consciously pulling in its source code,
          teams become **more selective** and more aware of the long-term cost of
          that decision.
-
-----
 
 .. div:: band-mint
 
@@ -233,8 +229,6 @@ Conclusion
    Used intentionally and with an understanding of its limitations, vendoring is
    simply one tool among many for managing dependencies.
 
-----
-
 Best Practices
 --------------
 
@@ -390,8 +384,6 @@ eliminate them.
 
    *Dfetch* enables this by allowing you to store the vendored dependency in a folder
    using the ``dst:`` attribute.
-
-----
 
 .. div:: band-tint
 

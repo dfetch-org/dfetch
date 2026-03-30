@@ -37,8 +37,6 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
 
 .. asciinema:: asciicasts/basic.cast
 
-----
-
 .. toctree::
    :maxdepth: 2
    :caption: Tutorials

@@ -18,8 +18,6 @@ The full lifecycle looks like this:
 3. :ref:`patching-update` — refresh the patch as your edits evolve with ``dfetch update-patch``
 4. :ref:`patching-upstream` — reformat the patch for upstream use with ``dfetch format-patch``
 
-----
-
 .. _patching-create:
 
 Capturing local changes
@@ -57,8 +55,6 @@ base.  You can override this:
 
       .. scenario-include:: ../features/diff-in-svn.feature
 
-----
-
 .. _patching-wire:
 
 Adding the patch to the manifest
@@ -80,8 +76,6 @@ Once you have a patch file, reference it from the project entry in
 From this point on, every ``dfetch update`` will fetch the upstream source and
 re-apply the patch on top.  See :ref:`patch` in the manifest reference for the
 full attribute syntax.
-
-----
 
 .. _patching-update:
 
@@ -111,8 +105,6 @@ as you iterate on the fix.
    .. tab:: SVN
 
       .. scenario-include:: ../features/update-patch-in-svn.feature
-
-----
 
 .. _patching-upstream:
 
