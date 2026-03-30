@@ -13,12 +13,12 @@ Documentation build configuration file.
 import os
 import sys
 
+from dfetch import __version__
+
 # Prevent ANSI color codes in command output captured by sphinxcontrib.programoutput.
 # Python 3.13+ argparse emits colors when FORCE_COLOR is set; NO_COLOR suppresses
 # that regardless of FORCE_COLOR, and dfetch's own Rich console respects it too.
 os.environ["NO_COLOR"] = "1"
-
-from dfetch import __version__
 
 # -- General configuration ------------------------------------------------
 
@@ -128,6 +128,9 @@ html_favicon = "images/favicon.ico"
 html_extra_path = ["robots.txt"]
 
 html_css_files = [
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css",
     "css/custom.css",
 ]
 
