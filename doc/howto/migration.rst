@@ -15,8 +15,6 @@ Choose the guide that matches your current setup:
 - :ref:`migration-git`
 - :ref:`migration-svn`
 
-----
-
 .. _migration-git:
 
 From Git submodules
@@ -122,8 +120,6 @@ directories empty.  After checking out, re-initialise them:
     $ git checkout master
     $ git submodule update --init --recursive
     Submodule path 'MySubmodule': checked out '08f95e01b297d8b8c1c9101bde58e75cd4d428ce'
-
-----
 
 .. _migration-svn:
 
