@@ -65,6 +65,7 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
 
    reference/manifest
    reference/commands
+   reference/glossary
    reference/cli_cheatsheet
    reference/changelog
    reference/legal
