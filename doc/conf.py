@@ -130,9 +130,9 @@ html_favicon = "images/favicon.ico"
 html_extra_path = ["robots.txt"]
 
 html_css_files = [
-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css",
-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css",
-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css",
+    "fonts/font-awesome/css/fontawesome.min.css",
+    "fonts/font-awesome/css/solid.min.css",
+    "fonts/font-awesome/css/brands.min.css",
     "css/custom.css",
 ]
 

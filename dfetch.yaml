@@ -50,3 +50,14 @@ manifest:
       - JetBrainsMono-Semi*
       - JetBrainsMono-Thin*
       - JetBrainsMono-*Italic*
+
+  - name: font-awesome
+    remote: github
+    dst: doc/static/fonts/font-awesome
+    repo-path: FortAwesome/Font-Awesome/releases/download/7.2.0/fontawesome-free-7.2.0-web.zip
+    ignore:
+      - scss*
+      - sprites*
+      - svg*
+      - js
+      - metadata
