@@ -1,8 +1,8 @@
 
 .. _check-ci:
 
-Check dependencies in CI
-=========================
+Check projects in CI
+====================
 
 ``dfetch check`` exits non-zero when any project is out-of-date or has local
 changes, making it a natural pipeline gate.  Each supported CI system has its
