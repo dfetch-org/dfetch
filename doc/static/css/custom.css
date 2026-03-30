@@ -408,7 +408,36 @@ table.docutils tbody tr:nth-child(even) td {
 }
 
 .sphinxsidebarwrapper .logo {
-  margin-bottom: 2em;
+  margin-bottom: 1rem;
+}
+
+/* Quick-links row: Home · Website · Source */
+nav.sidebar-quicklinks {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin: 0 0 1.25rem;
+  padding: 0.4rem 0;
+}
+
+nav.sidebar-quicklinks a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 0.3rem 0;
+  color: #1c1917 !important;
+  text-decoration: none;
+  transition: color var(--ease);
+}
+
+nav.sidebar-quicklinks a i {
+  font-size: 1rem;
+}
+
+nav.sidebar-quicklinks a:hover {
+  color: var(--primary) !important;
+  text-decoration: none;
 }
 
 .sphinxsidebarwrapper .internal,
