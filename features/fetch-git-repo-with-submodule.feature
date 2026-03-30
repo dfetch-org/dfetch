@@ -24,7 +24,7 @@ Feature: Fetch projects with nested VCS dependencies
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.12.1)
+            Dfetch (0.13.0)
               my-project-with-submodules:
               > Found & fetched submodule "./ext/test-repo1"  (some-remote-server/TestRepo.git @ master - 79698c99152e4a4b7b759c9def50a130bc91a2ff)
               > Found & fetched submodule "./ext/test-repo2"  (some-remote-server/TestRepo.git @ master - 79698c99152e4a4b7b759c9def50a130bc91a2ff)
@@ -63,7 +63,7 @@ Feature: Fetch projects with nested VCS dependencies
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.12.1)
+            Dfetch (0.13.0)
               outer-project:
               > Found & fetched submodule "./ext/middle"  (some-remote-server/MiddleProject.git @ master - 79698c99152e4a4b7b759c9def50a130bc91a2ff)
               > Fetched master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a
@@ -95,7 +95,7 @@ Feature: Fetch projects with nested VCS dependencies
         When I run "dfetch report" in MyProject
         Then the output shows
             """
-            Dfetch (0.12.1)
+            Dfetch (0.13.0)
               my-project-with-submodules:
               - remote            : <none>
                 remote url        : some-remote-server/SomeInterestingProject.git
@@ -138,7 +138,7 @@ Feature: Fetch projects with nested VCS dependencies
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.12.1)
+            Dfetch (0.13.0)
               glob-project:
               > Found & fetched submodule "./ext/test-repo"  (some-remote-server/TestRepo.git @ master - 79698c99152e4a4b7b759c9def50a130bc91a2ff)
               > Fetched master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a
