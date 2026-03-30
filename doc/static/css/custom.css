@@ -56,7 +56,7 @@ html, body {
 }
 
 body {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -93,7 +93,7 @@ div.body {
    Typography
    ============================================================ */
 h1, h2, h3, h4, h5, h6 {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif !important;
   font-weight: 700 !important;
   letter-spacing: -0.02em;
   line-height: 1.25 !important;
@@ -107,7 +107,7 @@ h3 { font-size: 1.2rem !important; margin-top: 2rem !important; }
 .body p,
 .body dd,
 .body li {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 1.0625rem;
   font-weight: 400;
   line-height: 1.8;
@@ -185,7 +185,7 @@ div.admonition {
   border-radius: var(--r-sm) !important;
   border-left: 4px solid var(--accent) !important;
   box-shadow: var(--shad-sm) !important;
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   padding: 1.25rem 1.5rem !important;
   background: var(--bg-mint) !important;
   transition: box-shadow var(--ease) !important;
@@ -211,7 +211,7 @@ div.admonition.hint {
 }
 
 div.admonition p.admonition-title {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-weight: 700 !important;
   color: var(--accent) !important;
   margin: 0 0 0.5rem 0 !important;
@@ -310,7 +310,7 @@ div.admonition p {
 }
 
 .sd-card-title {
-  font-family: "Inter", sans-serif !important;
+  font-family: Inter, sans-serif !important;
   font-size: 1.0625rem !important;
   font-weight: 700 !important;
   color: var(--text) !important;
@@ -373,7 +373,7 @@ table.docutils tbody tr td {
 
 table.docutils thead tr th,
 table.docutils thead tr th p {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 0.7rem !important;
   font-weight: 700 !important;
   letter-spacing: 0.06em !important;
@@ -389,7 +389,7 @@ table.docutils tbody tr td {
   vertical-align: middle !important;
   background: #fff !important;
   color: var(--text) !important;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
   font-size: 0.8rem !important;
   -webkit-font-smoothing: antialiased;
 }
@@ -421,7 +421,7 @@ table.docutils thead tr th code {
    Sidebar
    ============================================================ */
 .sphinxsidebar .caption-text {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -476,7 +476,7 @@ nav.sidebar-quicklinks a:hover {
 
 .sphinxsidebarwrapper .internal,
 .sphinxsidebarwrapper .external {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-weight: 400;
   font-size: 0.9rem;
 }
@@ -496,7 +496,7 @@ nav.sidebar-quicklinks a:hover {
 }
 
 .sphinxsidebar input[type="text"] {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
   padding: 0.35rem 0.6rem;
@@ -512,7 +512,7 @@ nav.sidebar-quicklinks a:hover {
 }
 
 .sphinxsidebar input[type="submit"] {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   background: var(--primary);
   color: #fff;
   border: none;
@@ -539,7 +539,7 @@ nav.sidebar-quicklinks a:hover {
 }
 
 .caption-text {
-  font-family: "Inter", sans-serif !important;
+  font-family: Inter, sans-serif !important;
   font-weight: 700 !important;
   font-size: 0.75rem !important;
   letter-spacing: 0.08em;
@@ -646,7 +646,7 @@ hr {
 
 /* Field lists (option tables) */
 table.field-list th {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-weight: 600;
   color: var(--text-muted);
   font-size: 0.875rem;
@@ -654,7 +654,7 @@ table.field-list th {
 
 /* Sphinx "rubric" headings */
 p.rubric {
-  font-family: "Inter", sans-serif !important;
+  font-family: Inter, sans-serif !important;
   font-weight: 700 !important;
   font-size: 0.9rem !important;
   letter-spacing: 0.06em;
@@ -682,7 +682,7 @@ body.dxt-explanation h1::after { background: var(--dxt-explanation); }
 
 /* Sphinx tabs — match palette */
 .sphinx-tabs-tab {
-  font-family: "Inter", sans-serif !important;
+  font-family: Inter, sans-serif !important;
   font-weight: 500 !important;
 }
 
@@ -749,7 +749,7 @@ body.dxt-explanation h1::after { background: var(--dxt-explanation); }
 }
 
 .cs-masthead-title {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 0.9375rem;
   font-weight: 700;
   color: #f0e8dc;
@@ -758,7 +758,7 @@ body.dxt-explanation h1::after { background: var(--dxt-explanation); }
 }
 
 .cs-masthead-tagline {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 0.7rem;
   color: rgba(240, 232, 220, 0.45);
   margin-top: 0.1rem;
@@ -832,7 +832,7 @@ body.dxt-explanation h1::after { background: var(--dxt-explanation); }
   gap: 0.5rem;
   padding: 0.35rem 0;
   margin-bottom: 0.2rem;
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -909,7 +909,7 @@ body.dxt-explanation h1::after { background: var(--dxt-explanation); }
 .cs-ag { color: #9b8e85; }                   /* <arg> / [opt] — muted     */
 
 .cs-dsc {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 0.75rem;
   color: rgba(240, 232, 220, 0.52);
   line-height: 1.45;
@@ -932,7 +932,7 @@ body.dxt-explanation h1::after { background: var(--dxt-explanation); }
   padding: 0.6rem 1.5rem;
   background: rgba(0, 0, 0, 0.25);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 0.6875rem;
   color: rgba(240, 232, 220, 0.3);
   text-align: center;
@@ -1143,7 +1143,7 @@ body.dxt-explanation h1::after { background: var(--dxt-explanation); }
 }
 
 .dg-swatch-label {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--text);
@@ -1151,7 +1151,7 @@ body.dxt-explanation h1::after { background: var(--dxt-explanation); }
 }
 
 .dg-swatch-usage {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 0.675rem;
   color: var(--text-muted);
   line-height: 1.4;
@@ -1186,7 +1186,7 @@ body.dxt-explanation h1::after { background: var(--dxt-explanation); }
 }
 
 .dg-type-name {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1206,7 +1206,7 @@ body.dxt-explanation h1::after { background: var(--dxt-explanation); }
 }
 
 .dg-type-specimen {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   margin: 0;
   line-height: 1.4;
 }
@@ -1240,7 +1240,7 @@ body.dxt-explanation h1::after { background: var(--dxt-explanation); }
 }
 
 .dg-weight-sample {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 0.9rem;
   color: var(--text);
   line-height: 1;
@@ -1261,7 +1261,7 @@ body.dxt-explanation h1::after { background: var(--dxt-explanation); }
 .dg-tokens th {
   background: var(--bg-tint) !important;
   color: var(--text) !important;
-  font-family: "Inter", sans-serif !important;
+  font-family: Inter, sans-serif !important;
   font-size: 0.7rem !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
@@ -1319,7 +1319,7 @@ body.dxt-explanation div.body { border-top: 4px solid var(--dxt-explanation); }
   display: inline-block;
   padding: 0.2rem 0.65rem;
   border-radius: 20px;
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 0.675rem;
   font-weight: 600;
   letter-spacing: 0.04em;

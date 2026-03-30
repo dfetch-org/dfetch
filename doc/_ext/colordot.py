@@ -13,6 +13,7 @@ Register in conf.py::
     extensions = [..., "colordot"]
 """
 
+import html
 from typing import Any
 
 from docutils import nodes
@@ -43,9 +44,9 @@ def colordot_role(  # pylint: disable=too-many-arguments,too-many-positional-arg
     Returns:
         A two-tuple of (node list, system message list) as required by Sphinx.
     """
-    color = text.strip()
-    html = f'<span class="dg-dot" style="background:{color};"></span>'
-    node = nodes.raw("", html, format="html")
+    color = html.escape(text.strip(), quote=True)
+    markup = f'<span class="dg-dot" style="background:{color};"></span>'
+    node = nodes.raw("", markup, format="html")
     return [node], []
 
 

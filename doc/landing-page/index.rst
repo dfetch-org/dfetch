@@ -394,7 +394,7 @@ readable files inside your own repository. You stay in full control of every lin
    ``dfetch import`` automatically converts **Git submodules and SVN externals** into a dfetch manifest.
    No manual work, no lost history — start benefiting from dfetch's workflow immediately.
 
-   .. button-link:: https://dfetch.rtfd.io/en/latest/migration.html
+   .. button-link:: https://dfetch.rtfd.io/en/latest/howto/migration.html
       :color: primary
       :shadow:
 
