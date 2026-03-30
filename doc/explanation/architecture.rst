@@ -1,11 +1,8 @@
-.. Dfetch documentation internal
-
-Internal
-========
-*DFetch* has grown significantly. Below is a description of its internals.
 
 Architecture
-------------
+============
+*DFetch* has grown significantly. Below is a description of its internals.
+
 These diagrams are based on `Simon Brown's C4-model`_.
 
 .. _`Simon Brown's C4-model` : https://c4model.com/#CoreDiagrams
