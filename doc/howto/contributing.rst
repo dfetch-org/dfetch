@@ -2,7 +2,7 @@
 
 Contribute to Dfetch
 ====================
-Before implementing a feature please ask one of the maintainers to avoid any unnecessary or double work.
+Before implementing a feature, please ask one of the maintainers to avoid any unnecessary or double work.
 Let other people know through the relevant GitHub issue that you are planning on implementing it.
 Also for new features, first create an issue that can be discussed.
 

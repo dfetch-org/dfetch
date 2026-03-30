@@ -2,7 +2,7 @@
 
 Internal
 ========
-*DFetch* is becoming larger everyday. To give it some structure below a description of the internals.
+*DFetch* has grown significantly. Below is a description of its internals.
 
 Glossary
 --------

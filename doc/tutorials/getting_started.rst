@@ -77,7 +77,7 @@ of the current contents, updates will always just blindly update.
 
 My first version change
 -----------------------
-During development of your project you can periodically check for update with.
+During development of your project you can periodically check for updates with:
 
 .. code-block:: console
 
@@ -204,12 +204,12 @@ be applied.
 
   dfetch update -f ext/test-repo-tag
 
-Now all changes can be amended to the last committed version including the patch.
+Now amend the last commit to include the fetched project and the patch file:
 
 .. code-block:: console
 
    git add ext/test-repo-tag ext-test-repo-tag.patch
-   git commit --amend -no-edit
+   git commit --amend --no-edit
 
 For more details on working with patches see :ref:`Diff` and :ref:`Patch`.
 

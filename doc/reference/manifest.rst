@@ -38,7 +38,7 @@ Below an overview of all possible fields on the manifest. The bold items are man
           - projects
         properties:
           version:
-            type: number
+            type: string
 
           remotes:
             type: array
