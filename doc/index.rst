@@ -76,4 +76,4 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
 
    explanation/vendoring
    explanation/alternatives
-   explanation/internal
+   explanation/architecture
