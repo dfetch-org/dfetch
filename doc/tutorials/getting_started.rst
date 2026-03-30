@@ -7,11 +7,11 @@ Main concepts
 -------------
 Your project depends on other projects to build or run. In order to keep these
 dependencies together with your own code, *Dfetch* can fetch these and place them
-inside your project. For clarity lets call your project the *superproject* and the
-dependencies the *sub-projects*.
+inside your project. For clarity lets call your project the :term:`superproject <Superproject>`
+and the dependencies the :term:`subprojects <Subproject>`.
 
-*Dfetch* operates on a *superproject*: the project that contains the
-:ref:`Manifest` file. The superproject depends on one or more *subprojects*,
+*Dfetch* operates on a superproject: the project that contains the
+:ref:`Manifest` file. The superproject depends on one or more subprojects,
 which are the external projects listed in the manifest. The superproject itself
 can use any version control system (or even none at all).
 
@@ -28,7 +28,7 @@ contents.
 Since any version control information (such as ``.git`` or ``.svn`` directories) is
 removed from the fetched subprojects, *Dfetch* stores general information about each
 subproject in a ``.dfetch_data.yaml`` file inside the fetched directory, referred to
-as the metadata.
+as the :term:`metadata <Metadata>`.
 
 After updating, you can then review the changes using the version control system of
 your superproject and commit them as you see fit.
@@ -70,7 +70,7 @@ manifest and it will perform the update.
 After *Dfetch* finishes, the version of the dependency as listed in your manifest is
 downloaded at the target location. You can now commit it to your version control system.
 
-Inside the project folder, *Dfetch* will add a metadata file ``.dfetch_data.yaml``
+Inside the project folder, *Dfetch* will add a :term:`metadata <Metadata>` file ``.dfetch_data.yaml``
 containing information needed for knowing what version is present.
 *Dfetch* can function perfectly without this file, but since it will have no knowledge
 of the current contents, updates will always just blindly update.
@@ -130,7 +130,7 @@ Typically your project will have multiple dependencies. For instance take the be
         url: https://github.com/cpputest/cpputest
 
 Both projects have a very similar url. To simplify your manifest,
-it is possible to create a single remote with the common part of the URL (``url-base``).
+it is possible to create a single :term:`remote <Remote>` with the common part of the URL (``url-base``).
 Below manifest is completely equivalent to the manifest above. For more
 details on working with remotes see :ref:`Remotes`.
 
@@ -154,7 +154,7 @@ details on working with remotes see :ref:`Remotes`.
 
 My first patch
 -----------------
-Sometimes you need to patch a dependency to get it working with your project.
+Sometimes you need to :term:`patch <Patch>` a dependency to get it working with your project.
 *Dfetch* supports creating and applying patches after fetching the dependency.
 
 Given you have fetched ``dfetch-org/test-repo`` and you need to apply a patch.
