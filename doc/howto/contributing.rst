@@ -109,91 +109,49 @@ language consistent.
 Colour palette
 ''''''''''''''
 
-.. raw:: html
+.. palette::
 
-   <div class="dg-palette">
+   .. swatch:: #c2620a
+      :token: --primary
+      :label: Amber Orange
+      :usage: CTAs, active borders, diagram start nodes, section pips
 
-     <div class="dg-swatch">
-       <div class="dg-swatch-color" style="background:#c2620a;"></div>
-       <div class="dg-swatch-body">
-         <div class="dg-swatch-token">--primary</div>
-         <div class="dg-swatch-hex">#c2620a</div>
-         <div class="dg-swatch-label">Amber Orange</div>
-         <div class="dg-swatch-usage">CTAs, active borders, diagram start nodes, section pips</div>
-       </div>
-     </div>
+   .. swatch:: #a0510a
+      :token: --primary-dark
+      :label: Amber Dark
+      :usage: Hover states, gradient end, button borders
 
-     <div class="dg-swatch">
-       <div class="dg-swatch-color" style="background:#a0510a;"></div>
-       <div class="dg-swatch-body">
-         <div class="dg-swatch-token">--primary-dark</div>
-         <div class="dg-swatch-hex">#a0510a</div>
-         <div class="dg-swatch-label">Amber Dark</div>
-         <div class="dg-swatch-usage">Hover states, gradient end, button borders</div>
-       </div>
-     </div>
+   .. swatch:: #4e7fa0
+      :token: --accent
+      :label: Slate Blue
+      :usage: Decision diamonds, links, secondary badges, note borders
 
-     <div class="dg-swatch">
-       <div class="dg-swatch-color" style="background:#4e7fa0;"></div>
-       <div class="dg-swatch-body">
-         <div class="dg-swatch-token">--accent</div>
-         <div class="dg-swatch-hex">#4e7fa0</div>
-         <div class="dg-swatch-label">Slate Blue</div>
-         <div class="dg-swatch-usage">Decision diamonds, links, secondary badges, note borders</div>
-       </div>
-     </div>
+   .. swatch:: #3a6682
+      :token: --accent-dark
+      :label: Slate Dark
+      :usage: Hover states on accent elements, diagram labels
 
-     <div class="dg-swatch">
-       <div class="dg-swatch-color" style="background:#3a6682;"></div>
-       <div class="dg-swatch-body">
-         <div class="dg-swatch-token">--accent-dark</div>
-         <div class="dg-swatch-hex">#3a6682</div>
-         <div class="dg-swatch-label">Slate Dark</div>
-         <div class="dg-swatch-usage">Hover states on accent elements, diagram labels</div>
-       </div>
-     </div>
+   .. swatch:: #1c1917
+      :token: --text
+      :label: Near Black
+      :usage: Body copy, headings, diagram text
 
-     <div class="dg-swatch">
-       <div class="dg-swatch-color" style="background:#1c1917;"></div>
-       <div class="dg-swatch-body">
-         <div class="dg-swatch-token">--text</div>
-         <div class="dg-swatch-hex">#1c1917</div>
-         <div class="dg-swatch-label">Near Black</div>
-         <div class="dg-swatch-usage">Body copy, headings, diagram text</div>
-       </div>
-     </div>
+   .. swatch:: #78716c
+      :token: --text-muted
+      :label: Warm Gray
+      :usage: Captions, sub-labels, placeholder text, diagram arrow labels
 
-     <div class="dg-swatch">
-       <div class="dg-swatch-color" style="background:#78716c;"></div>
-       <div class="dg-swatch-body">
-         <div class="dg-swatch-token">--text-muted</div>
-         <div class="dg-swatch-hex">#78716c</div>
-         <div class="dg-swatch-label">Warm Gray</div>
-         <div class="dg-swatch-usage">Captions, sub-labels, placeholder text, diagram arrow labels</div>
-       </div>
-     </div>
+   .. swatch:: #fef8f0
+      :token: --bg-tint
+      :label: Warm Cream
+      :border: #e7e0d8
+      :usage: Alternate section bands, card backgrounds, table headers
 
-     <div class="dg-swatch">
-       <div class="dg-swatch-color" style="background:#fef8f0; border-bottom:1px solid #e7e0d8;"></div>
-       <div class="dg-swatch-body">
-         <div class="dg-swatch-token">--bg-tint</div>
-         <div class="dg-swatch-hex">#fef8f0</div>
-         <div class="dg-swatch-label">Warm Cream</div>
-         <div class="dg-swatch-usage">Alternate section bands, card backgrounds, table headers</div>
-       </div>
-     </div>
-
-     <div class="dg-swatch">
-       <div class="dg-swatch-color" style="background:#eff6fa; border-bottom:1px solid #e7e0d8;"></div>
-       <div class="dg-swatch-body">
-         <div class="dg-swatch-token">--bg-mint</div>
-         <div class="dg-swatch-hex">#eff6fa</div>
-         <div class="dg-swatch-label">Cool Mint</div>
-         <div class="dg-swatch-usage">Tip/note backgrounds, accent section bands</div>
-       </div>
-     </div>
-
-   </div>
+   .. swatch:: #eff6fa
+      :token: --bg-mint
+      :label: Cool Mint
+      :border: #e7e0d8
+      :usage: Tip/note backgrounds, accent section bands
 
 Typography
 ''''''''''
@@ -268,79 +226,49 @@ CSS tokens reference
 Use CSS custom properties rather than raw hex values so changes propagate
 everywhere automatically.
 
-.. raw:: html
+.. list-table::
+   :header-rows: 1
+   :widths: 30 30 40
 
-   <table class="dg-tokens">
-     <thead>
-       <tr>
-         <th>Token</th>
-         <th>Value</th>
-         <th>Use for</th>
-       </tr>
-     </thead>
-     <tbody>
-       <tr>
-         <td><code>--primary</code></td>
-         <td><span class="dg-dot" style="background:#c2620a"></span>#c2620a</td>
-         <td>Primary action colour</td>
-       </tr>
-       <tr>
-         <td><code>--primary-dark</code></td>
-         <td><span class="dg-dot" style="background:#a0510a"></span>#a0510a</td>
-         <td>Hover / pressed state</td>
-       </tr>
-       <tr>
-         <td><code>--accent</code></td>
-         <td><span class="dg-dot" style="background:#4e7fa0"></span>#4e7fa0</td>
-         <td>Secondary / info colour</td>
-       </tr>
-       <tr>
-         <td><code>--accent-dark</code></td>
-         <td><span class="dg-dot" style="background:#3a6682"></span>#3a6682</td>
-         <td>Hover on accent elements</td>
-       </tr>
-       <tr>
-         <td><code>--text</code></td>
-         <td><span class="dg-dot" style="background:#1c1917"></span>#1c1917</td>
-         <td>Body text, headings</td>
-       </tr>
-       <tr>
-         <td><code>--text-2</code></td>
-         <td><span class="dg-dot" style="background:#3d3530"></span>#3d3530</td>
-         <td>Secondary text</td>
-       </tr>
-       <tr>
-         <td><code>--text-muted</code></td>
-         <td><span class="dg-dot" style="background:#78716c"></span>#78716c</td>
-         <td>Captions, labels, placeholders</td>
-       </tr>
-       <tr>
-         <td><code>--bg-tint</code></td>
-         <td><span class="dg-dot" style="background:#fef8f0;border:1px solid #e7e0d8"></span>#fef8f0</td>
-         <td>Warm section backgrounds</td>
-       </tr>
-       <tr>
-         <td><code>--bg-mint</code></td>
-         <td><span class="dg-dot" style="background:#eff6fa;border:1px solid #d0e4ef"></span>#eff6fa</td>
-         <td>Cool section backgrounds</td>
-       </tr>
-       <tr>
-         <td><code>--border</code></td>
-         <td><span class="dg-dot" style="background:#e7e0d8"></span>#e7e0d8</td>
-         <td>Card borders, dividers</td>
-       </tr>
-       <tr>
-         <td><code>--r</code> / <code>--r-sm</code> / <code>--r-lg</code></td>
-         <td>12px / 8px / 20px</td>
-         <td>Border radius (card / badge / hero)</td>
-       </tr>
-       <tr>
-         <td><code>--shad-sm</code> / <code>--shad-md</code> / <code>--shad-lg</code></td>
-         <td>—</td>
-         <td>Box shadow tiers</td>
-       </tr>
-     </tbody>
-   </table>
+   * - Token
+     - Value
+     - Use for
+   * - ``--primary``
+     - :colordot:`#c2620a` ``#c2620a``
+     - Primary action colour
+   * - ``--primary-dark``
+     - :colordot:`#a0510a` ``#a0510a``
+     - Hover / pressed state
+   * - ``--accent``
+     - :colordot:`#4e7fa0` ``#4e7fa0``
+     - Secondary / info colour
+   * - ``--accent-dark``
+     - :colordot:`#3a6682` ``#3a6682``
+     - Hover on accent elements
+   * - ``--text``
+     - :colordot:`#1c1917` ``#1c1917``
+     - Body text, headings
+   * - ``--text-2``
+     - :colordot:`#3d3530` ``#3d3530``
+     - Secondary text
+   * - ``--text-muted``
+     - :colordot:`#78716c` ``#78716c``
+     - Captions, labels, placeholders
+   * - ``--bg-tint``
+     - :colordot:`#fef8f0` ``#fef8f0``
+     - Warm section backgrounds
+   * - ``--bg-mint``
+     - :colordot:`#eff6fa` ``#eff6fa``
+     - Cool section backgrounds
+   * - ``--border``
+     - :colordot:`#e7e0d8` ``#e7e0d8``
+     - Card borders, dividers
+   * - ``--r`` / ``--r-sm`` / ``--r-lg``
+     - 12px / 8px / 20px
+     - Border radius (card / badge / hero)
+   * - ``--shad-sm`` / ``--shad-md`` / ``--shad-lg``
+     - —
+     - Box shadow tiers
 
 PlantUML diagrams
 '''''''''''''''''
@@ -356,28 +284,28 @@ All flow and mindmap diagrams must use the shared skinparam block from
      - Value
      - Notes
    * - Activity background
-     - ``#ffffff``
+     - :colordot:`#ffffff` ``#ffffff``
      - White nodes on transparent canvas
    * - Activity border
-     - ``#c2620a`` (``--primary``)
+     - :colordot:`#c2620a` ``#c2620a`` (``--primary``)
      - 1.5 pt thickness
    * - Diamond background
-     - ``#eff6fa`` (``--bg-mint``)
+     - :colordot:`#eff6fa` ``#eff6fa`` (``--bg-mint``)
      - Decision nodes use the cool tint
    * - Diamond border
-     - ``#4e7fa0`` (``--accent``)
+     - :colordot:`#4e7fa0` ``#4e7fa0`` (``--accent``)
      - Consistent with accent colour
    * - Arrow colour
-     - ``#78716c`` (``--text-muted``)
+     - :colordot:`#78716c` ``#78716c`` (``--text-muted``)
      - Keeps arrows from competing with nodes
    * - Start node
-     - ``#c2620a`` (``--primary``)
+     - :colordot:`#c2620a` ``#c2620a`` (``--primary``)
      - Filled amber disc
    * - Partition background
-     - ``#fef8f0`` (``--bg-tint``)
+     - :colordot:`#fef8f0` ``#fef8f0`` (``--bg-tint``)
      - Warm cream section bands
    * - Default font
-     - Arial, 12 pt, ``#1c1917``
+     - :colordot:`#1c1917` Arial, 12 pt, ``#1c1917``
      - Matches ``--text``
 
 Diataxis section colours
@@ -388,51 +316,28 @@ applied automatically by ``doc/static/js/diataxis.js``: it adds a CSS class
 to ``<body>`` and to the sidebar caption elements so both the top page strip
 and the sidebar navigation header reflect the section.
 
-.. raw:: html
+.. palette::
+   :columns: 4
 
-   <div class="dg-palette" style="grid-template-columns:repeat(4,1fr);">
+   .. swatch:: #c2620a
+      :token: --dxt-tutorial
+      :label: Tutorials
+      :usage: Same as --primary; warm amber for learning-oriented pages
 
-     <div class="dg-swatch">
-       <div class="dg-swatch-color" style="background:#c2620a;"></div>
-       <div class="dg-swatch-body">
-         <div class="dg-swatch-token">--dxt-tutorial</div>
-         <div class="dg-swatch-hex">#c2620a</div>
-         <div class="dg-swatch-label">Tutorials</div>
-         <div class="dg-swatch-usage">Same as <code>--primary</code>; warm amber for learning-oriented pages</div>
-       </div>
-     </div>
+   .. swatch:: #4e7fa0
+      :token: --dxt-howto
+      :label: How-to Guides
+      :usage: Same as --accent; slate blue for task-oriented pages
 
-     <div class="dg-swatch">
-       <div class="dg-swatch-color" style="background:#4e7fa0;"></div>
-       <div class="dg-swatch-body">
-         <div class="dg-swatch-token">--dxt-howto</div>
-         <div class="dg-swatch-hex">#4e7fa0</div>
-         <div class="dg-swatch-label">How-to Guides</div>
-         <div class="dg-swatch-usage">Same as <code>--accent</code>; slate blue for task-oriented pages</div>
-       </div>
-     </div>
+   .. swatch:: #4a7a62
+      :token: --dxt-reference
+      :label: Reference
+      :usage: Sage green; neutral, precise tone for information pages
 
-     <div class="dg-swatch">
-       <div class="dg-swatch-color" style="background:#4a7a62;"></div>
-       <div class="dg-swatch-body">
-         <div class="dg-swatch-token">--dxt-reference</div>
-         <div class="dg-swatch-hex">#4a7a62</div>
-         <div class="dg-swatch-label">Reference</div>
-         <div class="dg-swatch-usage">Sage green; neutral, precise tone for information pages</div>
-       </div>
-     </div>
-
-     <div class="dg-swatch">
-       <div class="dg-swatch-color" style="background:#7a5a9a;"></div>
-       <div class="dg-swatch-body">
-         <div class="dg-swatch-token">--dxt-explanation</div>
-         <div class="dg-swatch-hex">#7a5a9a</div>
-         <div class="dg-swatch-label">Explanation</div>
-         <div class="dg-swatch-usage">Soft purple; contemplative tone for conceptual pages</div>
-       </div>
-     </div>
-
-   </div>
+   .. swatch:: #7a5a9a
+      :token: --dxt-explanation
+      :label: Explanation
+      :usage: Soft purple; contemplative tone for conceptual pages
 
 To add a new page to a section, add its filename (without ``.rst``) to the
 ``PAGE_SECTIONS`` map in ``doc/static/js/diataxis.js``.

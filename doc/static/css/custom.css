@@ -349,38 +349,72 @@ div.admonition p {
 table.docutils {
   border-collapse: collapse;
   width: 100%;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border) !important;
   border-radius: var(--r-sm);
   overflow: hidden;
   box-shadow: var(--shad-sm);
-  border: 1px solid var(--border) !important;
-  margin: 1.5rem 0;
 }
 
 table.docutils thead tr th {
   background: var(--bg-tint);
-  font-family: "Inter", sans-serif;
-  font-weight: 600;
-  font-size: 0.875rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--text) !important;
-  padding: 0.75rem 1rem;
+  padding: 0.55rem 0.875rem;
+  border: none !important;
   border-bottom: 2px solid var(--border) !important;
+  text-align: left;
+  vertical-align: middle;
 }
 
 table.docutils tbody tr td {
-  padding: 0.625rem 1rem;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+}
+
+table.docutils thead tr th,
+table.docutils thead tr th p {
+  font-family: "Inter", sans-serif;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--text) !important;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
+
+table.docutils tbody tr td {
+  padding: 0.5rem 0.875rem !important;
   border-bottom: 1px solid var(--border) !important;
-  font-size: 0.9375rem;
-  color: var(--text-2);
+  vertical-align: middle !important;
+  background: #fff !important;
+  color: var(--text) !important;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 0.8rem !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+table.docutils tbody tr td p {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  color: inherit !important;
+  margin: 0;
+  line-height: inherit;
 }
 
 table.docutils tbody tr:last-child td {
   border-bottom: none !important;
 }
 
-table.docutils tbody tr:nth-child(even) td {
-  background: rgba(254, 248, 240, 0.4);
+table.docutils tbody tr td code,
+table.docutils thead tr th code {
+  font-family: "JetBrains Mono", monospace !important;
+  font-size: 0.75rem !important;
+  background: var(--bg-tint) !important;
+  border: none !important;
+  padding: 0.1em 0.35em !important;
+  border-radius: 4px !important;
+  color: var(--primary) !important;
 }
 
 /* ============================================================
@@ -540,7 +574,9 @@ img[src*="plantweb"] {
   margin: 2rem auto !important;
   max-width: 780px;
   width: 100%;
-  background: #fff;
+  background-color: #fff;
+  background-image: radial-gradient(circle, rgba(194, 98, 10, 0.15) 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
   border: 1px solid var(--border);
   border-radius: var(--r);
   box-shadow: var(--shad-md);

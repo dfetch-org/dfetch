@@ -48,6 +48,8 @@ extensions = [
     "sphinx_tabs.tabs",
     "sphinx_autoissues",
     "sphinx_copybutton",
+    "colordot",
+    "designguide",
 ]
 
 # Strip shell prompts and Python REPL prompts from copied text
