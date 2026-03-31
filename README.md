@@ -28,13 +28,13 @@ Archives can be verified with a cryptographic hash (`sha256`, `sha384`, or `sha5
 integrity on every fetch. No proprietary formats, no lock-in — switch tools any time.
 
 Other tools that do similar things are Zephyr's West, CMake ExternalProject, and other meta tools.
-See [alternatives](https://dfetch.readthedocs.io/en/latest/alternatives.html) for a complete list.
-The broader concept is known as [*vendoring*](https://dfetch.readthedocs.io/en/latest/vendoring.html).
+See [alternatives](https://dfetch.readthedocs.io/en/latest/explanation/alternatives.html) for a complete list.
+The broader concept is known as [*vendoring*](https://dfetch.readthedocs.io/en/latest/explanation/vendoring.html).
 
-[**Getting started**](https://dfetch.readthedocs.io/en/latest/getting_started.html) |
-[**Commands**](https://dfetch.readthedocs.io/en/latest/commands.html) |
-[**Troubleshooting**](https://dfetch.readthedocs.io/en/latest/troubleshooting.html)  |
-[**Contributing**](https://dfetch.readthedocs.io/en/latest/contributing.html)
+[**Getting started**](https://dfetch.readthedocs.io/en/latest/tutorial/getting_started.html) |
+[**Commands**](https://dfetch.readthedocs.io/en/latest/reference/commands.html) |
+[**Troubleshooting**](https://dfetch.readthedocs.io/en/latest/howto/troubleshooting.html)  |
+[**Contributing**](https://dfetch.readthedocs.io/en/latest/howto/contributing.html)
 
 ## What Dfetch Does
 
