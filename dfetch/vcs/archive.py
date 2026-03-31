@@ -367,6 +367,23 @@ class ArchiveLocalRepo:
         return members
 
     @staticmethod
+    def _is_unsafe_symlink_target(target: str) -> bool:
+        """Return *True* when *target* is an unsafe symlink destination.
+
+        A target is unsafe if it is absolute or contains ``..`` components
+        under either POSIX or Windows path semantics, so that backslash-based
+        traversals like ``..\\..\\evil`` are caught on any host OS.
+        """
+        posix = pathlib.PurePosixPath(target)
+        win = pathlib.PureWindowsPath(target)
+        return (
+            posix.is_absolute()
+            or win.is_absolute()
+            or any(part == ".." for part in posix.parts)
+            or any(part == ".." for part in win.parts)
+        )
+
+    @staticmethod
     def _check_zip_member_type(info: zipfile.ZipInfo, zf: zipfile.ZipFile) -> None:
         """Reject dangerous ZIP member types (mirrors :meth:`_check_tar_member_type`).
 
@@ -377,20 +394,18 @@ class ArchiveLocalRepo:
         Raises:
             RuntimeError: When *info* is a symlink with an unsafe target.
         """
-        _MAX_SYMLINK_TARGET = 4096
+        max_symlink_target = 4096
         unix_mode = info.external_attr >> 16
         if stat.S_ISLNK(unix_mode):
             with zf.open(info) as member_file:
-                raw = member_file.read(_MAX_SYMLINK_TARGET + 1)
-            if len(raw) > _MAX_SYMLINK_TARGET:
+                raw = member_file.read(max_symlink_target + 1)
+            if len(raw) > max_symlink_target:
                 raise RuntimeError(
                     f"Archive contains a symlink with an oversized target: "
                     f"{info.filename!r}"
                 )
             target = raw.decode(errors="replace")
-            if os.path.isabs(target) or any(
-                part == ".." for part in pathlib.PurePosixPath(target).parts
-            ):
+            if ArchiveLocalRepo._is_unsafe_symlink_target(target):
                 raise RuntimeError(
                     f"Archive contains a symlink with an unsafe target: "
                     f"{info.filename!r} -> {target!r}"
@@ -422,9 +437,7 @@ class ArchiveLocalRepo:
         """
         if member.issym():
             target = member.linkname
-            if os.path.isabs(target) or any(
-                part == ".." for part in pathlib.PurePosixPath(target).parts
-            ):
+            if ArchiveLocalRepo._is_unsafe_symlink_target(target):
                 raise RuntimeError(
                     f"Archive contains a symlink with an unsafe target: "
                     f"{member.name!r} -> {target!r}"
