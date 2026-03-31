@@ -11,6 +11,7 @@ def test_export_with_revision_passes_correct_args():
     """export() must produce the exact expected SVN command."""
     with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
         SvnRepo.export("svn://example.com/repo", rev="12345", dst="/tmp/out")
+        mock_run.assert_called_once()
         assert mock_run.call_args[0][1] == [
             "svn",
             "export",
@@ -27,6 +28,7 @@ def test_export_without_revision_omits_revision_args():
     """export() with no revision must produce the exact expected SVN command."""
     with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
         SvnRepo.export("svn://example.com/repo", dst="/tmp/out")
+        mock_run.assert_called_once()
         assert mock_run.call_args[0][1] == [
             "svn",
             "export",
