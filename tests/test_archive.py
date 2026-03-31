@@ -162,6 +162,13 @@ def test_check_zip_members_symlink_dotdot_target():
         _check_zip_members(zf)
 
 
+def test_check_zip_members_symlink_windows_dotdot_target():
+    """ZIP symlink with Windows-style backslash traversal must be rejected."""
+    zf = _make_zip_with_symlink("link", "..\\..\\evil")
+    with pytest.raises(RuntimeError, match="symlink"):
+        _check_zip_members(zf)
+
+
 def test_check_zip_members_symlink_safe_relative():
     """ZIP symlink with a safe relative target must be accepted (mirrors TAR behaviour)."""
     zf = _make_zip_with_symlink("link", "relative/safe/target")
@@ -263,6 +270,14 @@ def test_check_tar_member_type_absolute_symlink():
 
 def test_check_tar_member_type_dotdot_symlink():
     tf = _make_tar_with_member(lambda t: _add_symlink(t, "link", "../../etc/passwd"))
+    member = tf.getmembers()[0]
+    with pytest.raises(RuntimeError, match="unsafe target"):
+        _check_tar_member_type(member)
+
+
+def test_check_tar_member_type_windows_dotdot_symlink():
+    """TAR symlink with Windows-style backslash traversal must be rejected."""
+    tf = _make_tar_with_member(lambda t: _add_symlink(t, "link", "..\\..\\evil"))
     member = tf.getmembers()[0]
     with pytest.raises(RuntimeError, match="unsafe target"):
         _check_tar_member_type(member)
