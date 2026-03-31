@@ -98,6 +98,30 @@
 				}
 			},
 			{
+				"label": "Build PDF Docs",
+				"type": "shell",
+				"linux": {
+					"command": "make"
+				},
+				"windows": {
+					"command": "make.bat"
+				},
+				"args": [
+					"latexpdf"
+				],
+				"options": {
+					"cwd": "${workspaceFolder}/doc"
+				},
+				"group": {
+					"kind": "build",
+					"isDefault": false
+				},
+				"presentation": {
+					"reveal": "always",
+					"panel": "shared"
+				}
+			},
+			{
 				"label": "Build Landing page",
 				"type": "shell",
 				"linux": {
