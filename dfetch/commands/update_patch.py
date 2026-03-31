@@ -42,7 +42,6 @@ from dfetch.project.gitsuperproject import GitSuperProject
 from dfetch.project.metadata import Metadata
 from dfetch.project.superproject import NoVcsSuperProject, RevisionRange
 from dfetch.util.util import (
-    catch_runtime_exceptions,
     check_no_path_traversal,
     in_directory,
 )
@@ -76,7 +75,7 @@ class UpdatePatch(dfetch.commands.command.Command):
         """Perform the update patch."""
         superproject = create_super_project()
 
-        exceptions: list[str] = []
+        had_errors: bool = False
 
         if isinstance(superproject, NoVcsSuperProject):
             raise RuntimeError(
@@ -88,7 +87,7 @@ class UpdatePatch(dfetch.commands.command.Command):
 
         with in_directory(superproject.root_directory):
             for project in superproject.manifest.selected_projects(args.projects):
-                with catch_runtime_exceptions(exceptions) as exceptions:
+                try:
                     subproject = dfetch.project.create_sub_project(project)
                     destination = project.destination
 
@@ -149,9 +148,12 @@ class UpdatePatch(dfetch.commands.command.Command):
                     subproject.update(
                         force=True, ignored_files_callback=_ignored, patch_count=-1
                     )
+                except RuntimeError as exc:
+                    logger.print_warning_line(project.name, str(exc))
+                    had_errors = True
 
-        if exceptions:
-            raise RuntimeError("\n".join(exceptions))
+        if had_errors:
+            raise RuntimeError()
 
     def _update_patch(
         self,

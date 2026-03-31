@@ -67,14 +67,14 @@ Feature: Patch after fetching from git repo
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               ext/test-repo-tag:
               > Fetched v2.0
               > Applying patch "diff.patch"
                 source/target file does not exist:
                   --- b'README1.md'
                   +++ b'README1.md'
-            Applying patch "diff.patch" failed
+              > Applying patch "diff.patch" failed
             """
 
     Scenario: Multiple patch files are applied after fetching
@@ -125,7 +125,7 @@ Feature: Patch after fetching from git repo
             """
         And the output shows
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               ext/test-repo-tag:
               > Fetched v2.0
               > Applying patch "001-diff.patch"
@@ -169,7 +169,7 @@ Feature: Patch after fetching from git repo
             """
         And the output shows
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               ext/test-repo-tag:
               > Fetched v2.0
               > Applying patch "diff.patch"
@@ -197,7 +197,7 @@ Feature: Patch after fetching from git repo
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               ext/test-repo-tag:
               > Fetched v2.0
               > Skipping patch "../diff.patch" which is outside /some/path.

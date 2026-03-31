@@ -28,7 +28,6 @@ from dfetch.commands.common import check_sub_manifests
 from dfetch.log import get_logger
 from dfetch.project import create_super_project
 from dfetch.util.util import (
-    catch_runtime_exceptions,
     check_no_path_traversal,
     in_directory,
 )
@@ -78,20 +77,25 @@ class Update(dfetch.commands.command.Command):
         """Perform the update."""
         superproject = create_super_project()
 
-        exceptions: list[str] = []
+        had_errors: bool = False
         destinations: list[str] = [
             os.path.realpath(project.destination)
             for project in superproject.manifest.projects
         ]
         with in_directory(superproject.root_directory):
             for project in superproject.manifest.selected_projects(args.projects):
-                with catch_runtime_exceptions(exceptions) as exceptions:
+                try:
                     self._check_destination(project, destinations)
-                    destination = project.destination
+                except RuntimeError:
+                    had_errors = True
+                    continue
 
-                    def _ignored(dst: str = destination) -> list[str]:
-                        return list(superproject.ignored_files(dst))
+                destination = project.destination
 
+                def _ignored(dst: str = destination) -> list[str]:
+                    return list(superproject.ignored_files(dst))
+
+                try:
                     dfetch.project.create_sub_project(project).update(
                         force=args.force,
                         ignored_files_callback=_ignored,
@@ -102,9 +106,12 @@ class Update(dfetch.commands.command.Command):
                     ):
                         with in_directory(project.destination):
                             check_sub_manifests(superproject.manifest, project)
+                except RuntimeError as exc:
+                    logger.print_warning_line(project.name, str(exc))
+                    had_errors = True
 
-        if exceptions:
-            raise RuntimeError("\n".join(exceptions))
+        if had_errors:
+            raise RuntimeError()
 
     @staticmethod
     def _check_destination(

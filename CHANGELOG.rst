@@ -1,3 +1,8 @@
+Release 0.14.0 (released 2026-03-31)
+====================================
+
+* Print runtime errors (e.g. ``svn not available on system``) directly in context of the failing subproject instead of collecting and showing them at the end (#1096)
+
 Release 0.13.0 (released 2026-03-30)
 ====================================
 

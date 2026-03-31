@@ -62,7 +62,7 @@ from dfetch.log import get_logger
 from dfetch.project import create_super_project
 from dfetch.project.metadata import Metadata
 from dfetch.project.superproject import NoVcsSuperProject, RevisionRange
-from dfetch.util.util import catch_runtime_exceptions, in_directory
+from dfetch.util.util import in_directory
 
 logger = get_logger(__name__)
 
@@ -115,14 +115,14 @@ class Diff(dfetch.commands.command.Command):
             )
 
         with in_directory(superproject.root_directory):
-            exceptions: list[str] = []
             projects = superproject.manifest.selected_projects(args.projects)
             if not projects:
                 raise RuntimeError(
                     f"No (such) project found! {', '.join(args.projects)}"
                 )
+            had_errors: bool = False
             for project in projects:
-                with catch_runtime_exceptions(exceptions) as exceptions:
+                try:
                     if not os.path.exists(project.destination):
                         raise RuntimeError(
                             "You cannot generate a diff of a project that was never fetched"
@@ -157,9 +157,12 @@ class Diff(dfetch.commands.command.Command):
                         patch_path.write_text(patch, encoding="UTF-8")
                     else:
                         logger.print_info_line(project.name, f"No diffs found {msg}")
+                except RuntimeError as exc:
+                    logger.print_warning_line(project.name, str(exc))
+                    had_errors = True
 
-        if exceptions:
-            raise RuntimeError("\n".join(exceptions))
+        if had_errors:
+            raise RuntimeError()
 
     @staticmethod
     def _parse_revs(revs_arg: str) -> tuple[str, str]:
