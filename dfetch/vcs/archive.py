@@ -379,7 +379,8 @@ class ArchiveLocalRepo:
         """
         unix_mode = info.external_attr >> 16
         if stat.S_ISLNK(unix_mode):
-            target = zf.read(info).decode(errors="replace")
+            with zf.open(info) as member_file:
+                target = member_file.read(4096).decode(errors="replace")
             if os.path.isabs(target) or any(
                 part == ".." for part in pathlib.PurePosixPath(target).parts
             ):

@@ -225,7 +225,7 @@ def test_get_manifest_location(name, manifest, project_name, result) -> None:
 
 @pytest.mark.parametrize(
     "dst",
-    ["/etc/passwd", "/tmp/evil"],
+    ["/etc/passwd", "/tmp/evil", "C:/Windows/System32", "C:\\Windows\\System32"],
 )
 def test_validate_destination_rejects_absolute_paths(dst) -> None:
     with pytest.raises(ValueError, match="absolute"):

@@ -24,7 +24,7 @@ import os
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import IO, Any
 
 import yaml
@@ -395,7 +395,11 @@ class Manifest:
     @staticmethod
     def validate_destination(dst: str) -> None:
         """Raise ValueError if *dst* is not a safe manifest destination path."""
-        if Path(dst).is_absolute():
+        if (
+            PurePosixPath(dst).is_absolute()
+            or PureWindowsPath(dst).is_absolute()
+            or bool(PureWindowsPath(dst).drive)
+        ):
             raise ValueError(
                 f"Destination '{dst}' is an absolute path. "
                 "Paths must be relative to the manifest directory."
