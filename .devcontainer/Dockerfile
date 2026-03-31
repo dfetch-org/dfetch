@@ -15,6 +15,14 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     subversion=1.14.5-3 && \
     rm -rf /var/lib/apt/lists/*
 
+# Install LaTeX for PDF documentation generation
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    texlive-latex-recommended=2023.20240207-1 \
+    texlive-fonts-recommended=2023.20240207-1 \
+    texlive-latex-extra=2023.20240207-1 \
+    latexmk=1:4.83-1 && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install ruby gem FPM for packaging
 RUN apt-get update && apt-get install --no-install-recommends -y \
     ruby=1:3.3+b1 \
