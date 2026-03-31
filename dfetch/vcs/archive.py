@@ -378,7 +378,7 @@ class ArchiveLocalRepo:
         win = pathlib.PureWindowsPath(target)
         return (
             posix.is_absolute()
-            or win.is_absolute()
+            or bool(win.anchor)
             or any(part == ".." for part in posix.parts)
             or any(part == ".." for part in win.parts)
         )
