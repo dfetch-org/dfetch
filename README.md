@@ -31,7 +31,7 @@ Other tools that do similar things are Zephyr's West, CMake ExternalProject, and
 See [alternatives](https://dfetch.readthedocs.io/en/latest/explanation/alternatives.html) for a complete list.
 The broader concept is known as [*vendoring*](https://dfetch.readthedocs.io/en/latest/explanation/vendoring.html).
 
-[**Getting started**](https://dfetch.readthedocs.io/en/latest/tutorial/getting_started.html) |
+[**Getting started**](https://dfetch.readthedocs.io/en/latest/tutorials/getting_started.html) |
 [**Commands**](https://dfetch.readthedocs.io/en/latest/reference/commands.html) |
 [**Troubleshooting**](https://dfetch.readthedocs.io/en/latest/howto/troubleshooting.html)  |
 [**Contributing**](https://dfetch.readthedocs.io/en/latest/howto/contributing.html)
