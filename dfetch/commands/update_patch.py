@@ -40,7 +40,7 @@ from dfetch.log import get_logger
 from dfetch.project import create_super_project
 from dfetch.project.gitsuperproject import GitSuperProject
 from dfetch.project.metadata import Metadata
-from dfetch.project.superproject import NoVcsSuperProject, RevisionRange
+from dfetch.project.superproject import NoVcsSuperProject, RevisionRange, SuperProject
 from dfetch.util.util import (
     check_no_path_traversal,
     in_directory,
@@ -88,72 +88,78 @@ class UpdatePatch(dfetch.commands.command.Command):
         with in_directory(superproject.root_directory):
             for project in superproject.manifest.selected_projects(args.projects):
                 try:
-                    subproject = dfetch.project.create_sub_project(project)
-                    destination = project.destination
-
-                    def _ignored(dst: str = destination) -> list[str]:
-                        return list(superproject.ignored_files(dst))
-
-                    # Check if the project has a patch, maybe suggest creating one?
-                    if not subproject.patch:
-                        logger.print_warning_line(
-                            project.name,
-                            f'skipped - there is no patch file, use "dfetch diff {project.name}"'
-                            " to generate one instead",
-                        )
-                        continue
-
-                    # Check if the project was ever fetched
-                    on_disk_version = subproject.on_disk_version()
-                    if not on_disk_version:
-                        logger.print_warning_line(
-                            project.name,
-                            f'skipped - the project was never fetched before, use "dfetch update {project.name}"',
-                        )
-                        continue
-
-                    # Make sure no uncommitted changes (don't care about ignored files)
-                    if superproject.has_local_changes_in_dir(subproject.local_path):
-                        logger.print_warning_line(
-                            project.name,
-                            f"skipped - Uncommitted changes in {subproject.local_path}",
-                        )
-                        continue
-
-                    # force update to fetched version from metadata without applying patch
-                    subproject.update(
-                        force=True,
-                        ignored_files_callback=_ignored,
-                        patch_count=len(subproject.patch) - 1,
-                    )
-
-                    # generate reverse patch
-                    patch_text = superproject.diff(
-                        subproject.local_path,
-                        revisions=RevisionRange("", ""),
-                        ignore=(Metadata.FILENAME,),
-                        reverse=True,
-                    )
-
-                    # Select patch to overwrite & make backup
-                    if not self._update_patch(
-                        subproject.patch[-1],
-                        superproject.root_directory,
-                        project.name,
-                        patch_text,
-                    ):
-                        continue
-
-                    # force update again to fetched version from metadata but with applying patch
-                    subproject.update(
-                        force=True, ignored_files_callback=_ignored, patch_count=-1
-                    )
+                    self._process_project(superproject, project)
                 except RuntimeError as exc:
                     logger.print_warning_line(project.name, str(exc))
                     had_errors = True
 
         if had_errors:
             raise RuntimeError()
+
+    def _process_project(
+        self,
+        superproject: SuperProject,
+        project: dfetch.manifest.project.ProjectEntry,
+    ) -> None:
+        """Perform the patch update for a single project."""
+        subproject = dfetch.project.create_sub_project(project)
+        destination = project.destination
+
+        def _ignored(dst: str = destination) -> list[str]:
+            return list(superproject.ignored_files(dst))
+
+        # Check if the project has a patch, maybe suggest creating one?
+        if not subproject.patch:
+            logger.print_warning_line(
+                project.name,
+                f'skipped - there is no patch file, use "dfetch diff {project.name}"'
+                " to generate one instead",
+            )
+            return
+
+        # Check if the project was ever fetched
+        on_disk_version = subproject.on_disk_version()
+        if not on_disk_version:
+            logger.print_warning_line(
+                project.name,
+                f'skipped - the project was never fetched before, use "dfetch update {project.name}"',
+            )
+            return
+
+        # Make sure no uncommitted changes (don't care about ignored files)
+        if superproject.has_local_changes_in_dir(subproject.local_path):
+            logger.print_warning_line(
+                project.name,
+                f"skipped - Uncommitted changes in {subproject.local_path}",
+            )
+            return
+
+        # force update to fetched version from metadata without applying patch
+        subproject.update(
+            force=True,
+            ignored_files_callback=_ignored,
+            patch_count=len(subproject.patch) - 1,
+        )
+
+        # generate reverse patch
+        patch_text = superproject.diff(
+            subproject.local_path,
+            revisions=RevisionRange("", ""),
+            ignore=(Metadata.FILENAME,),
+            reverse=True,
+        )
+
+        # Select patch to overwrite & make backup
+        if not self._update_patch(
+            subproject.patch[-1],
+            superproject.root_directory,
+            project.name,
+            patch_text,
+        ):
+            return
+
+        # force update again to fetched version from metadata but with applying patch
+        subproject.update(force=True, ignored_files_callback=_ignored, patch_count=-1)
 
     def _update_patch(
         self,
