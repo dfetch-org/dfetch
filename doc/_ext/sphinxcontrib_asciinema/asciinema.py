@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 def copy_asset_files(app, exc):
+    if app.builder.format != "html":
+        return
     asset_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_static")
     if exc is None:  # build succeeded
         for file in os.listdir(asset_dir):
@@ -83,7 +85,6 @@ def visit_html(self, node):
 
 
 def visit_unsupported(self, node):
-    logger.warning("asciinema: unsupported output format (node skipped)")
     raise nodes.SkipNode
 
 
@@ -177,6 +178,7 @@ class ASCIINemaDirective(SphinxDirective):
 
 _NODE_VISITORS = {
     "html": (visit_html, depart),
+    "epub": (visit_unsupported, None),
     "latex": (visit_unsupported, None),
     "man": (visit_unsupported, None),
     "texinfo": (visit_unsupported, None),
