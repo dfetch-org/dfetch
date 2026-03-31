@@ -44,7 +44,10 @@ jobs:
     secrets: inherit
 
   docs:
+    needs: prep-release
     uses: ./.github/workflows/docs.yml
     permissions:
-      contents: read
+      contents: write
     secrets: inherit
+    with:
+      release_id: ${{ needs.prep-release.outputs.release_id }}
