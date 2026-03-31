@@ -377,10 +377,17 @@ class ArchiveLocalRepo:
         Raises:
             RuntimeError: When *info* is a symlink with an unsafe target.
         """
+        _MAX_SYMLINK_TARGET = 4096
         unix_mode = info.external_attr >> 16
         if stat.S_ISLNK(unix_mode):
             with zf.open(info) as member_file:
-                target = member_file.read(4096).decode(errors="replace")
+                raw = member_file.read(_MAX_SYMLINK_TARGET + 1)
+            if len(raw) > _MAX_SYMLINK_TARGET:
+                raise RuntimeError(
+                    f"Archive contains a symlink with an oversized target: "
+                    f"{info.filename!r}"
+                )
+            target = raw.decode(errors="replace")
             if os.path.isabs(target) or any(
                 part == ".." for part in pathlib.PurePosixPath(target).parts
             ):

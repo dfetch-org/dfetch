@@ -398,7 +398,7 @@ class Manifest:
         if (
             PurePosixPath(dst).is_absolute()
             or PureWindowsPath(dst).is_absolute()
-            or bool(PureWindowsPath(dst).drive)
+            or bool(PureWindowsPath(dst).anchor)
         ):
             raise ValueError(
                 f"Destination '{dst}' is an absolute path. "

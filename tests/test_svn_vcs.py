@@ -1,8 +1,5 @@
 """Unit tests for SvnRepo.export() argument safety."""
 
-# mypy: ignore-errors
-# flake8: noqa
-
 import pytest
 from unittest.mock import patch
 
@@ -10,19 +7,24 @@ from dfetch.vcs.svn import SvnRepo
 
 
 def test_export_with_revision_passes_correct_args():
-    """export() must pass --revision and the digit as adjacent list elements."""
+    """export() must produce the exact expected SVN command."""
     with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
         SvnRepo.export("svn://example.com/repo", rev="12345", dst="/tmp/out")
-        cmd = mock_run.call_args[0][1]
-        idx = cmd.index("--revision")
-        assert cmd[idx + 1] == "12345"
+        assert mock_run.call_args[0][1] == [
+            "svn", "export", "--non-interactive", "--force",
+            "--revision", "12345",
+            "svn://example.com/repo", "/tmp/out",
+        ]
 
 
 def test_export_without_revision_omits_revision_args():
-    """export() with no revision must omit --revision entirely."""
+    """export() with no revision must produce the exact expected SVN command."""
     with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
         SvnRepo.export("svn://example.com/repo", dst="/tmp/out")
-        assert "--revision" not in mock_run.call_args[0][1]
+        assert mock_run.call_args[0][1] == [
+            "svn", "export", "--non-interactive", "--force",
+            "svn://example.com/repo", "/tmp/out",
+        ]
 
 
 def test_export_rejects_non_digit_revision():
