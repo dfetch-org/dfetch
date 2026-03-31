@@ -368,7 +368,7 @@ class ArchiveLocalRepo:
 
     @staticmethod
     def _is_unsafe_symlink_target(target: str) -> bool:
-        """Return *True* when *target* is an unsafe symlink destination.
+        r"""Return *True* when *target* is an unsafe symlink destination.
 
         A target is unsafe if it is absolute or contains ``..`` components
         under either POSIX or Windows path semantics, so that backslash-based

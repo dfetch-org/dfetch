@@ -1,7 +1,8 @@
 """Unit tests for SvnRepo.export() argument safety."""
 
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from dfetch.vcs.svn import SvnRepo
 
@@ -11,9 +12,14 @@ def test_export_with_revision_passes_correct_args():
     with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
         SvnRepo.export("svn://example.com/repo", rev="12345", dst="/tmp/out")
         assert mock_run.call_args[0][1] == [
-            "svn", "export", "--non-interactive", "--force",
-            "--revision", "12345",
-            "svn://example.com/repo", "/tmp/out",
+            "svn",
+            "export",
+            "--non-interactive",
+            "--force",
+            "--revision",
+            "12345",
+            "svn://example.com/repo",
+            "/tmp/out",
         ]
 
 
@@ -22,8 +28,12 @@ def test_export_without_revision_omits_revision_args():
     with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
         SvnRepo.export("svn://example.com/repo", dst="/tmp/out")
         assert mock_run.call_args[0][1] == [
-            "svn", "export", "--non-interactive", "--force",
-            "svn://example.com/repo", "/tmp/out",
+            "svn",
+            "export",
+            "--non-interactive",
+            "--force",
+            "svn://example.com/repo",
+            "/tmp/out",
         ]
 
 
