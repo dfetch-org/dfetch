@@ -101,14 +101,14 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: dfetch-pdf-documentation
-          path: doc/_build/latex/dfetch.pdf
+          path: doc/_build/latex/dfetch-*.pdf
 
       - name: Upload PDF to release
         if: ${{ inputs.release_id }}
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.5.0
         with:
           tag_name: ${{ inputs.release_id }}
-          files: doc/_build/latex/dfetch.pdf
+          files: doc/_build/latex/dfetch-*.pdf
           draft: true
           preserve_order: true
         env:
