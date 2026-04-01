@@ -188,18 +188,14 @@ htmlhelp_basename = "dfetchdoc"
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #
-    # 'papersize': 'letterpaper',
-    # The font size ('10pt', '11pt' or '12pt').
-    #
-    # 'pointsize': '10pt',
-    # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
+    # Map Unicode check/cross marks used in alternatives.rst to pifont dingbats
+    # so pdflatex doesn't abort with "Unicode character not set up for use".
+    "preamble": r"""
+\usepackage{newunicodechar}
+\usepackage{pifont}
+\newunicodechar{✔}{\ding{51}}
+\newunicodechar{✘}{\ding{55}}
+""",
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
