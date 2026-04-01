@@ -16,11 +16,12 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     rm -rf /var/lib/apt/lists/*
 
 # Install LaTeX for PDF documentation generation
+# texlive packages follow the TeX Live release cycle and are not pinned
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    texlive-latex-recommended=2023.20240207-1 \
-    texlive-fonts-recommended=2023.20240207-1 \
-    texlive-latex-extra=2023.20240207-1 \
-    latexmk=1:4.83-1 && \
+    texlive-latex-recommended \
+    texlive-fonts-recommended \
+    texlive-latex-extra \
+    latexmk && \
     rm -rf /var/lib/apt/lists/*
 
 # Install ruby gem FPM for packaging
