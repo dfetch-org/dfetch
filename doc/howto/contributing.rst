@@ -26,10 +26,16 @@ Running in Github Codespaces
 Github codespaces make it possible to edit dfetch directly in the browser in a VSCode instance.
 All dependencies are pre-installed and makes it easy to get started.
 
-|CodespacesLink|_
+.. only:: html
 
-.. |CodespacesLink| image:: https://github.com/codespaces/badge.svg
-.. _CodespacesLink: https://codespaces.new/dfetch-org/dfetch
+   |CodespacesLink|_
+
+   .. |CodespacesLink| image:: https://github.com/codespaces/badge.svg
+   .. _CodespacesLink: https://codespaces.new/dfetch-org/dfetch
+
+.. only:: not html
+
+   `Open in GitHub Codespaces <https://codespaces.new/dfetch-org/dfetch>`_
 
 .. tip::
 
