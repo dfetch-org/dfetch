@@ -20,14 +20,6 @@ from dfetch import __version__
 # that regardless of FORCE_COLOR, and dfetch's own Rich console respects it too.
 os.environ["NO_COLOR"] = "1"
 
-# plantweb renders PlantUML diagrams as SVG by default, which pdflatex cannot
-# include. Override to PNG for all non-HTML builders (e.g. LaTeX/PDF).
-if not tags.has("html"):  # type: ignore[name-defined]  # noqa: F821
-    import plantweb.defaults as _plantweb_defaults
-    _pd = _plantweb_defaults.read_defaults()
-    _pd["format"] = "png"
-    _plantweb_defaults.read_defaults.cache = _pd
-
 # -- General configuration ------------------------------------------------
 
 ext_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "_ext"))
