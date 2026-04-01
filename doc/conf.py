@@ -187,14 +187,55 @@ htmlhelp_basename = "dfetchdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
+latex_logo = "images/dfetch_logo.png"
+
 latex_elements = {
     # Map Unicode check/cross marks used in alternatives.rst to pifont dingbats
     # so pdflatex doesn't abort with "Unicode character not set up for use".
+    # Also configure fonts and colours to match the design system.
     "preamble": r"""
 \usepackage{newunicodechar}
 \usepackage{pifont}
 \newunicodechar{✔}{\ding{51}}
 \newunicodechar{✘}{\ding{55}}
+\usepackage{helvet}
+\renewcommand*\familydefault{\sfdefault}
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\definecolor{dfprimary}{HTML}{c2620a}
+\definecolor{dfaccent}{HTML}{4e7fa0}
+\definecolor{dftextmuted}{HTML}{78716c}
+\definecolor{dfnearblack}{HTML}{1c1917}
+""",
+    # Design-token colours for Sphinx's built-in LaTeX style hooks
+    "sphinxsetup": (
+        "TitleColor={rgb}{0.761,0.384,0.039},"
+        "InnerLinkColor={rgb}{0.306,0.498,0.627},"
+        "OuterLinkColor={rgb}{0.306,0.498,0.627},"
+        "VerbatimColor={rgb}{0.996,0.973,0.941},"
+        "VerbatimBorderColor={rgb}{0.906,0.878,0.847},"
+        "noteBorderColor={rgb}{0.306,0.498,0.627},"
+        "warningBorderColor={rgb}{0.761,0.384,0.039},"
+    ),
+    # Custom title page with amber header bar, logo, and accent footer
+    "maketitle": r"""
+\begin{titlepage}
+  \noindent{\color{dfprimary}\rule{\linewidth}{6pt}}\par
+  \vfill
+  \begin{center}
+    \sphinxlogo\par
+    \vspace{1.8cm}
+    {\fontsize{40}{44}\selectfont\bfseries\color{dfprimary}Dfetch\par}
+    \vspace{0.4cm}
+    {\LARGE\color{dfnearblack}Documentation\par}
+    \vspace{0.8cm}
+    {\large\color{dftextmuted}\textit{vendor dependencies without the pain}\par}
+    \vspace{2.5cm}
+    {\large\color{dftextmuted}\py@release\par}
+  \end{center}
+  \vfill
+  \noindent{\color{dfaccent}\rule{\linewidth}{4pt}}\par
+\end{titlepage}
 """,
 }
 
