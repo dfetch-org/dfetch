@@ -217,8 +217,11 @@ latex_elements = {
         "noteBorderColor={rgb}{0.306,0.498,0.627},"
         "warningBorderColor={rgb}{0.761,0.384,0.039},"
     ),
-    # Custom title page with amber header bar, logo, and accent footer
+    # Custom title page with amber header bar, logo, and accent footer.
+    # \makeatletter/\makeatother are required to access \py@release (@ is a
+    # letter in LaTeX package code but not in regular document mode).
     "maketitle": r"""
+\makeatletter
 \begin{titlepage}
   \noindent{\color{dfprimary}\rule{\linewidth}{6pt}}\par
   \vfill
@@ -236,6 +239,7 @@ latex_elements = {
   \vfill
   \noindent{\color{dfaccent}\rule{\linewidth}{4pt}}\par
 \end{titlepage}
+\makeatother
 """,
 }
 
