@@ -569,67 +569,100 @@ def _find_project_block(lines: list[str], project_name: str) -> tuple[int, int, 
     return start, end, item_indent
 
 
+def _find_field(
+    block: list[str],
+    field_name: str,
+    indent: int,
+    start: int = 0,
+    end: int | None = None,
+) -> int | None:
+    """Return the index in *block* of ``field_name:`` at exactly *indent* spaces.
+
+    Searches ``block[start:end]``.  Returns ``None`` when not found.
+    """
+    bound = end if end is not None else len(block)
+    prefix = " " * indent + field_name + ":"
+    for i in range(start, bound):
+        stripped = block[i].rstrip("\n\r")
+        if stripped.startswith(prefix) and (
+            len(stripped) == len(prefix) or stripped[len(prefix)] in (" ", "\t")
+        ):
+            return i
+    return None
+
+
+def _update_value(
+    block: list[str], line_idx: int, field_name: str, yaml_value: str
+) -> list[str]:
+    """Return a copy of *block* with the value on *line_idx* replaced by *yaml_value*."""
+    block = list(block)
+    line = block[line_idx]
+    indent = len(line) - len(line.lstrip())
+    eol = "\n" if line.endswith("\n") else ""
+    block[line_idx] = " " * indent + field_name + ": " + yaml_value + eol
+    return block
+
+
+def _append_field(
+    block: list[str],
+    field_name: str,
+    yaml_value: str,
+    indent: int,
+    after: int,
+) -> list[str]:
+    """Return a copy of *block* with ``field_name: yaml_value`` inserted at *after*.
+
+    When *yaml_value* is empty the line is written as ``field_name:`` (no value),
+    which is the correct YAML form for a mapping key whose children follow.
+    """
+    block = list(block)
+    value_part = ": " + yaml_value if yaml_value else ":"
+    block.insert(after, " " * indent + field_name + value_part + "\n")
+    return block
+
+
 def _set_simple_field_in_block(
     block: list[str], field_indent: int, field_name: str, yaml_value: str
 ) -> list[str]:
-    """Update an existing ``field_name:`` line in *block*, or insert one after the first line.
-
-    *field_indent* is the expected column for fields in this block.
-    *yaml_value* is the already-serialised YAML scalar (e.g. ``e1fda...`` or ``'176'``).
-    """
-    block = list(block)
-    field_re = re.compile(r"^(\s+)" + re.escape(field_name) + r":\s*.*$")
-
-    for i, line in enumerate(block):
-        if field_re.match(line.rstrip("\n\r")):
-            eol = "\n" if line.endswith("\n") else ""
-            block[i] = " " * field_indent + field_name + ": " + yaml_value + eol
-            return block
-
-    # Field not present — insert right after the ``name:`` line (position 1).
-    new_line = " " * field_indent + field_name + ": " + yaml_value + "\n"
-    block.insert(1, new_line)
-    return block
+    """Update an existing ``field_name:`` line in *block*, or insert one after the first line."""
+    idx = _find_field(block, field_name, field_indent)
+    if idx is not None:
+        return _update_value(block, idx, field_name, yaml_value)
+    return _append_field(block, field_name, yaml_value, field_indent, after=1)
 
 
 def _update_hash_in_existing_integrity(
     block: list[str], integrity_line: int, field_indent: int, hash_value: str
 ) -> list[str]:
     """Update or insert ``hash:`` inside an already-located ``integrity:`` block."""
-    hash_re = re.compile(r"^(\s+)hash:\s*.*$")
+    sub_end = len(block)
     for i in range(integrity_line + 1, len(block)):
-        stripped = block[i].strip()
-        if not stripped:
-            continue
-        if hash_re.match(block[i].rstrip("\n\r")):
-            eol = "\n" if block[i].endswith("\n") else ""
-            block[i] = " " * (field_indent + 2) + "hash: " + hash_value + eol
-            return block
-        # Stop searching once we leave the integrity sub-block.
-        if len(block[i]) - len(block[i].lstrip()) <= field_indent:
+        if block[i].strip() and len(block[i]) - len(block[i].lstrip()) <= field_indent:
+            sub_end = i
             break
-    # No ``hash:`` found — insert right after ``integrity:``.
-    block.insert(
-        integrity_line + 1, " " * (field_indent + 2) + "hash: " + hash_value + "\n"
+    hash_idx = _find_field(
+        block, "hash", field_indent + 2, start=integrity_line + 1, end=sub_end
     )
-    return block
+    if hash_idx is not None:
+        return _update_value(block, hash_idx, "hash", hash_value)
+    return _append_field(
+        block, "hash", hash_value, field_indent + 2, after=integrity_line + 1
+    )
 
 
 def _append_integrity_block(
     block: list[str], field_indent: int, hash_value: str
 ) -> list[str]:
     """Append a new ``integrity:\\n  hash:`` block before any trailing blank lines."""
-    new_lines = [
-        " " * field_indent + "integrity:\n",
-        " " * (field_indent + 2) + "hash: " + hash_value + "\n",
-    ]
     insert_at = len(block)
     for i in range(len(block) - 1, -1, -1):
         if block[i].strip():
             insert_at = i + 1
             break
-    block[insert_at:insert_at] = new_lines
-    return block
+    block = _append_field(block, "integrity", "", field_indent, after=insert_at)
+    return _append_field(
+        block, "hash", hash_value, field_indent + 2, after=insert_at + 1
+    )
 
 
 def _set_integrity_hash_in_block(
@@ -637,19 +670,11 @@ def _set_integrity_hash_in_block(
 ) -> list[str]:
     """Update or insert ``integrity.hash`` inside *block*."""
     block = list(block)
-    integrity_re = re.compile(r"^(\s+)integrity:\s*$")
-
-    integrity_line: int | None = None
-    for i, line in enumerate(block):
-        if integrity_re.match(line.rstrip("\n\r")):
-            integrity_line = i
-            break
-
+    integrity_line = _find_field(block, "integrity", field_indent)
     if integrity_line is not None:
         return _update_hash_in_existing_integrity(
             block, integrity_line, field_indent, hash_value
         )
-
     return _append_integrity_block(block, field_indent, hash_value)
 
 
@@ -687,11 +712,9 @@ def _apply_block_updates(
     """Apply version-field updates to *block* and return the modified block."""
     inserted: list[tuple[str, str]] = []
     for field_name, yaml_value in fields_to_set:
-        field_re = re.compile(r"^(\s+)" + re.escape(field_name) + r":\s*.*$")
-        if any(field_re.match(line.rstrip("\n\r")) for line in block):
-            block = _set_simple_field_in_block(
-                block, field_indent, field_name, yaml_value
-            )
+        idx = _find_field(block, field_name, field_indent)
+        if idx is not None:
+            block = _update_value(block, idx, field_name, yaml_value)
         else:
             inserted.append((field_name, yaml_value))
 
