@@ -14,11 +14,14 @@ from dfetch.manifest.manifest import (
     ManifestDict,
     ManifestEntryLocation,
     RequestedProjectNotFoundError,
+    _append_field,
+    _find_field,
     _find_project_block,
     _locate_project_name_line,
     _set_integrity_hash_in_block,
     _set_simple_field_in_block,
     _update_project_version_in_text,
+    _update_value,
 )
 from dfetch.manifest.parse import find_manifest, get_submanifests
 from dfetch.manifest.project import ProjectEntry
@@ -370,6 +373,85 @@ def test_set_simple_field_inserts_after_name() -> None:
     result = _set_simple_field_in_block(block, 6, "revision", "abc123")
     assert result[1] == "      revision: abc123\n"
     assert result[2] == "      url: https://example.com\n"
+
+
+# --- _find_field -----------------------------------------------------------
+
+
+def test_find_field_returns_index_when_present() -> None:
+    block = [
+        "    - name: myproject\n",
+        "      revision: abc\n",
+        "      url: https://example.com\n",
+    ]
+    assert _find_field(block, "revision", 6) == 1
+
+
+def test_find_field_returns_none_when_absent() -> None:
+    block = [
+        "    - name: myproject\n",
+        "      url: https://example.com\n",
+    ]
+    assert _find_field(block, "revision", 6) is None
+
+
+def test_find_field_respects_start_end_bounds() -> None:
+    block = [
+        "    - name: myproject\n",
+        "      revision: abc\n",
+        "      url: https://example.com\n",
+    ]
+    # revision is at index 1, but we start searching at index 2 — should not find it
+    assert _find_field(block, "revision", 6, start=2) is None
+    # and with end=1 it is also excluded
+    assert _find_field(block, "revision", 6, start=0, end=1) is None
+
+
+def test_find_field_ignores_wrong_indent() -> None:
+    block = [
+        "    - name: myproject\n",
+        "    revision: abc\n",  # indent 4, not 6
+        "      url: https://example.com\n",
+    ]
+    assert _find_field(block, "revision", 6) is None
+
+
+# --- _update_value ---------------------------------------------------------
+
+
+def test_update_value_replaces_inline_value() -> None:
+    block = [
+        "    - name: myproject\n",
+        "      revision: old\n",
+    ]
+    result = _update_value(block, 1, "revision", "new")
+    assert result[1] == "      revision: new\n"
+    assert result[0] == block[0]  # untouched
+
+
+def test_update_value_preserves_indent() -> None:
+    block = ["        revision: old\n"]
+    result = _update_value(block, 0, "revision", "newrev")
+    assert result[0].startswith("        revision:")
+
+
+# --- _append_field ---------------------------------------------------------
+
+
+def test_append_field_inserts_at_position() -> None:
+    block = [
+        "    - name: myproject\n",
+        "      url: https://example.com\n",
+    ]
+    result = _append_field(block, "revision", "abc123", 6, after=1)
+    assert result[1] == "      revision: abc123\n"
+    assert result[2] == "      url: https://example.com\n"
+
+
+def test_append_field_empty_value_omits_value_part() -> None:
+    block = ["    - name: myproject\n"]
+    result = _append_field(block, "integrity", "", 6, after=1)
+    assert result[1] == "      integrity:\n"
 
 
 # --- _set_integrity_hash_in_block ------------------------------------------
