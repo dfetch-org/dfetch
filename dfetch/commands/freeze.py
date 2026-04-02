@@ -18,7 +18,11 @@ be fetched on a *DFetch* update_.
 When your project becomes stable and you want to rely on a specific version
 of ``mymodule`` you can run ``dfetch freeze``.
 
-First *DFetch* will rename your old manifest (appended with ``.backup``).
+When the manifest lives inside a git or SVN super-project, *DFetch* edits the
+manifest file **in-place** so that comments, blank lines and indentation are
+preserved.  Only the version fields that changed are touched.
+
+Otherwise *DFetch* first renames your old manifest (appended with ``.backup``).
 After that a new manifest is generated with all the projects as in your original
 manifest, but each with the specific version as it currently is on disk.
 
@@ -34,7 +38,15 @@ In our above example this would for instance result in:
            url: http://git.mycompany.local/mycompany/mymodule
            tag: v1.0.0
 
+You can also freeze a subset of projects by listing their names:
+
+.. code-block:: sh
+
+    dfetch freeze mymodule
+
 .. scenario-include:: ../features/freeze-projects.feature
+
+.. scenario-include:: ../features/freeze-specific-projects.feature
 
 For archive projects, ``dfetch freeze`` adds the hash under the nested
 ``integrity.hash`` key (e.g. ``integrity.hash: sha256:<hex>``) to pin the
@@ -43,6 +55,8 @@ DFetch verifies the downloaded archive against it on every subsequent
 ``dfetch update``.
 
 .. scenario-include:: ../features/freeze-archive.feature
+
+.. scenario-include:: ../features/freeze-inplace.feature
 
 """
 
@@ -55,9 +69,9 @@ import dfetch.manifest.project
 import dfetch.project
 from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
-from dfetch.manifest.manifest import Manifest
-from dfetch.manifest.project import ProjectEntry
+from dfetch.manifest.manifest import Manifest, update_project_in_manifest_file
 from dfetch.project import create_super_project
+from dfetch.project.superproject import NoVcsSuperProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -67,24 +81,30 @@ class Freeze(dfetch.commands.command.Command):
     """Freeze your projects versions in the manifest as they are on disk.
 
     Generate a new manifest that has all version as they are on disk.
+    Optionally pass one or more project names to freeze only those projects.
     """
 
     @staticmethod
     def create_menu(subparsers: dfetch.commands.command.SubparserActionType) -> None:
         """Add the parser menu for this action."""
-        dfetch.commands.command.Command.parser(subparsers, Freeze)
+        parser = dfetch.commands.command.Command.parser(subparsers, Freeze)
+        parser.add_argument(
+            "projects",
+            metavar="<project>",
+            type=str,
+            nargs="*",
+            help="Specific project(s) to freeze (default: all projects in manifest)",
+        )
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the freeze."""
-        del args  # unused
-
         superproject = create_super_project()
+        use_inplace = not isinstance(superproject, NoVcsSuperProject)
 
         exceptions: list[str] = []
-        projects: list[ProjectEntry] = []
 
         with in_directory(superproject.root_directory):
-            for project in superproject.manifest.projects:
+            for project in superproject.manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     sub_project = dfetch.project.create_sub_project(project)
                     on_disk_version = sub_project.on_disk_version()
@@ -106,18 +126,23 @@ class Freeze(dfetch.commands.command.Command):
                             project.name,
                             f"Frozen on version {new_version}",
                         )
+                        if use_inplace:
+                            update_project_in_manifest_file(
+                                project, superproject.manifest.path
+                            )
 
-                    projects.append(project)
+            if not use_inplace:
+                manifest = Manifest(
+                    {
+                        "version": "0.0",
+                        "remotes": superproject.manifest.remotes,
+                        "projects": superproject.manifest.projects,
+                    }
+                )
 
-            manifest = Manifest(
-                {
-                    "version": "0.0",
-                    "remotes": superproject.manifest.remotes,
-                    "projects": projects,
-                }
-            )
+                shutil.move(DEFAULT_MANIFEST_NAME, DEFAULT_MANIFEST_NAME + ".backup")
 
-            shutil.move(DEFAULT_MANIFEST_NAME, DEFAULT_MANIFEST_NAME + ".backup")
-
-            manifest.dump(DEFAULT_MANIFEST_NAME)
-            logger.info(f"Updated manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}")
+                manifest.dump(DEFAULT_MANIFEST_NAME)
+                logger.info(
+                    f"Updated manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}"
+                )

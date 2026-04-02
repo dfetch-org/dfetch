@@ -52,6 +52,22 @@ def step_impl(context, name):
     check_file(name, apply_manifest_substitutions(context, context.text))
 
 
+@then("the manifest '{name}' in {directory} is replaced with")
+def step_impl(context, name, directory):
+    """Check a manifest located in a subdirectory."""
+    check_file(
+        os.path.join(directory, name),
+        apply_manifest_substitutions(context, context.text),
+    )
+
+
+@then("no file '{name}' exists in {directory}")
+def step_impl(_, name, directory):
+    """Assert that a file does not exist in the given directory."""
+    path = os.path.join(directory, name)
+    assert not os.path.exists(path), f"Expected '{path}' to not exist, but it does!"
+
+
 @given("the manifest '{name}' with the projects:")
 def step_impl(context, name):
     projects = "\n".join(f"      - name: {row['name']}" for row in context.table)
