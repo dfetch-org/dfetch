@@ -358,18 +358,16 @@ class Manifest:
         if not self.__text:
             raise FileNotFoundError("No manifest text available")
 
-        for line_nr, line in enumerate(self.__text.splitlines(), start=1):
-            match = re.search(
-                rf"^\s+-\s*name:\s*(?P<name>{re.escape(name)})\s*#?.*$", line
-            )
+        result = _locate_project_name_line(self.__text.splitlines(), name)
+        if result is None:
+            raise RuntimeError(f"{name} was not found in the manifest!")
 
-            if match:
-                return ManifestEntryLocation(
-                    line_number=line_nr,
-                    start=int(match.start("name")) + 1,
-                    end=int(match.end("name")),
-                )
-        raise RuntimeError(f"{name} was not found in the manifest!")
+        line_idx, _, name_start, name_end = result
+        return ManifestEntryLocation(
+            line_number=line_idx + 1,
+            start=name_start,
+            end=name_end,
+        )
 
     # Characters not allowed in a project name (YAML special chars).
     _UNSAFE_NAME_RE = re.compile(r"[\x00-\x1F\x7F-\x9F:#\[\]{}&*!|>'\"%@`]")
@@ -516,6 +514,32 @@ def _yaml_scalar(value: str) -> str:
     return dumped.strip()
 
 
+def _locate_project_name_line(
+    lines: list[str], project_name: str
+) -> tuple[int, int, int, int] | None:
+    """Scan *lines* for the ``- name: <project_name>`` entry.
+
+    Returns ``(line_idx, item_indent, name_col_start, name_col_end)`` or
+    ``None`` when the project is not found.
+
+    - ``line_idx``: 0-based index into *lines*
+    - ``item_indent``: column of the ``-`` character
+    - ``name_col_start``: 1-based column of the first character of the name value
+      (compatible with :class:`ManifestEntryLocation`)
+    - ``name_col_end``: 0-based exclusive end column of the name value
+    """
+    pattern = re.compile(
+        r"^(?P<indent>\s*)-\s*name:\s*(?P<name>"
+        + re.escape(project_name)
+        + r")\s*(?:#.*)?$"
+    )
+    for i, line in enumerate(lines):
+        m = pattern.match(line.rstrip("\n\r"))
+        if m:
+            return i, len(m.group("indent")), m.start("name") + 1, m.end("name")
+    return None
+
+
 def _find_project_block(lines: list[str], project_name: str) -> tuple[int, int, int]:
     """Return ``(start, end, item_indent)`` for the named project's YAML block.
 
@@ -526,21 +550,11 @@ def _find_project_block(lines: list[str], project_name: str) -> tuple[int, int, 
     Raises:
         RuntimeError: if the project name is not found.
     """
-    start: int | None = None
-    item_indent = 0
-
-    for i, line in enumerate(lines):
-        m = re.match(
-            r"^(\s*)-\s+name:\s*" + re.escape(project_name) + r"\s*$",
-            line.rstrip("\n\r"),
-        )
-        if m:
-            start = i
-            item_indent = len(m.group(1))
-            break
-
-    if start is None:
+    result = _locate_project_name_line(lines, project_name)
+    if result is None:
         raise RuntimeError(f"Project '{project_name}' not found in manifest text")
+
+    start, item_indent, _, _ = result
 
     end = len(lines)
     for i in range(start + 1, len(lines)):
