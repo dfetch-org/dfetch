@@ -14,6 +14,10 @@ from dfetch.manifest.manifest import (
     ManifestDict,
     ManifestEntryLocation,
     RequestedProjectNotFoundError,
+    _find_project_block,
+    _set_simple_field_in_block,
+    _set_integrity_hash_in_block,
+    _update_project_version_in_text,
 )
 from dfetch.manifest.parse import find_manifest, get_submanifests
 from dfetch.manifest.project import ProjectEntry
@@ -245,3 +249,175 @@ def test_validate_destination_rejects_dotdot() -> None:
 
 def test_validate_destination_accepts_relative() -> None:
     Manifest.validate_destination("external/mylib")  # must NOT raise
+
+
+# ---------------------------------------------------------------------------
+# In-place manifest text editing helpers
+# ---------------------------------------------------------------------------
+
+_SIMPLE_MANIFEST = """\
+manifest:
+  version: '0.0'
+
+  projects:
+    - name: myproject
+      url: https://example.com/myproject
+      branch: main
+"""
+
+_TWO_PROJECT_MANIFEST = """\
+manifest:
+  version: '0.0'
+
+  projects:
+    - name: first
+      url: https://example.com/first
+      branch: main
+
+    - name: second
+      url: https://example.com/second
+      branch: develop
+"""
+
+
+# --- _find_project_block ---------------------------------------------------
+
+
+def test_find_project_block_single() -> None:
+    lines = _SIMPLE_MANIFEST.splitlines(keepends=True)
+    start, end, item_indent = _find_project_block(lines, "myproject")
+    assert item_indent == 4
+    assert lines[start].startswith("    - name: myproject")
+    # end should point past the block
+    assert end == len(lines)
+
+
+def test_find_project_block_first_of_two() -> None:
+    lines = _TWO_PROJECT_MANIFEST.splitlines(keepends=True)
+    start, end, item_indent = _find_project_block(lines, "first")
+    assert item_indent == 4
+    assert lines[start].startswith("    - name: first")
+    # The blank line between projects is excluded from the block
+    block_text = "".join(lines[start:end])
+    assert "second" not in block_text
+
+
+def test_find_project_block_second_of_two() -> None:
+    lines = _TWO_PROJECT_MANIFEST.splitlines(keepends=True)
+    start, _end, _indent = _find_project_block(lines, "second")
+    assert lines[start].startswith("    - name: second")
+
+
+def test_find_project_block_not_found() -> None:
+    lines = _SIMPLE_MANIFEST.splitlines(keepends=True)
+    with pytest.raises(RuntimeError, match="not found"):
+        _find_project_block(lines, "nonexistent")
+
+
+# --- _set_simple_field_in_block --------------------------------------------
+
+
+def test_set_simple_field_updates_existing() -> None:
+    block = [
+        "    - name: myproject\n",
+        "      revision: oldrev\n",
+        "      url: https://example.com\n",
+    ]
+    result = _set_simple_field_in_block(block, 6, "revision", "newrev")
+    assert any("revision: newrev" in l for l in result)
+    assert not any("oldrev" in l for l in result)
+
+
+def test_set_simple_field_inserts_after_name() -> None:
+    block = [
+        "    - name: myproject\n",
+        "      url: https://example.com\n",
+    ]
+    result = _set_simple_field_in_block(block, 6, "revision", "abc123")
+    assert result[1] == "      revision: abc123\n"
+    assert result[2] == "      url: https://example.com\n"
+
+
+# --- _set_integrity_hash_in_block ------------------------------------------
+
+
+def test_set_integrity_hash_inserts_when_absent() -> None:
+    block = [
+        "    - name: myproject\n",
+        "      url: https://example.com/archive.tar.gz\n",
+        "      vcs: archive\n",
+    ]
+    result = _set_integrity_hash_in_block(block, 6, "sha256:abc123")
+    joined = "".join(result)
+    assert "integrity:" in joined
+    assert "hash: sha256:abc123" in joined
+
+
+def test_set_integrity_hash_updates_existing_hash() -> None:
+    block = [
+        "    - name: myproject\n",
+        "      url: https://example.com/archive.tar.gz\n",
+        "      vcs: archive\n",
+        "      integrity:\n",
+        "        hash: sha256:old\n",
+    ]
+    result = _set_integrity_hash_in_block(block, 6, "sha256:new")
+    joined = "".join(result)
+    assert "hash: sha256:new" in joined
+    assert "sha256:old" not in joined
+
+
+# --- _update_project_version_in_text ---------------------------------------
+
+
+def _make_project(name: str, **kwargs) -> ProjectEntry:
+    """Helper: build a ProjectEntry with the given fields."""
+    data = {"name": name}
+    data.update(kwargs)
+    return ProjectEntry(data)  # type: ignore[arg-type]
+
+
+def test_update_adds_revision_preserves_layout() -> None:
+    text = _SIMPLE_MANIFEST
+    project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
+    result = _update_project_version_in_text(text, project)
+    # The layout (4-space indent for "- name:") is preserved.
+    assert "    - name: myproject" in result
+    # The revision is inserted.
+    assert "revision:" in result
+    # Original url line is still there.
+    assert "url: https://example.com/myproject" in result
+
+
+def test_update_second_project_does_not_touch_first() -> None:
+    text = _TWO_PROJECT_MANIFEST
+    project = _make_project(
+        "second", revision="abc123def456" * 3 + "abcd", branch="develop"
+    )
+    result = _update_project_version_in_text(text, project)
+
+    # Verify the "first" block is unchanged by re-parsing and checking project count
+    # with "revision" in the result.
+    assert "revision:" in result  # second project got a revision
+
+    # The "first" project block should have no revision field: find its block boundaries
+    lines = result.splitlines(keepends=True)
+    first_start, first_end, _ = _find_project_block(lines, "first")
+    first_block_text = "".join(lines[first_start:first_end])
+    assert "revision" not in first_block_text
+
+
+def test_update_noop_when_no_version_fields() -> None:
+    text = _SIMPLE_MANIFEST
+    project = _make_project("myproject")  # no version fields
+    result = _update_project_version_in_text(text, project)
+    assert result == text
+
+
+def test_update_integer_like_revision_is_quoted() -> None:
+    """SVN revisions look like integers and must be YAML-quoted."""
+    text = _SIMPLE_MANIFEST
+    project = _make_project("myproject", revision="176", branch="trunk")
+    result = _update_project_version_in_text(text, project)
+    # The scalar '176' must be quoted in YAML to round-trip as a string.
+    assert "revision: '176'" in result
