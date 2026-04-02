@@ -578,42 +578,33 @@ def _set_simple_field_in_block(
     return block
 
 
-def _set_integrity_hash_in_block(
+def _update_hash_in_existing_integrity(
+    block: list[str], integrity_line: int, field_indent: int, hash_value: str
+) -> list[str]:
+    """Update or insert ``hash:`` inside an already-located ``integrity:`` block."""
+    hash_re = re.compile(r"^(\s+)hash:\s*.*$")
+    for i in range(integrity_line + 1, len(block)):
+        stripped = block[i].strip()
+        if not stripped:
+            continue
+        if hash_re.match(block[i].rstrip("\n\r")):
+            eol = "\n" if block[i].endswith("\n") else ""
+            block[i] = " " * (field_indent + 2) + "hash: " + hash_value + eol
+            return block
+        # Stop searching once we leave the integrity sub-block.
+        if len(block[i]) - len(block[i].lstrip()) <= field_indent:
+            break
+    # No ``hash:`` found — insert right after ``integrity:``.
+    block.insert(
+        integrity_line + 1, " " * (field_indent + 2) + "hash: " + hash_value + "\n"
+    )
+    return block
+
+
+def _append_integrity_block(
     block: list[str], field_indent: int, hash_value: str
 ) -> list[str]:
-    """Update or insert ``integrity.hash`` inside *block*."""
-    block = list(block)
-    integrity_re = re.compile(r"^(\s+)integrity:\s*$")
-    hash_re = re.compile(r"^(\s+)hash:\s*.*$")
-
-    # Locate an existing ``integrity:`` mapping.
-    integrity_line: int | None = None
-    for i, line in enumerate(block):
-        if integrity_re.match(line.rstrip("\n\r")):
-            integrity_line = i
-            break
-
-    if integrity_line is not None:
-        # Try to find an existing ``hash:`` nested inside it.
-        for i in range(integrity_line + 1, len(block)):
-            stripped = block[i].strip()
-            if not stripped:
-                continue
-            if hash_re.match(block[i].rstrip("\n\r")):
-                eol = "\n" if block[i].endswith("\n") else ""
-                block[i] = " " * (field_indent + 2) + "hash: " + hash_value + eol
-                return block
-            # Stop searching once we leave the integrity sub-block.
-            indent = len(block[i]) - len(block[i].lstrip())
-            if indent <= field_indent:
-                break
-        # No ``hash:`` found — insert right after ``integrity:``.
-        block.insert(
-            integrity_line + 1, " " * (field_indent + 2) + "hash: " + hash_value + "\n"
-        )
-        return block
-
-    # No ``integrity:`` block — append it before any trailing blank lines.
+    """Append a new ``integrity:\\n  hash:`` block before any trailing blank lines."""
     new_lines = [
         " " * field_indent + "integrity:\n",
         " " * (field_indent + 2) + "hash: " + hash_value + "\n",
@@ -627,21 +618,42 @@ def _set_integrity_hash_in_block(
     return block
 
 
-def _update_project_version_in_text(text: str, project: ProjectEntry) -> str:
-    """Return *text* with the version fields for *project* updated in-place.
+def _set_integrity_hash_in_block(
+    block: list[str], field_indent: int, hash_value: str
+) -> list[str]:
+    """Update or insert ``integrity.hash`` inside *block*."""
+    block = list(block)
+    integrity_re = re.compile(r"^(\s+)integrity:\s*$")
 
-    Only version-related fields (``revision``, ``tag``, ``branch``,
-    ``integrity.hash``) are touched; all other content — including comments
-    and indentation — is preserved verbatim.
+    integrity_line: int | None = None
+    for i, line in enumerate(block):
+        if integrity_re.match(line.rstrip("\n\r")):
+            integrity_line = i
+            break
+
+    if integrity_line is not None:
+        return _update_hash_in_existing_integrity(
+            block, integrity_line, field_indent, hash_value
+        )
+
+    return _append_integrity_block(block, field_indent, hash_value)
+
+
+def _collect_version_fields(
+    project_yaml: dict[str, Any],
+) -> tuple[list[tuple[str, str]], str]:
+    """Extract version-related fields from *project_yaml*.
+
+    Returns:
+        A ``(fields_to_set, integrity_hash)`` pair.  *fields_to_set* is a list
+        of ``(field_name, yaml_scalar)`` tuples for ``revision``, ``tag`` and
+        ``branch``; *integrity_hash* is the raw hash string or ``""`` when absent.
     """
-    project_yaml = project.as_yaml()
-
-    # Collect simple version fields that are now set.
-    fields_to_set: list[tuple[str, str]] = []
+    fields: list[tuple[str, str]] = []
     for field in ("revision", "tag", "branch"):
         value = project_yaml.get(field)
         if value:
-            fields_to_set.append((field, _yaml_scalar(str(value))))
+            fields.append((field, _yaml_scalar(str(value))))
 
     integrity = project_yaml.get("integrity")
     integrity_hash: str = (
@@ -649,37 +661,51 @@ def _update_project_version_in_text(text: str, project: ProjectEntry) -> str:
         if isinstance(integrity, dict) and integrity.get("hash")
         else ""
     )
+    return fields, integrity_hash
 
-    if not fields_to_set and not integrity_hash:
-        return text
 
-    lines = text.splitlines(keepends=True)
-    start, end, item_indent = _find_project_block(lines, project.name)
-    field_indent = item_indent + 2
-
-    block = list(lines[start:end])
-
-    # Track which fields were inserted (not just updated) so we can keep them
-    # in a sensible order right after the ``name:`` line.
+def _apply_block_updates(
+    block: list[str],
+    field_indent: int,
+    fields_to_set: list[tuple[str, str]],
+    integrity_hash: str,
+) -> list[str]:
+    """Apply version-field updates to *block* and return the modified block."""
     inserted: list[tuple[str, str]] = []
     for field_name, yaml_value in fields_to_set:
         field_re = re.compile(r"^(\s+)" + re.escape(field_name) + r":\s*.*$")
-        found = any(field_re.match(line.rstrip("\n\r")) for line in block)
-        if found:
+        if any(field_re.match(line.rstrip("\n\r")) for line in block):
             block = _set_simple_field_in_block(
                 block, field_indent, field_name, yaml_value
             )
         else:
             inserted.append((field_name, yaml_value))
 
-    # Insert all new fields together right after ``name:`` (position 1).
     if inserted:
-        new_lines = [
-            " " * field_indent + fname + ": " + val + "\n" for fname, val in inserted
-        ]
-        block[1:1] = new_lines
+        block[1:1] = [" " * field_indent + f + ": " + v + "\n" for f, v in inserted]
 
     if integrity_hash:
         block = _set_integrity_hash_in_block(block, field_indent, integrity_hash)
+
+    return block
+
+
+def _update_project_version_in_text(text: str, project: ProjectEntry) -> str:
+    """Return *text* with the version fields for *project* updated in-place.
+
+    Only version-related fields (``revision``, ``tag``, ``branch``,
+    ``integrity.hash``) are touched; all other content — including comments
+    and indentation — is preserved verbatim.
+    """
+    fields_to_set, integrity_hash = _collect_version_fields(project.as_yaml())
+
+    if not fields_to_set and not integrity_hash:
+        return text
+
+    lines = text.splitlines(keepends=True)
+    start, end, item_indent = _find_project_block(lines, project.name)
+    block = _apply_block_updates(
+        list(lines[start:end]), item_indent + 2, fields_to_set, integrity_hash
+    )
 
     return "".join(lines[:start] + block + lines[end:])
