@@ -15,8 +15,9 @@ from dfetch.manifest.manifest import (
     ManifestEntryLocation,
     RequestedProjectNotFoundError,
     _find_project_block,
-    _set_simple_field_in_block,
+    _locate_project_name_line,
     _set_integrity_hash_in_block,
+    _set_simple_field_in_block,
     _update_project_version_in_text,
 )
 from dfetch.manifest.parse import find_manifest, get_submanifests
@@ -278,6 +279,39 @@ manifest:
       url: https://example.com/second
       branch: develop
 """
+
+
+# --- _locate_project_name_line ---------------------------------------------
+
+
+def test_locate_project_name_line_found() -> None:
+    lines = _SIMPLE_MANIFEST.splitlines()
+    result = _locate_project_name_line(lines, "myproject")
+    assert result is not None
+    line_idx, item_indent, name_start, name_end = result
+    assert item_indent == 4
+    assert lines[line_idx][name_start - 1 : name_end] == "myproject"
+
+
+def test_locate_project_name_line_not_found() -> None:
+    lines = _SIMPLE_MANIFEST.splitlines()
+    assert _locate_project_name_line(lines, "nonexistent") is None
+
+
+def test_locate_is_shared_by_find_name_and_find_block() -> None:
+    """find_name_in_manifest and _find_project_block agree on the same line."""
+    text = _SIMPLE_MANIFEST
+    manifest = Manifest(
+        {"version": "0.0", "projects": [{"name": "myproject", "url": "https://x.com"}]},
+        text=text,
+    )
+    location = manifest.find_name_in_manifest("myproject")
+
+    lines = text.splitlines(keepends=True)
+    start, _end, _indent = _find_project_block(lines, "myproject")
+
+    # Both should point to the same line (1-based vs 0-based).
+    assert location.line_number == start + 1
 
 
 # --- _find_project_block ---------------------------------------------------
