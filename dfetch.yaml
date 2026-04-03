@@ -36,6 +36,8 @@ manifest:
       - InterVariable*
       - Inter*Italic*
       - Inter-Black*
+    integrity:
+      hash: sha256:9883fdd4a49d4fb66bd8177ba6625ef9a64aa45899767dde3d36aa425756b11e
 
   - name: jetbrains-mono-font
     remote: github
@@ -50,6 +52,8 @@ manifest:
       - JetBrainsMono-Semi*
       - JetBrainsMono-Thin*
       - JetBrainsMono-*Italic*
+    integrity:
+      hash: sha256:6f6376c6ed2960ea8a963cd7387ec9d76e3f629125bc33d1fdcd7eb7012f7bbf
 
   - name: font-awesome
     remote: github
@@ -61,3 +65,5 @@ manifest:
       - svg*
       - js
       - metadata
+    integrity:
+      hash: sha256:218d19fdec1bd898d1c78683f3c72e71bcc9e5f9bb3e065f99a5c3cdc48e0d66
