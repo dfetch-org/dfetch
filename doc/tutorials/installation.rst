@@ -67,7 +67,7 @@ The version is automatically determined from the project and used to name the in
 
         .. code-block:: powershell
 
-            > winget install dfetch
+            > winget install -e --id DFetch-org.DFetch
 
         Or download the ``.msi`` installer from the releases page and install by double-clicking or use:
 
