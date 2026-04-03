@@ -206,6 +206,7 @@ class SbomReporter(Reporter):
         else:
             purl = vcs_url_to_purl(project.remote_url, version=version, subpath=subpath)
         name = project.name if purl.type == "generic" else purl.name
+        version = purl.version or version
         location = self.manifest.find_name_in_manifest(project.name)
         component = Component(
             name=name,

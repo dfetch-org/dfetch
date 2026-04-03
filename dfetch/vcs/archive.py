@@ -27,6 +27,7 @@ import hashlib
 import http.client
 import os
 import pathlib
+import re
 import shutil
 import stat
 import sys
@@ -47,6 +48,7 @@ from dfetch.util.util import (
     copy_src_subset,
     prune_files_by_pattern,
 )
+from dfetch.util.versions import coerce
 
 logger = get_logger(__name__)
 
@@ -82,7 +84,21 @@ def archive_url_to_purl(
     version: str | None = None,
     subpath: str | None = None,
 ) -> PackageURL:
-    """Build a generic PackageURL for an archive download URL."""
+    """Build a github or generic PackageURL for an archive download URL."""
+    if match := re.search(
+        r"https://github\.com/(?P<org>[^/]+)/(?P<repo>[^/]+)/releases/download/(?P<version>[^/]+)/",
+        download_url,
+    ):
+        prefix, current_version, _ = coerce(
+            match["version"],
+        )
+        return PackageURL(
+            type="github",
+            namespace=match["org"].lower(),
+            name=match["repo"].lower(),
+            version=str(current_version) or prefix,
+        )
+
     parsed = urllib.parse.urlparse(download_url)
     basename = os.path.basename(parsed.path)
     name = strip_archive_extension(basename) or "unknown"
