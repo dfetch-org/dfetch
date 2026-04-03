@@ -230,18 +230,7 @@ file-description = "A vendoring tool for fetching and managing external dependen
 root_packages = ["dfetch"]
 
 # Enforce C4 architecture: higher layers may import from lower layers, not vice versa.
-# See doc/internal.rst for the architecture documentation.
-#
-#  dfetch.commands   (top — orchestrates everything)
-#       ↓
-#  dfetch.reporting  (formats output, knows about project & manifest)
-#       ↓
-#  dfetch.project    (core domain — knows about manifest & vcs)
-#       ↓
-#  dfetch.manifest | dfetch.vcs  (independent domain services)
-#       ↓
-#  dfetch.util | dfetch.log | dfetch.terminal  (foundational — siblings cannot import each other)
-
+# See Architecture.rst for more details on the architecture of dfetch.
 [[tool.importlinter.contracts]]
 name = "C4 architecture layers"
 type = "layers"
