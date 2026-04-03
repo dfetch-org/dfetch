@@ -23,7 +23,7 @@ Run without arguments to fetch every project in the manifest:
 
 .. code-block:: sh
 
-    dfetch update
+    $ dfetch update
 
 .. asciinema:: ../asciicasts/update.cast
 
@@ -55,9 +55,9 @@ Pass one or more project names to limit which entries are updated:
 
 .. code-block:: sh
 
-    dfetch update mylib
+    $ dfetch update mylib
 
-    dfetch update mylib myother
+    $ dfetch update mylib myother
 
 .. _updating-force:
 
@@ -70,7 +70,7 @@ overwrite regardless:
 
 .. code-block:: sh
 
-    dfetch update --force mylib
+    $ dfetch update --force mylib
 
 .. warning::
 
@@ -91,7 +91,7 @@ To skip this check entirely:
 
 .. code-block:: sh
 
-    dfetch update --no-recommendations
+    $ dfetch update --no-recommendations
 
 .. scenario-include:: ../features/updated-project-has-dependencies.feature
 

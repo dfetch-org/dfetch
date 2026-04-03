@@ -8,13 +8,13 @@ If you are using python you can install the latest release with:
 
 .. code-block:: bash
 
-   pip install dfetch
+   $ pip install dfetch
 
 Or install the latest version from the main branch:
 
 .. code-block:: bash
 
-   pip install git+https://github.com/dfetch-org/dfetch.git@main#egg=dfetch
+   $ pip install git+https://github.com/dfetch-org/dfetch.git@main#egg=dfetch
 
 Binary distributions
 --------------------
@@ -43,15 +43,15 @@ The version is automatically determined from the project and used to name the in
 
         .. code-block:: bash
 
-            sudo dpkg -i dfetch-<version>-nix.deb
+            $ sudo dpkg -i dfetch-<version>-nix.deb
 
         RPM-based distributions (``.rpm``):
 
         .. code-block:: bash
 
-            sudo dnf install dfetch-<version>-nix.rpm
+            $ sudo dnf install dfetch-<version>-nix.rpm
             # or
-            sudo rpm -i dfetch-<version>-nix.rpm
+            $ sudo rpm -i dfetch-<version>-nix.rpm
 
     .. tab:: macOS
 
@@ -59,7 +59,7 @@ The version is automatically determined from the project and used to name the in
 
         .. code-block:: bash
 
-            sudo installer -pkg dfetch-<version>-osx.pkg -target /
+            $ sudo installer -pkg dfetch-<version>-osx.pkg -target /
 
     .. tab:: Windows
 
@@ -67,7 +67,7 @@ The version is automatically determined from the project and used to name the in
 
         .. code-block:: powershell
 
-            msiexec /i dfetch-<version>-win.msi
+            $ msiexec /i dfetch-<version>-win.msi
 
         Uninstalling can be done through the regular Add/Remove programs section.
 
@@ -78,6 +78,6 @@ Run the following command to verify the installation
 
 .. code-block:: bash
 
-    dfetch environment
+   $ dfetch environment
 
 .. asciinema:: ../asciicasts/environment.cast
