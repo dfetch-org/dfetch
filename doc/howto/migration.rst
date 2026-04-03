@@ -20,60 +20,61 @@ Choose the guide that matches your current setup:
 From Git submodules
 -------------------
 
-**Before you start**, make sure:
+.. note::
 
-- Your repository is fully up-to-date (``git pull``).
-- All submodules are initialised and checked out:
+    Before you start, make sure your repository is fully up-to-date and
+    all submodules are initialised and checked out:
 
-  .. code-block:: console
+    .. code-block:: console
 
-      $ git submodule update --init --recursive
+        $ git pull
+        $ git submodule update --init --recursive
 
 **Steps**
 
 1. Generate a manifest from the existing submodules:
 
-   .. code-block:: console
+    .. code-block:: console
 
-       $ dfetch import
+        $ dfetch import
 
-   This writes a ``dfetch.yaml`` file in the current directory listing each
-   submodule as a *Dfetch* project entry, pinned to the commit that is
-   currently checked out.
+    This writes a ``dfetch.yaml`` file in the current directory listing each
+    submodule as a *Dfetch* project entry, pinned to the commit that is
+    currently checked out.
 
 2. Remove all Git submodules.  For each submodule (replace ``<path>`` with
    the submodule path, e.g. ``ext/mylib``):
 
-   .. code-block:: console
+    .. code-block:: console
 
-       $ git submodule deinit -f <path>
-       $ git rm -f <path>
-       $ rm -rf .git/modules/<path>
+        $ git submodule deinit -f <path>
+        $ git rm -f <path>
+        $ rm -rf .git/modules/<path>
 
-   Repeat until ``git submodule status`` returns nothing.  Commit the
-   result:
+    Repeat until ``git submodule status`` returns nothing.  Commit the
+    result:
 
-   .. code-block:: console
+    .. code-block:: console
 
-       $ git commit -m "chore: remove git submodules (switching to Dfetch)"
+        $ git commit -m "chore: remove git submodules (switching to Dfetch)"
 
-   .. seealso::
+    .. seealso::
 
       `How do I remove a submodule?
       <https://stackoverflow.com/questions/1260748/>`_
 
 3. Fetch all projects into your repository:
 
-   .. code-block:: console
+    .. code-block:: console
 
-       $ dfetch update
+        $ dfetch update
 
 4. Commit the fetched files:
 
-   .. code-block:: console
+    .. code-block:: console
 
-       $ git add .
-       $ git commit -m "chore: vendor dependencies with Dfetch"
+        $ git add .
+        $ git commit -m "chore: vendor dependencies with Dfetch"
 
 .. scenario-include:: ../features/import-from-git.feature
 
