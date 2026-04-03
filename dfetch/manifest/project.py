@@ -295,9 +295,9 @@ a *relative* patch, relative to the fetched projects root.
 
     .. tab:: Git
 
-        .. code-block:: sh
+        .. code-block:: console
 
-            git diff --relative=path/to/project HEAD > my_patch.patch
+            $ git diff --relative=path/to/project HEAD > my_patch.patch
 
         For more details see the `git-diff <https://git-scm.com/docs/git-diff>`_ documentation.
 
@@ -307,9 +307,9 @@ a *relative* patch, relative to the fetched projects root.
 
     .. tab:: SVN
 
-        .. code-block:: sh
+        .. code-block:: console
 
-            svn diff -r HEAD path/to/my_project > my_patch.patch
+            $ svn diff -r HEAD path/to/my_project > my_patch.patch
 
         For more details see the `svn-diff <http://svnbook.red-bean.com/en/1.7/svn.ref.svn.c.diff.html>`_ documentation.
 

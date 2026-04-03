@@ -27,9 +27,9 @@ After fetching a project with :ref:`dfetch update <update>`, make your edits
 directly in the vendored source tree.  Once you are happy with the changes,
 run:
 
-.. code-block:: sh
+.. code-block:: console
 
-    dfetch diff some-project
+    $ dfetch diff some-project
 
 *Dfetch* compares the working tree against the revision recorded in the
 metadata file and writes a patch file named ``some-project.patch`` (or
@@ -86,9 +86,9 @@ As your local edits evolve — or when the upstream version changes — the
 existing patch file may no longer apply cleanly.  Instead of manually
 regenerating it, run:
 
-.. code-block:: sh
+.. code-block:: console
 
-    dfetch update-patch some-project
+    $ dfetch update-patch some-project
 
 This regenerates the last patch for ``some-project`` from the current working
 tree, keeping the upstream revision unchanged.  It is safe to run repeatedly
@@ -116,9 +116,9 @@ directory inside your repository.  Most upstream projects expect patches to be
 relative to their own root, which is a different path.  To reformat all patches
 for a project:
 
-.. code-block:: sh
+.. code-block:: console
 
-    dfetch format-patch some-project
+    $ dfetch format-patch some-project
 
 This writes a ``formatted-some-project.patch`` file (or one file per patch if
 there are several) that is ready to attach to a pull request or send by email.
@@ -130,15 +130,15 @@ You can verify the formatted patch applies cleanly before submitting:
 
     .. tab:: Git
 
-        .. code-block:: sh
+        .. code-block:: console
 
-            git apply --check formatted-some-project.patch
+            $ git apply --check formatted-some-project.patch
 
     .. tab:: SVN
 
-        .. code-block:: sh
+        .. code-block:: console
 
-            svn patch formatted-some-project.patch
+            $ svn patch formatted-some-project.patch
 
 .. asciinema:: ../asciicasts/format-patch.cast
 

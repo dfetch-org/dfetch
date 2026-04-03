@@ -57,7 +57,7 @@ Pass the repository URL to ``dfetch add`` and it will append a new entry to
 (branches and tags), selects the default branch, and guesses a destination
 path based on your existing projects.
 
-.. code-block:: sh
+.. code-block:: console
 
   $ dfetch add https://github.com/some-org/some-repo.git
 
@@ -65,7 +65,7 @@ path based on your existing projects.
 
 Override individual fields with flags:
 
-.. code-block:: sh
+.. code-block:: console
 
   $ dfetch add \
       --name mylib \
@@ -86,7 +86,7 @@ The ``--interactive`` (``-i``) flag starts a step-by-step wizard.  Use it
 when you want to browse available branches and tags, choose a sub-directory
 inside the remote repository, or configure which paths to ignore.
 
-.. code-block:: sh
+.. code-block:: console
 
   $ dfetch add -i https://github.com/some-org/some-repo.git
 
@@ -106,7 +106,7 @@ The wizard walks through each field in turn:
 
 You can pre-fill any field to skip its prompt:
 
-.. code-block:: sh
+.. code-block:: console
 
   $ dfetch add -i --version main \
                   --src lib/core \

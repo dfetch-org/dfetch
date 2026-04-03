@@ -15,9 +15,9 @@ calculate and regenerate the patch.
 
 The below statement will update the patch for ``some-project`` from your manifest.
 
-.. code-block:: sh
+.. code-block:: console
 
-   dfetch update-patch some-project
+   $ dfetch update-patch some-project
 
 .. tabs::
 

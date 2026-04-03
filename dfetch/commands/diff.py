@@ -15,9 +15,9 @@ provide these through the ``--revs`` argument.
 
 The below statement will generate a patch for ``some-project`` from your manifest.
 
-.. code-block:: sh
+.. code-block:: console
 
-   dfetch diff some-project
+   $ dfetch diff some-project
 
 .. tabs::
 
@@ -41,15 +41,15 @@ which is usually expected by upstream projects.
 
     .. tab:: Git
 
-        .. code-block:: sh
+        .. code-block:: console
 
-            git apply --check formatted-some-project.patch
+            $ git apply --check formatted-some-project.patch
 
     .. tab:: SVN
 
-        .. code-block:: sh
+        .. code-block:: console
 
-            svn patch formatted-some-project.patch
+            $ svn patch formatted-some-project.patch
 
 """
 

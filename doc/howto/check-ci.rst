@@ -25,9 +25,9 @@ Running dfetch check in CI
 Without extra flags the results are printed to stdout and the build fails if
 any issue is found:
 
-.. code-block:: sh
+.. code-block:: console
 
-    dfetch check
+    $ dfetch check
 
 Pass a ``--*-json`` flag to write a machine-readable report *and* continue
 collecting results before deciding the build outcome (each section below shows
