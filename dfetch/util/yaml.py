@@ -29,12 +29,16 @@ def find_field(
 ) -> int | None:
     """Return the index in *block* of ``field_name:`` at exactly *indent* spaces.
 
-    Searches ``block[start:end]``.  Returns ``None`` when not found.
+    Searches ``block[start:end]``.  Commented-out lines (where the first
+    non-whitespace character is ``#``) are skipped and never matched.
+    Returns ``None`` when not found.
     """
     bound = end if end is not None else len(block)
     prefix = " " * indent + field_name + ":"
     for i in range(start, bound):
         stripped = block[i].rstrip("\n\r")
+        if stripped.lstrip().startswith("#"):
+            continue
         if stripped.startswith(prefix) and (
             len(stripped) == len(prefix) or stripped[len(prefix)] in (" ", "\t")
         ):

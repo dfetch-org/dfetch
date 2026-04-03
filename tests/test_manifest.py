@@ -351,6 +351,20 @@ def test_find_project_block_not_found() -> None:
         _find_project_block(lines, "nonexistent")
 
 
+def test_find_project_block_comment_at_item_indent_does_not_end_block() -> None:
+    """A comment at the same indent level as '- name:' must not split the block."""
+    manifest = (
+        "  - name: myproject\n"
+        "    url: https://example.com\n"
+        "  # revision: old-rev  <- comment at item-indent\n"
+        "    branch: main\n"
+    )
+    lines = manifest.splitlines(keepends=True)
+    start, end, item_indent = _find_project_block(lines, "myproject")
+    block_text = "".join(lines[start:end])
+    assert "branch: main" in block_text
+
+
 # --- _set_simple_field_in_block --------------------------------------------
 
 
@@ -414,6 +428,36 @@ def test_find_field_ignores_wrong_indent() -> None:
         "      url: https://example.com\n",
     ]
     assert _find_field(block, "revision", 6) is None
+
+
+def test_find_field_skips_commented_out_field() -> None:
+    """A '# field: value' line must not be matched — field is considered absent."""
+    block = [
+        "    - name: myproject\n",
+        "      # branch: main\n",  # commented-out
+        "      url: https://example.com\n",
+    ]
+    assert _find_field(block, "branch", 6) is None
+
+
+def test_find_field_skips_commented_field_no_space() -> None:
+    """'#field: value' (no space after #) must also not be matched."""
+    block = [
+        "    - name: myproject\n",
+        "      #branch: main\n",
+        "      url: https://example.com\n",
+    ]
+    assert _find_field(block, "branch", 6) is None
+
+
+def test_find_field_finds_real_field_past_commented_one() -> None:
+    """The live field after a commented-out duplicate is matched."""
+    block = [
+        "    - name: myproject\n",
+        "      # branch: old\n",
+        "      branch: new\n",
+    ]
+    assert _find_field(block, "branch", 6) == 2
 
 
 # --- _update_value ---------------------------------------------------------
@@ -559,4 +603,46 @@ def test_update_preserves_inline_comments_on_fields() -> None:
     result = _update_project_version_in_text(text, project)
     assert "url: https://example.com  # source mirror" in result
     assert "branch: main  # track the integration branch" in result
+    assert "revision:" in result
+
+
+def test_update_commented_out_field_is_appended_not_matched() -> None:
+    """A commented-out version field must be treated as absent; the real value is appended."""
+    text = (
+        "manifest:\n"
+        "  version: '0.0'\n"
+        "  projects:\n"
+        "    - name: myproject\n"
+        "      url: https://example.com\n"
+        "      # branch: old-branch\n"
+        "      branch: main\n"
+    )
+    project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
+    result = _update_project_version_in_text(text, project)
+    # Commented-out line must survive unchanged
+    assert "      # branch: old-branch" in result
+    # The live branch line keeps its comment-free value
+    assert "      branch: main" in result
+    # revision is inserted as a new field, not used to update the comment
+    assert result.count("branch:") == 2  # comment + live field
+    assert "revision:" in result
+
+
+def test_update_comment_at_item_indent_does_not_break_block() -> None:
+    """A comment at item-indent level inside a block must not end the block early."""
+    text = (
+        "manifest:\n"
+        "  version: '0.0'\n"
+        "  projects:\n"
+        "    - name: myproject\n"
+        "      url: https://example.com\n"
+        "    # old pinned version\n"
+        "      branch: main\n"
+    )
+    project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
+    result = _update_project_version_in_text(text, project)
+    # The comment at item-indent is preserved verbatim
+    assert "    # old pinned version" in result
+    # branch is updated in-place, not duplicated
+    assert result.count("branch:") == 1
     assert "revision:" in result
