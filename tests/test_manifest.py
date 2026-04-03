@@ -14,15 +14,15 @@ from dfetch.manifest.manifest import (
     ManifestDict,
     ManifestEntryLocation,
     RequestedProjectNotFoundError,
-    _append_field,
-    _find_field,
     _find_project_block,
     _locate_project_name_line,
     _set_integrity_hash_in_block,
     _set_simple_field_in_block,
     _update_project_version_in_text,
-    _update_value,
 )
+from dfetch.util.yaml import append_field as _append_field
+from dfetch.util.yaml import find_field as _find_field
+from dfetch.util.yaml import update_value as _update_value
 from dfetch.manifest.parse import find_manifest, get_submanifests
 from dfetch.manifest.project import ProjectEntry
 
@@ -435,6 +435,12 @@ def test_update_value_preserves_indent() -> None:
     assert result[0].startswith("        revision:")
 
 
+def test_update_value_preserves_trailing_comment() -> None:
+    block = ["      branch: main  # track the integration branch\n"]
+    result = _update_value(block, 0, "branch", "main")
+    assert result[0] == "      branch: main  # track the integration branch\n"
+
+
 # --- _append_field ---------------------------------------------------------
 
 
@@ -537,3 +543,20 @@ def test_update_integer_like_revision_is_quoted() -> None:
     result = _update_project_version_in_text(text, project)
     # The scalar '176' must be quoted in YAML to round-trip as a string.
     assert "revision: '176'" in result
+
+
+def test_update_preserves_inline_comments_on_fields() -> None:
+    """Inline comments on existing fields survive an in-place freeze."""
+    text = (
+        "manifest:\n"
+        "  version: '0.0'\n"
+        "  projects:\n"
+        "    - name: myproject\n"
+        "      url: https://example.com  # source mirror\n"
+        "      branch: main  # track the integration branch\n"
+    )
+    project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
+    result = _update_project_version_in_text(text, project)
+    assert "url: https://example.com  # source mirror" in result
+    assert "branch: main  # track the integration branch" in result
+    assert "revision:" in result

@@ -32,6 +32,34 @@ Feature: Freeze manifest in-place inside a version-controlled superproject
             """
         And no file 'dfetch.yaml.backup' exists in superproject
 
+    Scenario: Inline comments on fields are preserved after freeze
+        Given a local git repo "superproject3" with the manifest
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: ext/test-repo-tag
+                  url: https://github.com/dfetch-org/test-repo  # source mirror
+                  branch: main  # track the integration branch
+
+            """
+        And all projects are updated in superproject3
+        When I run "dfetch freeze" in superproject3
+        Then the manifest 'dfetch.yaml' in superproject3 is replaced with
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: ext/test-repo-tag
+                  revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+                  url: https://github.com/dfetch-org/test-repo  # source mirror
+                  branch: main  # track the integration branch
+
+            """
+        And no file 'dfetch.yaml.backup' exists in superproject3
+
     Scenario: Only selected project is frozen in-place
         Given a local git repo "superproject2" with the manifest
             """
