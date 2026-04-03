@@ -115,7 +115,7 @@ from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
 from dfetch.util.license import License
 from dfetch.util.purl import vcs_url_to_purl
-from dfetch.vcs.archive import archive_url_to_purl
+from dfetch.vcs.archive import archive_url_to_purl, is_archive_url
 from dfetch.vcs.integrity_hash import IntegrityHash
 
 # PyRight is pedantic with decorators see https://github.com/madpah/serializable/issues/8
@@ -199,7 +199,7 @@ class SbomReporter(Reporter):
     ) -> None:
         """Add a project to the report."""
         subpath = project.source or None
-        if project.vcs == "archive":
+        if project.vcs == "archive" or is_archive_url(project.remote_url):
             purl = archive_url_to_purl(
                 project.remote_url, version=version, subpath=subpath
             )
