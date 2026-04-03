@@ -12,8 +12,12 @@ Documentation build configuration file.
 #
 import os
 import sys
+from importlib.metadata import PackageNotFoundError, version
 
-from dfetch import __version__
+try:
+    __version__ = version("dfetch")
+except PackageNotFoundError:
+    __version__ = "0.0.0"
 
 # Prevent ANSI color codes in command output captured by sphinxcontrib.programoutput.
 # Python 3.13+ argparse emits colors when FORCE_COLOR is set; NO_COLOR suppresses
@@ -250,7 +254,13 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, f"dfetch-{__version__}.tex", "Dfetch Documentation", "Dfetch", "manual"),
+    (
+        master_doc,
+        f"dfetch-{__version__}.tex",
+        "Dfetch Documentation",
+        "Dfetch",
+        "manual",
+    ),
 ]
 
 
