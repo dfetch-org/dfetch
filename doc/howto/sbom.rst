@@ -15,9 +15,10 @@ license policy across an organisation.
 
     $ dfetch report -t sbom -o dfetch.cdx.json
 
-*Dfetch* parses each project's license at fetch time and stores it in the
-``.dfetch_data.yaml`` metadata file, so reports stay accurate without
-re-fetching.
+*Dfetch* parses each project's license at report time, it can recognise common
+license files and detect the license type with high accuracy. If a project doesn't
+include a license file or has an unknown license, *Dfetch* keeps the license field
+empty in the SBOM.
 
 Archive dependencies (``tar.gz``, ``zip``, …) are recorded with a
 ``distribution`` external reference.  When an ``integrity.hash:`` field is set
