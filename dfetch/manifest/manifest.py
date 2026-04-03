@@ -33,6 +33,7 @@ from typing_extensions import NotRequired, TypedDict
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
+from dfetch.util.yaml import append_field, find_field, update_value, yaml_scalar
 
 logger = get_logger(__name__)
 
@@ -504,14 +505,14 @@ def update_project_in_manifest_file(
     path.write_text(updated, encoding="utf-8")
 
 
-def _yaml_scalar(value: str) -> str:
-    """Return the YAML inline representation of a scalar string value.
-
-    Strings that look like integers (e.g. SVN revision ``'176'``) are quoted so
-    that YAML round-trips them back as strings.
-    """
-    dumped: str = yaml.dump(value, default_flow_style=None, allow_unicode=True)
-    return dumped.strip()
+# ---------------------------------------------------------------------------
+# Private aliases – kept for internal callers; the canonical implementations
+# live in dfetch.util.yaml.
+# ---------------------------------------------------------------------------
+_yaml_scalar = yaml_scalar
+_find_field = find_field
+_update_value = update_value
+_append_field = append_field
 
 
 def _locate_project_name_line(
@@ -567,58 +568,6 @@ def _find_project_block(lines: list[str], project_name: str) -> tuple[int, int, 
             break
 
     return start, end, item_indent
-
-
-def _find_field(
-    block: list[str],
-    field_name: str,
-    indent: int,
-    start: int = 0,
-    end: int | None = None,
-) -> int | None:
-    """Return the index in *block* of ``field_name:`` at exactly *indent* spaces.
-
-    Searches ``block[start:end]``.  Returns ``None`` when not found.
-    """
-    bound = end if end is not None else len(block)
-    prefix = " " * indent + field_name + ":"
-    for i in range(start, bound):
-        stripped = block[i].rstrip("\n\r")
-        if stripped.startswith(prefix) and (
-            len(stripped) == len(prefix) or stripped[len(prefix)] in (" ", "\t")
-        ):
-            return i
-    return None
-
-
-def _update_value(
-    block: list[str], line_idx: int, field_name: str, yaml_value: str
-) -> list[str]:
-    """Return a copy of *block* with the value on *line_idx* replaced by *yaml_value*."""
-    block = list(block)
-    line = block[line_idx]
-    indent = len(line) - len(line.lstrip())
-    eol = "\n" if line.endswith("\n") else ""
-    block[line_idx] = " " * indent + field_name + ": " + yaml_value + eol
-    return block
-
-
-def _append_field(
-    block: list[str],
-    field_name: str,
-    yaml_value: str,
-    indent: int,
-    after: int,
-) -> list[str]:
-    """Return a copy of *block* with ``field_name: yaml_value`` inserted at *after*.
-
-    When *yaml_value* is empty the line is written as ``field_name:`` (no value),
-    which is the correct YAML form for a mapping key whose children follow.
-    """
-    block = list(block)
-    value_part = ": " + yaml_value if yaml_value else ":"
-    block.insert(after, " " * indent + field_name + value_part + "\n")
-    return block
 
 
 def _set_simple_field_in_block(
