@@ -63,11 +63,17 @@ The version is automatically determined from the project and used to name the in
 
     .. tab:: Windows
 
-        Download the ``.msi`` installer and install by double-clicking or use:
+        Install dfetch directly through winget:
 
         .. code-block:: powershell
 
-            $ msiexec /i dfetch-<version>-win.msi
+            > winget install dfetch
+
+        Or download the ``.msi`` installer from the releases page and install by double-clicking or use:
+
+        .. code-block:: powershell
+
+            > msiexec /i dfetch-<version>-win.msi
 
         Uninstalling can be done through the regular Add/Remove programs section.
 
