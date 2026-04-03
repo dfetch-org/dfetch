@@ -15,6 +15,7 @@ Feature: Freeze archive dependencies
             """
             manifest:
               version: '0.0'
+
               projects:
                 - name: SomeProject
                   url: some-remote-server/SomeProject.tar.gz
@@ -57,7 +58,6 @@ Feature: Freeze archive dependencies
             """
             manifest:
               version: '0.0'
-
               projects:
               - name: SomeProject
                 url: some-remote-server/SomeProject.tar.gz

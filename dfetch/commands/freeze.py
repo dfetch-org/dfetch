@@ -69,7 +69,7 @@ import dfetch.manifest.project
 import dfetch.project
 from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
-from dfetch.manifest.manifest import Manifest, update_project_in_manifest_file
+from dfetch.manifest.manifest import update_project_in_manifest_file
 from dfetch.project import create_super_project
 from dfetch.project.superproject import NoVcsSuperProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
@@ -104,6 +104,12 @@ class Freeze(dfetch.commands.command.Command):
         exceptions: list[str] = []
 
         with in_directory(superproject.root_directory):
+
+            if not use_inplace:
+                shutil.copyfile(
+                    DEFAULT_MANIFEST_NAME, DEFAULT_MANIFEST_NAME + ".backup"
+                )
+
             for project in superproject.manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     sub_project = dfetch.project.create_sub_project(project)
@@ -126,23 +132,8 @@ class Freeze(dfetch.commands.command.Command):
                             project.name,
                             f"Frozen on version {new_version}",
                         )
-                        if use_inplace:
-                            update_project_in_manifest_file(
-                                project, superproject.manifest.path
-                            )
+                        update_project_in_manifest_file(
+                            project, superproject.manifest.path
+                        )
 
-            if not use_inplace:
-                manifest = Manifest(
-                    {
-                        "version": "0.0",
-                        "remotes": superproject.manifest.remotes,
-                        "projects": superproject.manifest.projects,
-                    }
-                )
-
-                shutil.move(DEFAULT_MANIFEST_NAME, DEFAULT_MANIFEST_NAME + ".backup")
-
-                manifest.dump(DEFAULT_MANIFEST_NAME)
-                logger.info(
-                    f"Updated manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}"
-                )
+            logger.info(f"Updated manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}")
