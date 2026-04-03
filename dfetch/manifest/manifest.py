@@ -588,7 +588,10 @@ def _update_hash_in_existing_integrity(
     """Update or insert ``hash:`` inside an already-located ``integrity:`` block."""
     sub_end = len(block)
     for i in range(integrity_line + 1, len(block)):
-        if block[i].strip() and len(block[i]) - len(block[i].lstrip()) <= field_indent:
+        line = block[i]
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if len(line) - len(line.lstrip()) <= field_indent:
             sub_end = i
             break
     hash_idx = _find_field(
@@ -629,6 +632,45 @@ def _set_integrity_hash_in_block(
     return _append_integrity_block(block, field_indent, hash_value)
 
 
+_VERSION_KEYS: tuple[str, ...] = ("revision", "tag", "branch")
+
+
+def _remove_integrity_block(block: list[str], field_indent: int) -> list[str]:
+    """Remove the ``integrity:`` mapping and all its children from *block*."""
+    integrity_idx = _find_field(block, "integrity", field_indent)
+    if integrity_idx is None:
+        return block
+    sub_end = len(block)
+    for i in range(integrity_idx + 1, len(block)):
+        line = block[i]
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if len(line) - len(line.lstrip()) <= field_indent:
+            sub_end = i
+            break
+    block = list(block)
+    del block[integrity_idx:sub_end]
+    return block
+
+
+def _remove_stale_version_fields(
+    block: list[str],
+    field_indent: int,
+    keys_to_keep: set[str],
+    keep_integrity: bool,
+) -> list[str]:
+    """Delete version-related keys from *block* that are absent from *keys_to_keep*."""
+    for key in _VERSION_KEYS:
+        if key not in keys_to_keep:
+            idx = _find_field(block, key, field_indent)
+            if idx is not None:
+                block = list(block)
+                del block[idx]
+    if not keep_integrity:
+        block = _remove_integrity_block(block, field_indent)
+    return block
+
+
 def _collect_version_fields(
     project_yaml: dict[str, Any],
 ) -> tuple[list[tuple[str, str]], str]:
@@ -660,7 +702,17 @@ def _apply_block_updates(
     fields_to_set: list[tuple[str, str]],
     integrity_hash: str,
 ) -> list[str]:
-    """Apply version-field updates to *block* and return the modified block."""
+    """Apply version-field updates to *block* and return the modified block.
+
+    Stale version keys (those no longer present in *fields_to_set* /
+    *integrity_hash*) are deleted so the in-place result matches what the
+    backup-and-regenerate path would produce.
+    """
+    keys_to_keep = {name for name, _ in fields_to_set}
+    block = _remove_stale_version_fields(
+        block, field_indent, keys_to_keep, bool(integrity_hash)
+    )
+
     inserted: list[tuple[str, str]] = []
     for field_name, yaml_value in fields_to_set:
         idx = _find_field(block, field_name, field_indent)
@@ -669,8 +721,8 @@ def _apply_block_updates(
         else:
             inserted.append((field_name, yaml_value))
 
-    if inserted:
-        block[1:1] = [" " * field_indent + f + ": " + v + "\n" for f, v in inserted]
+    for pos, (field_name, yaml_value) in enumerate(inserted, start=1):
+        block = _append_field(block, field_name, yaml_value, field_indent, after=pos)
 
     if integrity_hash:
         block = _set_integrity_hash_in_block(block, field_indent, integrity_hash)
@@ -681,19 +733,15 @@ def _apply_block_updates(
 def _update_project_version_in_text(text: str, project: ProjectEntry) -> str:
     """Return *text* with the version fields for *project* updated in-place.
 
-    Only version-related fields (``revision``, ``tag``, ``branch``,
-    ``integrity.hash``) are touched; all other content — including comments
-    and indentation — is preserved verbatim.
+    Version-related fields (``revision``, ``tag``, ``branch``,
+    ``integrity.hash``) are added, updated, or removed to match the project's
+    current state.  All other content — including comments and indentation —
+    is preserved verbatim.
     """
     fields_to_set, integrity_hash = _collect_version_fields(project.as_yaml())
-
-    if not fields_to_set and not integrity_hash:
-        return text
-
     lines = text.splitlines(keepends=True)
     start, end, item_indent = _find_project_block(lines, project.name)
     block = _apply_block_updates(
         list(lines[start:end]), item_indent + 2, fields_to_set, integrity_hash
     )
-
     return "".join(lines[:start] + block + lines[end:])

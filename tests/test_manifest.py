@@ -573,11 +573,16 @@ def test_update_second_project_does_not_touch_first() -> None:
     assert "revision" not in first_block_text
 
 
-def test_update_noop_when_no_version_fields() -> None:
-    text = _SIMPLE_MANIFEST
-    project = _make_project("myproject")  # no version fields
+def test_update_stale_version_keys_removed_when_project_has_none() -> None:
+    """Stale version keys in the manifest are removed when the project carries none."""
+    text = _SIMPLE_MANIFEST  # contains branch: main
+    project = _make_project("myproject")  # no version fields at all
     result = _update_project_version_in_text(text, project)
-    assert result == text
+    assert "branch:" not in result
+    assert "revision:" not in result
+    assert "tag:" not in result
+    # Non-version fields are untouched
+    assert "url:" in result
 
 
 def test_update_integer_like_revision_is_quoted() -> None:
@@ -646,3 +651,69 @@ def test_update_comment_at_item_indent_does_not_break_block() -> None:
     # branch is updated in-place, not duplicated
     assert result.count("branch:") == 1
     assert "revision:" in result
+
+
+def test_update_stale_revision_removed_when_project_switches_to_tag() -> None:
+    """When a project changes from revision to tag, the stale revision key is deleted."""
+    text = (
+        "manifest:\n"
+        "  version: '0.0'\n"
+        "  projects:\n"
+        "    - name: myproject\n"
+        "      url: https://example.com\n"
+        "      revision: deadbeefdeadbeef\n"
+        "      branch: main\n"
+    )
+    project = _make_project("myproject", tag="v1.0.0")
+    result = _update_project_version_in_text(text, project)
+    assert "tag: v1.0.0" in result
+    assert "revision:" not in result
+    assert "branch:" not in result
+
+
+# ---------------------------------------------------------------------------
+# EOL preservation
+# ---------------------------------------------------------------------------
+
+
+def test_update_value_preserves_crlf() -> None:
+    block = ["      revision: old\r\n"]
+    result = _update_value(block, 0, "revision", "new")
+    assert result[0].endswith("\r\n")
+    assert result[0] == "      revision: new\r\n"
+
+
+def test_append_field_inherits_crlf_from_block() -> None:
+    block = [
+        "    - name: myproject\r\n",
+        "      url: https://example.com\r\n",
+    ]
+    result = _append_field(block, "revision", "abc", 6, after=1)
+    assert result[1].endswith("\r\n"), "inserted line should use CRLF to match block"
+
+
+def test_append_field_defaults_to_lf_on_empty_block() -> None:
+    result = _append_field([], "revision", "abc", 6, after=0)
+    assert result[0].endswith("\n")
+    assert not result[0].endswith("\r\n")
+
+
+# ---------------------------------------------------------------------------
+# integrity sub_end comment fix
+# ---------------------------------------------------------------------------
+
+
+def test_integrity_hash_updated_past_comment_in_integrity_block() -> None:
+    """A comment inside an integrity: block must not cut off the hash: search."""
+    block = [
+        "    - name: myproject\n",
+        "      integrity:\n",
+        "        # checksum added by CI\n",
+        "        hash: sha256:oldvalue\n",
+        "      url: https://example.com\n",
+    ]
+    result = _set_integrity_hash_in_block(block, 6, "sha256:newvalue")
+    joined = "".join(result)
+    assert "hash: sha256:newvalue" in joined
+    assert "sha256:oldvalue" not in joined
+    assert "# checksum added by CI" in joined

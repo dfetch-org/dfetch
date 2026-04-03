@@ -46,18 +46,29 @@ def find_field(
     return None
 
 
+def _detect_eol(block: list[str]) -> str:
+    """Return the line-ending style used in *block*, defaulting to ``\\n``."""
+    for line in block:
+        if line.endswith("\r\n"):
+            return "\r\n"
+        if line.endswith("\n"):
+            return "\n"
+    return "\n"
+
+
 def update_value(
     block: list[str], line_idx: int, field_name: str, yaml_value: str
 ) -> list[str]:
     """Return a copy of *block* with the value on *line_idx* replaced by *yaml_value*.
 
-    The indentation, line ending, and any trailing comment of the original
-    line are all preserved so that in-place edits do not destroy annotations.
+    The indentation, line ending (LF or CRLF), and any trailing comment of
+    the original line are all preserved so that in-place edits do not destroy
+    annotations or alter the file's line-ending convention.
     """
     block = list(block)
     line = block[line_idx]
     indent = len(line) - len(line.lstrip())
-    eol = "\n" if line.endswith("\n") else ""
+    eol = "\r\n" if line.endswith("\r\n") else "\n" if line.endswith("\n") else ""
     stripped = line.rstrip("\n\r")
     comment_match = re.search(r"(\s+#.*)$", stripped)
     comment = comment_match.group(1) if comment_match else ""
@@ -76,9 +87,11 @@ def append_field(
 
     When *yaml_value* is empty the line is written as ``field_name:`` (no
     value), which is the correct YAML form for a mapping key whose children
-    follow on subsequent lines.
+    follow on subsequent lines.  The line-ending style (LF or CRLF) is inferred
+    from the existing lines in *block*.
     """
     block = list(block)
     value_part = ": " + yaml_value if yaml_value else ":"
-    block.insert(after, " " * indent + field_name + value_part + "\n")
+    eol = _detect_eol(block)
+    block.insert(after, " " * indent + field_name + value_part + eol)
     return block
