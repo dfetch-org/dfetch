@@ -562,6 +562,8 @@ def _find_project_block(lines: list[str], project_name: str) -> tuple[int, int, 
         line = lines[i]
         if not line.strip():
             continue
+        if line.lstrip().startswith("#"):
+            continue
         indent = len(line) - len(line.lstrip())
         if indent <= item_indent:
             end = i
