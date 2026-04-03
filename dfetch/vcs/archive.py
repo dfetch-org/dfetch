@@ -96,7 +96,7 @@ def archive_url_to_purl(
             type="github",
             namespace=match["org"].lower(),
             name=match["repo"].lower(),
-            version=str(current_version) or prefix,
+            version=str(current_version) if current_version else prefix,
         )
 
     parsed = urllib.parse.urlparse(download_url)
