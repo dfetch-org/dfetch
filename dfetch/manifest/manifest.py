@@ -516,7 +516,7 @@ _append_field = append_field
 
 
 def _locate_project_name_line(
-    lines: list[str], project_name: str
+    lines: Sequence[str], project_name: str
 ) -> tuple[int, int, int, int] | None:
     """Scan *lines* for the ``- name: <project_name>`` entry.
 
@@ -541,7 +541,9 @@ def _locate_project_name_line(
     return None
 
 
-def _find_project_block(lines: list[str], project_name: str) -> tuple[int, int, int]:
+def _find_project_block(
+    lines: Sequence[str], project_name: str
+) -> tuple[int, int, int]:
     """Return ``(start, end, item_indent)`` for the named project's YAML block.
 
     *start* is the index of the ``- name: <project_name>`` line.
@@ -573,7 +575,7 @@ def _find_project_block(lines: list[str], project_name: str) -> tuple[int, int, 
 
 
 def _set_simple_field_in_block(
-    block: list[str], field_indent: int, field_name: str, yaml_value: str
+    block: Sequence[str], field_indent: int, field_name: str, yaml_value: str
 ) -> list[str]:
     """Update an existing ``field_name:`` line in *block*, or insert one after the first line."""
     idx = _find_field(block, field_name, field_indent)
@@ -583,7 +585,7 @@ def _set_simple_field_in_block(
 
 
 def _update_hash_in_existing_integrity(
-    block: list[str], integrity_line: int, field_indent: int, hash_value: str
+    block: Sequence[str], integrity_line: int, field_indent: int, hash_value: str
 ) -> list[str]:
     """Update or insert ``hash:`` inside an already-located ``integrity:`` block."""
     sub_end = len(block)
@@ -605,7 +607,7 @@ def _update_hash_in_existing_integrity(
 
 
 def _append_integrity_block(
-    block: list[str], field_indent: int, hash_value: str
+    block: Sequence[str], field_indent: int, hash_value: str
 ) -> list[str]:
     """Append a new ``integrity:\\n  hash:`` block before any trailing blank lines."""
     insert_at = len(block)
@@ -620,7 +622,7 @@ def _append_integrity_block(
 
 
 def _set_integrity_hash_in_block(
-    block: list[str], field_indent: int, hash_value: str
+    block: Sequence[str], field_indent: int, hash_value: str
 ) -> list[str]:
     """Update or insert ``integrity.hash`` inside *block*."""
     block = list(block)
@@ -635,40 +637,40 @@ def _set_integrity_hash_in_block(
 _VERSION_KEYS: tuple[str, ...] = ("revision", "tag", "branch")
 
 
-def _remove_integrity_block(block: list[str], field_indent: int) -> list[str]:
+def _remove_integrity_block(block: Sequence[str], field_indent: int) -> list[str]:
     """Remove the ``integrity:`` mapping and all its children from *block*."""
-    integrity_idx = _find_field(block, "integrity", field_indent)
+    result = list(block)
+    integrity_idx = _find_field(result, "integrity", field_indent)
     if integrity_idx is None:
-        return block
-    sub_end = len(block)
-    for i in range(integrity_idx + 1, len(block)):
-        line = block[i]
+        return result
+    sub_end = len(result)
+    for i in range(integrity_idx + 1, len(result)):
+        line = result[i]
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         if len(line) - len(line.lstrip()) <= field_indent:
             sub_end = i
             break
-    block = list(block)
-    del block[integrity_idx:sub_end]
-    return block
+    del result[integrity_idx:sub_end]
+    return result
 
 
 def _remove_stale_version_fields(
-    block: list[str],
+    block: Sequence[str],
     field_indent: int,
     keys_to_keep: set[str],
     keep_integrity: bool,
 ) -> list[str]:
     """Delete version-related keys from *block* that are absent from *keys_to_keep*."""
+    result = list(block)
     for key in _VERSION_KEYS:
         if key not in keys_to_keep:
-            idx = _find_field(block, key, field_indent)
+            idx = _find_field(result, key, field_indent)
             if idx is not None:
-                block = list(block)
-                del block[idx]
+                del result[idx]
     if not keep_integrity:
-        block = _remove_integrity_block(block, field_indent)
-    return block
+        result = _remove_integrity_block(result, field_indent)
+    return result
 
 
 def _collect_version_fields(
@@ -697,7 +699,7 @@ def _collect_version_fields(
 
 
 def _apply_block_updates(
-    block: list[str],
+    block: Sequence[str],
     field_indent: int,
     fields_to_set: list[tuple[str, str]],
     integrity_hash: str,
