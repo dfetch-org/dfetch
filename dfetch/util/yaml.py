@@ -31,7 +31,7 @@ def _line_eol(line: str) -> str:
 
 
 def _detect_eol(block: Sequence[str]) -> str:
-    """Return the line-ending style used in *block*, defaulting to ``\\n``."""
+    r"""Return the line-ending style used in *block*, defaulting to ``\\n``."""
     for line in block:
         eol = _line_eol(line)
         if eol:

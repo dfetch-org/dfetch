@@ -20,11 +20,11 @@ from dfetch.manifest.manifest import (
     _set_simple_field_in_block,
     _update_project_version_in_text,
 )
+from dfetch.manifest.parse import find_manifest, get_submanifests
+from dfetch.manifest.project import ProjectEntry
 from dfetch.util.yaml import append_field as _append_field
 from dfetch.util.yaml import find_field as _find_field
 from dfetch.util.yaml import update_value as _update_value
-from dfetch.manifest.parse import find_manifest, get_submanifests
-from dfetch.manifest.project import ProjectEntry
 
 BASIC_MANIFEST = """
 manifest:

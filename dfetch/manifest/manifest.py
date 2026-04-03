@@ -609,7 +609,7 @@ def _update_hash_in_existing_integrity(
 def _append_integrity_block(
     block: Sequence[str], field_indent: int, hash_value: str
 ) -> list[str]:
-    """Append a new ``integrity:\\n  hash:`` block before any trailing blank lines."""
+    r"""Append a new ``integrity:\\n  hash:`` block before any trailing blank lines."""
     insert_at = len(block)
     for i in range(len(block) - 1, -1, -1):
         if block[i].strip():
