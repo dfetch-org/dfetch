@@ -13,7 +13,7 @@ license policy across an organisation.
 
 .. code-block:: sh
 
-    dfetch report -t sbom -o dfetch.cdx.json
+    $ dfetch report -t sbom -o dfetch.cdx.json
 
 *Dfetch* parses each project's license at fetch time and stores it in the
 ``.dfetch_data.yaml`` metadata file, so reports stay accurate without

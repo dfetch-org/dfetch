@@ -81,7 +81,7 @@ During development of your project you can periodically check for updates with:
 
 .. code-block:: console
 
-  dfetch check
+  $ dfetch check
 
 *Dfetch* will check for each project if a newer version is available.
 
@@ -109,7 +109,7 @@ And after that rerunning `update`:
 
 .. code-block:: console
 
-   dfetch update
+  $ dfetch update
 
 Now you can review the changes and commit them once again if you are happy.
 
@@ -163,8 +163,8 @@ First commit the fetched version to your version control system. This provides
 
 .. code-block:: console
 
-  git add ext/test-repo-tag
-  git commit -m "Add test-repo-tag v2.0"
+  $ git add ext/test-repo-tag
+  $ git commit -m "Add test-repo-tag v2.0"
 
 Then you can work on the files inside ``ext/test-repo-tag``, once you are happy
 you can run ``dfetch diff`` to create a patch file with respect to the committed
@@ -172,7 +172,7 @@ version.
 
 .. code-block:: console
 
-  dfetch diff
+  $ dfetch diff
 
 A patch file ``ext-test-repo-tag.patch`` is created in the current folder. You can
 place it anywhere you want, as long as it is reachable when running *Dfetch*.
@@ -202,14 +202,14 @@ be applied.
 
 .. code-block:: console
 
-  dfetch update -f ext/test-repo-tag
+  $ dfetch update -f ext/test-repo-tag
 
 Now amend the last commit to include the fetched project and the patch file:
 
 .. code-block:: console
 
-   git add ext/test-repo-tag ext-test-repo-tag.patch
-   git commit --amend --no-edit
+   $ git add ext/test-repo-tag ext-test-repo-tag.patch
+   $ git commit --amend --no-edit
 
 For more details on working with patches see :ref:`Diff` and :ref:`Patch`.
 

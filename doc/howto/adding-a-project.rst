@@ -59,7 +59,7 @@ path based on your existing projects.
 
 .. code-block:: sh
 
-    dfetch add https://github.com/some-org/some-repo.git
+  $ dfetch add https://github.com/some-org/some-repo.git
 
 .. asciinema:: ../asciicasts/add.cast
 
@@ -67,7 +67,7 @@ Override individual fields with flags:
 
 .. code-block:: sh
 
-    dfetch add \
+  $ dfetch add \
       --name mylib \
       --dst ext/mylib \
       --version v2.0 \
@@ -88,7 +88,7 @@ inside the remote repository, or configure which paths to ignore.
 
 .. code-block:: sh
 
-    dfetch add -i https://github.com/some-org/some-repo.git
+  $ dfetch add -i https://github.com/some-org/some-repo.git
 
 .. asciinema:: ../asciicasts/interactive-add.cast
 
@@ -108,7 +108,7 @@ You can pre-fill any field to skip its prompt:
 
 .. code-block:: sh
 
-    dfetch add -i --version main \
+  $ dfetch add -i --version main \
                   --src lib/core \
                   https://github.com/some-org/some-repo.git
 

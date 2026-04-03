@@ -15,7 +15,7 @@ This shows missing or incompatible dependencies. Run:
 
 .. code-block:: bash
 
-    dfetch environment
+    $ dfetch environment
 
 Compare the output to the expected tools your commands require.
 
@@ -29,7 +29,7 @@ to see exactly what *Dfetch* is doing:
 
 .. code-block:: bash
 
-    dfetch -v import
+    $ dfetch -v import
 
 Verbose output shows each command *Dfetch* executes and its result, making it easier
 to spot errors, missing tools, or other issues.
