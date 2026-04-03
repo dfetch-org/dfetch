@@ -60,7 +60,7 @@ My first update
 After creating the manifest we can let *Dfetch* perform an update.
 Make sure that you have installed *Dfetch* as described in :ref:`Installation`.
 
-From a command-line perform the following command::
+From a command-line perform the following command
 
 .. code-block:: console
 
@@ -210,8 +210,8 @@ Now amend the last commit to include the fetched project and the patch file:
 
 .. code-block:: console
 
-   $ git add ext/test-repo-tag ext-test-repo-tag.patch
-   $ git commit --amend --no-edit
+  $ git add ext/test-repo-tag ext-test-repo-tag.patch
+  $ git commit --amend --no-edit
 
 For more details on working with patches see :ref:`Diff` and :ref:`Patch`.
 

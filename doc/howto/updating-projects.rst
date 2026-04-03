@@ -105,16 +105,16 @@ Git submodules
 When a Git dependency contains submodules, *Dfetch* fetches and resolves them
 automatically — no extra manifest entries or ``git submodule`` commands are
 needed.  Each submodule is checked out at the exact revision pinned by the
-parent repository::
+parent repository.
 
 .. code-block:: console
 
-     $ dfetch update
+    $ dfetch update
 
-     Dfetch (0.13.0)
-     my-project:
-     > Found & fetched submodule "./ext/vendor-lib"  (https://github.com/example/vendor-lib @ master - 79698c9…)
-     > Fetched master - e1fda19…
+    Dfetch (0.13.0)
+    my-project:
+    > Found & fetched submodule "./ext/vendor-lib"  (https://github.com/example/vendor-lib @ master - 79698c9…)
+    > Fetched master - e1fda19…
 
 Nested submodules are resolved recursively.  Pinned details for each
 submodule are recorded in ``.dfetch_data.yaml`` and are visible in
