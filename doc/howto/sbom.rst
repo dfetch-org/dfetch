@@ -11,7 +11,7 @@ license policy across an organisation.
 
 .. asciinema:: ../asciicasts/sbom.cast
 
-.. code-block:: sh
+.. code-block:: console
 
     $ dfetch report -t sbom -o dfetch.cdx.json
 

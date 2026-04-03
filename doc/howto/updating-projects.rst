@@ -21,7 +21,7 @@ Fetching all projects
 
 Run without arguments to fetch every project in the manifest:
 
-.. code-block:: sh
+.. code-block:: console
 
     $ dfetch update
 
@@ -53,9 +53,11 @@ Updating a single project
 
 Pass one or more project names to limit which entries are updated:
 
-.. code-block:: sh
+.. code-block:: console
 
     $ dfetch update mylib
+
+.. code-block:: console
 
     $ dfetch update mylib myother
 
@@ -68,7 +70,7 @@ By default *Dfetch* skips a project that is already at the requested version
 or that has local modifications.  Use ``--force`` (``-f``) to re-fetch and
 overwrite regardless:
 
-.. code-block:: sh
+.. code-block:: console
 
     $ dfetch update --force mylib
 
@@ -89,7 +91,7 @@ decide whether to vendor those as well.
 
 To skip this check entirely:
 
-.. code-block:: sh
+.. code-block:: console
 
     $ dfetch update --no-recommendations
 
@@ -105,7 +107,11 @@ automatically — no extra manifest entries or ``git submodule`` commands are
 needed.  Each submodule is checked out at the exact revision pinned by the
 parent repository::
 
-   Dfetch (0.12.1)
+.. code-block:: console
+
+     $ dfetch update
+
+     Dfetch (0.13.0)
      my-project:
      > Found & fetched submodule "./ext/vendor-lib"  (https://github.com/example/vendor-lib @ master - 79698c9…)
      > Fetched master - e1fda19…

@@ -62,7 +62,9 @@ Make sure that you have installed *Dfetch* as described in :ref:`Installation`.
 
 From a command-line perform the following command::
 
-   dfetch update
+.. code-block:: console
+
+  $ dfetch update
 
 *Dfetch* will search through all directories down until it finds the ``dfetch.yaml``
 manifest and it will perform the update.

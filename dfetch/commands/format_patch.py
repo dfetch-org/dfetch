@@ -8,9 +8,9 @@ upstream, as upstream projects usually expect patches to be relative to their
 root directory. The ``format-patch`` command reformats all patches of a project
 to make them usable for the upstream project.
 
-.. code-block:: sh
+.. code-block:: console
 
-   dfetch format-patch some-project
+   $ dfetch format-patch some-project
 
 .. tabs::
 
