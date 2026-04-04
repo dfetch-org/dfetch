@@ -58,6 +58,7 @@ def step_impl(context, name, directory):
     check_file(
         os.path.join(directory, name),
         apply_manifest_substitutions(context, context.text),
+        strict=True,
     )
 
 
