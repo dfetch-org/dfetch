@@ -67,7 +67,6 @@ import shutil
 import dfetch.commands.command
 import dfetch.manifest.project
 import dfetch.project
-from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import update_project_in_manifest_file
 from dfetch.project import create_super_project
@@ -104,11 +103,10 @@ class Freeze(dfetch.commands.command.Command):
         exceptions: list[str] = []
 
         with in_directory(superproject.root_directory):
+            manifest_path = superproject.manifest.path
 
             if not use_inplace:
-                shutil.copyfile(
-                    DEFAULT_MANIFEST_NAME, DEFAULT_MANIFEST_NAME + ".backup"
-                )
+                shutil.copyfile(manifest_path, manifest_path + ".backup")
 
             for project in superproject.manifest.selected_projects(args.projects):
                 with catch_runtime_exceptions(exceptions) as exceptions:
@@ -136,4 +134,4 @@ class Freeze(dfetch.commands.command.Command):
                             project, superproject.manifest.path
                         )
 
-            logger.info(f"Updated manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}")
+            logger.info(f"Updated manifest ({manifest_path}) in {os.getcwd()}")
