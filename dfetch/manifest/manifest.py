@@ -500,9 +500,11 @@ def update_project_in_manifest_file(
         manifest_path: Path to the manifest file to update.
     """
     path = Path(manifest_path)
-    text = path.read_text(encoding="utf-8")
+    with path.open(encoding="utf-8", newline="") as manifest_file:
+        text = manifest_file.read()
     updated = _update_project_version_in_text(text, project)
-    path.write_text(updated, encoding="utf-8")
+    with path.open("w", encoding="utf-8", newline="") as manifest_file:
+        manifest_file.write(updated)
 
 
 # ---------------------------------------------------------------------------
