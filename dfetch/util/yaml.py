@@ -6,7 +6,7 @@ to edit manifest files in-place while preserving comments and layout.
 """
 
 import re
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 import yaml
@@ -14,8 +14,8 @@ from yaml.nodes import MappingNode, Node, ScalarNode, SequenceNode
 
 
 @dataclass
-class YamlNodeLocation:
-    """Location of a YAML node in a text document."""
+class FieldLocation:
+    """Represents the position of a YAML field in a document."""
 
     start_line: int
     start_col: int
@@ -23,199 +23,289 @@ class YamlNodeLocation:
     end_col: int
 
 
-def yaml_scalar(value: str) -> str:
-    """Return the YAML inline representation of a scalar string value.
+@dataclass
+class FieldPath:
+    """Represents a field path in a YAML document."""
 
-    Strings that look like integers (e.g. SVN revision ``'176'``) are quoted
-    so that YAML round-trips them back as strings.
-    """
-    dumped: str = yaml.dump(value, default_flow_style=None, allow_unicode=True)
-    return dumped.splitlines()[0]
+    parts: list[str]
+
+    @classmethod
+    def from_str(cls, path: str) -> "FieldPath":
+        """Parse a dot-separated field path string."""
+        return cls(path.split("."))
+
+    def __str__(self) -> str:
+        """Return dot-separated path string."""
+        return ".".join(self.parts)
 
 
-def _line_eol(line: str) -> str:
-    """Return the line-ending sequence of *line*, or ``""`` if it has none."""
-    if line.endswith("\r\n"):
-        return "\r\n"
-    if line.endswith("\n"):
+@dataclass
+class FieldFilter:
+    """Represents a simple filter for fields in a YAML sequence."""
+
+    key: str
+    value: str
+
+
+class YamlDocument:
+    """A YAML document supporting smart field manipulation with comments, line endings, and filtering."""
+
+    def __init__(self, text: str) -> None:
+        """Initialize with YAML text."""
+        self.lines: list[str] = text.splitlines(keepends=True)
+        self.eol: str = self._detect_eol(self.lines)
+
+    # ---------------- Line-ending helpers ----------------
+    @staticmethod
+    def _line_eol(line: str) -> str:
+        return (
+            "\r\n" if line.endswith("\r\n") else ("\n" if line.endswith("\n") else "")
+        )
+
+    def _detect_eol(self, lines: Sequence[str]) -> str:
+        for line in lines:
+            eol = self._line_eol(line)
+            if eol:
+                return eol
         return "\n"
-    return ""
 
+    # ---------------- Scalar handling ----------------
+    @staticmethod
+    def _yaml_scalar(value: str) -> str:
+        dumped = yaml.dump(value, default_flow_style=None, allow_unicode=True)
+        return dumped.splitlines()[0]
 
-def _detect_eol(block: Sequence[str]) -> str:
-    r"""Return the line-ending style used in *block*, defaulting to ``\\n``."""
-    for line in block:
-        eol = _line_eol(line)
-        if eol:
-            return eol
-    return "\n"
+    # ---------------- Public API ----------------
+    def get(self, path: str | FieldPath) -> str | None:
+        """Get the value of a field by path."""
+        path = FieldPath.from_str(path) if isinstance(path, str) else path
+        idx = self._find_field(path)
+        if idx is None:
+            return None
+        line = self.lines[idx].rstrip("\n\r")
+        value = line.split(":", 1)[1].split("#", 1)[0].strip()
+        return value
 
+    def set(self, path: str | FieldPath, value: str, comment: str = "") -> None:
+        """Set or create a field at the given path."""
+        path = FieldPath.from_str(path) if isinstance(path, str) else path
+        idx = self._find_field(path)
+        if idx is not None:
+            self._update_line(idx, path.parts[-1], value)
+        else:
+            self._add_field(path, value, comment)
 
-def find_field(
-    block: Sequence[str],
-    field_name: str,
-    indent: int,
-    start: int = 0,
-    end: int | None = None,
-) -> int | None:
-    """Return the index in *block* of ``field_name:`` at exactly *indent* spaces.
+    def delete(self, path: str | FieldPath) -> None:
+        """Delete a field and its children."""
+        path = FieldPath.from_str(path) if isinstance(path, str) else path
+        loc = self._get_node_location(path)
+        if loc:
+            del self.lines[loc.start_line : loc.end_line + 1]
 
-    Searches ``block[start:end]``.  Commented-out lines (where the first
-    non-whitespace character is ``#``) are skipped and never matched.
-    Returns ``None`` when not found.
-    """
-    bound = end if end is not None else len(block)
-    prefix = " " * indent + field_name + ":"
-    for i in range(start, bound):
-        stripped = block[i].rstrip("\n\r")
-        if stripped.lstrip().startswith("#"):
-            continue
-        if stripped.startswith(prefix) and (
-            len(stripped) == len(prefix) or stripped[len(prefix)] in (" ", "\t")
-        ):
-            return i
-    return None
+    def dump(self) -> str:
+        """Return the YAML document as a string."""
+        return "".join(self.lines)
 
+    def find_by_filter(
+        self, sequence_path: str | FieldPath, field_filter: FieldFilter
+    ) -> list[FieldPath]:
+        """Find all entries in a YAML sequence where a field has a given value.
 
-def update_value(
-    block: Sequence[str], line_idx: int, field_name: str, yaml_value: str
-) -> list[str]:
-    """Return a copy of *block* with the value on *line_idx* replaced by *yaml_value*.
+        Args:
+            sequence_path: Path to the sequence node.
+            field_filter: Filter key and expected value.
 
-    The indentation, line ending (LF or CRLF), and any trailing comment of
-    the original line are all preserved so that in-place edits do not destroy
-    annotations or alter the file's line-ending convention.
-    """
-    result = list(block)
-    line = result[line_idx]
-    indent = len(line) - len(line.lstrip())
-    eol = _line_eol(line)
-    stripped = line.rstrip("\n\r")
-    comment_match = re.search(r"(\s+#.*)$", stripped)
-    comment = comment_match.group(1) if comment_match else ""
-    result[line_idx] = " " * indent + field_name + ": " + yaml_value + comment + eol
-    return result
+        Returns:
+            List of FieldPath pointing to each matching sequence item.
+            Example: for "manifest.projects" with filter "name=foo", returns
+            [FieldPath(['manifest', 'projects', '0'])] for the first match.
+        """
+        sequence_path = (
+            FieldPath.from_str(sequence_path)
+            if isinstance(sequence_path, str)
+            else sequence_path
+        )
+        root = yaml.compose("".join(self.lines))
+        sequence_node = self._traverse_path(root, sequence_path.parts)
 
+        if not isinstance(sequence_node, SequenceNode):
+            return []
 
-def append_field(
-    block: Sequence[str],
-    field_name: str,
-    yaml_value: str,
-    indent: int,
-    after: int,
-) -> list[str]:
-    """Return a copy of *block* with ``field_name: yaml_value`` inserted at *after*.
+        matches: list[FieldPath] = []
+        for idx, item in enumerate(sequence_node.value):
+            if not isinstance(item, MappingNode):
+                continue
+            mapping = self._mapping_to_dict(item)
+            value_node = mapping.get(field_filter.key)
+            if (
+                isinstance(value_node, ScalarNode)
+                and str(value_node.value) == field_filter.value
+            ):
+                matches.append(FieldPath(sequence_path.parts + [str(idx)]))
 
-    When *yaml_value* is empty the line is written as ``field_name:`` (no
-    value), which is the correct YAML form for a mapping key whose children
-    follow on subsequent lines.  The line-ending style (LF or CRLF) is inferred
-    from the existing lines in *block*.
-    """
-    result = list(block)
-    value_part = ": " + yaml_value if yaml_value else ":"
-    eol = _detect_eol(result)
-    result.insert(after, " " * indent + field_name + value_part + eol)
-    return result
+        return matches
 
+    # ---------------- Batch operations using filters ----------------
+    def update_filtered(
+        self,
+        sequence_path: str | FieldPath,
+        field_filter: FieldFilter,
+        updater: str | Callable[[str], str],
+        target_field: str | None = None,
+    ) -> None:
+        """Update all entries in a sequence that match a filter.
 
-def _mapping_to_dict(node: MappingNode) -> dict[str, Node]:
-    """Convert MappingNode to dict of key -> value node."""
-    return {k.value: v for k, v in node.value}
+        Args:
+            sequence_path: Path to the sequence node.
+            field_filter: Filter key/value for selecting entries.
+            updater: Either a string (new value) or a callable that transforms the old value.
+            target_field: Field to update; if None, updates the filtered field itself.
+        """
+        matches = self.find_by_filter(sequence_path, field_filter)
+        for path in matches:
+            field_to_update = target_field if target_field else field_filter.key
+            field_path = FieldPath(path.parts + [field_to_update])
+            current_value: str = self.get(field_path) or ""
+            new_value = updater(current_value) if callable(updater) else updater
+            self.set(field_path, new_value)
 
+    def delete_filtered(
+        self,
+        sequence_path: str | FieldPath,
+        field_filter: FieldFilter,
+    ) -> None:
+        """Delete all entries in a sequence that match a filter.
 
-def _find_yaml_node(
-    root: MappingNode, path: Sequence[str | dict[str, str]]
-) -> Node | MappingNode | SequenceNode | ScalarNode | None:
-    """Traverse YAML AST using a path and find node."""
-    node: Node | MappingNode | SequenceNode | ScalarNode | None = root
+        Args:
+            sequence_path: Path to the sequence node.
+            field_filter: Filter key/value for selecting entries.
+        """
+        matches = self.find_by_filter(sequence_path, field_filter)
+        # Delete in reverse to avoid shifting line indices
+        for path in reversed(matches):
+            self.delete(path)
 
-    for step in path:
-        node = _traverse_step(node, step)
+    # ---------------- Internal helpers ----------------
+    def _update_line(self, idx: int, field_name: str, value: str) -> None:
+        line = self.lines[idx]
+        indent = len(line) - len(line.lstrip())
+        comment_match = re.search(r"(\s+#.*)$", line.rstrip("\n\r"))
+        comment = comment_match.group(1) if comment_match else ""
+        self.lines[idx] = (
+            f"{' ' * indent}{field_name}: {self._yaml_scalar(value)}{comment}{self.eol}"
+        )
+
+    def _add_field(self, path: FieldPath, value: str, comment: str) -> None:
+        parent_path = FieldPath(path.parts[:-1])
+        field_name = path.parts[-1]
+        parent_idx = (
+            self._find_field(parent_path) if parent_path.parts else len(self.lines)
+        )
+        indent = 0
+        if parent_path.parts and parent_idx is not None:
+            indent = (
+                len(self.lines[parent_idx]) - len(self.lines[parent_idx].lstrip()) + 2
+            )
+        value_part = f": {self._yaml_scalar(value)}" if value else ":"
+        comment_part = f"  # {comment}" if comment else ""
+        insert_idx = (
+            parent_idx + 1
+            if parent_path.parts and parent_idx is not None
+            else len(self.lines)
+        )
+        self.lines.insert(
+            insert_idx,
+            f"{' ' * indent}{field_name}{value_part}{comment_part}{self.eol}",
+        )
+
+    def _find_field(self, path: FieldPath) -> int | None:
+        indent = 0
+        start = 0
+        idx: int | None = None
+        i = 0
+        while i < len(path.parts):
+            key = path.parts[i]
+            if key.isdigit():
+                idx = self._find_field_at_indent("-", indent, start)
+                if idx is None:
+                    return None
+                start = idx + 1
+                i += 1
+                indent += 2
+            else:
+                idx = self._find_field_at_indent(key, indent, start)
+                if idx is None:
+                    return None
+                start = idx + 1
+                i += 1
+                indent += 2
+        return idx
+
+    def _find_field_at_indent(
+        self, field_name: str, indent: int, start: int
+    ) -> int | None:
+        if field_name == "-":
+            prefix = " " * indent + "-"
+        else:
+            prefix = " " * indent + field_name + ":"
+        for i in range(start, len(self.lines)):
+            line = self.lines[i].rstrip("\n\r")
+            if line.lstrip().startswith("#"):
+                continue
+            if line.startswith(prefix) and (
+                len(line) == len(prefix) or line[len(prefix)] in (" ", "\t")
+            ):
+                return i
+        return None
+
+    # ---------------- YAML AST helpers ----------------
+    def get_node_location(self, path: FieldPath) -> FieldLocation | None:
+        """Get the location of a node in the document."""
+        root = yaml.compose("".join(self.lines))
+        node = self._traverse_path(root, path.parts)
         if node is None:
             return None
+        return FieldLocation(
+            start_line=node.start_mark.line,
+            start_col=node.start_mark.column,
+            end_line=node.end_mark.line,
+            end_col=node.end_mark.column,
+        )
 
-    return node
+    def _get_node_location(self, path: FieldPath) -> FieldLocation | None:
+        """Legacy alias for get_node_location."""
+        return self.get_node_location(path)
 
+    def _traverse_path(self, node: Node | None, path: Sequence[str]) -> Node | None:
+        for step in path:
+            if node is None:
+                return None
+            if isinstance(node, MappingNode):
+                node = self._mapping_to_dict(node).get(step)
+            elif isinstance(node, SequenceNode):
+                if step.isdigit():
+                    idx = int(step)
+                    node = node.value[idx] if idx < len(node.value) else None
+                elif isinstance(step, dict):
+                    key, expected = next(iter(step.items()))
+                    node = next(
+                        (
+                            item
+                            for item in node.value
+                            if isinstance(item, MappingNode)
+                            and isinstance(
+                                self._mapping_to_dict(item).get(key), ScalarNode
+                            )
+                            and self._mapping_to_dict(item)[key].value == expected
+                        ),
+                        None,
+                    )
+                else:
+                    node = None
+            else:
+                return None
+        return node
 
-def _traverse_step(
-    node: Node | MappingNode | SequenceNode | ScalarNode | None,
-    step: str | dict[str, str],
-) -> Node | None:
-    """Traverse a single path step in the YAML AST."""
-    if isinstance(step, str):
-        return _lookup_mapping_key(node, step)
-    if isinstance(step, dict):
-        return _filter_sequence(node, step)
-
-    raise TypeError(f"Unsupported path step: {step}")
-
-
-def _lookup_mapping_key(node: Node | None, key: str) -> Node | None:
-    """Lookup a key in a MappingNode."""
-    if not isinstance(node, MappingNode):
-        return None
-    mapping = _mapping_to_dict(node)
-    return mapping.get(key)
-
-
-def _filter_sequence(node: Node | None, filter_dict: dict[str, str]) -> Node | None:
-    """Filter a SequenceNode by a mapping condition."""
-    if not isinstance(node, SequenceNode):
-        return None
-
-    key, expected = next(iter(filter_dict.items()))
-
-    for item in node.value:
-        if not isinstance(item, MappingNode):
-            continue
-
-        mapping = _mapping_to_dict(item)
-        value_node = mapping.get(key)
-
-        if isinstance(value_node, ScalarNode) and value_node.value == expected:
-            return item
-
-    return None
-
-
-def get_node_location(
-    text: str, path: Sequence[str | dict[str, str]]
-) -> YamlNodeLocation | None:
-    """Return the location of the YAML node at *path* in *text*."""
-    root = yaml.compose(text)
-    node = _find_yaml_node(root, path)
-
-    if node is None:
-        return None
-
-    return YamlNodeLocation(
-        start_line=node.start_mark.line,
-        start_col=node.start_mark.column,
-        end_line=node.end_mark.line,
-        end_col=node.end_mark.column,
-    )
-
-
-def remove_field_block(
-    lines: Sequence[str], path_to_field: Sequence[str | dict[str, str]]
-) -> list[str]:
-    """Remove a YAML field and all its children using AST location.
-
-    Args:
-        lines: The YAML content as a list of strings.
-        path_to_field: YAML path to the field, e.g. ("manifest", "projects", {"name": "my-project"}, "integrity")
-
-    Returns:
-        A new list of lines with the field block removed.
-    """
-    text = "\n".join(lines)
-    loc = get_node_location(text, path_to_field)
-    if loc is None:
-        # field not found, return original
-        return list(lines)
-
-    # remove the lines corresponding to this field
-    result = list(lines)
-    # AST end_line is inclusive, so make it exclusive
-    del result[loc.start_line : loc.end_line + 1]
-    return result
+    @staticmethod
+    def _mapping_to_dict(node: MappingNode) -> dict[str, Node]:
+        return {k.value: v for k, v in node.value}

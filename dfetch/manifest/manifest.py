@@ -33,14 +33,7 @@ from typing_extensions import NotRequired, TypedDict
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
-from dfetch.util.yaml import (
-    append_field,
-    find_field,
-    get_node_location,
-    remove_field_block,
-    update_value,
-    yaml_scalar,
-)
+from dfetch.util.yaml import FieldFilter, FieldPath, YamlDocument
 
 logger = get_logger(__name__)
 
@@ -111,13 +104,16 @@ class ManifestDict(TypedDict, total=True):  # pylint: disable=too-many-ancestors
     ]
 
 
-class Manifest:
+class Manifest:  # pylint: disable=too-many-instance-attributes
     """Manifest describing all the modules information.
 
     This class is created from the manifest file a project has.
     """
 
     CURRENT_VERSION = "0.0"
+    _UNSAFE_NAME_RE = re.compile(r"[\x00-\x1F\x7F-\x9F:#\[\]{}&*!|>'\"%@`]")
+
+    _VERSION_KEYS: tuple[str, ...] = ("revision", "tag", "branch")
 
     def __init__(
         self,
@@ -132,6 +128,7 @@ class Manifest:
         self.__relative_path: str = (
             os.path.relpath(self.__path, os.getcwd()) if self.__path else ""
         )
+        self._doc = YamlDocument(self.__text)
 
         self._remotes, default_remotes = self._determine_remotes(
             manifest.get("remotes", [])
@@ -356,28 +353,47 @@ class Manifest:
     def find_name_in_manifest(self, name: str) -> ManifestEntryLocation:
         """Find the location of a project name in the manifest.
 
-        Returns:
-            ManifestEntryLocation of the project name in the manifest.
-
         Raises:
             FileNotFoundError: If manifest text is not available
-            RuntimeError: If the project name is not found in the manifest
+            RuntimeError: If the project name is not found
         """
         if not self.__text:
             raise FileNotFoundError("No manifest text available")
 
-        loc = get_node_location(
-            self.__text, path=("manifest", "projects", {"name": name})
+        matches = self._doc.find_by_filter(
+            sequence_path="manifest.projects",
+            field_filter=FieldFilter(key="name", value=name),
         )
-
-        if loc is None:
+        if not matches:
             raise RuntimeError(f"{name} was not found in the manifest!")
+
+        # Convert first match to FieldLocation using AST lookup
+        loc = self._doc.get_node_location(matches[0])
+        if loc is None:
+            raise RuntimeError(
+                f"{name} was found in YAML AST, but location could not be determined!"
+            )
 
         return ManifestEntryLocation(
             line_number=loc.start_line + 1,  # convert 0-based to 1-based line numbers
             start=loc.start_col,
             end=loc.end_col,
         )
+
+    # ---------------- YAML updates ----------------
+    def update_project_version_in_manifest(
+        self, project_name: str, version: str
+    ) -> None:
+        """Update a project's version in the manifest in-place, preserving layout, comments, and line endings."""
+        # Update filtered entries
+        self._doc.update_filtered(
+            sequence_path="manifest.projects",
+            field_filter=FieldFilter(key="name", value=project_name),
+            updater=version,
+            target_field="version",
+        )
+
+        self.__text = self._doc.dump()
 
     # Characters not allowed in a project name (YAML special chars).
     _UNSAFE_NAME_RE = re.compile(r"[\x00-\x1F\x7F-\x9F:#\[\]{}&*!|>'\"%@`]")
@@ -481,7 +497,6 @@ def append_entry_manifest_file(
 ) -> None:
     """Add the project entry to the manifest file."""
     with Path(manifest_path).open("a", encoding="utf-8") as manifest_file:
-
         new_entry = yaml.dump(
             [project_entry.as_yaml()],
             sort_keys=False,
@@ -516,186 +531,6 @@ def update_project_in_manifest_file(
         manifest_file.write(updated)
 
 
-# ---------------------------------------------------------------------------
-# Private aliases – kept for internal callers; the canonical implementations
-# live in dfetch.util.yaml.
-# ---------------------------------------------------------------------------
-_yaml_scalar = yaml_scalar
-_find_field = find_field
-_update_value = update_value
-_append_field = append_field
-
-
-def _find_project_block(text: str, project_name: str) -> tuple[int, int, int]:
-    """Return ``(start, end, item_indent)`` for the named project's YAML block.
-
-    *start* is the index of the ``- name: <project_name>`` line.
-    *end* is the exclusive end index (first line that belongs to the next block).
-    *item_indent* is the column of the ``-`` character.
-
-    Raises:
-        RuntimeError: if the project name is not found.
-    """
-    path = ("manifest", "projects", {"name": project_name})
-    loc = get_node_location(text, path)
-
-    if loc is None:
-        raise RuntimeError(f"Project '{project_name}' not found in manifest text")
-
-    # start line and end line from AST
-    start = loc.start_line
-    end = loc.end_line
-
-    # find indentation of the '-' in '- name: <project_name>'
-    line_text = text.splitlines()[start]
-    item_indent = len(line_text) - len(line_text.lstrip())
-
-    # adjust end to be exclusive
-    end += 1
-
-    return start, end, item_indent
-
-
-def _set_simple_field_in_block(
-    block: Sequence[str], field_indent: int, field_name: str, yaml_value: str
-) -> list[str]:
-    """Update an existing ``field_name:`` line in *block*, or insert one after the first line."""
-    idx = _find_field(block, field_name, field_indent)
-    if idx is not None:
-        return _update_value(block, idx, field_name, yaml_value)
-    return _append_field(block, field_name, yaml_value, field_indent, after=1)
-
-
-def _update_hash_in_existing_integrity(
-    block: Sequence[str], integrity_line: int, field_indent: int, hash_value: str
-) -> list[str]:
-    """Update or insert ``hash:`` inside an already-located ``integrity:`` block."""
-    sub_end = len(block)
-    for i in range(integrity_line + 1, len(block)):
-        line = block[i]
-        if not line.strip() or line.lstrip().startswith("#"):
-            continue
-        if len(line) - len(line.lstrip()) <= field_indent:
-            sub_end = i
-            break
-    hash_idx = _find_field(
-        block, "hash", field_indent + 2, start=integrity_line + 1, end=sub_end
-    )
-    if hash_idx is not None:
-        return _update_value(block, hash_idx, "hash", hash_value)
-    return _append_field(
-        block, "hash", hash_value, field_indent + 2, after=integrity_line + 1
-    )
-
-
-def _append_integrity_block(
-    block: Sequence[str], field_indent: int, hash_value: str
-) -> list[str]:
-    r"""Append a new ``integrity:\\n  hash:`` block before any trailing blank lines."""
-    insert_at = len(block)
-    for i in range(len(block) - 1, -1, -1):
-        if block[i].strip():
-            insert_at = i + 1
-            break
-    block = _append_field(block, "integrity", "", field_indent, after=insert_at)
-    return _append_field(
-        block, "hash", hash_value, field_indent + 2, after=insert_at + 1
-    )
-
-
-def _set_integrity_hash_in_block(
-    block: Sequence[str], field_indent: int, hash_value: str
-) -> list[str]:
-    """Update or insert ``integrity.hash`` inside *block*."""
-    block = list(block)
-    integrity_line = _find_field(block, "integrity", field_indent)
-    if integrity_line is not None:
-        return _update_hash_in_existing_integrity(
-            block, integrity_line, field_indent, hash_value
-        )
-    return _append_integrity_block(block, field_indent, hash_value)
-
-
-_VERSION_KEYS: tuple[str, ...] = ("revision", "tag", "branch")
-
-
-def _remove_stale_version_fields(
-    block: Sequence[str],
-    field_indent: int,
-    keys_to_keep: set[str],
-    keep_integrity: bool,
-) -> list[str]:
-    """Delete version-related keys from *block* that are absent from *keys_to_keep*."""
-    result = list(block)
-    for key in _VERSION_KEYS:
-        if key not in keys_to_keep:
-            idx = _find_field(result, key, field_indent)
-            if idx is not None:
-                del result[idx]
-    if not keep_integrity:
-        result = remove_field_block(result, ("integrity",))
-    return result
-
-
-def _collect_version_fields(
-    project_yaml: dict[str, Any],
-) -> tuple[list[tuple[str, str]], str]:
-    """Extract version-related fields from *project_yaml*.
-
-    Returns:
-        A ``(fields_to_set, integrity_hash)`` pair.  *fields_to_set* is a list
-        of ``(field_name, yaml_scalar)`` tuples for ``revision``, ``tag`` and
-        ``branch``; *integrity_hash* is the raw hash string or ``""`` when absent.
-    """
-    fields: list[tuple[str, str]] = []
-    for field in ("revision", "tag", "branch"):
-        value = project_yaml.get(field)
-        if value:
-            fields.append((field, _yaml_scalar(str(value))))
-
-    integrity = project_yaml.get("integrity")
-    integrity_hash: str = (
-        integrity["hash"]
-        if isinstance(integrity, dict) and integrity.get("hash")
-        else ""
-    )
-    return fields, integrity_hash
-
-
-def _apply_block_updates(
-    block: Sequence[str],
-    field_indent: int,
-    fields_to_set: list[tuple[str, str]],
-    integrity_hash: str,
-) -> list[str]:
-    """Apply version-field updates to *block* and return the modified block.
-
-    Stale version keys (those no longer present in *fields_to_set* /
-    *integrity_hash*) are deleted so the in-place result matches what the
-    backup-and-regenerate path would produce.
-    """
-    keys_to_keep = {name for name, _ in fields_to_set}
-    block = _remove_stale_version_fields(
-        block, field_indent, keys_to_keep, bool(integrity_hash)
-    )
-
-    inserted: list[tuple[str, str]] = []
-    for field_name, yaml_value in fields_to_set:
-        idx = _find_field(block, field_name, field_indent)
-        if idx is not None:
-            block = _update_value(block, idx, field_name, yaml_value)
-        else:
-            inserted.append((field_name, yaml_value))
-
-    for pos, (field_name, yaml_value) in enumerate(inserted, start=1):
-        block = _append_field(block, field_name, yaml_value, field_indent, after=pos)
-
-    if integrity_hash:
-        block = _set_integrity_hash_in_block(block, field_indent, integrity_hash)
-
-    return block
-
-
 def _update_project_version_in_text(text: str, project: ProjectEntry) -> str:
     """Return *text* with the version fields for *project* updated in-place.
 
@@ -704,10 +539,39 @@ def _update_project_version_in_text(text: str, project: ProjectEntry) -> str:
     current state.  All other content — including comments and indentation —
     is preserved verbatim.
     """
-    fields_to_set, integrity_hash = _collect_version_fields(project.as_yaml())
-    lines = text.splitlines(keepends=True)
-    start, end, item_indent = _find_project_block(text, project.name)
-    block = _apply_block_updates(
-        list(lines[start:end]), item_indent + 2, fields_to_set, integrity_hash
+    doc = YamlDocument(text)
+
+    project_data = project.as_yaml()
+    version_keys = ("revision", "tag", "branch")
+
+    for key in version_keys:
+        value = project_data.get(key)
+        if value:
+            doc.set(
+                FieldPath([*_find_project_field_path(doc, project.name), key]),
+                str(value),
+            )
+        else:
+            field_path = FieldPath([*_find_project_field_path(doc, project.name), key])
+            doc.delete(field_path)
+
+    integrity = project_data.get("integrity")
+    if isinstance(integrity, dict) and integrity.get("hash"):
+        project_path = _find_project_field_path(doc, project.name)
+        doc.set(FieldPath([*project_path, "integrity", "hash"]), integrity["hash"])
+    else:
+        project_path = _find_project_field_path(doc, project.name)
+        doc.delete(FieldPath([*project_path, "integrity"]))
+
+    return doc.dump()
+
+
+def _find_project_field_path(doc: YamlDocument, project_name: str) -> list[str]:
+    """Find the field path to a project in the manifest."""
+    matches = doc.find_by_filter(
+        sequence_path="manifest.projects",
+        field_filter=FieldFilter(key="name", value=project_name),
     )
-    return "".join(lines[:start] + block + lines[end:])
+    if not matches:
+        raise RuntimeError(f"Project '{project_name}' not found in manifest text")
+    return matches[0].parts
