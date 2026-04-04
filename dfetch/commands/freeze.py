@@ -104,11 +104,12 @@ class Freeze(dfetch.commands.command.Command):
 
         with in_directory(superproject.root_directory):
             manifest_path = superproject.manifest.path
+            projects_to_freeze = superproject.manifest.selected_projects(args.projects)
 
             if not use_inplace:
                 shutil.copyfile(manifest_path, manifest_path + ".backup")
 
-            for project in superproject.manifest.selected_projects(args.projects):
+            for project in projects_to_freeze:
                 with catch_runtime_exceptions(exceptions) as exceptions:
                     sub_project = dfetch.project.create_sub_project(project)
                     on_disk_version = sub_project.on_disk_version()
