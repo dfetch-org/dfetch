@@ -71,10 +71,12 @@ def call_command(context: Context, args: list[str], path: Optional[str] = ".") -
     context.cmd_output = after[len(before) :].strip("\n")
 
 
-def check_file(path, content):
+def check_file(path, content, strict=False):
     """Check a file."""
     with open(path, "r", encoding="UTF-8") as file_to_check:
-        check_content(content.splitlines(True), file_to_check.readlines())
+        check_content(
+            content.splitlines(True), file_to_check.readlines(), strict=strict
+        )
 
 
 def check_file_exists(path):
@@ -170,7 +172,7 @@ def check_json_subset(path: Union[str, os.PathLike], content: str, context) -> N
 
 
 def check_content(
-    expected_content: Iterable[str], actual_content: Iterable[str]
+    expected_content: Iterable[str], actual_content: Iterable[str], strict=False
 ) -> None:
     """Compare two texts as list of strings."""
 
@@ -201,8 +203,12 @@ def check_content(
             text=actual,
         )
 
-        assert actual.strip() == expected.strip(), (
-            f"Line {line_nr}: Actual >>{actual.strip()}<< != Expected >>{expected.strip()}<<\n"
+        if not strict:
+            expected = expected.strip()
+            actual = actual.strip()
+
+        assert actual == expected, (
+            f"Line {line_nr}: Actual >>{actual}<< != Expected >>{expected}<<\n"
             f"ACTUAL:\n{''.join(actual_content)}"
         )
 
