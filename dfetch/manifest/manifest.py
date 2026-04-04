@@ -33,7 +33,14 @@ from typing_extensions import NotRequired, TypedDict
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
-from dfetch.util.yaml import append_field, find_field, update_value, yaml_scalar
+from dfetch.util.yaml import (
+    append_field,
+    find_field,
+    get_node_location,
+    remove_field_block,
+    update_value,
+    yaml_scalar,
+)
 
 logger = get_logger(__name__)
 
@@ -359,15 +366,17 @@ class Manifest:
         if not self.__text:
             raise FileNotFoundError("No manifest text available")
 
-        result = _locate_project_name_line(self.__text.splitlines(), name)
-        if result is None:
+        loc = get_node_location(
+            self.__text, path=("manifest", "projects", {"name": name})
+        )
+
+        if loc is None:
             raise RuntimeError(f"{name} was not found in the manifest!")
 
-        line_idx, _, name_start, name_end = result
         return ManifestEntryLocation(
-            line_number=line_idx + 1,
-            start=name_start,
-            end=name_end,
+            line_number=loc.start_line + 1,  # convert 0-based to 1-based line numbers
+            start=loc.start_col,
+            end=loc.end_col,
         )
 
     # Characters not allowed in a project name (YAML special chars).
@@ -517,35 +526,7 @@ _update_value = update_value
 _append_field = append_field
 
 
-def _locate_project_name_line(
-    lines: Sequence[str], project_name: str
-) -> tuple[int, int, int, int] | None:
-    """Scan *lines* for the ``- name: <project_name>`` entry.
-
-    Returns ``(line_idx, item_indent, name_col_start, name_col_end)`` or
-    ``None`` when the project is not found.
-
-    - ``line_idx``: 0-based index into *lines*
-    - ``item_indent``: column of the ``-`` character
-    - ``name_col_start``: 1-based column of the first character of the name value
-      (compatible with :class:`ManifestEntryLocation`)
-    - ``name_col_end``: 0-based exclusive end column of the name value
-    """
-    pattern = re.compile(
-        r"^(?P<indent>\s*)-\s*name:\s*(?P<name>"
-        + re.escape(project_name)
-        + r")\s*(?:#.*)?$"
-    )
-    for i, line in enumerate(lines):
-        m = pattern.match(line.rstrip("\n\r"))
-        if m:
-            return i, len(m.group("indent")), m.start("name") + 1, m.end("name")
-    return None
-
-
-def _find_project_block(
-    lines: Sequence[str], project_name: str
-) -> tuple[int, int, int]:
+def _find_project_block(text: str, project_name: str) -> tuple[int, int, int]:
     """Return ``(start, end, item_indent)`` for the named project's YAML block.
 
     *start* is the index of the ``- name: <project_name>`` line.
@@ -555,23 +536,22 @@ def _find_project_block(
     Raises:
         RuntimeError: if the project name is not found.
     """
-    result = _locate_project_name_line(lines, project_name)
-    if result is None:
+    path = ("manifest", "projects", {"name": project_name})
+    loc = get_node_location(text, path)
+
+    if loc is None:
         raise RuntimeError(f"Project '{project_name}' not found in manifest text")
 
-    start, item_indent, _, _ = result
+    # start line and end line from AST
+    start = loc.start_line
+    end = loc.end_line
 
-    end = len(lines)
-    for i in range(start + 1, len(lines)):
-        line = lines[i]
-        if not line.strip():
-            continue
-        if line.lstrip().startswith("#"):
-            continue
-        indent = len(line) - len(line.lstrip())
-        if indent <= item_indent:
-            end = i
-            break
+    # find indentation of the '-' in '- name: <project_name>'
+    line_text = text.splitlines()[start]
+    item_indent = len(line_text) - len(line_text.lstrip())
+
+    # adjust end to be exclusive
+    end += 1
 
     return start, end, item_indent
 
@@ -639,24 +619,6 @@ def _set_integrity_hash_in_block(
 _VERSION_KEYS: tuple[str, ...] = ("revision", "tag", "branch")
 
 
-def _remove_integrity_block(block: Sequence[str], field_indent: int) -> list[str]:
-    """Remove the ``integrity:`` mapping and all its children from *block*."""
-    result = list(block)
-    integrity_idx = _find_field(result, "integrity", field_indent)
-    if integrity_idx is None:
-        return result
-    sub_end = len(result)
-    for i in range(integrity_idx + 1, len(result)):
-        line = result[i]
-        if not line.strip() or line.lstrip().startswith("#"):
-            continue
-        if len(line) - len(line.lstrip()) <= field_indent:
-            sub_end = i
-            break
-    del result[integrity_idx:sub_end]
-    return result
-
-
 def _remove_stale_version_fields(
     block: Sequence[str],
     field_indent: int,
@@ -671,7 +633,7 @@ def _remove_stale_version_fields(
             if idx is not None:
                 del result[idx]
     if not keep_integrity:
-        result = _remove_integrity_block(result, field_indent)
+        result = remove_field_block(result, ("integrity",))
     return result
 
 
@@ -744,7 +706,7 @@ def _update_project_version_in_text(text: str, project: ProjectEntry) -> str:
     """
     fields_to_set, integrity_hash = _collect_version_fields(project.as_yaml())
     lines = text.splitlines(keepends=True)
-    start, end, item_indent = _find_project_block(lines, project.name)
+    start, end, item_indent = _find_project_block(text, project.name)
     block = _apply_block_updates(
         list(lines[start:end]), item_indent + 2, fields_to_set, integrity_hash
     )
