@@ -73,7 +73,7 @@ def call_command(context: Context, args: list[str], path: Optional[str] = ".") -
 
 def check_file(path, content, strict=False):
     """Check a file."""
-    with open(path, "r", encoding="UTF-8") as file_to_check:
+    with open(path, "r", encoding="UTF-8", newline="") as file_to_check:
         check_content(
             content.splitlines(True), file_to_check.readlines(), strict=strict
         )
