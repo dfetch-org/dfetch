@@ -40,9 +40,9 @@ In our above example this would for instance result in:
 
 You can also freeze a subset of projects by listing their names:
 
-.. code-block:: sh
+.. code-block:: console
 
-    dfetch freeze mymodule
+    $ dfetch freeze mymodule
 
 .. scenario-include:: ../features/freeze-projects.feature
 
