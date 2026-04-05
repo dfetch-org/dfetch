@@ -175,6 +175,7 @@ def test_add_command_non_interactive_appends_entry():
             Add()(_make_args("https://github.com/org/myrepo.git"))
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "myrepo"
     assert entry.branch == "main"
@@ -207,6 +208,7 @@ def test_add_command_non_interactive_field_overrides():
             )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "custom-name"
     assert entry.destination == "ext/custom"
@@ -276,6 +278,7 @@ def test_add_command_interactive_branch():
                     )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "myrepo"
     assert entry.branch == "dev"
@@ -351,6 +354,7 @@ def test_add_command_interactive_tag():
                     )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.tag == "v2.0"
     assert entry.branch == ""
@@ -386,6 +390,7 @@ def test_add_command_interactive_abort():
                     )
 
     fake_superproject.manifest.append_project_entry.assert_not_called()
+    fake_superproject.manifest.update_dump.assert_not_called()
 
 
 def test_add_command_interactive_with_src():
@@ -421,6 +426,7 @@ def test_add_command_interactive_with_src():
                     )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.source == "include/"
 
@@ -458,6 +464,7 @@ def test_add_command_interactive_with_ignore():
                     )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert list(entry.ignore) == ["tests", "docs"]
 
@@ -538,6 +545,7 @@ def test_add_command_interactive_with_overrides():
                     )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "overridden-name"
     assert entry.destination == "ext/overridden"
@@ -579,6 +587,7 @@ def test_add_command_interactive_with_all_overrides():
 
     mock_prompt.assert_not_called()
     fake_superproject.manifest.append_project_entry.assert_called_once()
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "mylib"
     assert entry.destination == "ext/mylib"
@@ -635,6 +644,7 @@ def test_add_command_interactive_svn_trunk():
                     Add()(_make_args(_SVN_URL, interactive=True))
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "myrepo"
     assert entry.branch == "trunk"
@@ -752,6 +762,7 @@ def test_add_command_non_interactive_svn():
             Add()(_make_args(_SVN_URL))
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.branch == "trunk"
 
@@ -787,6 +798,7 @@ def test_add_command_matches_existing_remote():
             )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     yaml_data = entry.as_yaml()
     assert yaml_data.get("remote") == "github"
