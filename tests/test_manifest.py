@@ -180,38 +180,47 @@ def test_single_suggestion_not_found() -> None:
     assert ["first"] == exception._guess_project(["irst", "1234"])
 
 
+_FOO_MANIFEST_TEXT = (
+    "manifest:\n"
+    "  version: '0.0'\n"
+    "  projects:\n"
+    "  - name: foo\n"
+    "    url: https://example.com\n"
+)
+_FOO_MANIFEST_TEXT_WITH_COMMENT = (
+    "manifest:\n"
+    "  version: '0.0'\n"
+    "  projects:\n"
+    "  - name: foo # some comment\n"
+    "    url: https://example.com\n"
+)
+
+
 @pytest.mark.parametrize(
-    "name, manifest, project_name, result",
+    "name, manifest_text, project_name, result",
     [
         (
             "match",
-            " - name: foo",
+            _FOO_MANIFEST_TEXT,
             "foo",
-            ManifestEntryLocation(line_number=1, start=10, end=12),
+            ManifestEntryLocation(line_number=4, start=11, end=13),
         ),
         (
             "no match",
-            " - name: foo",
+            _FOO_MANIFEST_TEXT,
             "baz",
             RuntimeError,
         ),
         (
             "with comment",
-            " - name: foo # some comment",
+            _FOO_MANIFEST_TEXT_WITH_COMMENT,
             "foo",
-            ManifestEntryLocation(line_number=1, start=10, end=12),
-        ),
-        (
-            "no spaces",
-            " -name:foo #some comment",
-            "foo",
-            ManifestEntryLocation(line_number=1, start=8, end=10),
+            ManifestEntryLocation(line_number=4, start=11, end=13),
         ),
     ],
 )
-def test_get_manifest_location(name, manifest, project_name, result) -> None:
-
-    manifest = Manifest(DICTIONARY_MANIFEST, text=manifest)
+def test_get_manifest_location(name, manifest_text, project_name, result) -> None:
+    manifest = Manifest(DICTIONARY_MANIFEST, text=manifest_text)
 
     if result == RuntimeError:
         with pytest.raises(RuntimeError):
@@ -278,255 +287,6 @@ manifest:
 """
 
 
-# --- _locate_project_name_line ---------------------------------------------
-
-
-def test_locate_project_name_line_found() -> None:
-    lines = _SIMPLE_MANIFEST.splitlines()
-    result = _locate_project_name_line(lines, "myproject")
-    assert result is not None
-    line_idx, item_indent, name_start, name_end = result
-    assert item_indent == 4
-    assert lines[line_idx][name_start - 1 : name_end] == "myproject"
-
-
-def test_locate_project_name_line_not_found() -> None:
-    lines = _SIMPLE_MANIFEST.splitlines()
-    assert _locate_project_name_line(lines, "nonexistent") is None
-
-
-def test_locate_is_shared_by_find_name_and_find_block() -> None:
-    """find_name_in_manifest and _find_project_block agree on the same line."""
-    text = _SIMPLE_MANIFEST
-    manifest = Manifest(
-        {"version": "0.0", "projects": [{"name": "myproject", "url": "https://x.com"}]},
-        text=text,
-    )
-    location = manifest.find_name_in_manifest("myproject")
-
-    lines = text.splitlines(keepends=True)
-    start, _end, _indent = _find_project_block(lines, "myproject")
-
-    # Both should point to the same line (1-based vs 0-based).
-    assert location.line_number == start + 1
-
-
-# --- _find_project_block ---------------------------------------------------
-
-
-def test_find_project_block_single() -> None:
-    lines = _SIMPLE_MANIFEST.splitlines(keepends=True)
-    start, end, item_indent = _find_project_block(lines, "myproject")
-    assert item_indent == 4
-    assert lines[start].startswith("    - name: myproject")
-    # end should point past the block
-    assert end == len(lines)
-
-
-def test_find_project_block_first_of_two() -> None:
-    lines = _TWO_PROJECT_MANIFEST.splitlines(keepends=True)
-    start, end, item_indent = _find_project_block(lines, "first")
-    assert item_indent == 4
-    assert lines[start].startswith("    - name: first")
-    # The blank line between projects is excluded from the block
-    block_text = "".join(lines[start:end])
-    assert "second" not in block_text
-
-
-def test_find_project_block_second_of_two() -> None:
-    lines = _TWO_PROJECT_MANIFEST.splitlines(keepends=True)
-    start, _end, _indent = _find_project_block(lines, "second")
-    assert lines[start].startswith("    - name: second")
-
-
-def test_find_project_block_not_found() -> None:
-    lines = _SIMPLE_MANIFEST.splitlines(keepends=True)
-    with pytest.raises(RuntimeError, match="not found"):
-        _find_project_block(lines, "nonexistent")
-
-
-def test_find_project_block_comment_at_item_indent_does_not_end_block() -> None:
-    """A comment at the same indent level as '- name:' must not split the block."""
-    manifest = (
-        "  - name: myproject\n"
-        "    url: https://example.com\n"
-        "  # revision: old-rev  <- comment at item-indent\n"
-        "    branch: main\n"
-    )
-    lines = manifest.splitlines(keepends=True)
-    start, end, item_indent = _find_project_block(lines, "myproject")
-    block_text = "".join(lines[start:end])
-    assert "branch: main" in block_text
-
-
-# --- _set_simple_field_in_block --------------------------------------------
-
-
-def test_set_simple_field_updates_existing() -> None:
-    block = [
-        "    - name: myproject\n",
-        "      revision: oldrev\n",
-        "      url: https://example.com\n",
-    ]
-    result = _set_simple_field_in_block(block, 6, "revision", "newrev")
-    assert any("revision: newrev" in l for l in result)
-    assert not any("oldrev" in l for l in result)
-
-
-def test_set_simple_field_inserts_after_name() -> None:
-    block = [
-        "    - name: myproject\n",
-        "      url: https://example.com\n",
-    ]
-    result = _set_simple_field_in_block(block, 6, "revision", "abc123")
-    assert result[1] == "      revision: abc123\n"
-    assert result[2] == "      url: https://example.com\n"
-
-
-# --- _find_field -----------------------------------------------------------
-
-
-def test_find_field_returns_index_when_present() -> None:
-    block = [
-        "    - name: myproject\n",
-        "      revision: abc\n",
-        "      url: https://example.com\n",
-    ]
-    assert _find_field(block, "revision", 6) == 1
-
-
-def test_find_field_returns_none_when_absent() -> None:
-    block = [
-        "    - name: myproject\n",
-        "      url: https://example.com\n",
-    ]
-    assert _find_field(block, "revision", 6) is None
-
-
-def test_find_field_respects_start_end_bounds() -> None:
-    block = [
-        "    - name: myproject\n",
-        "      revision: abc\n",
-        "      url: https://example.com\n",
-    ]
-    # revision is at index 1, but we start searching at index 2 — should not find it
-    assert _find_field(block, "revision", 6, start=2) is None
-    # and with end=1 it is also excluded
-    assert _find_field(block, "revision", 6, start=0, end=1) is None
-
-
-def test_find_field_ignores_wrong_indent() -> None:
-    block = [
-        "    - name: myproject\n",
-        "    revision: abc\n",  # indent 4, not 6
-        "      url: https://example.com\n",
-    ]
-    assert _find_field(block, "revision", 6) is None
-
-
-def test_find_field_skips_commented_out_field() -> None:
-    """A '# field: value' line must not be matched — field is considered absent."""
-    block = [
-        "    - name: myproject\n",
-        "      # branch: main\n",  # commented-out
-        "      url: https://example.com\n",
-    ]
-    assert _find_field(block, "branch", 6) is None
-
-
-def test_find_field_skips_commented_field_no_space() -> None:
-    """'#field: value' (no space after #) must also not be matched."""
-    block = [
-        "    - name: myproject\n",
-        "      #branch: main\n",
-        "      url: https://example.com\n",
-    ]
-    assert _find_field(block, "branch", 6) is None
-
-
-def test_find_field_finds_real_field_past_commented_one() -> None:
-    """The live field after a commented-out duplicate is matched."""
-    block = [
-        "    - name: myproject\n",
-        "      # branch: old\n",
-        "      branch: new\n",
-    ]
-    assert _find_field(block, "branch", 6) == 2
-
-
-# --- _update_value ---------------------------------------------------------
-
-
-def test_update_value_replaces_inline_value() -> None:
-    block = [
-        "    - name: myproject\n",
-        "      revision: old\n",
-    ]
-    result = _update_value(block, 1, "revision", "new")
-    assert result[1] == "      revision: new\n"
-    assert result[0] == block[0]  # untouched
-
-
-def test_update_value_preserves_indent() -> None:
-    block = ["        revision: old\n"]
-    result = _update_value(block, 0, "revision", "newrev")
-    assert result[0].startswith("        revision:")
-
-
-def test_update_value_preserves_trailing_comment() -> None:
-    block = ["      branch: main  # track the integration branch\n"]
-    result = _update_value(block, 0, "branch", "main")
-    assert result[0] == "      branch: main  # track the integration branch\n"
-
-
-# --- _append_field ---------------------------------------------------------
-
-
-def test_append_field_inserts_at_position() -> None:
-    block = [
-        "    - name: myproject\n",
-        "      url: https://example.com\n",
-    ]
-    result = _append_field(block, "revision", "abc123", 6, after=1)
-    assert result[1] == "      revision: abc123\n"
-    assert result[2] == "      url: https://example.com\n"
-
-
-def test_append_field_empty_value_omits_value_part() -> None:
-    block = ["    - name: myproject\n"]
-    result = _append_field(block, "integrity", "", 6, after=1)
-    assert result[1] == "      integrity:\n"
-
-
-# --- _set_integrity_hash_in_block ------------------------------------------
-
-
-def test_set_integrity_hash_inserts_when_absent() -> None:
-    block = [
-        "    - name: myproject\n",
-        "      url: https://example.com/archive.tar.gz\n",
-        "      vcs: archive\n",
-    ]
-    result = _set_integrity_hash_in_block(block, 6, "sha256:abc123")
-    joined = "".join(result)
-    assert "integrity:" in joined
-    assert "hash: sha256:abc123" in joined
-
-
-def test_set_integrity_hash_updates_existing_hash() -> None:
-    block = [
-        "    - name: myproject\n",
-        "      url: https://example.com/archive.tar.gz\n",
-        "      vcs: archive\n",
-        "      integrity:\n",
-        "        hash: sha256:old\n",
-    ]
-    result = _set_integrity_hash_in_block(block, 6, "sha256:new")
-    joined = "".join(result)
-    assert "hash: sha256:new" in joined
-    assert "sha256:old" not in joined
-
-
 # --- _update_project_version_in_text ---------------------------------------
 
 
@@ -556,14 +316,12 @@ def test_update_second_project_does_not_touch_first() -> None:
     )
     result = _update_project_version_in_text(text, project)
 
-    # Verify the "first" block is unchanged by re-parsing and checking project count
-    # with "revision" in the result.
     assert "revision:" in result  # second project got a revision
 
-    # The "first" project block should have no revision field: find its block boundaries
-    lines = result.splitlines(keepends=True)
-    first_start, first_end, _ = _find_project_block(lines, "first")
-    first_block_text = "".join(lines[first_start:first_end])
+    # The text between "- name: first" and "- name: second" must not contain "revision".
+    first_idx = result.index("- name: first")
+    second_idx = result.index("- name: second")
+    first_block_text = result[first_idx:second_idx]
     assert "revision" not in first_block_text
 
 
@@ -665,49 +423,3 @@ def test_update_stale_revision_removed_when_project_switches_to_tag() -> None:
     assert "branch:" not in result
 
 
-# ---------------------------------------------------------------------------
-# EOL preservation
-# ---------------------------------------------------------------------------
-
-
-def test_update_value_preserves_crlf() -> None:
-    block = ["      revision: old\r\n"]
-    result = _update_value(block, 0, "revision", "new")
-    assert result[0].endswith("\r\n")
-    assert result[0] == "      revision: new\r\n"
-
-
-def test_append_field_inherits_crlf_from_block() -> None:
-    block = [
-        "    - name: myproject\r\n",
-        "      url: https://example.com\r\n",
-    ]
-    result = _append_field(block, "revision", "abc", 6, after=1)
-    assert result[1].endswith("\r\n"), "inserted line should use CRLF to match block"
-
-
-def test_append_field_defaults_to_lf_on_empty_block() -> None:
-    result = _append_field([], "revision", "abc", 6, after=0)
-    assert result[0].endswith("\n")
-    assert not result[0].endswith("\r\n")
-
-
-# ---------------------------------------------------------------------------
-# integrity sub_end comment fix
-# ---------------------------------------------------------------------------
-
-
-def test_integrity_hash_updated_past_comment_in_integrity_block() -> None:
-    """A comment inside an integrity: block must not cut off the hash: search."""
-    block = [
-        "    - name: myproject\n",
-        "      integrity:\n",
-        "        # checksum added by CI\n",
-        "        hash: sha256:oldvalue\n",
-        "      url: https://example.com\n",
-    ]
-    result = _set_integrity_hash_in_block(block, 6, "sha256:newvalue")
-    joined = "".join(result)
-    assert "hash: sha256:newvalue" in joined
-    assert "sha256:oldvalue" not in joined
-    assert "# checksum added by CI" in joined

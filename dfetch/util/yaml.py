@@ -195,24 +195,42 @@ class YamlDocument:
             f"{' ' * indent}{field_name}: {self._yaml_scalar(value)}{comment}{self.eol}"
         )
 
-    def _add_field(self, path: FieldPath, value: str, comment: str) -> None:
+    def _add_field(
+        self, path: FieldPath, value: str, comment: str, *, _at_end: bool = False
+    ) -> None:
         parent_path = FieldPath(path.parts[:-1])
         field_name = path.parts[-1]
-        parent_idx = (
-            self._find_field(parent_path) if parent_path.parts else len(self.lines)
-        )
+        parent_idx = self._find_field(parent_path) if parent_path.parts else None
+
+        if parent_idx is None and parent_path.parts:
+            # Parent doesn't exist yet — create it at the end of its own parent's
+            # block so it appears after all existing sibling fields.
+            self._add_field(parent_path, "", "", _at_end=True)
+            parent_idx = self._find_field(parent_path)
+
         indent = 0
         if parent_path.parts and parent_idx is not None:
             indent = (
                 len(self.lines[parent_idx]) - len(self.lines[parent_idx].lstrip()) + 2
             )
+
         value_part = f": {self._yaml_scalar(value)}" if value else ":"
         comment_part = f"  # {comment}" if comment else ""
-        insert_idx = (
-            parent_idx + 1
-            if parent_path.parts and parent_idx is not None
-            else len(self.lines)
-        )
+
+        if _at_end and parent_path.parts and parent_idx is not None:
+            # Append after all existing children of the parent node.
+            loc = self.get_node_location(parent_path)
+            insert_idx = (
+                loc.end_line
+                if loc is not None and loc.end_line > parent_idx
+                else parent_idx + 1
+            )
+        elif parent_path.parts and parent_idx is not None:
+            # Default: insert right after the parent's own line.
+            insert_idx = parent_idx + 1
+        else:
+            insert_idx = len(self.lines)
+
         self.lines.insert(
             insert_idx,
             f"{' ' * indent}{field_name}{value_part}{comment_part}{self.eol}",
@@ -226,10 +244,12 @@ class YamlDocument:
         while i < len(path.parts):
             key = path.parts[i]
             if key.isdigit():
-                idx = self._find_field_at_indent("-", indent, start)
-                if idx is None:
-                    return None
-                start = idx + 1
+                # Skip over the first n items to reach the n-th one (0-based).
+                for _ in range(int(key) + 1):
+                    idx = self._find_field_at_indent("-", indent, start)
+                    if idx is None:
+                        return None
+                    start = idx + 1
                 i += 1
                 indent += 2
             else:
