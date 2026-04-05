@@ -5,6 +5,7 @@
 # pyright: ignore[reportAttributeAccessIssue]
 
 import os
+from typing import cast
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -17,7 +18,7 @@ from dfetch.manifest.manifest import (
     RequestedProjectNotFoundError,
 )
 from dfetch.manifest.parse import find_manifest, get_submanifests
-from dfetch.manifest.project import ProjectEntry
+from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 
 BASIC_MANIFEST = """
 manifest:
@@ -289,11 +290,9 @@ manifest:
 # --- update_project_version -------------------------------------------------
 
 
-def _make_project(name: str, **kwargs) -> ProjectEntry:
+def _make_project(name: str, **kwargs: str) -> ProjectEntry:
     """Helper: build a ProjectEntry with the given fields."""
-    data: dict = {"name": name}
-    data.update(kwargs)
-    return ProjectEntry(data)  # type: ignore[arg-type]
+    return ProjectEntry(cast(ProjectEntryDict, {"name": name, **kwargs}))
 
 
 def _update(text: str, project: ProjectEntry) -> str:

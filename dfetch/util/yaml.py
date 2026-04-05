@@ -92,7 +92,15 @@ class YamlDocument:
 
     # ---------------- Public API ----------------
     def get(self, path: str | FieldPath) -> str | None:
-        """Get the value of a field by path."""
+        """Get the value of a field by path.
+
+        Note: inline comments (text after an unquoted ``#``) are stripped from
+        the returned value by splitting on the first ``#`` character.  Values
+        that legitimately contain ``#`` inside YAML quotes (e.g.
+        ``url: "path#fragment"``) will be returned truncated.  Use
+        :meth:`set` / :meth:`dump` or a proper YAML parser when the value may
+        contain ``#``.
+        """
         path = FieldPath.from_str(path) if isinstance(path, str) else path
         idx = self._find_field(path)
         if idx is None:
@@ -271,6 +279,11 @@ class YamlDocument:
         )
 
     def _find_field(self, path: FieldPath) -> int | None:
+        # Dfetch manifests always use 2-space indentation.  Each path segment
+        # moves one level deeper, so the expected indent increases by 2 per
+        # step.  _find_field_at_indent matches lines that start with exactly
+        # ``indent`` spaces followed by the field name (or "-" for list items).
+        # This will not work correctly for manifests with other indentation widths.
         indent = 0
         start = 0
         idx: int | None = None

@@ -100,6 +100,7 @@ class Freeze(dfetch.commands.command.Command):
         make_backup = isinstance(superproject, NoVcsSuperProject)
 
         exceptions: list[str] = []
+        manifest_updated = False
 
         with in_directory(superproject.root_directory):
             manifest_path = superproject.manifest.path
@@ -131,7 +132,8 @@ class Freeze(dfetch.commands.command.Command):
                             f"Frozen on version {new_version}",
                         )
                         superproject.manifest.update_project_version(project)
+                        manifest_updated = True
 
-            superproject.manifest.update_dump()
-
-            logger.info(f"Updated manifest ({manifest_path}) in {os.getcwd()}")
+            if manifest_updated:
+                superproject.manifest.update_dump()
+                logger.info(f"Updated manifest ({manifest_path}) in {os.getcwd()}")
