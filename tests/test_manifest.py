@@ -371,3 +371,22 @@ def test_update_commented_out_field_is_appended_not_matched() -> None:
     # The live branch line keeps its value
     assert "      branch: main" in result
     assert "revision:" in result
+
+
+def test_update_removes_stale_revision_when_pinned_by_tag() -> None:
+    """update_project_version must delete stale 'revision' when the project is now pinned by tag."""
+    text = (
+        "manifest:\n"
+        "  version: '0.0'\n"
+        "  projects:\n"
+        "    - name: myproject\n"
+        "      url: https://example.com\n"
+        "      revision: oldrev\n"
+        "      branch: main\n"
+    )
+    # Project is now pinned exclusively by tag (revision and branch are empty).
+    project = _make_project("myproject", tag="v1.2.3")
+    result = _update(text, project)
+    assert "tag: v1.2.3" in result
+    assert "revision:" not in result
+    assert "branch:" not in result

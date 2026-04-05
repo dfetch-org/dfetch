@@ -236,6 +236,8 @@ def test_add_command_suffixes_duplicate_name():
         ):
             Add()(_make_args("https://github.com/org/myrepo.git"))
 
+    fake_superproject.manifest.append_project_entry.assert_called_once()
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "myrepo-1"
 
@@ -317,6 +319,7 @@ def test_add_command_interactive_branch_by_number():
                         )
                     )
 
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.branch == "dev"
 
@@ -677,6 +680,7 @@ def test_add_command_interactive_svn_custom_branch():
                 ):
                     Add()(_make_args(_SVN_URL, interactive=True))
 
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.branch == "feature-x"
 
@@ -708,6 +712,7 @@ def test_add_command_interactive_svn_tag():
                 ):
                     Add()(_make_args(_SVN_URL, interactive=True))
 
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.tag == "v2.0"
     assert entry.branch == ""
@@ -740,6 +745,7 @@ def test_add_command_interactive_svn_branch_by_number():
                 ):
                     Add()(_make_args(_SVN_URL, interactive=True))
 
+    fake_superproject.manifest.update_dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.branch == "feature-x"
 
