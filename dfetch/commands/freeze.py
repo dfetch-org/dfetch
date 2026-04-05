@@ -68,7 +68,6 @@ import dfetch.commands.command
 import dfetch.manifest.project
 import dfetch.project
 from dfetch.log import get_logger
-from dfetch.manifest.manifest import update_project_in_manifest_file
 from dfetch.project import create_super_project
 from dfetch.project.superproject import NoVcsSuperProject
 from dfetch.util.util import catch_runtime_exceptions, in_directory
@@ -131,8 +130,8 @@ class Freeze(dfetch.commands.command.Command):
                             project.name,
                             f"Frozen on version {new_version}",
                         )
-                        update_project_in_manifest_file(
-                            project, superproject.manifest.path
-                        )
+                        superproject.manifest.update_project_version(project)
+
+            superproject.manifest.update_dump()
 
             logger.info(f"Updated manifest ({manifest_path}) in {os.getcwd()}")
