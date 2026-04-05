@@ -47,6 +47,21 @@ class FieldFilter:
     value: str
 
 
+@dataclass
+class FilterMatch:
+    """A sequence item that matched a :class:`FieldFilter`.
+
+    ``path`` points to the matched sequence item (e.g.
+    ``["manifest", "projects", "0"]``).  ``value_location`` is the exact
+    source position of the filter field's value scalar inside that item —
+    the same location that a follow-up ``get_node_location`` call would
+    return for ``FieldPath([*path.parts, filter.key])``.
+    """
+
+    path: FieldPath
+    value_location: FieldLocation
+
+
 class YamlDocument:
     """A YAML document supporting smart field manipulation with comments, line endings, and filtering."""
 
@@ -108,7 +123,7 @@ class YamlDocument:
 
     def find_by_filter(
         self, sequence_path: str | FieldPath, field_filter: FieldFilter
-    ) -> list[FieldPath]:
+    ) -> list[FilterMatch]:
         """Find all entries in a YAML sequence where a field has a given value.
 
         Args:
@@ -116,9 +131,13 @@ class YamlDocument:
             field_filter: Filter key and expected value.
 
         Returns:
-            List of FieldPath pointing to each matching sequence item.
-            Example: for "manifest.projects" with filter "name=foo", returns
-            [FieldPath(['manifest', 'projects', '0'])] for the first match.
+            List of :class:`FilterMatch` objects, each containing:
+
+            * ``path`` — path to the matched sequence item (e.g.
+              ``FieldPath(['manifest', 'projects', '0'])``).
+            * ``value_location`` — exact source position of the filter
+              field's value scalar within that item, so callers never need
+              a separate ``get_node_location`` call.
         """
         sequence_path = (
             FieldPath.from_str(sequence_path)
@@ -131,7 +150,7 @@ class YamlDocument:
         if not isinstance(sequence_node, SequenceNode):
             return []
 
-        matches: list[FieldPath] = []
+        matches: list[FilterMatch] = []
         for idx, item in enumerate(sequence_node.value):
             if not isinstance(item, MappingNode):
                 continue
@@ -141,7 +160,17 @@ class YamlDocument:
                 isinstance(value_node, ScalarNode)
                 and str(value_node.value) == field_filter.value
             ):
-                matches.append(FieldPath(sequence_path.parts + [str(idx)]))
+                matches.append(
+                    FilterMatch(
+                        path=FieldPath(sequence_path.parts + [str(idx)]),
+                        value_location=FieldLocation(
+                            start_line=value_node.start_mark.line,
+                            start_col=value_node.start_mark.column,
+                            end_line=value_node.end_mark.line,
+                            end_col=value_node.end_mark.column,
+                        ),
+                    )
+                )
 
         return matches
 
@@ -162,9 +191,9 @@ class YamlDocument:
             target_field: Field to update; if None, updates the filtered field itself.
         """
         matches = self.find_by_filter(sequence_path, field_filter)
-        for path in matches:
+        for match in matches:
             field_to_update = target_field if target_field else field_filter.key
-            field_path = FieldPath(path.parts + [field_to_update])
+            field_path = FieldPath(match.path.parts + [field_to_update])
             current_value: str = self.get(field_path) or ""
             new_value = updater(current_value) if callable(updater) else updater
             self.set(field_path, new_value)
@@ -182,8 +211,8 @@ class YamlDocument:
         """
         matches = self.find_by_filter(sequence_path, field_filter)
         # Delete in reverse to avoid shifting line indices
-        for path in reversed(matches):
-            self.delete(path)
+        for match in reversed(matches):
+            self.delete(match.path)
 
     # ---------------- Internal helpers ----------------
     def _update_line(self, idx: int, field_name: str, value: str) -> None:

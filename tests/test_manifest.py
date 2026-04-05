@@ -421,5 +421,3 @@ def test_update_stale_revision_removed_when_project_switches_to_tag() -> None:
     assert "tag: v1.0.0" in result
     assert "revision:" not in result
     assert "branch:" not in result
-
-
