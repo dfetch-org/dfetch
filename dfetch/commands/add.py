@@ -24,7 +24,7 @@ import dfetch.manifest.project
 import dfetch.project
 from dfetch import terminal
 from dfetch.log import get_logger
-from dfetch.manifest.manifest import Manifest, append_entry_manifest_file
+from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote
 from dfetch.manifest.version import Version
@@ -252,10 +252,8 @@ def _finalize_add(
         )
         return
 
-    append_entry_manifest_file(
-        (superproject.root_directory / superproject.manifest.path).absolute(),
-        project_entry,
-    )
+    superproject.manifest.append_project_entry(project_entry)
+    superproject.manifest.update_dump()
     logger.print_info_line(
         project_entry.name,
         f"Added '{project_entry.name}' to manifest '{superproject.manifest.path}'",

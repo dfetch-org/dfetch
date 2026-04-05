@@ -392,6 +392,23 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         )
 
     # ---------------- YAML updates ----------------
+    def append_project_entry(self, project_entry: "ProjectEntry") -> None:
+        """Append *project_entry* to the projects list in-memory.
+
+        The new entry is formatted the same way as the existing YAML in the
+        document (2-space indent under ``projects:``).  Call
+        :meth:`update_dump` afterwards to persist the change to disk.
+        """
+        new_entry = yaml.dump(
+            [project_entry.as_yaml()],
+            sort_keys=False,
+            line_break=os.linesep,
+            indent=2,
+        )
+        self._doc.lines.append(self._doc.eol)
+        for line in new_entry.splitlines():
+            self._doc.lines.append(f"  {line}{self._doc.eol}")
+
     def update_project_version(self, project: ProjectEntry) -> None:
         """Update a project's version in the manifest in-place, preserving layout, comments, and line endings."""
         for name, value in project.version._asdict().items():
@@ -511,22 +528,3 @@ class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
 
         self._last_additional_break = len(self.indents)
 
-
-# TODO: make this a class member of manifest which manipulates the internal self.__doc
-#       to preserve formatting and comments when updating the manifest file.
-#       the should choose when to update the file on disk (After moving update callers).
-def append_entry_manifest_file(
-    manifest_path: str | Path,
-    project_entry: ProjectEntry,
-) -> None:
-    """Add the project entry to the manifest file."""
-    with Path(manifest_path).open("a", encoding="utf-8") as manifest_file:
-        new_entry = yaml.dump(
-            [project_entry.as_yaml()],
-            sort_keys=False,
-            line_break=os.linesep,
-            indent=2,
-        )
-        manifest_file.write("\n")
-        for line in new_entry.splitlines():
-            manifest_file.write(f"  {line}\n")
