@@ -3,10 +3,28 @@
 These helpers operate on plain lists of text lines and know nothing about
 dfetch-specific concepts.  They are used by :mod:`dfetch.manifest.manifest`
 to edit manifest files in-place while preserving comments and layout.
+
+The public interface uses a subset of JSONPath (RFC 9535) to address fields:
+
+* ``$.key.subkey``                     — child member access
+* ``$.key[n]``                         — array element by index
+* ``[?(@.field == "value")]``          — filter (string equality only)
+
+Combining these, the typical freeze call looks like::
+
+    doc.set(
+        '$.manifest.projects[?(@.name == "my-project")]',
+        "tag",
+        "v1.2.3",
+    )
+
+**Indentation assumption**: dfetch manifests use 2-space indentation.
+The text-walking helpers rely on this and will not work correctly for
+other indentation widths.
 """
 
 import re
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import yaml
@@ -15,7 +33,7 @@ from yaml.nodes import MappingNode, Node, ScalarNode, SequenceNode
 
 @dataclass
 class FieldLocation:
-    """Represents the position of a YAML field in a document."""
+    """Position of a YAML field in a document (0-based line and column)."""
 
     start_line: int
     start_col: int
@@ -24,207 +42,242 @@ class FieldLocation:
 
 
 @dataclass
-class FieldPath:
-    """Represents a field path in a YAML document."""
+class NodeMatch:
+    """A scalar value in the document matched by a JSONPath expression.
 
-    parts: list[str]
+    ``value`` is the plain string value; ``location`` is its exact source
+    position, suitable for SARIF diagnostics or follow-up edits.
+    """
 
-    @classmethod
-    def from_str(cls, path: str) -> "FieldPath":
-        """Parse a dot-separated field path string."""
-        return cls(path.split("."))
-
-    def __str__(self) -> str:
-        """Return dot-separated path string."""
-        return ".".join(self.parts)
+    value: str
+    location: FieldLocation
 
 
 @dataclass
-class FieldFilter:
-    """Represents a simple filter for fields in a YAML sequence."""
+class _FilterStep:
+    """An equality-filter step: ``[?(@.key == "value")]``."""
 
     key: str
     value: str
 
 
-@dataclass
-class FilterMatch:
-    """A sequence item that matched a :class:`FieldFilter`.
+class YamlDocument:
+    """A YAML document supporting JSONPath-driven, format-preserving field edits.
 
-    ``path`` points to the matched sequence item (e.g.
-    ``["manifest", "projects", "0"]``).  ``value_location`` is the exact
-    source position of the filter field's value scalar inside that item —
-    the same location that a follow-up ``get_node_location`` call would
-    return for ``FieldPath([*path.parts, filter.key])``.
+    The document is stored as a list of raw text lines so that all edits
+    preserve comments, blank lines, and the original indentation.
+    JSONPath expressions (RFC 9535 subset) are used to locate and mutate
+    fields via :meth:`get` and :meth:`set`.
     """
 
-    path: FieldPath
-    value_location: FieldLocation
+    # ------------------------------------------------------------------ #
+    # JSONPath parsing regexes                                             #
+    # ------------------------------------------------------------------ #
 
-
-class YamlDocument:
-    """A YAML document supporting smart field manipulation with comments, line endings, and filtering."""
+    _MEMBER_RE = re.compile(r"\.([A-Za-z_][A-Za-z0-9_-]*)")
+    _INDEX_RE = re.compile(r"\[(\d+)\]")
+    # Matches [?(@.key == "value")] or [?(@.key == 'value')] with optional spaces.
+    _FILTER_RE = re.compile(
+        r"""\[\?\(@\.([A-Za-z_][A-Za-z0-9_-]*)\s*==\s*["']([^"']*)["']\s*\)\]"""
+    )
 
     def __init__(self, text: str) -> None:
-        """Initialize with YAML text."""
+        """Initialise from a YAML string."""
         self.lines: list[str] = text.splitlines(keepends=True)
         self.eol: str = self._detect_eol(self.lines)
 
-    # ---------------- Line-ending helpers ----------------
-    @staticmethod
-    def _line_eol(line: str) -> str:
-        return (
-            "\r\n" if line.endswith("\r\n") else ("\n" if line.endswith("\n") else "")
-        )
+    # ------------------------------------------------------------------ #
+    # Public API                                                           #
+    # ------------------------------------------------------------------ #
 
-    def _detect_eol(self, lines: Sequence[str]) -> str:
-        for line in lines:
-            eol = self._line_eol(line)
-            if eol:
-                return eol
-        return "\n"
+    def get(self, jsonpath: str) -> list[NodeMatch]:
+        """Return all scalar nodes matching *jsonpath*.
 
-    # ---------------- Scalar handling ----------------
-    @staticmethod
-    def _yaml_scalar(value: str) -> str:
-        dumped: str = yaml.dump(value, default_flow_style=None, allow_unicode=True)
-        return dumped.splitlines()[0]
+        Uses the YAML AST for accurate location tracking.  If the path
+        addresses a non-scalar (mapping or sequence) node the result is
+        empty — navigate further to a scalar leaf first.
 
-    # ---------------- Public API ----------------
-    def get(self, path: str | FieldPath) -> str | None:
-        """Get the value of a field by path.
+        Note: The YAML parser strips inline comments, so the returned
+        ``value`` never contains text after ``#``.  Values that contain
+        ``#`` inside YAML quotes will be returned correctly by this method
+        (unlike the old text-splitting approach).
 
-        Note: inline comments (text after an unquoted ``#``) are stripped from
-        the returned value by splitting on the first ``#`` character.  Values
-        that legitimately contain ``#`` inside YAML quotes (e.g.
-        ``url: "path#fragment"``) will be returned truncated.  Use
-        :meth:`set` / :meth:`dump` or a proper YAML parser when the value may
-        contain ``#``.
+        Example::
+
+            matches = doc.get('$.manifest.projects[?(@.name == "foo")].name')
+            loc = matches[0].location   # FieldLocation with line/col
+
         """
-        path = FieldPath.from_str(path) if isinstance(path, str) else path
-        idx = self._find_field(path)
-        if idx is None:
-            return None
-        line = self.lines[idx].rstrip("\n\r")
-        value = line.split(":", 1)[1].split("#", 1)[0].strip()
-        return value
-
-    def set(self, path: str | FieldPath, value: str, comment: str = "") -> None:
-        """Set or create a field at the given path."""
-        path = FieldPath.from_str(path) if isinstance(path, str) else path
-        idx = self._find_field(path)
-        if idx is not None:
-            self._update_line(idx, path.parts[-1], value)
-        else:
-            self._add_field(path, value, comment)
-
-    def delete(self, path: str | FieldPath) -> None:
-        """Delete a field and its children."""
-        path = FieldPath.from_str(path) if isinstance(path, str) else path
-        loc = self._get_node_location(path)
-        if loc:
-            del self.lines[loc.start_line : loc.end_line + 1]
-
-    def dump(self) -> str:
-        """Return the YAML document as a string."""
-        return "".join(self.lines)
-
-    def find_by_filter(
-        self, sequence_path: str | FieldPath, field_filter: FieldFilter
-    ) -> list[FilterMatch]:
-        """Find all entries in a YAML sequence where a field has a given value.
-
-        Args:
-            sequence_path: Path to the sequence node.
-            field_filter: Filter key and expected value.
-
-        Returns:
-            List of :class:`FilterMatch` objects, each containing:
-
-            * ``path`` — path to the matched sequence item (e.g.
-              ``FieldPath(['manifest', 'projects', '0'])``).
-            * ``value_location`` — exact source position of the filter
-              field's value scalar within that item, so callers never need
-              a separate ``get_node_location`` call.
-        """
-        sequence_path = (
-            FieldPath.from_str(sequence_path)
-            if isinstance(sequence_path, str)
-            else sequence_path
-        )
+        steps = self._parse_jsonpath(jsonpath)
         root = yaml.compose("".join(self.lines))
-        sequence_node = self._traverse_path(root, sequence_path.parts)
+        return self._eval_steps(root, steps)
 
+    def set(self, jsonpath: str, field: str, value: str) -> None:
+        """Set *field* to *value* for every node matched by *jsonpath*.
+
+        *jsonpath* selects the container(s) — typically a sequence item
+        matched by a filter expression.  *field* is the key within each
+        matched container to create or update, and supports dot-notation
+        for nested paths (e.g. ``"integrity.hash"``).
+
+        Example::
+
+            doc.set(
+                '$.manifest.projects[?(@.name == "my-project")]',
+                "tag",
+                "v1.2.3",
+            )
+
+        If no node matches *jsonpath* the call is a no-op.
+        """
+        steps = self._parse_jsonpath(jsonpath)
+
+        filter_idx = next(
+            (i for i, s in enumerate(steps) if isinstance(s, _FilterStep)), None
+        )
+
+        if filter_idx is None:
+            # Simple path — combine steps with field parts and set directly.
+            parts = [s for s in steps if isinstance(s, str)] + field.split(".")
+            self._set_by_parts(parts, value)
+            return
+
+        # There is a filter step: navigate to the sequence via the YAML AST,
+        # find matching items by index, then use text-walking to mutate each.
+        sequence_parts = [s for s in steps[:filter_idx] if isinstance(s, str)]
+        filter_step: _FilterStep = steps[filter_idx]  # type: ignore[assignment]
+        # Any path steps after the filter are inserted between the item path and field.
+        post_filter_parts = [s for s in steps[filter_idx + 1 :] if isinstance(s, str)]
+
+        root = yaml.compose("".join(self.lines))
+        sequence_node = self._traverse_path(root, sequence_parts)
         if not isinstance(sequence_node, SequenceNode):
-            return []
+            return
 
-        matches: list[FilterMatch] = []
-        for idx, item in enumerate(sequence_node.value):
+        for item_idx, item in enumerate(sequence_node.value):
             if not isinstance(item, MappingNode):
                 continue
             mapping = self._mapping_to_dict(item)
-            value_node = mapping.get(field_filter.key)
-            if (
-                isinstance(value_node, ScalarNode)
-                and str(value_node.value) == field_filter.value
+            filter_node = mapping.get(filter_step.key)
+            if not (
+                isinstance(filter_node, ScalarNode)
+                and str(filter_node.value) == filter_step.value
             ):
-                matches.append(
-                    FilterMatch(
-                        path=FieldPath(sequence_path.parts + [str(idx)]),
-                        value_location=FieldLocation(
-                            start_line=value_node.start_mark.line,
-                            start_col=value_node.start_mark.column,
-                            end_line=value_node.end_mark.line,
-                            end_col=value_node.end_mark.column,
+                continue
+            target_parts = (
+                sequence_parts
+                + [str(item_idx)]
+                + post_filter_parts
+                + field.split(".")
+            )
+            self._set_by_parts(target_parts, value)
+
+    def dump(self) -> str:
+        """Return the current document as a string."""
+        return "".join(self.lines)
+
+    # ------------------------------------------------------------------ #
+    # JSONPath parsing                                                     #
+    # ------------------------------------------------------------------ #
+
+    @classmethod
+    def _parse_jsonpath(cls, jsonpath: str) -> list[str | _FilterStep]:
+        """Parse *jsonpath* into a list of steps.
+
+        Each step is either a ``str`` (member name or numeric index) or a
+        :class:`_FilterStep`.  Raises :exc:`ValueError` for unsupported syntax.
+        """
+        path = jsonpath.strip()
+        if not path.startswith("$"):
+            raise ValueError(f"JSONPath must start with '$': {jsonpath!r}")
+        path = path[1:]  # strip leading '$'
+
+        steps: list[str | _FilterStep] = []
+        while path:
+            # Try filter before member so [?(...)] is not consumed as [ ]
+            m = cls._FILTER_RE.match(path)
+            if m:
+                steps.append(_FilterStep(key=m.group(1), value=m.group(2)))
+                path = path[m.end() :]
+                continue
+            m = cls._MEMBER_RE.match(path)
+            if m:
+                steps.append(m.group(1))
+                path = path[m.end() :]
+                continue
+            m = cls._INDEX_RE.match(path)
+            if m:
+                steps.append(m.group(1))  # stored as string digit
+                path = path[m.end() :]
+                continue
+            raise ValueError(f"Unsupported JSONPath segment: {path!r}")
+        return steps
+
+    # ------------------------------------------------------------------ #
+    # JSONPath evaluation (used by get())                                  #
+    # ------------------------------------------------------------------ #
+
+    def _eval_steps(
+        self, node: Node | None, steps: list[str | _FilterStep]
+    ) -> list[NodeMatch]:
+        """Recursively evaluate *steps* against YAML AST *node*."""
+        if not steps:
+            # Leaf: return a match only for scalar nodes.
+            if isinstance(node, ScalarNode):
+                return [
+                    NodeMatch(
+                        value=str(node.value),
+                        location=FieldLocation(
+                            start_line=node.start_mark.line,
+                            start_col=node.start_mark.column,
+                            end_line=node.end_mark.line,
+                            end_col=node.end_mark.column,
                         ),
                     )
-                )
+                ]
+            return []
 
-        return matches
+        step, *rest = steps
 
-    # ---------------- Batch operations using filters ----------------
-    def update_filtered(
-        self,
-        sequence_path: str | FieldPath,
-        field_filter: FieldFilter,
-        updater: str | Callable[[str], str],
-        target_field: str | None = None,
-    ) -> None:
-        """Update all entries in a sequence that match a filter.
+        if isinstance(step, str):
+            # Member access or numeric index.
+            if isinstance(node, MappingNode):
+                child = self._mapping_to_dict(node).get(step)
+                return self._eval_steps(child, rest)
+            if isinstance(node, SequenceNode) and step.isdigit():
+                idx = int(step)
+                child = node.value[idx] if idx < len(node.value) else None
+                return self._eval_steps(child, rest)
+            return []
 
-        Args:
-            sequence_path: Path to the sequence node.
-            field_filter: Filter key/value for selecting entries.
-            updater: Either a string (new value) or a callable that transforms the old value.
-            target_field: Field to update; if None, updates the filtered field itself.
-        """
-        matches = self.find_by_filter(sequence_path, field_filter)
-        for match in matches:
-            field_to_update = target_field if target_field else field_filter.key
-            # Split on "." so "integrity.hash" resolves to the nested integrity/hash
-            # path rather than creating a literal "integrity.hash:" key.
-            field_path = FieldPath(match.path.parts + field_to_update.split("."))
-            current_value: str = self.get(field_path) or ""
-            new_value = updater(current_value) if callable(updater) else updater
-            self.set(field_path, new_value)
+        # _FilterStep — fan out over all matching sequence items.
+        if not isinstance(node, SequenceNode):
+            return []
+        results: list[NodeMatch] = []
+        for item in node.value:
+            if not isinstance(item, MappingNode):
+                continue
+            mapping = self._mapping_to_dict(item)
+            filter_node = mapping.get(step.key)
+            if (
+                isinstance(filter_node, ScalarNode)
+                and str(filter_node.value) == step.value
+            ):
+                results.extend(self._eval_steps(item, rest))
+        return results
 
-    def delete_filtered(
-        self,
-        sequence_path: str | FieldPath,
-        field_filter: FieldFilter,
-    ) -> None:
-        """Delete all entries in a sequence that match a filter.
+    # ------------------------------------------------------------------ #
+    # Text-level mutation helpers                                          #
+    # ------------------------------------------------------------------ #
 
-        Args:
-            sequence_path: Path to the sequence node.
-            field_filter: Filter key/value for selecting entries.
-        """
-        matches = self.find_by_filter(sequence_path, field_filter)
-        # Delete in reverse to avoid shifting line indices
-        for match in reversed(matches):
-            self.delete(match.path)
+    def _set_by_parts(self, parts: list[str], value: str) -> None:
+        """Locate the field at *parts* and update it, or add it if absent."""
+        idx = self._find_field(parts)
+        if idx is not None:
+            self._update_line(idx, parts[-1], value)
+        else:
+            self._add_field(parts, value, "")
 
-    # ---------------- Internal helpers ----------------
     def _update_line(self, idx: int, field_name: str, value: str) -> None:
         line = self.lines[idx]
         indent = len(line) - len(line.lstrip())
@@ -234,51 +287,51 @@ class YamlDocument:
             f"{' ' * indent}{field_name}: {self._yaml_scalar(value)}{comment}{self.eol}"
         )
 
-    def _resolve_parent_idx(self, parent_path: FieldPath) -> int | None:
+    def _resolve_parent_idx(self, parent_parts: list[str]) -> int | None:
         """Return the line index of the parent node, creating it if absent."""
-        if not parent_path.parts:
+        if not parent_parts:
             return None
-        idx = self._find_field(parent_path)
+        idx = self._find_field(parent_parts)
         if idx is None:
-            self._add_field(parent_path, "", "", _at_end=True)
-            idx = self._find_field(parent_path)
+            self._add_field(parent_parts, "", "", _at_end=True)
+            idx = self._find_field(parent_parts)
         return idx
 
     def _child_indent(self, parent_idx: int | None) -> int:
-        """Return the indent level for a child of the node at *parent_idx*."""
+        """Return the indent for a child of the node at *parent_idx*."""
         if parent_idx is None:
             return 0
         line = self.lines[parent_idx]
         return len(line) - len(line.lstrip()) + 2
 
     def _insert_idx(
-        self, parent_path: FieldPath, parent_idx: int | None, at_end: bool
+        self, parent_parts: list[str], parent_idx: int | None, at_end: bool
     ) -> int:
-        """Return the line index at which to insert the new field."""
+        """Return the line index at which to insert a new field."""
         if parent_idx is None:
             return len(self.lines)
         if at_end:
-            loc = self.get_node_location(parent_path)
+            loc = self._ast_node_location(parent_parts)
             if loc is not None and loc.end_line > parent_idx:
                 return loc.end_line
         return parent_idx + 1
 
     def _add_field(
-        self, path: FieldPath, value: str, comment: str, *, _at_end: bool = False
+        self, parts: list[str], value: str, comment: str, *, _at_end: bool = False
     ) -> None:
-        parent_path = FieldPath(path.parts[:-1])
-        field_name = path.parts[-1]
-        parent_idx = self._resolve_parent_idx(parent_path)
+        parent_parts = parts[:-1]
+        field_name = parts[-1]
+        parent_idx = self._resolve_parent_idx(parent_parts)
         indent = self._child_indent(parent_idx)
         value_part = f": {self._yaml_scalar(value)}" if value else ":"
         comment_part = f"  # {comment}" if comment else ""
-        insert_idx = self._insert_idx(parent_path, parent_idx, _at_end)
+        insert_idx = self._insert_idx(parent_parts, parent_idx, _at_end)
         self.lines.insert(
             insert_idx,
             f"{' ' * indent}{field_name}{value_part}{comment_part}{self.eol}",
         )
 
-    def _find_field(self, path: FieldPath) -> int | None:
+    def _find_field(self, parts: list[str]) -> int | None:
         # Dfetch manifests always use 2-space indentation.  Each path segment
         # moves one level deeper, so the expected indent increases by 2 per
         # step.  _find_field_at_indent matches lines that start with exactly
@@ -288,10 +341,10 @@ class YamlDocument:
         start = 0
         idx: int | None = None
         i = 0
-        while i < len(path.parts):
-            key = path.parts[i]
+        while i < len(parts):
+            key = parts[i]
             if key.isdigit():
-                # Skip over the first n items to reach the n-th one (0-based).
+                # Skip to the n-th sequence item (0-based).
                 for _ in range(int(key) + 1):
                     idx = self._find_field_at_indent("-", indent, start)
                     if idx is None:
@@ -325,11 +378,14 @@ class YamlDocument:
                 return i
         return None
 
-    # ---------------- YAML AST helpers ----------------
-    def get_node_location(self, path: FieldPath) -> FieldLocation | None:
-        """Get the location of a node in the document."""
+    # ------------------------------------------------------------------ #
+    # YAML AST helpers                                                     #
+    # ------------------------------------------------------------------ #
+
+    def _ast_node_location(self, parts: list[str]) -> FieldLocation | None:
+        """Return the source location of the AST node at *parts*, or None."""
         root = yaml.compose("".join(self.lines))
-        node = self._traverse_path(root, path.parts)
+        node = self._traverse_path(root, parts)
         if node is None:
             return None
         return FieldLocation(
@@ -338,10 +394,6 @@ class YamlDocument:
             end_line=node.end_mark.line,
             end_col=node.end_mark.column,
         )
-
-    def _get_node_location(self, path: FieldPath) -> FieldLocation | None:
-        """Legacy alias for get_node_location."""
-        return self.get_node_location(path)
 
     def _traverse_path(self, node: Node | None, path: Sequence[str]) -> Node | None:
         for step in path:
@@ -362,3 +414,25 @@ class YamlDocument:
     @staticmethod
     def _mapping_to_dict(node: MappingNode) -> dict[str, Node]:
         return {k.value: v for k, v in node.value}
+
+    # ------------------------------------------------------------------ #
+    # Line-ending helpers                                                  #
+    # ------------------------------------------------------------------ #
+
+    @staticmethod
+    def _line_eol(line: str) -> str:
+        return (
+            "\r\n" if line.endswith("\r\n") else ("\n" if line.endswith("\n") else "")
+        )
+
+    def _detect_eol(self, lines: Sequence[str]) -> str:
+        for line in lines:
+            eol = self._line_eol(line)
+            if eol:
+                return eol
+        return "\n"
+
+    @staticmethod
+    def _yaml_scalar(value: str) -> str:
+        dumped: str = yaml.dump(value, default_flow_style=None, allow_unicode=True)
+        return dumped.splitlines()[0]

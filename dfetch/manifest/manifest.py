@@ -33,7 +33,7 @@ from typing_extensions import NotRequired, TypedDict
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
-from dfetch.util.yaml import FieldFilter, YamlDocument
+from dfetch.util.yaml import YamlDocument
 
 logger = get_logger(__name__)
 
@@ -377,14 +377,13 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         if not self.__text:
             raise FileNotFoundError("No manifest text available")
 
-        matches = self._doc.find_by_filter(
-            sequence_path="manifest.projects",
-            field_filter=FieldFilter(key="name", value=name),
+        matches = self._doc.get(
+            f'$.manifest.projects[?(@.name == "{name}")].name'
         )
         if not matches:
             raise RuntimeError(f"{name} was not found in the manifest!")
 
-        loc = matches[0].value_location
+        loc = matches[0].location
         return ManifestEntryLocation(
             line_number=loc.start_line + 1,  # 0-based → 1-based line number
             start=loc.start_col + 1,  # 0-based → 1-based column number
@@ -411,26 +410,16 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
 
     def update_project_version(self, project: ProjectEntry) -> None:
         """Update a project's version in the manifest in-place, preserving layout, comments, and line endings."""
+        path = f'$.manifest.projects[?(@.name == "{project.name}")]'
         for name, value in project.version._asdict().items():
             if value not in (None, ""):
                 logger.debug(
                     f"Updating {project.name} version field '{name}' to '{value}' in manifest"
                 )
-
-                self._doc.update_filtered(
-                    sequence_path="manifest.projects",
-                    field_filter=FieldFilter(key="name", value=project.name),
-                    updater=value,
-                    target_field=name,
-                )
+                self._doc.set(path, name, value)
 
         if project.integrity and project.integrity.hash:
-            self._doc.update_filtered(
-                sequence_path="manifest.projects",
-                field_filter=FieldFilter(key="name", value=project.name),
-                updater=project.integrity.hash,
-                target_field="integrity.hash",
-            )
+            self._doc.set(path, "integrity.hash", project.integrity.hash)
 
         self.__text = self._doc.dump()
 
