@@ -87,7 +87,7 @@ class YamlDocument:
     # ---------------- Scalar handling ----------------
     @staticmethod
     def _yaml_scalar(value: str) -> str:
-        dumped = yaml.dump(value, default_flow_style=None, allow_unicode=True)
+        dumped: str = yaml.dump(value, default_flow_style=None, allow_unicode=True)
         return dumped.splitlines()[0]
 
     # ---------------- Public API ----------------
