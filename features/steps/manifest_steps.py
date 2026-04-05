@@ -69,6 +69,12 @@ def step_impl(_, name, directory):
     assert not os.path.exists(path), f"Expected '{path}' to not exist, but it does!"
 
 
+@then("the file '{name}' exists")
+def step_impl(_, name):
+    """Assert that a file exists in the current directory."""
+    assert os.path.exists(name), f"Expected '{name}' to exist, but it does not!"
+
+
 @given("the manifest '{name}' with the projects:")
 def step_impl(context, name):
     projects = "\n".join(f"      - name: {row['name']}" for row in context.table)

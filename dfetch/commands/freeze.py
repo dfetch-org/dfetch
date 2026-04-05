@@ -18,13 +18,11 @@ be fetched on a *DFetch* update_.
 When your project becomes stable and you want to rely on a specific version
 of ``mymodule`` you can run ``dfetch freeze``.
 
-When the manifest lives inside a git or SVN super-project, *DFetch* edits the
-manifest file **in-place** so that comments, blank lines and indentation are
-preserved.  Only the version fields that changed are touched.
-
-Otherwise *DFetch* first renames your old manifest (appended with ``.backup``).
-After that a new manifest is generated with all the projects as in your original
-manifest, but each with the specific version as it currently is on disk.
+*DFetch* edits the manifest file **in-place** so that comments, blank lines
+and indentation are preserved.  Only the version fields that changed are
+touched.  When the manifest does **not** live inside a version-controlled
+super-project (git or SVN), a ``.backup`` copy of the original is written
+before any changes are made.
 
 In our above example this would for instance result in:
 
@@ -78,8 +76,10 @@ logger = get_logger(__name__)
 class Freeze(dfetch.commands.command.Command):
     """Freeze your projects versions in the manifest as they are on disk.
 
-    Generate a new manifest that has all version as they are on disk.
-    Optionally pass one or more project names to freeze only those projects.
+    Edits the manifest in-place, preserving comments and layout.
+    When outside a version-controlled super-project a ``.backup`` copy is
+    created first.  Optionally pass one or more project names to freeze only
+    those projects.
     """
 
     @staticmethod
@@ -97,7 +97,7 @@ class Freeze(dfetch.commands.command.Command):
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the freeze."""
         superproject = create_super_project()
-        use_inplace = not isinstance(superproject, NoVcsSuperProject)
+        make_backup = isinstance(superproject, NoVcsSuperProject)
 
         exceptions: list[str] = []
 
@@ -105,7 +105,7 @@ class Freeze(dfetch.commands.command.Command):
             manifest_path = superproject.manifest.path
             projects_to_freeze = superproject.manifest.selected_projects(args.projects)
 
-            if not use_inplace:
+            if make_backup:
                 shutil.copyfile(manifest_path, manifest_path + ".backup")
 
             for project in projects_to_freeze:
