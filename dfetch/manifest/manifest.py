@@ -33,7 +33,7 @@ from typing_extensions import NotRequired, TypedDict
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
-from dfetch.util.yaml import FieldFilter, FieldPath, YamlDocument
+from dfetch.util.yaml import FieldFilter, YamlDocument
 
 logger = get_logger(__name__)
 
@@ -355,6 +355,18 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
                 line_break=os.linesep,
             )
 
+    def update_dump(self) -> None:
+        """Dump the manifest to its path, using the original text as a base to preserve formatting and comments."""
+        if not self.__path:
+            raise RuntimeError("Cannot update dump of manifest with no path")
+        if not self.__text:
+            raise RuntimeError("Cannot update dump of manifest with no original text")
+
+        updated_text = self._doc.dump()
+
+        with open(self.__path, "w", encoding="utf-8", newline="") as manifest_file:
+            manifest_file.write(updated_text)
+
     def find_name_in_manifest(self, name: str) -> ManifestEntryLocation:
         """Find the location of a project name in the manifest.
 
@@ -380,17 +392,28 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         )
 
     # ---------------- YAML updates ----------------
-    def update_project_version_in_manifest(
-        self, project_name: str, version: str
-    ) -> None:
+    def update_project_version(self, project: ProjectEntry) -> None:
         """Update a project's version in the manifest in-place, preserving layout, comments, and line endings."""
-        # Update filtered entries
-        self._doc.update_filtered(
-            sequence_path="manifest.projects",
-            field_filter=FieldFilter(key="name", value=project_name),
-            updater=version,
-            target_field="version",
-        )
+        for name, value in project.version._asdict().items():
+            if value not in (None, ""):
+                logger.debug(
+                    f"Updating {project.name} version field '{name}' to '{value}' in manifest"
+                )
+
+                self._doc.update_filtered(
+                    sequence_path="manifest.projects",
+                    field_filter=FieldFilter(key="name", value=project.name),
+                    updater=value,
+                    target_field=name,
+                )
+
+        if project.integrity and project.integrity.hash:
+            self._doc.update_filtered(
+                sequence_path="manifest.projects",
+                field_filter=FieldFilter(key="name", value=project.name),
+                updater=project.integrity.hash,
+                target_field="integrity.hash",
+            )
 
         self.__text = self._doc.dump()
 
@@ -492,6 +515,9 @@ class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
         self._last_additional_break = len(self.indents)
 
 
+# TODO: make this a class member of manifest which manipulates the internal self.__doc
+#       to preserve formatting and comments when updating the manifest file.
+#       the should choose when to update the file on disk (After moving update callers).
 def append_entry_manifest_file(
     manifest_path: str | Path,
     project_entry: ProjectEntry,
@@ -507,72 +533,3 @@ def append_entry_manifest_file(
         manifest_file.write("\n")
         for line in new_entry.splitlines():
             manifest_file.write(f"  {line}\n")
-
-
-def update_project_in_manifest_file(
-    project: ProjectEntry,
-    manifest_path: str | Path,
-) -> None:
-    """Update a project's version fields in the manifest file, preserving layout and comments.
-
-    This is used when the manifest is in a version-controlled superproject: instead of
-    creating a backup and regenerating the file from scratch, the existing file is edited
-    in-place so that comments and formatting are retained.
-
-    Args:
-        project: The ``ProjectEntry`` whose version fields have already been updated by
-            ``freeze_project()``.
-        manifest_path: Path to the manifest file to update.
-    """
-    path = Path(manifest_path)
-    with path.open(encoding="utf-8", newline="") as manifest_file:
-        text = manifest_file.read()
-    updated = _update_project_version_in_text(text, project)
-    with path.open("w", encoding="utf-8", newline="") as manifest_file:
-        manifest_file.write(updated)
-
-
-def _update_project_version_in_text(text: str, project: ProjectEntry) -> str:
-    """Return *text* with the version fields for *project* updated in-place.
-
-    Version-related fields (``revision``, ``tag``, ``branch``,
-    ``integrity.hash``) are added, updated, or removed to match the project's
-    current state.  All other content — including comments and indentation —
-    is preserved verbatim.
-    """
-    doc = YamlDocument(text)
-
-    project_data = project.as_yaml()
-    version_keys = ("revision", "tag", "branch")
-
-    for key in version_keys:
-        value = project_data.get(key)
-        if value:
-            doc.set(
-                FieldPath([*_find_project_field_path(doc, project.name), key]),
-                str(value),
-            )
-        else:
-            field_path = FieldPath([*_find_project_field_path(doc, project.name), key])
-            doc.delete(field_path)
-
-    integrity = project_data.get("integrity")
-    if isinstance(integrity, dict) and integrity.get("hash"):
-        project_path = _find_project_field_path(doc, project.name)
-        doc.set(FieldPath([*project_path, "integrity", "hash"]), integrity["hash"])
-    else:
-        project_path = _find_project_field_path(doc, project.name)
-        doc.delete(FieldPath([*project_path, "integrity"]))
-
-    return doc.dump()
-
-
-def _find_project_field_path(doc: YamlDocument, project_name: str) -> list[str]:
-    """Find the field path to a project in the manifest."""
-    matches = doc.find_by_filter(
-        sequence_path="manifest.projects",
-        field_filter=FieldFilter(key="name", value=project_name),
-    )
-    if not matches:
-        raise RuntimeError(f"Project '{project_name}' not found in manifest text")
-    return matches[0].path.parts

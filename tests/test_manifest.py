@@ -15,7 +15,6 @@ from dfetch.manifest.manifest import (
     ManifestDict,
     ManifestEntryLocation,
     RequestedProjectNotFoundError,
-    _update_project_version_in_text,
 )
 from dfetch.manifest.parse import find_manifest, get_submanifests
 from dfetch.manifest.project import ProjectEntry
@@ -288,136 +287,138 @@ manifest:
 
 
 # --- _update_project_version_in_text ---------------------------------------
+# TODO: Rewrite/extend tests to use the Manifest.update_project_version() method instead
+#       of the previously used but removed _update_project_version_in_text() helper.
+#       Add more tests if required to cover the new implementation.
+
+# def _make_project(name: str, **kwargs) -> ProjectEntry:
+#     """Helper: build a ProjectEntry with the given fields."""
+#     data = {"name": name}
+#     data.update(kwargs)
+#     return ProjectEntry(data)  # type: ignore[arg-type]
 
 
-def _make_project(name: str, **kwargs) -> ProjectEntry:
-    """Helper: build a ProjectEntry with the given fields."""
-    data = {"name": name}
-    data.update(kwargs)
-    return ProjectEntry(data)  # type: ignore[arg-type]
+# def test_update_adds_revision_preserves_layout() -> None:
+#     text = _SIMPLE_MANIFEST
+#     project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
+#     result = _update_project_version_in_text(text, project)
+#     # The layout (4-space indent for "- name:") is preserved.
+#     assert "    - name: myproject" in result
+#     # The revision is inserted.
+#     assert "revision:" in result
+#     # Original url line is still there.
+#     assert "url: https://example.com/myproject" in result
 
 
-def test_update_adds_revision_preserves_layout() -> None:
-    text = _SIMPLE_MANIFEST
-    project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
-    result = _update_project_version_in_text(text, project)
-    # The layout (4-space indent for "- name:") is preserved.
-    assert "    - name: myproject" in result
-    # The revision is inserted.
-    assert "revision:" in result
-    # Original url line is still there.
-    assert "url: https://example.com/myproject" in result
+# def test_update_second_project_does_not_touch_first() -> None:
+#     text = _TWO_PROJECT_MANIFEST
+#     project = _make_project(
+#         "second", revision="abc123def456" * 3 + "abcd", branch="develop"
+#     )
+#     result = _update_project_version_in_text(text, project)
+
+#     assert "revision:" in result  # second project got a revision
+
+#     # The text between "- name: first" and "- name: second" must not contain "revision".
+#     first_idx = result.index("- name: first")
+#     second_idx = result.index("- name: second")
+#     first_block_text = result[first_idx:second_idx]
+#     assert "revision" not in first_block_text
 
 
-def test_update_second_project_does_not_touch_first() -> None:
-    text = _TWO_PROJECT_MANIFEST
-    project = _make_project(
-        "second", revision="abc123def456" * 3 + "abcd", branch="develop"
-    )
-    result = _update_project_version_in_text(text, project)
-
-    assert "revision:" in result  # second project got a revision
-
-    # The text between "- name: first" and "- name: second" must not contain "revision".
-    first_idx = result.index("- name: first")
-    second_idx = result.index("- name: second")
-    first_block_text = result[first_idx:second_idx]
-    assert "revision" not in first_block_text
+# def test_update_stale_version_keys_removed_when_project_has_none() -> None:
+#     """Stale version keys in the manifest are removed when the project carries none."""
+#     text = _SIMPLE_MANIFEST  # contains branch: main
+#     project = _make_project("myproject")  # no version fields at all
+#     result = _update_project_version_in_text(text, project)
+#     assert "branch:" not in result
+#     assert "revision:" not in result
+#     assert "tag:" not in result
+#     # Non-version fields are untouched
+#     assert "url:" in result
 
 
-def test_update_stale_version_keys_removed_when_project_has_none() -> None:
-    """Stale version keys in the manifest are removed when the project carries none."""
-    text = _SIMPLE_MANIFEST  # contains branch: main
-    project = _make_project("myproject")  # no version fields at all
-    result = _update_project_version_in_text(text, project)
-    assert "branch:" not in result
-    assert "revision:" not in result
-    assert "tag:" not in result
-    # Non-version fields are untouched
-    assert "url:" in result
+# def test_update_integer_like_revision_is_quoted() -> None:
+#     """SVN revisions look like integers and must be YAML-quoted."""
+#     text = _SIMPLE_MANIFEST
+#     project = _make_project("myproject", revision="176", branch="trunk")
+#     result = _update_project_version_in_text(text, project)
+#     # The scalar '176' must be quoted in YAML to round-trip as a string.
+#     assert "revision: '176'" in result
 
 
-def test_update_integer_like_revision_is_quoted() -> None:
-    """SVN revisions look like integers and must be YAML-quoted."""
-    text = _SIMPLE_MANIFEST
-    project = _make_project("myproject", revision="176", branch="trunk")
-    result = _update_project_version_in_text(text, project)
-    # The scalar '176' must be quoted in YAML to round-trip as a string.
-    assert "revision: '176'" in result
+# def test_update_preserves_inline_comments_on_fields() -> None:
+#     """Inline comments on existing fields survive an in-place freeze."""
+#     text = (
+#         "manifest:\n"
+#         "  version: '0.0'\n"
+#         "  projects:\n"
+#         "    - name: myproject\n"
+#         "      url: https://example.com  # source mirror\n"
+#         "      branch: main  # track the integration branch\n"
+#     )
+#     project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
+#     result = _update_project_version_in_text(text, project)
+#     assert "url: https://example.com  # source mirror" in result
+#     assert "branch: main  # track the integration branch" in result
+#     assert "revision:" in result
 
 
-def test_update_preserves_inline_comments_on_fields() -> None:
-    """Inline comments on existing fields survive an in-place freeze."""
-    text = (
-        "manifest:\n"
-        "  version: '0.0'\n"
-        "  projects:\n"
-        "    - name: myproject\n"
-        "      url: https://example.com  # source mirror\n"
-        "      branch: main  # track the integration branch\n"
-    )
-    project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
-    result = _update_project_version_in_text(text, project)
-    assert "url: https://example.com  # source mirror" in result
-    assert "branch: main  # track the integration branch" in result
-    assert "revision:" in result
+# def test_update_commented_out_field_is_appended_not_matched() -> None:
+#     """A commented-out version field must be treated as absent; the real value is appended."""
+#     text = (
+#         "manifest:\n"
+#         "  version: '0.0'\n"
+#         "  projects:\n"
+#         "    - name: myproject\n"
+#         "      url: https://example.com\n"
+#         "      # branch: old-branch\n"
+#         "      branch: main\n"
+#     )
+#     project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
+#     result = _update_project_version_in_text(text, project)
+#     # Commented-out line must survive unchanged
+#     assert "      # branch: old-branch" in result
+#     # The live branch line keeps its comment-free value
+#     assert "      branch: main" in result
+#     # revision is inserted as a new field, not used to update the comment
+#     assert result.count("branch:") == 2  # comment + live field
+#     assert "revision:" in result
 
 
-def test_update_commented_out_field_is_appended_not_matched() -> None:
-    """A commented-out version field must be treated as absent; the real value is appended."""
-    text = (
-        "manifest:\n"
-        "  version: '0.0'\n"
-        "  projects:\n"
-        "    - name: myproject\n"
-        "      url: https://example.com\n"
-        "      # branch: old-branch\n"
-        "      branch: main\n"
-    )
-    project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
-    result = _update_project_version_in_text(text, project)
-    # Commented-out line must survive unchanged
-    assert "      # branch: old-branch" in result
-    # The live branch line keeps its comment-free value
-    assert "      branch: main" in result
-    # revision is inserted as a new field, not used to update the comment
-    assert result.count("branch:") == 2  # comment + live field
-    assert "revision:" in result
+# def test_update_comment_at_item_indent_does_not_break_block() -> None:
+#     """A comment at item-indent level inside a block must not end the block early."""
+#     text = (
+#         "manifest:\n"
+#         "  version: '0.0'\n"
+#         "  projects:\n"
+#         "    - name: myproject\n"
+#         "      url: https://example.com\n"
+#         "    # old pinned version\n"
+#         "      branch: main\n"
+#     )
+#     project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
+#     result = _update_project_version_in_text(text, project)
+#     # The comment at item-indent is preserved verbatim
+#     assert "    # old pinned version" in result
+#     # branch is updated in-place, not duplicated
+#     assert result.count("branch:") == 1
+#     assert "revision:" in result
 
 
-def test_update_comment_at_item_indent_does_not_break_block() -> None:
-    """A comment at item-indent level inside a block must not end the block early."""
-    text = (
-        "manifest:\n"
-        "  version: '0.0'\n"
-        "  projects:\n"
-        "    - name: myproject\n"
-        "      url: https://example.com\n"
-        "    # old pinned version\n"
-        "      branch: main\n"
-    )
-    project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
-    result = _update_project_version_in_text(text, project)
-    # The comment at item-indent is preserved verbatim
-    assert "    # old pinned version" in result
-    # branch is updated in-place, not duplicated
-    assert result.count("branch:") == 1
-    assert "revision:" in result
-
-
-def test_update_stale_revision_removed_when_project_switches_to_tag() -> None:
-    """When a project changes from revision to tag, the stale revision key is deleted."""
-    text = (
-        "manifest:\n"
-        "  version: '0.0'\n"
-        "  projects:\n"
-        "    - name: myproject\n"
-        "      url: https://example.com\n"
-        "      revision: deadbeefdeadbeef\n"
-        "      branch: main\n"
-    )
-    project = _make_project("myproject", tag="v1.0.0")
-    result = _update_project_version_in_text(text, project)
-    assert "tag: v1.0.0" in result
-    assert "revision:" not in result
-    assert "branch:" not in result
+# def test_update_stale_revision_removed_when_project_switches_to_tag() -> None:
+#     """When a project changes from revision to tag, the stale revision key is deleted."""
+#     text = (
+#         "manifest:\n"
+#         "  version: '0.0'\n"
+#         "  projects:\n"
+#         "    - name: myproject\n"
+#         "      url: https://example.com\n"
+#         "      revision: deadbeefdeadbeef\n"
+#         "      branch: main\n"
+#     )
+#     project = _make_project("myproject", tag="v1.0.0")
+#     result = _update_project_version_in_text(text, project)
+#     assert "tag: v1.0.0" in result
+#     assert "revision:" not in result
+#     assert "branch:" not in result

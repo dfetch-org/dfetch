@@ -192,6 +192,9 @@ class YamlDocument:
         """
         matches = self.find_by_filter(sequence_path, field_filter)
         for match in matches:
+            # TODO: if field to update contains . use the nested path instead of a sibling field,
+            #       e.g. "version.major" should update version: {major: ...} instead of version.major: ...
+            #       for now assume only maps with scalar values are updated
             field_to_update = target_field if target_field else field_filter.key
             field_path = FieldPath(match.path.parts + [field_to_update])
             current_value: str = self.get(field_path) or ""
