@@ -257,7 +257,7 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         Raises:
             FileNotFoundError: Given path was not a file.
         """
-        with open(path, encoding="utf-8") as opened_file:
+        with open(path, encoding="utf-8", newline="") as opened_file:
             return Manifest.from_yaml(opened_file, path)
 
     @property
@@ -294,10 +294,11 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         self, names: Sequence[str], projects: Sequence[ProjectEntry]
     ) -> None:
         """Raise if any of *names* is not represented in *projects*."""
-        if not names or len(projects) == len(names):
+        unique_names = list(dict.fromkeys(names))  # deduplicate, preserve order
+        if not unique_names or len(projects) == len(unique_names):
             return
         found = {project.name for project in projects}
-        unfound = [name for name in names if name not in found]
+        unfound = [name for name in unique_names if name not in found]
         possibles = [project.name for project in self._projects.values()]
         raise RequestedProjectNotFoundError(unfound, possibles)
 

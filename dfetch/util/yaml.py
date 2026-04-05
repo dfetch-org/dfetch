@@ -331,14 +331,33 @@ class YamlDocument:
             f"{' ' * indent}{field_name}{value_part}{comment_part}{self.eol}",
         )
 
+    def _block_end(self, from_idx: int, parent_indent: int) -> int:
+        """Return the first line index after *from_idx* whose indentation is
+        no greater than *parent_indent*, skipping blank and comment lines.
+
+        This bounds child-field searches to the node that was just matched,
+        preventing a missing field from being found in a sibling node.
+        Falls back to ``len(self.lines)`` when no such line exists.
+        """
+        for j in range(from_idx + 1, len(self.lines)):
+            stripped = self.lines[j].rstrip("\n\r")
+            if not stripped or stripped.lstrip().startswith("#"):
+                continue  # blank / comment lines do not end a block
+            if len(stripped) - len(stripped.lstrip()) <= parent_indent:
+                return j
+        return len(self.lines)
+
     def _find_field(self, parts: list[str]) -> int | None:
         # Dfetch manifests always use 2-space indentation.  Each path segment
         # moves one level deeper, so the expected indent increases by 2 per
         # step.  _find_field_at_indent matches lines that start with exactly
         # ``indent`` spaces followed by the field name (or "-" for list items).
+        # Searches are bounded to the matched node's block (via _block_end) so
+        # a missing field is not wrongly found inside a later sibling.
         # This will not work correctly for manifests with other indentation widths.
         indent = 0
         start = 0
+        end = len(self.lines)
         idx: int | None = None
         i = 0
         while i < len(parts):
@@ -346,29 +365,35 @@ class YamlDocument:
             if key.isdigit():
                 # Skip to the n-th sequence item (0-based).
                 for _ in range(int(key) + 1):
-                    idx = self._find_field_at_indent("-", indent, start)
+                    idx = self._find_field_at_indent("-", indent, start, end)
                     if idx is None:
                         return None
                     start = idx + 1
+                # Bound child searches to this item's block.
+                assert idx is not None  # guaranteed by the return None guard above
+                end = self._block_end(idx, indent)
                 i += 1
                 indent += 2
             else:
-                idx = self._find_field_at_indent(key, indent, start)
+                idx = self._find_field_at_indent(key, indent, start, end)
                 if idx is None:
                     return None
+                # Bound child searches to this key's block.
+                end = self._block_end(idx, indent)
                 start = idx + 1
                 i += 1
                 indent += 2
         return idx
 
     def _find_field_at_indent(
-        self, field_name: str, indent: int, start: int
+        self, field_name: str, indent: int, start: int, end: int | None = None
     ) -> int | None:
+        stop = end if end is not None else len(self.lines)
         if field_name == "-":
             prefix = " " * indent + "-"
         else:
             prefix = " " * indent + field_name + ":"
-        for i in range(start, len(self.lines)):
+        for i in range(start, stop):
             line = self.lines[i].rstrip("\n\r")
             if line.lstrip().startswith("#"):
                 continue

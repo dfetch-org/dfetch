@@ -262,3 +262,54 @@ def test_dump_reflects_set_changes():
     doc.set('$.manifest.projects[?(@.name == "myproject")]', "branch", "new-branch")
     assert "new-branch" in doc.dump()
     assert "new-branch" not in _MANIFEST
+
+
+# ---------------------------------------------------------------------------
+# _find_field scope-leak regression
+# ---------------------------------------------------------------------------
+
+_TWO_PROJECT_MANIFEST = """\
+manifest:
+  version: '0.0'
+
+  projects:
+    - name: first
+      url: https://example.com/first
+      branch: main
+
+    - name: second
+      url: https://example.com/second
+      branch: develop
+      revision: abc123
+"""
+
+
+def test_set_adds_field_to_first_project_not_found_in_second():
+    """Adding a field absent in projects[0] must not match the same field in projects[1]."""
+    doc = YamlDocument(_TWO_PROJECT_MANIFEST)
+    doc.set('$.manifest.projects[?(@.name == "first")]', "revision", "deadbeef")
+    result = doc.dump()
+
+    # first project gains a revision
+    first_end = result.index("- name: second")
+    first_block = result[: first_end]
+    assert "revision: deadbeef" in first_block
+
+    # second project's revision is untouched
+    second_block = result[first_end:]
+    assert "revision: abc123" in second_block
+    assert "revision: deadbeef" not in second_block
+
+
+def test_get_field_absent_in_first_project_returns_empty():
+    """get() for a field that exists only in projects[1] must return nothing for projects[0]."""
+    doc = YamlDocument(_TWO_PROJECT_MANIFEST)
+    matches = doc.get('$.manifest.projects[?(@.name == "first")].revision')
+    assert matches == []
+
+
+def test_get_field_present_in_second_project():
+    doc = YamlDocument(_TWO_PROJECT_MANIFEST)
+    matches = doc.get('$.manifest.projects[?(@.name == "second")].revision')
+    assert len(matches) == 1
+    assert matches[0].value == "abc123"
