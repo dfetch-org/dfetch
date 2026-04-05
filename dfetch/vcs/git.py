@@ -525,16 +525,6 @@ class GitLocalRepo:
 
         return str(result.stdout.decode())
 
-    def get_current_hash(self) -> str:
-        """Get the last revision."""
-        with in_directory(self._path):
-            result = run_on_cmdline(
-                logger,
-                ["git", "log", "-n", "1", "--pretty=format:%H"],
-            )
-
-        return str(result.stdout.decode())
-
     @staticmethod
     def get_remote_url() -> str:
         """Get the url of the remote origin."""

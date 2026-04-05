@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from dataclasses import dataclass
-from typing import Literal
 
 import semver
 from semver.version import Version
@@ -96,14 +94,6 @@ def _create_available_version_dict(
         if version:
             parsed_tags[prefix] += [(version, available_tag)]
     return parsed_tags
-
-
-@dataclass(frozen=True)
-class VersionRef:
-    """A resolved version reference: a branch name, tag, or commit SHA."""
-
-    kind: Literal["branch", "tag", "revision"]
-    value: str
 
 
 def prioritise_default(branches: list[str], default: str) -> list[str]:
