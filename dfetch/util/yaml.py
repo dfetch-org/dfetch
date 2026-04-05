@@ -195,42 +195,45 @@ class YamlDocument:
             f"{' ' * indent}{field_name}: {self._yaml_scalar(value)}{comment}{self.eol}"
         )
 
+    def _resolve_parent_idx(self, parent_path: FieldPath) -> int | None:
+        """Return the line index of the parent node, creating it if absent."""
+        if not parent_path.parts:
+            return None
+        idx = self._find_field(parent_path)
+        if idx is None:
+            self._add_field(parent_path, "", "", _at_end=True)
+            idx = self._find_field(parent_path)
+        return idx
+
+    def _child_indent(self, parent_idx: int | None) -> int:
+        """Return the indent level for a child of the node at *parent_idx*."""
+        if parent_idx is None:
+            return 0
+        line = self.lines[parent_idx]
+        return len(line) - len(line.lstrip()) + 2
+
+    def _insert_idx(
+        self, parent_path: FieldPath, parent_idx: int | None, at_end: bool
+    ) -> int:
+        """Return the line index at which to insert the new field."""
+        if parent_idx is None:
+            return len(self.lines)
+        if at_end:
+            loc = self.get_node_location(parent_path)
+            if loc is not None and loc.end_line > parent_idx:
+                return loc.end_line
+        return parent_idx + 1
+
     def _add_field(
         self, path: FieldPath, value: str, comment: str, *, _at_end: bool = False
     ) -> None:
         parent_path = FieldPath(path.parts[:-1])
         field_name = path.parts[-1]
-        parent_idx = self._find_field(parent_path) if parent_path.parts else None
-
-        if parent_idx is None and parent_path.parts:
-            # Parent doesn't exist yet — create it at the end of its own parent's
-            # block so it appears after all existing sibling fields.
-            self._add_field(parent_path, "", "", _at_end=True)
-            parent_idx = self._find_field(parent_path)
-
-        indent = 0
-        if parent_path.parts and parent_idx is not None:
-            indent = (
-                len(self.lines[parent_idx]) - len(self.lines[parent_idx].lstrip()) + 2
-            )
-
+        parent_idx = self._resolve_parent_idx(parent_path)
+        indent = self._child_indent(parent_idx)
         value_part = f": {self._yaml_scalar(value)}" if value else ":"
         comment_part = f"  # {comment}" if comment else ""
-
-        if _at_end and parent_path.parts and parent_idx is not None:
-            # Append after all existing children of the parent node.
-            loc = self.get_node_location(parent_path)
-            insert_idx = (
-                loc.end_line
-                if loc is not None and loc.end_line > parent_idx
-                else parent_idx + 1
-            )
-        elif parent_path.parts and parent_idx is not None:
-            # Default: insert right after the parent's own line.
-            insert_idx = parent_idx + 1
-        else:
-            insert_idx = len(self.lines)
-
+        insert_idx = self._insert_idx(parent_path, parent_idx, _at_end)
         self.lines.insert(
             insert_idx,
             f"{' ' * indent}{field_name}{value_part}{comment_part}{self.eol}",
@@ -306,20 +309,6 @@ class YamlDocument:
                 if step.isdigit():
                     idx = int(step)
                     node = node.value[idx] if idx < len(node.value) else None
-                elif isinstance(step, dict):
-                    key, expected = next(iter(step.items()))
-                    node = next(
-                        (
-                            item
-                            for item in node.value
-                            if isinstance(item, MappingNode)
-                            and isinstance(
-                                self._mapping_to_dict(item).get(key), ScalarNode
-                            )
-                            and self._mapping_to_dict(item)[key].value == expected
-                        ),
-                        None,
-                    )
                 else:
                     node = None
             else:
