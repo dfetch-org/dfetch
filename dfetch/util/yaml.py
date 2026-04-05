@@ -165,10 +165,7 @@ class YamlDocument:
             ):
                 continue
             target_parts = (
-                sequence_parts
-                + [str(item_idx)]
-                + post_filter_parts
-                + field.split(".")
+                sequence_parts + [str(item_idx)] + post_filter_parts + field.split(".")
             )
             self._set_by_parts(target_parts, value)
 
@@ -411,8 +408,10 @@ class YamlDocument:
         )
 
     def _block_end(self, from_idx: int, parent_indent: int) -> int:
-        """Return the first line index after *from_idx* whose indentation is
-        no greater than *parent_indent*, skipping blank and comment lines.
+        """Return the first line index after *from_idx*.
+
+        The indentation is no greater than *parent_indent*, skipping
+        blank and comment lines.
 
         This bounds child-field searches to the node that was just matched,
         preventing a missing field from being found in a sibling node.

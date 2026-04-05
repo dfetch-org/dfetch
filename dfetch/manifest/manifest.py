@@ -378,9 +378,7 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         if not self.__text:
             raise FileNotFoundError("No manifest text available")
 
-        matches = self._doc.get(
-            f'$.manifest.projects[?(@.name == "{name}")].name'
-        )
+        matches = self._doc.get(f'$.manifest.projects[?(@.name == "{name}")].name')
         if not matches:
             raise RuntimeError(f"{name} was not found in the manifest!")
 
@@ -524,4 +522,3 @@ class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
             super().write_line_break()  # type: ignore[unused-ignore, no-untyped-call]
 
         self._last_additional_break = len(self.indents)
-

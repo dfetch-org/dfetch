@@ -292,7 +292,7 @@ def test_set_adds_field_to_first_project_not_found_in_second():
 
     # first project gains a revision
     first_end = result.index("- name: second")
-    first_block = result[: first_end]
+    first_block = result[:first_end]
     assert "revision: deadbeef" in first_block
 
     # second project's revision is untouched
