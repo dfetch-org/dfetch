@@ -283,18 +283,23 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
     def selected_projects(self, names: Sequence[str]) -> Sequence[ProjectEntry]:
         """Get a list of Projects from the manifest with the given names."""
         projects = (
-            list(
-                project for project in self._projects.values() if project.name in names
-            )
+            [p for p in self._projects.values() if p.name in names]
             if names
             else list(self._projects.values())
         )
-        if names and len(projects) != len(names):
-            found = [project.name for project in projects]
-            unfound = [name for name in names if name not in found]
-            possibles = [project.name for project in self._projects.values()]
-            raise RequestedProjectNotFoundError(unfound, possibles)
+        self._check_all_names_found(names, projects)
         return projects
+
+    def _check_all_names_found(
+        self, names: Sequence[str], projects: Sequence[ProjectEntry]
+    ) -> None:
+        """Raise if any of *names* is not represented in *projects*."""
+        if not names or len(projects) == len(names):
+            return
+        found = {project.name for project in projects}
+        unfound = [name for name in names if name not in found]
+        possibles = [project.name for project in self._projects.values()]
+        raise RequestedProjectNotFoundError(unfound, possibles)
 
     @property
     def remotes(self) -> Sequence[Remote]:
@@ -444,21 +449,23 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         destinations = [p.destination for p in self.projects if p.destination]
         if not destinations:
             return ""
-
         try:
             common_path = os.path.commonpath(destinations)
         except ValueError:
             return ""
         if not common_path or common_path == os.path.sep:
             return ""
-
         if len(destinations) == 1:
-            parent_path = Path(common_path).parent
-            if parent_path != Path("."):
-                return (parent_path / project_name).as_posix()
-            return ""
-
+            return Manifest._single_destination_prefix(common_path, project_name)
         return (Path(common_path) / project_name).as_posix()
+
+    @staticmethod
+    def _single_destination_prefix(common_path: str, project_name: str) -> str:
+        """Return a suggested destination when only one existing project is present."""
+        parent = Path(common_path).parent
+        if parent != Path("."):
+            return (parent / project_name).as_posix()
+        return ""
 
     def find_remote_for_url(self, remote_url: str) -> Remote | None:
         """Return the first remote whose base URL is a prefix of *remote_url*."""
