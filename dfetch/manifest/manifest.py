@@ -221,7 +221,7 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
     ) -> "Manifest":
         """Create a manifest from a file like object."""
         if not isinstance(text, str):
-            text = str(text.read())
+            text = text.read()
 
         loaded_yaml = Manifest._load_yaml(text)
 
@@ -416,9 +416,6 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
             )
 
         self.__text = self._doc.dump()
-
-    # Characters not allowed in a project name (YAML special chars).
-    _UNSAFE_NAME_RE = re.compile(r"[\x00-\x1F\x7F-\x9F:#\[\]{}&*!|>'\"%@`]")
 
     def check_name_uniqueness(self, project_name: str) -> None:
         """Raise if *project_name* is already used in the manifest."""
