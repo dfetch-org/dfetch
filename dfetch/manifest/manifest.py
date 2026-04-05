@@ -372,14 +372,7 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         if not matches:
             raise RuntimeError(f"{name} was not found in the manifest!")
 
-        # Look up the name VALUE node (the scalar "foo", not the mapping wrapper).
-        name_value_path = FieldPath(matches[0].parts + ["name"])
-        loc = self._doc.get_node_location(name_value_path)
-        if loc is None:
-            raise RuntimeError(
-                f"{name} was found in YAML AST, but location could not be determined!"
-            )
-
+        loc = matches[0].value_location
         return ManifestEntryLocation(
             line_number=loc.start_line + 1,  # 0-based → 1-based line number
             start=loc.start_col + 1,  # 0-based → 1-based column number
@@ -582,4 +575,4 @@ def _find_project_field_path(doc: YamlDocument, project_name: str) -> list[str]:
     )
     if not matches:
         raise RuntimeError(f"Project '{project_name}' not found in manifest text")
-    return matches[0].parts
+    return matches[0].path.parts
