@@ -172,6 +172,60 @@ class YamlDocument:
             )
             self._set_by_parts(target_parts, value)
 
+    def delete(self, jsonpath: str, field: str) -> None:
+        """Remove *field* from every node matched by *jsonpath*.
+
+        *field* may be a simple key (``"revision"``) or a top-level nested
+        key (``"integrity"``); all child lines are removed together with the
+        key itself.  If the field is absent the call is a no-op.
+
+        Example::
+
+            doc.delete(
+                '$.manifest.projects[?(@.name == "my-project")]',
+                "revision",
+            )
+        """
+        steps = self._parse_jsonpath(jsonpath)
+
+        filter_idx = next(
+            (i for i, s in enumerate(steps) if isinstance(s, _FilterStep)), None
+        )
+
+        if filter_idx is None:
+            parts = [s for s in steps if isinstance(s, str)] + [field]
+            self._delete_by_parts(parts)
+            return
+
+        sequence_parts = [s for s in steps[:filter_idx] if isinstance(s, str)]
+        filter_step: _FilterStep = steps[filter_idx]  # type: ignore[assignment]
+        post_filter_parts = [s for s in steps[filter_idx + 1 :] if isinstance(s, str)]
+
+        root = yaml.compose("".join(self.lines))
+        sequence_node = self._traverse_path(root, sequence_parts)
+        if not isinstance(sequence_node, SequenceNode):
+            return
+
+        # Collect targets first then delete in reverse so earlier deletions
+        # don't shift the line indices of later ones.
+        targets: list[list[str]] = []
+        for item_idx, item in enumerate(sequence_node.value):
+            if not isinstance(item, MappingNode):
+                continue
+            mapping = self._mapping_to_dict(item)
+            filter_node = mapping.get(filter_step.key)
+            if not (
+                isinstance(filter_node, ScalarNode)
+                and str(filter_node.value) == filter_step.value
+            ):
+                continue
+            targets.append(
+                sequence_parts + [str(item_idx)] + post_filter_parts + [field]
+            )
+
+        for parts in reversed(targets):
+            self._delete_by_parts(parts)
+
     def dump(self) -> str:
         """Return the current document as a string."""
         return "".join(self.lines)
@@ -269,6 +323,31 @@ class YamlDocument:
     # ------------------------------------------------------------------ #
     # Text-level mutation helpers                                          #
     # ------------------------------------------------------------------ #
+
+    def _delete_by_parts(self, parts: list[str]) -> None:
+        """Remove the field at *parts* and all of its child lines.
+
+        Blank lines are treated as block separators and are never deleted,
+        so the surrounding layout is preserved even when a field is the last
+        item inside a sequence element.
+        """
+        idx = self._find_field(parts)
+        if idx is None:
+            return
+        line = self.lines[idx]
+        field_indent = len(line) - len(line.lstrip())
+        end_idx = idx + 1
+        while end_idx < len(self.lines):
+            next_stripped = self.lines[end_idx].rstrip("\n\r")
+            if not next_stripped:
+                break  # blank line ends this field's block
+            if next_stripped.lstrip().startswith("#"):
+                end_idx += 1
+                continue
+            if len(next_stripped) - len(next_stripped.lstrip()) <= field_indent:
+                break
+            end_idx += 1
+        del self.lines[idx:end_idx]
 
     def _set_by_parts(self, parts: list[str], value: str) -> None:
         """Locate the field at *parts* and update it, or add it if absent."""

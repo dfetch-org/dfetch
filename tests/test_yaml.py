@@ -313,3 +313,62 @@ def test_get_field_present_in_second_project():
     matches = doc.get('$.manifest.projects[?(@.name == "second")].revision')
     assert len(matches) == 1
     assert matches[0].value == "abc123"
+
+
+# ---------------------------------------------------------------------------
+# delete()
+# ---------------------------------------------------------------------------
+
+
+def test_delete_removes_existing_scalar_field():
+    doc = YamlDocument(_MANIFEST)
+    doc.delete('$.manifest.projects[?(@.name == "myproject")]', "branch")
+    result = doc.dump()
+    # The myproject block should no longer contain branch
+    myproject_end = result.index("- name: other")
+    assert "branch:" not in result[:myproject_end]
+    # Sibling project and other fields are untouched
+    assert "url:" in result
+    assert "branch: develop" in result
+
+
+def test_delete_noop_when_field_absent():
+    doc = YamlDocument(_MANIFEST)
+    original = doc.dump()
+    doc.delete('$.manifest.projects[?(@.name == "myproject")]', "revision")
+    assert doc.dump() == original
+
+
+def test_delete_noop_when_path_no_match():
+    doc = YamlDocument(_MANIFEST)
+    original = doc.dump()
+    doc.delete('$.manifest.projects[?(@.name == "ghost")]', "branch")
+    assert doc.dump() == original
+
+
+def test_delete_removes_nested_block():
+    manifest = """\
+manifest:
+  version: '0.0'
+  projects:
+    - name: pkg
+      url: https://example.com
+      vcs: archive
+      integrity:
+        hash: sha256:abc123
+"""
+    doc = YamlDocument(manifest)
+    doc.delete('$.manifest.projects[?(@.name == "pkg")]', "integrity")
+    result = doc.dump()
+    assert "integrity:" not in result
+    assert "hash:" not in result
+    assert "url:" in result
+
+
+def test_delete_only_affects_matched_project():
+    doc = YamlDocument(_TWO_PROJECT_MANIFEST)
+    doc.delete('$.manifest.projects[?(@.name == "second")]', "revision")
+    result = doc.dump()
+    first_end = result.index("- name: second")
+    assert "branch: main" in result[:first_end]
+    assert "revision" not in result[first_end:]

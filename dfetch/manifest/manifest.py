@@ -418,9 +418,16 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
                     f"Updating {project.name} version field '{name}' to '{value}' in manifest"
                 )
                 self._doc.set(path, name, value)
+            else:
+                # Remove any previously-pinned key that is no longer active
+                # (e.g. an old 'revision' when the project is now pinned by tag).
+                self._doc.delete(path, name)
 
         if project.integrity and project.integrity.hash:
             self._doc.set(path, "integrity.hash", project.integrity.hash)
+        else:
+            # Remove a stale integrity block if the project no longer carries one.
+            self._doc.delete(path, "integrity")
 
         self.__text = self._doc.dump()
 
