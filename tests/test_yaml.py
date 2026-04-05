@@ -372,3 +372,168 @@ def test_delete_only_affects_matched_project():
     first_end = result.index("- name: second")
     assert "branch: main" in result[:first_end]
     assert "revision" not in result[first_end:]
+
+
+# ---------------------------------------------------------------------------
+# Compact YAML sequence style (dfetch.yaml uses this)
+# Items sit at the same indent as the parent key, e.g.:
+#   projects:
+#   - name: foo   ← same 2-space indent as 'projects:'
+# ---------------------------------------------------------------------------
+
+_COMPACT_MANIFEST = """\
+manifest:
+  version: '0.0'
+
+  projects:
+  - name: demo-magic
+    repo-path: paxtonhare/demo-magic.git
+    dst: doc/demo-magic
+    src: '*.sh'
+
+  - name: other-project
+    repo-path: org/other.git
+    dst: doc/other
+"""
+
+
+def test_compact_set_adds_new_field_inside_correct_project():
+    """freeze adds branch/revision inside the project entry, not at end of file."""
+    doc = YamlDocument(_COMPACT_MANIFEST)
+    doc.set('$.manifest.projects[?(@.name == "demo-magic")]', "branch", "master")
+    result = doc.dump()
+
+    # branch must appear before the second project
+    first_end = result.index("- name: other-project")
+    assert "branch: master" in result[:first_end]
+    # must not appear after the second project
+    assert "branch: master" not in result[first_end:]
+
+
+def test_compact_set_adds_revision_inside_correct_project():
+    doc = YamlDocument(_COMPACT_MANIFEST)
+    doc.set(
+        '$.manifest.projects[?(@.name == "demo-magic")]',
+        "revision",
+        "2a2f439c",
+    )
+    result = doc.dump()
+
+    first_end = result.index("- name: other-project")
+    assert "revision: 2a2f439c" in result[:first_end]
+    assert "revision" not in result[first_end:]
+
+
+def test_compact_set_updates_existing_field():
+    manifest = _COMPACT_MANIFEST.replace(
+        "dst: doc/demo-magic", "dst: doc/demo-magic\n    branch: old"
+    )
+    doc = YamlDocument(manifest)
+    doc.set('$.manifest.projects[?(@.name == "demo-magic")]', "branch", "new")
+    result = doc.dump()
+
+    first_end = result.index("- name: other-project")
+    assert "branch: new" in result[:first_end]
+    assert "branch: old" not in result
+
+
+def test_compact_set_does_not_corrupt_file():
+    """After set(), the manifest must still parse as valid YAML."""
+    import yaml as _yaml
+
+    doc = YamlDocument(_COMPACT_MANIFEST)
+    doc.set('$.manifest.projects[?(@.name == "demo-magic")]', "branch", "master")
+    doc.set('$.manifest.projects[?(@.name == "demo-magic")]', "revision", "abc123")
+    parsed = _yaml.safe_load(doc.dump())
+    projects = parsed["manifest"]["projects"]
+    demo = next(p for p in projects if p["name"] == "demo-magic")
+    assert demo["branch"] == "master"
+    assert demo["revision"] == "abc123"
+    other = next(p for p in projects if p["name"] == "other-project")
+    assert "branch" not in other
+    assert "revision" not in other
+
+
+# ---------------------------------------------------------------------------
+# 4-space indentation (auto-detected indent step)
+# ---------------------------------------------------------------------------
+
+_FOUR_SPACE_MANIFEST = """\
+manifest:
+    version: '0.0'
+
+    projects:
+        - name: myproject
+          url: https://example.com/myproject
+          branch: main
+
+        - name: other
+          url: https://example.com/other
+"""
+
+_FOUR_SPACE_COMPACT_MANIFEST = """\
+manifest:
+    version: '0.0'
+
+    projects:
+    - name: myproject
+      url: https://example.com/myproject
+      branch: main
+
+    - name: other
+      url: https://example.com/other
+"""
+
+
+def test_four_space_detects_indent_step():
+    doc = YamlDocument(_FOUR_SPACE_MANIFEST)
+    assert doc._indent_step == 4
+
+
+def test_four_space_get_scalar():
+    doc = YamlDocument(_FOUR_SPACE_MANIFEST)
+    matches = doc.get("$.manifest.version")
+    assert len(matches) == 1
+    assert matches[0].value == "0.0"
+
+
+def test_four_space_set_updates_existing_field():
+    doc = YamlDocument(_FOUR_SPACE_MANIFEST)
+    doc.set('$.manifest.projects[?(@.name == "myproject")]', "branch", "feature-x")
+    assert "branch: feature-x" in doc.dump()
+
+
+def test_four_space_set_adds_missing_field():
+    doc = YamlDocument(_FOUR_SPACE_MANIFEST)
+    doc.set('$.manifest.projects[?(@.name == "myproject")]', "revision", "deadbeef")
+    result = doc.dump()
+    first_end = result.index("- name: other")
+    assert "revision: deadbeef" in result[:first_end]
+    assert "revision" not in result[first_end:]
+
+
+def test_four_space_set_only_affects_matched_project():
+    doc = YamlDocument(_FOUR_SPACE_MANIFEST)
+    doc.set('$.manifest.projects[?(@.name == "myproject")]', "revision", "abc123")
+    result = doc.dump()
+    first_end = result.index("- name: other")
+    assert "revision: abc123" in result[:first_end]
+    assert "revision" not in result[first_end:]
+
+
+def test_four_space_delete_removes_field():
+    doc = YamlDocument(_FOUR_SPACE_MANIFEST)
+    doc.delete('$.manifest.projects[?(@.name == "myproject")]', "branch")
+    result = doc.dump()
+    first_end = result.index("- name: other")
+    assert "branch" not in result[:first_end]
+
+
+def test_four_space_compact_adds_field_inside_correct_project():
+    """4-space compact sequence: new field goes inside the right project."""
+    doc = YamlDocument(_FOUR_SPACE_COMPACT_MANIFEST)
+    doc.set('$.manifest.projects[?(@.name == "myproject")]', "revision", "abc123")
+    result = doc.dump()
+    first_end = result.index("- name: other")
+    assert "revision: abc123" in result[:first_end]
+    assert "revision" not in result[first_end:]
