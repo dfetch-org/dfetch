@@ -172,11 +172,10 @@ def test_add_command_non_interactive_appends_entry():
         with patch(
             "dfetch.commands.add.create_sub_project", return_value=fake_subproject
         ):
-            with patch("dfetch.commands.add.append_entry_manifest_file") as mock_append:
-                Add()(_make_args("https://github.com/org/myrepo.git"))
+            Add()(_make_args("https://github.com/org/myrepo.git"))
 
-    mock_append.assert_called_once()
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    fake_superproject.manifest.append_project_entry.assert_called_once()
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "myrepo"
     assert entry.branch == "main"
 
@@ -196,20 +195,19 @@ def test_add_command_non_interactive_field_overrides():
         with patch(
             "dfetch.commands.add.create_sub_project", return_value=fake_subproject
         ):
-            with patch("dfetch.commands.add.append_entry_manifest_file") as mock_append:
-                Add()(
-                    _make_args(
-                        "https://github.com/org/myrepo.git",
-                        name="custom-name",
-                        dst="ext/custom",
-                        version="v1.0",
-                        src="lib",
-                        ignore=["docs", "tests"],
-                    )
+            Add()(
+                _make_args(
+                    "https://github.com/org/myrepo.git",
+                    name="custom-name",
+                    dst="ext/custom",
+                    version="v1.0",
+                    src="lib",
+                    ignore=["docs", "tests"],
                 )
+            )
 
-    mock_append.assert_called_once()
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    fake_superproject.manifest.append_project_entry.assert_called_once()
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "custom-name"
     assert entry.destination == "ext/custom"
     assert entry.tag == "v1.0"
@@ -217,17 +215,14 @@ def test_add_command_non_interactive_field_overrides():
     assert entry.ignore == ["docs", "tests"]
 
 
-def test_add_command_suffixes_duplicate_name(tmp_path):
+def test_add_command_suffixes_duplicate_name():
     """Non-interactive add with a clashing name must append a numbered suffix."""
-    manifest_file = tmp_path / "dfetch.yaml"
-    manifest_file.write_text("")
-
     fake_superproject = Mock()
     fake_superproject.manifest = mock_manifest(
-        [{"name": "myrepo"}], path=str(manifest_file)
+        [{"name": "myrepo"}], path="/some/dfetch.yaml"
     )
     fake_superproject.manifest.remotes = []
-    fake_superproject.root_directory = tmp_path
+    fake_superproject.root_directory = Path("/some")
 
     fake_subproject = _make_subproject()
 
@@ -239,7 +234,8 @@ def test_add_command_suffixes_duplicate_name(tmp_path):
         ):
             Add()(_make_args("https://github.com/org/myrepo.git"))
 
-    assert "myrepo-1" in manifest_file.read_text()
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
+    assert entry.name == "myrepo-1"
 
 
 # ---------------------------------------------------------------------------
@@ -272,18 +268,15 @@ def test_add_command_interactive_branch():
                 with patch(
                     "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
                 ):
-                    with patch(
-                        "dfetch.commands.add.append_entry_manifest_file"
-                    ) as mock_append:
-                        Add()(
-                            _make_args(
-                                "https://github.com/org/myrepo.git",
-                                interactive=True,
-                            )
+                    Add()(
+                        _make_args(
+                            "https://github.com/org/myrepo.git",
+                            interactive=True,
                         )
+                    )
 
-    mock_append.assert_called_once()
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    fake_superproject.manifest.append_project_entry.assert_called_once()
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "myrepo"
     assert entry.branch == "dev"
     assert entry.destination == "libs/myrepo"
@@ -314,17 +307,14 @@ def test_add_command_interactive_branch_by_number():
                 with patch(
                     "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
                 ):
-                    with patch(
-                        "dfetch.commands.add.append_entry_manifest_file"
-                    ) as mock_append:
-                        Add()(
-                            _make_args(
-                                "https://github.com/org/myrepo.git",
-                                interactive=True,
-                            )
+                    Add()(
+                        _make_args(
+                            "https://github.com/org/myrepo.git",
+                            interactive=True,
                         )
+                    )
 
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.branch == "dev"
 
 
@@ -353,18 +343,15 @@ def test_add_command_interactive_tag():
                 with patch(
                     "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
                 ):
-                    with patch(
-                        "dfetch.commands.add.append_entry_manifest_file"
-                    ) as mock_append:
-                        Add()(
-                            _make_args(
-                                "https://github.com/org/myrepo.git",
-                                interactive=True,
-                            )
+                    Add()(
+                        _make_args(
+                            "https://github.com/org/myrepo.git",
+                            interactive=True,
                         )
+                    )
 
-    mock_append.assert_called_once()
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    fake_superproject.manifest.append_project_entry.assert_called_once()
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.tag == "v2.0"
     assert entry.branch == ""
 
@@ -391,17 +378,14 @@ def test_add_command_interactive_abort():
                 side_effect=lambda *a, **kw: next(prompt_answers),
             ):
                 with patch("dfetch.commands.add.Confirm.ask", return_value=False):
-                    with patch(
-                        "dfetch.commands.add.append_entry_manifest_file"
-                    ) as mock_append:
-                        Add()(
-                            _make_args(
-                                "https://github.com/org/myrepo.git",
-                                interactive=True,
-                            )
+                    Add()(
+                        _make_args(
+                            "https://github.com/org/myrepo.git",
+                            interactive=True,
                         )
+                    )
 
-    mock_append.assert_not_called()
+    fake_superproject.manifest.append_project_entry.assert_not_called()
 
 
 def test_add_command_interactive_with_src():
@@ -429,18 +413,15 @@ def test_add_command_interactive_with_src():
                 with patch(
                     "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
                 ):
-                    with patch(
-                        "dfetch.commands.add.append_entry_manifest_file"
-                    ) as mock_append:
-                        Add()(
-                            _make_args(
-                                "https://github.com/org/myrepo.git",
-                                interactive=True,
-                            )
+                    Add()(
+                        _make_args(
+                            "https://github.com/org/myrepo.git",
+                            interactive=True,
                         )
+                    )
 
-    mock_append.assert_called_once()
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    fake_superproject.manifest.append_project_entry.assert_called_once()
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.source == "include/"
 
 
@@ -469,18 +450,15 @@ def test_add_command_interactive_with_ignore():
                 with patch(
                     "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
                 ):
-                    with patch(
-                        "dfetch.commands.add.append_entry_manifest_file"
-                    ) as mock_append:
-                        Add()(
-                            _make_args(
-                                "https://github.com/org/myrepo.git",
-                                interactive=True,
-                            )
+                    Add()(
+                        _make_args(
+                            "https://github.com/org/myrepo.git",
+                            interactive=True,
                         )
+                    )
 
-    mock_append.assert_called_once()
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    fake_superproject.manifest.append_project_entry.assert_called_once()
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert list(entry.ignore) == ["tests", "docs"]
 
 
@@ -506,16 +484,15 @@ def test_add_command_interactive_run_update():
                 side_effect=lambda *a, **kw: next(prompt_answers),
             ):
                 with patch("dfetch.commands.add.Confirm.ask", side_effect=[True, True]):
-                    with patch("dfetch.commands.add.append_entry_manifest_file"):
-                        with patch(
-                            "dfetch.commands.update.Update.__call__"
-                        ) as mock_update:
-                            Add()(
-                                _make_args(
-                                    "https://github.com/org/myrepo.git",
-                                    interactive=True,
-                                )
+                    with patch(
+                        "dfetch.commands.update.Update.__call__"
+                    ) as mock_update:
+                        Add()(
+                            _make_args(
+                                "https://github.com/org/myrepo.git",
+                                interactive=True,
                             )
+                        )
 
     mock_update.assert_called_once()
 
@@ -550,21 +527,18 @@ def test_add_command_interactive_with_overrides():
                 with patch(
                     "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
                 ):
-                    with patch(
-                        "dfetch.commands.add.append_entry_manifest_file"
-                    ) as mock_append:
-                        Add()(
-                            _make_args(
-                                "https://github.com/org/myrepo.git",
-                                interactive=True,
-                                name="overridden-name",
-                                dst="ext/overridden",
-                                version="dev",
-                            )
+                    Add()(
+                        _make_args(
+                            "https://github.com/org/myrepo.git",
+                            interactive=True,
+                            name="overridden-name",
+                            dst="ext/overridden",
+                            version="dev",
                         )
+                    )
 
-    mock_append.assert_called_once()
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    fake_superproject.manifest.append_project_entry.assert_called_once()
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "overridden-name"
     assert entry.destination == "ext/overridden"
     assert entry.branch == "dev"
@@ -591,24 +565,21 @@ def test_add_command_interactive_with_all_overrides():
                 with patch(
                     "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
                 ):
-                    with patch(
-                        "dfetch.commands.add.append_entry_manifest_file"
-                    ) as mock_append:
-                        Add()(
-                            _make_args(
-                                "https://github.com/org/myrepo.git",
-                                interactive=True,
-                                name="mylib",
-                                dst="ext/mylib",
-                                version="v2.0",
-                                src="lib/core",
-                                ignore=["docs"],
-                            )
+                    Add()(
+                        _make_args(
+                            "https://github.com/org/myrepo.git",
+                            interactive=True,
+                            name="mylib",
+                            dst="ext/mylib",
+                            version="v2.0",
+                            src="lib/core",
+                            ignore=["docs"],
                         )
+                    )
 
     mock_prompt.assert_not_called()
-    mock_append.assert_called_once()
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    fake_superproject.manifest.append_project_entry.assert_called_once()
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "mylib"
     assert entry.destination == "ext/mylib"
     assert entry.tag == "v2.0"
@@ -661,13 +632,10 @@ def test_add_command_interactive_svn_trunk():
                 with patch(
                     "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
                 ):
-                    with patch(
-                        "dfetch.commands.add.append_entry_manifest_file"
-                    ) as mock_append:
-                        Add()(_make_args(_SVN_URL, interactive=True))
+                    Add()(_make_args(_SVN_URL, interactive=True))
 
-    mock_append.assert_called_once()
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    fake_superproject.manifest.append_project_entry.assert_called_once()
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.name == "myrepo"
     assert entry.branch == "trunk"
 
@@ -697,12 +665,9 @@ def test_add_command_interactive_svn_custom_branch():
                 with patch(
                     "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
                 ):
-                    with patch(
-                        "dfetch.commands.add.append_entry_manifest_file"
-                    ) as mock_append:
-                        Add()(_make_args(_SVN_URL, interactive=True))
+                    Add()(_make_args(_SVN_URL, interactive=True))
 
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.branch == "feature-x"
 
 
@@ -731,12 +696,9 @@ def test_add_command_interactive_svn_tag():
                 with patch(
                     "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
                 ):
-                    with patch(
-                        "dfetch.commands.add.append_entry_manifest_file"
-                    ) as mock_append:
-                        Add()(_make_args(_SVN_URL, interactive=True))
+                    Add()(_make_args(_SVN_URL, interactive=True))
 
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.tag == "v2.0"
     assert entry.branch == ""
 
@@ -766,12 +728,9 @@ def test_add_command_interactive_svn_branch_by_number():
                 with patch(
                     "dfetch.commands.add.Confirm.ask", side_effect=[True, False]
                 ):
-                    with patch(
-                        "dfetch.commands.add.append_entry_manifest_file"
-                    ) as mock_append:
-                        Add()(_make_args(_SVN_URL, interactive=True))
+                    Add()(_make_args(_SVN_URL, interactive=True))
 
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.branch == "feature-x"
 
 
@@ -790,11 +749,10 @@ def test_add_command_non_interactive_svn():
         with patch(
             "dfetch.commands.add.create_sub_project", return_value=fake_subproject
         ):
-            with patch("dfetch.commands.add.append_entry_manifest_file") as mock_append:
-                Add()(_make_args(_SVN_URL))
+            Add()(_make_args(_SVN_URL))
 
-    mock_append.assert_called_once()
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    fake_superproject.manifest.append_project_entry.assert_called_once()
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     assert entry.branch == "trunk"
 
 
@@ -822,15 +780,14 @@ def test_add_command_matches_existing_remote():
         with patch(
             "dfetch.commands.add.create_sub_project", return_value=fake_subproject
         ):
-            with patch("dfetch.commands.add.append_entry_manifest_file") as mock_append:
-                Add()(
-                    _make_args(
-                        "https://github.com/org/myrepo.git",
-                    )
+            Add()(
+                _make_args(
+                    "https://github.com/org/myrepo.git",
                 )
+            )
 
-    mock_append.assert_called_once()
-    entry: ProjectEntry = mock_append.call_args[0][1]
+    fake_superproject.manifest.append_project_entry.assert_called_once()
+    entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][0]
     yaml_data = entry.as_yaml()
     assert yaml_data.get("remote") == "github"
     assert "org/myrepo" in yaml_data.get("repo-path", "")
