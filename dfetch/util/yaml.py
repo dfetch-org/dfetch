@@ -81,6 +81,25 @@ class YamlDocument:
     # Public API
     # ------------------------------------------------------------------
 
+    def add(self, jsonpath: str, field: str | None, value: object) -> None:
+        """Add a new entry under nodes matched by *jsonpath*.
+
+        If *field* is provided → adds a mapping key (non-destructive).
+        If *field* is None → appends to a sequence.
+
+        *value* can be a scalar, dict, or list (nested YAML supported).
+        """
+        steps = self._parse_jsonpath(jsonpath)
+
+        if field is not None:
+            for parts in self._target_paths(steps, [field]):
+                if self._find_field(parts) is None:
+                    self._add_field(parts, value, at_end=True)
+            return
+
+        for parts in self._target_paths(steps, []):
+            self._append_sequence_item(parts, value)
+
     def get(self, jsonpath: str) -> list[NodeMatch]:
         """Return all scalar nodes matching *jsonpath*.
 
@@ -314,15 +333,74 @@ class YamlDocument:
             f"{' ' * indent}{field_name}: {self._yaml_scalar(value)}{comment}{self.eol}"
         )
 
-    def _add_field(self, parts: list[str], value: str, *, at_end: bool = False) -> None:
-        """Insert a new ``key: value`` line at the position given by *parts*."""
+    def _append_sequence_item(self, parts: list[str], value: object) -> None:
+        """Append YAML value (possibly nested) to a sequence."""
+        parent_idx = self._resolve_parent_idx(parts)
+        if parent_idx is None:
+            return
+
+        indent = self._detect_sequence_item_indent(parts)
+        if indent is None:
+            indent = self._child_indent(parent_idx)
+        insert_at = self._insert_idx(parts, parent_idx, at_end=True)
+
+        # Case 1: scalar
+        if not isinstance(value, (dict, list)):
+            line = f"{' ' * indent}- {self._yaml_scalar(str(value))}{self.eol}"
+            self.lines.insert(insert_at, line)
+            return
+
+        # Case 2: nested YAML block
+        block = self._yaml_block(value)
+
+        # First line goes inline with "-"
+        first = block[0]
+        self.lines.insert(
+            insert_at,
+            f"{self.eol}{' ' * indent}- {first}{self.eol}",
+        )
+
+        # Remaining lines
+        child_indent = indent + 2  # "- " is always 2 chars
+
+        for i, line in enumerate(block[1:]):
+            self.lines.insert(
+                insert_at + 1 + i,
+                f"{' ' * child_indent}{line}{self.eol}",
+            )
+
+    def _add_field(
+        self, parts: list[str], value: object, *, at_end: bool = False
+    ) -> None:
+        """Insert a new field that may contain nested YAML."""
         parent_parts = parts[:-1]
         field_name = parts[-1]
+
         parent_idx = self._resolve_parent_idx(parent_parts)
         indent = self._child_indent(parent_idx)
-        value_str = f": {self._yaml_scalar(value)}" if value else ":"
         insert_at = self._insert_idx(parent_parts, parent_idx, at_end)
-        self.lines.insert(insert_at, f"{' ' * indent}{field_name}{value_str}{self.eol}")
+
+        # Case 1: scalar → single line
+        if not isinstance(value, (dict, list)):
+            line = (
+                f"{' ' * indent}{field_name}: {self._yaml_scalar(str(value))}{self.eol}"
+            )
+            self.lines.insert(insert_at, line)
+            return
+
+        # Case 2: nested YAML → multi-line block
+        block = self._yaml_block(value)
+
+        # Insert "key:"
+        self.lines.insert(insert_at, f"{' ' * indent}{field_name}:{self.eol}")
+
+        child_indent = indent + self._indent_step
+
+        for i, line in enumerate(block):
+            self.lines.insert(
+                insert_at + 1 + i,
+                f"{' ' * child_indent}{line}{self.eol}",
+            )
 
     # ------------------------------------------------------------------
     # Text-level field location
@@ -551,9 +629,44 @@ class YamlDocument:
                     return indent
         return 2
 
+    def _detect_sequence_item_indent(self, parent_parts: list[str]) -> int | None:
+        """Return indent of existing sequence items, or None if none exist."""
+        parent_idx = self._find_field(parent_parts)
+        if parent_idx is None:
+            return None
+
+        parent_indent = len(self.lines[parent_idx]) - len(
+            self.lines[parent_idx].lstrip()
+        )
+        start = parent_idx + 1
+        end = self._block_end(parent_idx, parent_indent, allow_compact_sequence=True)
+
+        # Try normal indent first (children deeper than parent)
+        expected = parent_indent + self._indent_step
+        idx = self._find_field_at_indent("-", expected, start, end)
+        if idx is not None:
+            return expected
+
+        # Try compact style (same level as parent)
+        idx = self._find_field_at_indent("-", parent_indent, start, end)
+        if idx is not None:
+            return parent_indent
+
+        return None
+
     @staticmethod
     def _yaml_scalar(value: str) -> str:
         """Format *value* as a YAML scalar, quoting when necessary."""
         return yaml.dump(
             value, default_flow_style=None, allow_unicode=True
         ).splitlines()[0]
+
+    def _yaml_block(self, value: object) -> list[str]:
+        """Serialize *value* to YAML block lines (no indentation applied yet)."""
+        dumped = yaml.dump(
+            value,
+            default_flow_style=False,
+            allow_unicode=True,
+            sort_keys=False,
+        )
+        return dumped.rstrip().splitlines()

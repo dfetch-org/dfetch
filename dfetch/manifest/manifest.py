@@ -397,15 +397,11 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         document (2-space indent under ``projects:``).  Call
         :meth:`update_dump` afterwards to persist the change to disk.
         """
-        new_entry = yaml.dump(
-            [project_entry.as_yaml()],
-            sort_keys=False,
-            line_break=os.linesep,
-            indent=2,
+        self._doc.add(
+            "$.manifest.projects",
+            None,
+            project_entry.as_yaml(),
         )
-        self._doc.lines.append(self._doc.eol)
-        for line in new_entry.splitlines():
-            self._doc.lines.append(f"  {line}{self._doc.eol}")
 
     def update_project_version(self, project: ProjectEntry) -> None:
         """Update a project's version in the manifest in-place, preserving layout, comments, and line endings."""
