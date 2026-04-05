@@ -220,7 +220,7 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         path: str | os.PathLike[str] | None = None,
     ) -> "Manifest":
         """Create a manifest from a file like object."""
-        if isinstance(text, (io.TextIOWrapper, IO)):
+        if hasattr(text, "read"):
             text = text.read()
 
         loaded_yaml = Manifest._load_yaml(text)
@@ -367,17 +367,18 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         if not matches:
             raise RuntimeError(f"{name} was not found in the manifest!")
 
-        # Convert first match to FieldLocation using AST lookup
-        loc = self._doc.get_node_location(matches[0])
+        # Look up the name VALUE node (the scalar "foo", not the mapping wrapper).
+        name_value_path = FieldPath(matches[0].parts + ["name"])
+        loc = self._doc.get_node_location(name_value_path)
         if loc is None:
             raise RuntimeError(
                 f"{name} was found in YAML AST, but location could not be determined!"
             )
 
         return ManifestEntryLocation(
-            line_number=loc.start_line + 1,  # convert 0-based to 1-based line numbers
-            start=loc.start_col,
-            end=loc.end_col,
+            line_number=loc.start_line + 1,  # 0-based → 1-based line number
+            start=loc.start_col + 1,  # 0-based → 1-based column number
+            end=loc.end_col,  # 0-based exclusive end (reporters add +1 for SARIF)
         )
 
     # ---------------- YAML updates ----------------
