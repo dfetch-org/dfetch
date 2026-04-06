@@ -53,10 +53,14 @@ SAFE_TEXT = st.text(
     max_size=64,
 )
 
-# NUMBER = Int() | Float()  with finite floats
-SAFE_NUMBER = st.one_of(
+# VERSION = Int() | Float() | Str(): generate unquoted ints, unquoted floats,
+# and arbitrary safe strings to cover all three schema branches.
+# Empty strings are excluded: Float()'s validator crashes on them instead of
+# raising YAMLValidationError, so the OrValidator cannot fall through to Str().
+SAFE_VERSION = st.one_of(
     st.integers(),
     st.floats(allow_nan=False, allow_infinity=False),
+    SAFE_TEXT.filter(lambda s: s != ""),
 )
 
 
@@ -128,7 +132,7 @@ manifest_strategy = st.builds(
             "projects": projects,
         }
     },
-    version=SAFE_NUMBER,
+    version=SAFE_VERSION,
     remotes=remotes_seq,
     projects=projects_seq,
 )

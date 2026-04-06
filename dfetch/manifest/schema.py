@@ -1,11 +1,14 @@
 """StrictYAML schema for the manifest."""
 
-from strictyaml import Bool, Enum, Float, Int, Map, Optional, Regex, Seq
-
-NUMBER = Int() | Float()
+from strictyaml import Bool, Enum, Float, Int, Map, Optional, Regex, Seq, Str
 
 # A safe string: no NUL, no control chars
 SAFE_STR = Regex(r"^[^\x00-\x1F\x7F-\x9F]*$")
+
+# Version accepts an unquoted integer (version: 0), an unquoted float
+# (version: 0.0), or a quoted string (version: '0.0').  Manifest code
+# always converts the result to str before using or writing it.
+VERSION = Int() | Float() | Str()
 
 REMOTE_SCHEMA = Map(
     {
@@ -52,7 +55,7 @@ MANIFEST_SCHEMA = Map(
     {
         "manifest": Map(
             {
-                "version": NUMBER,
+                "version": VERSION,
                 Optional("remotes"): Seq(REMOTE_SCHEMA),
                 "projects": Seq(PROJECT_SCHEMA),
             }

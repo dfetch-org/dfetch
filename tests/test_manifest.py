@@ -385,3 +385,39 @@ def test_update_removes_stale_revision_when_pinned_by_tag() -> None:
     assert "tag: v1.2.3" in result
     assert "revision:" not in result
     assert "branch:" not in result
+
+
+# ---------------------------------------------------------------------------
+# Version field: always serialised as a quoted string
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "manifest_text, expected_version",
+    [
+        ("manifest:\n  version: 0\n  projects:\n  - name: p\n", "0"),
+        ("manifest:\n  version: 0.0\n  projects:\n  - name: p\n", "0.0"),
+        ("manifest:\n  version: '0.0'\n  projects:\n  - name: p\n", "0.0"),
+        ("manifest:\n  version: '1.2'\n  projects:\n  - name: p\n", "1.2"),
+    ],
+)
+def test_version_parsed_as_string(manifest_text: str, expected_version: str) -> None:
+    """Version is stored as a string regardless of how it appears in YAML."""
+    manifest = Manifest.from_yaml(manifest_text)
+    assert manifest.version == expected_version
+
+
+@pytest.mark.parametrize(
+    "manifest_text",
+    [
+        "manifest:\n  version: 0\n  projects:\n  - name: p\n",
+        "manifest:\n  version: 0.0\n  projects:\n  - name: p\n",
+        "manifest:\n  version: '0.0'\n  projects:\n  - name: p\n",
+    ],
+)
+def test_update_dump_writes_version_as_quoted_string(manifest_text: str) -> None:
+    """update_dump must always write version as a quoted YAML string."""
+    manifest = Manifest.from_yaml(manifest_text)
+    result = manifest._doc.as_yaml()
+    # The version value must appear quoted so that YAML parsers read it as a string.
+    assert f"version: '{manifest.version}'" in result

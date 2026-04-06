@@ -159,6 +159,11 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         manifest_data: dict[str, Any] = cast(dict[str, Any], doc.data)["manifest"]
         self.__version: str = str(manifest_data.get("version", self.CURRENT_VERSION))
 
+        # Ensure version is always written as a quoted string by update_dump().
+        doc["manifest"].as_marked_up()["version"] = SingleQuotedScalarString(
+            self.__version
+        )
+
         remotes = manifest_data.get("remotes", [])
         projects = manifest_data["projects"]
 
