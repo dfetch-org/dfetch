@@ -25,10 +25,10 @@ import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath, PureWindowsPath
-from typing import IO, Any
+from typing import IO, Any, cast
 
 import yaml
-from strictyaml import load
+from strictyaml import YAML, StrictYAMLError, YAMLValidationError, load
 from strictyaml.ruamel.comments import CommentedMap
 from strictyaml.ruamel.error import CommentMark
 from strictyaml.ruamel.scalarstring import SingleQuotedScalarString
@@ -38,8 +38,26 @@ from typing_extensions import NotRequired, TypedDict
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
+from dfetch.manifest.schema import MANIFEST_SCHEMA
 
 logger = get_logger(__name__)
+
+
+def _ensure_unique(seq: list[dict[str, Any]], key: str, context: str) -> None:
+    """Raise RuntimeError if any value for *key* appears more than once in *seq*."""
+    values = [item.get(key) for item in seq if key in item]
+    seen: set[Any] = set()
+    dups: set[Any] = set()
+    for val in values:
+        if val in seen:
+            dups.add(val)
+        else:
+            seen.add(val)
+    if dups:
+        dup_list = ", ".join(sorted(map(str, dups)))
+        raise RuntimeError(
+            f"Schema validation failed:\nDuplicate {context}.{key} value(s): {dup_list}"
+        )
 
 
 def _yaml_str(value: str) -> str | SingleQuotedScalarString:
@@ -128,22 +146,27 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
 
     def __init__(
         self,
-        manifest: ManifestDict,
-        text: str | None = None,
+        doc: YAML,
         path: str | os.PathLike[str] | None = None,
     ) -> None:
         """Create the manifest."""
-        self.__version: str = str(manifest.get("version", self.CURRENT_VERSION))
-        self.__text: str = text if text else ""
+        self._doc = doc
         self.__path: str = str(path) if path else ""
         self.__relative_path: str = (
             os.path.relpath(self.__path, os.getcwd()) if self.__path else ""
         )
-        self._doc = load(self.__text)
 
-        self._remotes, default_remotes = self._determine_remotes(
-            manifest.get("remotes", [])
-        )
+        manifest_data: dict[str, Any] = cast(dict[str, Any], doc.data)["manifest"]
+        self.__version: str = str(manifest_data.get("version", self.CURRENT_VERSION))
+
+        remotes = manifest_data.get("remotes", [])
+        projects = manifest_data["projects"]
+
+        _ensure_unique(remotes, "name", "manifest.remotes")
+        _ensure_unique(projects, "name", "manifest.projects")
+        _ensure_unique(projects, "dst", "manifest.projects")
+
+        self._remotes, default_remotes = self._determine_remotes(remotes)
 
         if not default_remotes:
             default_remotes = list(self._remotes.values())[0:1]
@@ -152,9 +175,7 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
             "" if not default_remotes else default_remotes[0].name
         )
 
-        if "projects" not in manifest:
-            raise KeyError("No projects in manifest!")
-        self._projects = self._init_projects(manifest["projects"])
+        self._projects = self._init_projects(projects)
 
     def _init_projects(
         self,
@@ -233,26 +254,21 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         """Create a manifest from a file like object."""
         if not isinstance(text, str):
             text = text.read()
-
-        loaded_yaml = Manifest._load_yaml(text)
-
-        if not loaded_yaml:
-            raise RuntimeError("Manifest is not valid YAML")
-
-        manifest = loaded_yaml["manifest"]
-
-        if not manifest:
-            raise RuntimeError("Missing manifest root element!")
-
-        return Manifest(manifest, text=text, path=path)
-
-    @staticmethod
-    def _load_yaml(text: io.TextIOWrapper | str | IO[str]) -> Any:
         try:
-            return yaml.safe_load(text)
-        except yaml.YAMLError as exc:
-            print(exc)
-            return ""
+            doc = load(text, schema=MANIFEST_SCHEMA)
+        except (YAMLValidationError, StrictYAMLError) as err:
+            raise RuntimeError(
+                "\n".join(
+                    [
+                        "Schema validation failed:",
+                        "",
+                        err.context_mark.get_snippet(),
+                        "",
+                        err.problem,
+                    ]
+                )
+            ) from err
+        return Manifest(doc, path=path)
 
     @staticmethod
     def from_file(path: str) -> "Manifest":
@@ -371,8 +387,6 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         """Dump the manifest to its path, using the original text as a base to preserve formatting and comments."""
         if not self.__path:
             raise RuntimeError("Cannot update dump of manifest with no path")
-        if not self.__text:
-            raise RuntimeError("Cannot update dump of manifest with no original text")
 
         updated_text = self._doc.as_yaml()
 
@@ -386,9 +400,6 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
             FileNotFoundError: If manifest text is not available
             RuntimeError: If the project name is not found
         """
-        if not self.__text:
-            raise FileNotFoundError("No manifest text available")
-
         for p in self._doc["manifest"]["projects"]:
             if p["name"].data == name:
                 mu = p.as_marked_up()
@@ -445,8 +456,6 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
                     # Remove a stale integrity block if the project no longer carries one.
                     mu.pop("integrity", None)
                 break
-
-        self.__text = self._doc.as_yaml()
 
     def check_name_uniqueness(self, project_name: str) -> None:
         """Raise if *project_name* is already used in the manifest."""
