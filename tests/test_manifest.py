@@ -78,7 +78,7 @@ def test_no_remotes() -> None:
     assert len(manifest.projects) == 1
     assert manifest.projects[0].name == "my-project"
     assert manifest.projects[0].remote_url == "http://www.somewhere.com"
-    assert len(manifest._remotes) == 0
+    assert len(manifest.remotes) == 0
 
 
 def test_construct_from_yaml() -> None:
@@ -88,8 +88,8 @@ def test_construct_from_yaml() -> None:
     assert manifest.version == "0"
     assert len(manifest.projects) == 1
     assert manifest.projects[0].name == "my-project"
-    assert len(manifest._remotes) == 1
-    assert next(iter(manifest._remotes.values())).name == "my-remote"
+    assert len(manifest.remotes) == 1
+    assert manifest.remotes[0].name == "my-remote"
 
 
 def test_no_manifests_found() -> None:
@@ -415,8 +415,8 @@ def test_version_parsed_as_string(manifest_text: str, expected_version: str) -> 
         "manifest:\n  version: '0.0'\n  projects:\n  - name: p\n",
     ],
 )
-def test_update_dump_writes_version_as_quoted_string(manifest_text: str) -> None:
-    """update_dump must always write version as a quoted YAML string."""
+def test_dump_writes_version_as_quoted_string(manifest_text: str) -> None:
+    """dump must always write version as a quoted YAML string."""
     manifest = Manifest.from_yaml(manifest_text)
     result = manifest._doc.as_yaml()
     # The version value must appear quoted so that YAML parsers read it as a string.
@@ -448,3 +448,123 @@ def test_append_project_entry_check_name_uniqueness_sees_new_entry() -> None:
 
     with pytest.raises(ValueError, match="newproject"):
         manifest.check_name_uniqueness("newproject")
+
+
+# ---------------------------------------------------------------------------
+# patch list: no spurious blank line between 'patch:' and first item
+# ---------------------------------------------------------------------------
+
+_PATCH_LIST_MANIFEST = """\
+manifest:
+  version: '0.0'
+  projects:
+  - name: first
+    url: https://example.com/first
+    patch:
+    - patches/a.patch
+    - patches/b.patch
+  - name: second
+    url: https://example.com/second
+"""
+
+_PATCH_LIST_MANIFEST_WITH_SPURIOUS_BLANK = """\
+manifest:
+  version: '0.0'
+  projects:
+  - name: first
+    url: https://example.com/first
+    patch:
+
+    - patches/a.patch
+    - patches/b.patch
+  - name: second
+    url: https://example.com/second
+"""
+
+
+def test_patch_list_no_blank_line_before_first_item() -> None:
+    """Loading a manifest with a multi-entry patch list must not insert a blank
+    line between 'patch:' and the first list item."""
+    result = Manifest.from_yaml(_PATCH_LIST_MANIFEST)._doc.as_yaml()
+    assert (
+        "patch:\n    - patches/a.patch" in result
+    ), "spurious blank line appeared between 'patch:' and first item"
+
+
+def test_patch_list_blank_line_after_last_item_before_next_project() -> None:
+    """A blank line must still separate consecutive project entries when the
+    first project's last key is a multi-entry patch list."""
+    result = Manifest.from_yaml(_PATCH_LIST_MANIFEST)._doc.as_yaml()
+    assert (
+        "    - patches/b.patch\n\n  - name: second" in result
+    ), "missing blank line between projects when patch list is the last key"
+
+
+def test_patch_list_fixes_spurious_blank_when_already_present() -> None:
+    """Re-loading a manifest that already contains the spurious blank line must
+    heal it on the next serialisation."""
+    result = Manifest.from_yaml(_PATCH_LIST_MANIFEST_WITH_SPURIOUS_BLANK)._doc.as_yaml()
+    assert (
+        "patch:\n\n" not in result
+    ), "spurious blank line between 'patch:' and first item was not removed"
+    assert "patch:\n    - patches/a.patch" in result
+
+
+# ---------------------------------------------------------------------------
+# integrity block: no spurious blank line between 'integrity:' and 'hash:'
+# ---------------------------------------------------------------------------
+
+_HASH = "sha256:" + "a" * 64
+
+_INTEGRITY_MANIFEST = f"""\
+manifest:
+  version: '0.0'
+  projects:
+  - name: first
+    url: https://example.com/first
+    integrity:
+      hash: {_HASH}
+  - name: second
+    url: https://example.com/second
+"""
+
+_INTEGRITY_MANIFEST_WITH_SPURIOUS_BLANK = f"""\
+manifest:
+  version: '0.0'
+  projects:
+  - name: first
+    url: https://example.com/first
+    integrity:
+
+      hash: {_HASH}
+  - name: second
+    url: https://example.com/second
+"""
+
+
+def test_integrity_no_blank_line_before_hash() -> None:
+    """Loading a manifest with an integrity block must not insert a blank line
+    between 'integrity:' and 'hash:'."""
+    result = Manifest.from_yaml(_INTEGRITY_MANIFEST)._doc.as_yaml()
+    assert (
+        "integrity:\n      hash:" in result
+    ), "spurious blank line appeared between 'integrity:' and 'hash:'"
+
+
+def test_integrity_blank_line_after_hash_before_next_project() -> None:
+    """A blank line must still separate consecutive project entries when the
+    first project's last key is an integrity block."""
+    result = Manifest.from_yaml(_INTEGRITY_MANIFEST)._doc.as_yaml()
+    assert (
+        f"hash: {_HASH}\n\n  - name: second" in result
+    ), "missing blank line between projects when integrity is the last key"
+
+
+def test_integrity_fixes_spurious_blank_when_already_present() -> None:
+    """Re-loading a manifest with a spurious blank between 'integrity:' and
+    'hash:' must heal it on the next serialisation."""
+    result = Manifest.from_yaml(_INTEGRITY_MANIFEST_WITH_SPURIOUS_BLANK)._doc.as_yaml()
+    assert (
+        "integrity:\n\n" not in result
+    ), "spurious blank line between 'integrity:' and 'hash:' was not removed"
+    assert "integrity:\n      hash:" in result

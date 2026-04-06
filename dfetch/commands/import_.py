@@ -58,11 +58,19 @@ class Import(dfetch.commands.command.Command):
                     project.set_remote(remote)
                     break
 
+        single_remote = len(remotes) == 1
+        project_dicts = []
+        for p in projects:
+            d = p.as_yaml()
+            if single_remote:
+                d.pop("remote", None)
+            project_dicts.append(d)
+
         manifest_data = {
             "manifest": {
                 "version": "0.0",
                 "remotes": [r.as_yaml() for r in remotes],
-                "projects": [p.as_yaml() for p in projects],
+                "projects": project_dicts,
             }
         }
         manifest = Manifest.from_yaml(yaml.dump(manifest_data, sort_keys=False))
