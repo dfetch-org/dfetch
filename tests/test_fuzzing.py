@@ -153,8 +153,8 @@ def test_data_conforms_to_schema(data):
 def test_manifest_can_be_created(data):
     """Validate by attempting to construct a Manifest."""
     try:
-        Manifest(data)
-    except KeyError:
+        Manifest.from_yaml(yaml.dump(data))
+    except (KeyError, RuntimeError):
         pass
 
 

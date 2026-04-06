@@ -16,6 +16,8 @@ import re
 from collections.abc import Sequence
 from itertools import combinations
 
+import yaml
+
 import dfetch.commands.command
 from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
@@ -56,9 +58,14 @@ class Import(dfetch.commands.command.Command):
                     project.set_remote(remote)
                     break
 
-        manifest = Manifest(
-            {"version": "0.0", "remotes": remotes, "projects": projects}
-        )
+        manifest_data = {
+            "manifest": {
+                "version": "0.0",
+                "remotes": [r.as_yaml() for r in remotes],
+                "projects": [p.as_yaml() for p in projects],
+            }
+        }
+        manifest = Manifest.from_yaml(yaml.dump(manifest_data, sort_keys=False))
 
         manifest.dump(DEFAULT_MANIFEST_NAME)
         logger.info(f"Created manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}")

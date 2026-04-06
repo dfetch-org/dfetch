@@ -13,7 +13,6 @@ import pytest
 from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.manifest.manifest import (
     Manifest,
-    ManifestDict,
     ManifestEntryLocation,
     RequestedProjectNotFoundError,
 )
@@ -51,12 +50,6 @@ manifest:
      url: "http://www.somewhere.com"
 """
 
-DICTIONARY_MANIFEST = ManifestDict(
-    version="0",
-    remotes=[{"name": "my-remote", "url-base": "http://www.myremote.com/"}],
-    projects=[{"name": "my-project"}],
-)
-
 
 def given_manifest_from_text(text: str) -> Manifest:
     """Given the manifest as specified."""
@@ -73,7 +66,7 @@ def test_can_read_version() -> None:
 def test_no_projects() -> None:
     """Test that manifest without projects cannot be read."""
 
-    with pytest.raises(KeyError):
+    with pytest.raises(RuntimeError):
         given_manifest_from_text(MANIFEST_NO_PROJECTS)
 
 
@@ -88,10 +81,10 @@ def test_no_remotes() -> None:
     assert len(manifest._remotes) == 0
 
 
-def test_construct_from_dict() -> None:
-    """Test that manifest can be constructed from dictionary."""
+def test_construct_from_yaml() -> None:
+    """Test that manifest can be constructed from yaml text."""
 
-    manifest = Manifest(DICTIONARY_MANIFEST)
+    manifest = Manifest.from_yaml(BASIC_MANIFEST)
     assert manifest.version == "0"
     assert len(manifest.projects) == 1
     assert manifest.projects[0].name == "my-project"
@@ -142,7 +135,7 @@ def test_get_submanifests(name, manifest_paths) -> None:
     parent = ProjectEntry({"name": "name"})
 
     with patch("dfetch.manifest.parse.find_file") as find_file_mock:
-        with patch("dfetch.manifest.parse.parse") as parse_mock:
+        with patch("dfetch.manifest.parse.Manifest.from_file") as from_file_mock:
             find_file_mock.return_value = manifest_paths
 
             found_submanifests = get_submanifests([parent.name])
@@ -151,7 +144,7 @@ def test_get_submanifests(name, manifest_paths) -> None:
 
             for path, call in zip(
                 manifest_paths,
-                parse_mock.call_args_list,  # , strict=True
+                from_file_mock.call_args_list,
             ):
                 assert os.path.realpath(path) == call[0][0]
 
@@ -220,7 +213,7 @@ _FOO_MANIFEST_TEXT_WITH_COMMENT = (
     ],
 )
 def test_get_manifest_location(name, manifest_text, project_name, result) -> None:
-    manifest = Manifest(DICTIONARY_MANIFEST, text=manifest_text)
+    manifest = Manifest.from_yaml(manifest_text)
 
     if result == RuntimeError:
         with pytest.raises(RuntimeError):

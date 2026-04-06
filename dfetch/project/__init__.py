@@ -5,7 +5,8 @@ import pathlib
 
 import dfetch.manifest.project
 from dfetch.log import get_logger
-from dfetch.manifest.parse import find_manifest, parse
+from dfetch.manifest.manifest import Manifest
+from dfetch.manifest.parse import find_manifest
 from dfetch.project.archivesubproject import ArchiveSubProject
 from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.gitsuperproject import GitSuperProject
@@ -45,7 +46,7 @@ def create_super_project() -> SuperProject:
     manifest_path = find_manifest()
 
     logger.debug(f"Using manifest {manifest_path}")
-    manifest = parse(manifest_path)
+    manifest = Manifest.from_file(manifest_path)
     root_directory = resolve_absolute_path(os.path.dirname(manifest.path))
     return determine_superproject_vcs(root_directory)(manifest, root_directory)
 

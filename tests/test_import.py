@@ -7,6 +7,7 @@ import argparse
 from unittest.mock import patch
 
 import pytest
+import yaml
 
 from dfetch.commands.import_ import Import
 from dfetch.vcs.git import Submodule
@@ -66,17 +67,18 @@ def test_git_import(name, submodules):
                     else:
                         import_(argparse.Namespace())
 
-                        mocked_manifest.assert_called()
+                        mocked_manifest.from_yaml.assert_called()
 
-                        args = mocked_manifest.call_args_list[0][0][0]
-
-                        for project_entry in args["projects"]:
-                            assert project_entry.name in [
-                                subm.name for subm in submodules
-                            ]
+                        yaml_text = mocked_manifest.from_yaml.call_args[0][0]
+                        data = yaml.safe_load(yaml_text)
+                        project_names = [
+                            p["name"] for p in data["manifest"]["projects"]
+                        ]
+                        for submodule in submodules:
+                            assert submodule.name in project_names
 
                         # Manifest should have been dumped
-                        mocked_manifest.return_value.dump.assert_called()
+                        mocked_manifest.from_yaml.return_value.dump.assert_called()
 
 
 FIRST_EXTERNAL = External(
@@ -133,12 +135,15 @@ def test_svn_import(name, externals):
                     else:
                         import_(argparse.Namespace())
 
-                        mocked_manifest.assert_called()
+                        mocked_manifest.from_yaml.assert_called()
 
-                        args = mocked_manifest.call_args_list[0][0][0]
-
-                        for project_entry in args["projects"]:
-                            assert project_entry.name in [ext.name for ext in externals]
+                        yaml_text = mocked_manifest.from_yaml.call_args[0][0]
+                        data = yaml.safe_load(yaml_text)
+                        project_names = [
+                            p["name"] for p in data["manifest"]["projects"]
+                        ]
+                        for external in externals:
+                            assert external.name in project_names
 
                         # Manifest should have been dumped
-                        mocked_manifest.return_value.dump.assert_called()
+                        mocked_manifest.from_yaml.return_value.dump.assert_called()
