@@ -421,3 +421,30 @@ def test_update_dump_writes_version_as_quoted_string(manifest_text: str) -> None
     result = manifest._doc.as_yaml()
     # The version value must appear quoted so that YAML parsers read it as a string.
     assert f"version: '{manifest.version}'" in result
+
+
+# ---------------------------------------------------------------------------
+# append_project_entry: in-memory cache must stay in sync
+# ---------------------------------------------------------------------------
+
+
+def test_append_project_entry_visible_in_projects() -> None:
+    """manifest.projects must include the new entry immediately after append_project_entry."""
+    manifest = Manifest.from_yaml(_SIMPLE_MANIFEST)
+    new_project = _make_project("newproject", url="https://example.com/new")
+
+    manifest.append_project_entry(new_project)
+
+    names = [p.name for p in manifest.projects]
+    assert "newproject" in names
+
+
+def test_append_project_entry_check_name_uniqueness_sees_new_entry() -> None:
+    """check_name_uniqueness must raise for a name added via append_project_entry."""
+    manifest = Manifest.from_yaml(_SIMPLE_MANIFEST)
+    new_project = _make_project("newproject", url="https://example.com/new")
+
+    manifest.append_project_entry(new_project)
+
+    with pytest.raises(ValueError, match="newproject"):
+        manifest.check_name_uniqueness("newproject")
