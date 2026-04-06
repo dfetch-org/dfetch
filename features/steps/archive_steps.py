@@ -52,8 +52,8 @@ def _archive_url(context, filename: str) -> str:
     :func:`pathlib.Path.as_posix` is used instead of :func:`str.split`/join so
     that mixed separators (e.g. on Windows) are normalised correctly.
     """
-    server_posix = pathlib.Path(context.remotes_dir_path).as_posix()
-    return f"file:///{server_posix}/{filename}"
+    server_posix = pathlib.Path(context.remotes_dir_path).as_uri()
+    return f"{server_posix}/{filename}"
 
 
 def _create_archive(context, name: str, extension: str) -> None:

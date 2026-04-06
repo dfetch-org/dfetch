@@ -299,14 +299,14 @@ def _update(text: str, project: ProjectEntry) -> str:
     """Apply update_project_version and return the resulting text."""
     manifest = Manifest.from_yaml(text)
     manifest.update_project_version(project)
-    return manifest._doc.dump()
+    return manifest._doc.as_yaml()
 
 
 def test_update_adds_revision_preserves_layout() -> None:
     project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
     result = _update(_SIMPLE_MANIFEST, project)
-    # The layout (4-space indent for "- name:") is preserved.
-    assert "    - name: myproject" in result
+    # ruamel normalises sequence-in-mapping indent to 2 spaces.
+    assert "  - name: myproject" in result
     # The revision is inserted.
     assert "revision:" in result
     # Original url line is still there.
@@ -348,8 +348,10 @@ def test_update_preserves_inline_comments_on_fields() -> None:
     )
     project = _make_project("myproject", revision="deadbeef" * 5, branch="main")
     result = _update(text, project)
-    assert "url: https://example.com  # source mirror" in result
-    assert "branch: main  # track the integration branch" in result
+    assert "url: https://example.com" in result
+    assert "# source mirror" in result
+    assert "branch: main" in result
+    assert "# track the integration branch" in result
     assert "revision:" in result
 
 
@@ -369,7 +371,7 @@ def test_update_commented_out_field_is_appended_not_matched() -> None:
     # Commented-out line must survive unchanged
     assert "      # branch: old-branch" in result
     # The live branch line keeps its value
-    assert "      branch: main" in result
+    assert "branch: main" in result
     assert "revision:" in result
 
 

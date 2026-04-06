@@ -49,9 +49,9 @@ def temporary_env(key: str, value: str):
             os.environ[key] = old_value
 
 
-def remote_server_path(context):
+def remote_server_path(context) -> str:
     """Get the path to the remote dir as a POSIX path string."""
-    return pathlib.Path(context.remotes_dir_path).as_posix()
+    return pathlib.Path(context.remotes_dir_path).as_uri()
 
 
 def call_command(context: Context, args: list[str], path: Optional[str] = ".") -> None:
@@ -296,7 +296,7 @@ def check_output(context, line_count=None):
             (timestamp, "[timestamp]"),
             (ansi_escape, ""),
             (
-                re.compile(f"file:///{remote_server_path(context)}"),
+                re.compile(remote_server_path(context)),
                 "some-remote-server",
             ),
             (svn_error, "svn: EXXXXXX: <some error text>"),
@@ -371,9 +371,7 @@ def step_impl(context, path=None):
 @when('I run "dfetch {args}"')
 def step_impl(context, args, path=None):
     """Call a command."""
-    resolved = args.replace(
-        "some-remote-server", f"file:///{remote_server_path(context)}"
-    )
+    resolved = args.replace("some-remote-server", remote_server_path(context))
     call_command(context, resolved.split(), path)
 
 

@@ -21,7 +21,7 @@ def apply_manifest_substitutions(context, contents: str) -> str:
     """Apply context-specific substitutions to manifest contents."""
     result = apply_archive_substitutions(contents, context)
     result = result.replace(
-        "url: some-remote-server", f"url: file:///{remote_server_path(context)}"
+        "url: some-remote-server", f"url: {remote_server_path(context)}"
     )
     return result
 

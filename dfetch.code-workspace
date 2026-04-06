@@ -59,13 +59,13 @@
 				]
 			},
 			{
-				"name": "DFetch update",
+				"name": "DFetch freeze",
 				"type": "debugpy",
 				"request": "launch",
 				"module": "dfetch.__main__",
 				"justMyCode": false,
 				"args": [
-					"update"
+					"freeze"
 				]
 			}
 		]

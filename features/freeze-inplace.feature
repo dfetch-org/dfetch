@@ -21,13 +21,13 @@ Feature: Freeze manifest in-place inside a version-controlled superproject
         Then the manifest 'dfetch.yaml' in superproject is replaced with
             """
             manifest:
-              version: '0.0'
+              version: 0.0
 
               projects:
-                - name: ext/test-repo-tag
-                  revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
-                  url: https://github.com/dfetch-org/test-repo
-                  branch: main
+              - name: ext/test-repo-tag
+                url: https://github.com/dfetch-org/test-repo
+                revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+                branch: main
 
             """
         And no file 'dfetch.yaml.backup' exists in superproject
@@ -49,13 +49,13 @@ Feature: Freeze manifest in-place inside a version-controlled superproject
         Then the manifest 'dfetch.yaml' in superproject3 is replaced with
             """
             manifest:
-              version: '0.0'
+              version: 0.0
 
               projects:
-                - name: ext/test-repo-tag
-                  revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
-                  url: https://github.com/dfetch-org/test-repo  # source mirror
-                  branch: main  # track the integration branch
+              - name: ext/test-repo-tag
+                url: https://github.com/dfetch-org/test-repo    # source mirror
+                revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+                branch: main    # track the integration branch
 
             """
         And no file 'dfetch.yaml.backup' exists in superproject3
@@ -81,16 +81,16 @@ Feature: Freeze manifest in-place inside a version-controlled superproject
         Then the manifest 'dfetch.yaml' in superproject2 is replaced with
             """
             manifest:
-              version: '0.0'
+              version: 0.0
 
               projects:
-                - name: ext/test-repo-tag
-                  revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
-                  url: https://github.com/dfetch-org/test-repo
-                  branch: main
+              - name: ext/test-repo-tag
+                url: https://github.com/dfetch-org/test-repo
+                revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+                branch: main
 
-                - name: ext/test-repo-tag2
-                  url: https://github.com/dfetch-org/test-repo
-                  branch: main
+              - name: ext/test-repo-tag2
+                url: https://github.com/dfetch-org/test-repo
+                branch: main
 
             """

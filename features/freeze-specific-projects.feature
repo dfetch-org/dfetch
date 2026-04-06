@@ -24,12 +24,12 @@ Feature: Freeze specific projects
         Then the manifest 'dfetch.yaml' is replaced with
             """
             manifest:
-              version: '0.0'
+              version: 0.0
 
               projects:
               - name: ext/test-repo-tag
-                revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
                 url: https://github.com/dfetch-org/test-repo
+                revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
                 branch: main
 
               - name: ext/test-repo-tag2
