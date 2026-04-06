@@ -28,14 +28,25 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import IO, Any
 
 import yaml
+from strictyaml import load
+from strictyaml.ruamel.comments import CommentedMap
+from strictyaml.ruamel.error import CommentMark
+from strictyaml.ruamel.scalarstring import SingleQuotedScalarString
+from strictyaml.ruamel.tokens import CommentToken
 from typing_extensions import NotRequired, TypedDict
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote, RemoteDict
-from dfetch.util.yaml import YamlDocument
 
 logger = get_logger(__name__)
+
+
+def _yaml_str(value: str) -> str | SingleQuotedScalarString:
+    """Return SingleQuotedScalarString if value would be misread as non-string."""
+    if not isinstance(yaml.safe_load(value), str):
+        return SingleQuotedScalarString(value)
+    return value
 
 
 @dataclass
@@ -128,7 +139,7 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         self.__relative_path: str = (
             os.path.relpath(self.__path, os.getcwd()) if self.__path else ""
         )
-        self._doc = YamlDocument(self.__text)
+        self._doc = load(self.__text)
 
         self._remotes, default_remotes = self._determine_remotes(
             manifest.get("remotes", [])
@@ -363,7 +374,7 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         if not self.__text:
             raise RuntimeError("Cannot update dump of manifest with no original text")
 
-        updated_text = self._doc.dump()
+        updated_text = self._doc.as_yaml()
 
         with open(self.__path, "w", encoding="utf-8", newline="") as manifest_file:
             manifest_file.write(updated_text)
@@ -378,16 +389,16 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         if not self.__text:
             raise FileNotFoundError("No manifest text available")
 
-        matches = self._doc.get(f'$.manifest.projects[?(@.name == "{name}")].name')
-        if not matches:
-            raise RuntimeError(f"{name} was not found in the manifest!")
-
-        loc = matches[0].location
-        return ManifestEntryLocation(
-            line_number=loc.start_line + 1,  # 0-based → 1-based line number
-            start=loc.start_col + 1,  # 0-based → 1-based column number
-            end=loc.end_col,  # 0-based exclusive end (reporters add +1 for SARIF)
-        )
+        for p in self._doc["manifest"]["projects"]:
+            if p["name"].data == name:
+                mu = p.as_marked_up()
+                line_0, col_0 = mu.lc.value("name")
+                return ManifestEntryLocation(
+                    line_number=line_0 + 1,
+                    start=col_0 + 1,
+                    end=col_0 + len(name),
+                )
+        raise RuntimeError(f"{name} was not found in the manifest!")
 
     # ---------------- YAML updates ----------------
     def append_project_entry(self, project_entry: "ProjectEntry") -> None:
@@ -397,33 +408,45 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         document (2-space indent under ``projects:``).  Call
         :meth:`update_dump` afterwards to persist the change to disk.
         """
-        self._doc.add(
-            "$.manifest.projects",
+        projects_mu = self._doc["manifest"]["projects"].as_marked_up()
+        projects_mu.append(CommentedMap(project_entry.as_yaml()))
+        idx = len(projects_mu) - 1
+        projects_mu.ca.items[idx] = [
             None,
-            project_entry.as_yaml(),
-        )
+            [CommentToken("\n", CommentMark(0), None)],
+            None,
+            None,
+        ]
 
     def update_project_version(self, project: ProjectEntry) -> None:
         """Update a project's version in the manifest in-place, preserving layout, comments, and line endings."""
-        path = f'$.manifest.projects[?(@.name == "{project.name}")]'
-        for name, value in project.version._asdict().items():
-            if value not in (None, ""):
-                logger.debug(
-                    f"Updating {project.name} version field '{name}' to '{value}' in manifest"
-                )
-                self._doc.set(path, name, value)
-            else:
-                # Remove any previously-pinned key that is no longer active
-                # (e.g. an old 'revision' when the project is now pinned by tag).
-                self._doc.delete(path, name)
+        for p in self._doc["manifest"]["projects"]:
+            if p["name"].data == project.name:
+                mu = p.as_marked_up()
+                insert_pos = 1  # right after 'name:' for any newly added key
+                for key, value in project.version._asdict().items():
+                    if value not in (None, ""):
+                        logger.debug(
+                            f"Updating {project.name} version field '{key}' to '{value}' in manifest"
+                        )
+                        if key in mu:
+                            mu[key] = _yaml_str(value)
+                        else:
+                            mu.insert(insert_pos, key, _yaml_str(value))
+                        insert_pos += 1
+                    else:
+                        # Remove any previously-pinned key that is no longer active
+                        # (e.g. an old 'revision' when the project is now pinned by tag).
+                        mu.pop(key, None)
 
-        if project.integrity and project.integrity.hash:
-            self._doc.set(path, "integrity.hash", project.integrity.hash)
-        else:
-            # Remove a stale integrity block if the project no longer carries one.
-            self._doc.delete(path, "integrity")
+                if project.integrity and project.integrity.hash:
+                    mu["integrity"] = CommentedMap({"hash": project.integrity.hash})
+                else:
+                    # Remove a stale integrity block if the project no longer carries one.
+                    mu.pop("integrity", None)
+                break
 
-        self.__text = self._doc.dump()
+        self.__text = self._doc.as_yaml()
 
     def check_name_uniqueness(self, project_name: str) -> None:
         """Raise if *project_name* is already used in the manifest."""

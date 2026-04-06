@@ -12,11 +12,6 @@ from features.steps.generic_steps import call_command, remote_server_path
 from features.steps.manifest_steps import apply_manifest_substitutions
 
 
-def _resolve_url(url: str, context) -> str:
-    """Replace 'some-remote-server' with the actual temp file:// URL."""
-    return url.replace("some-remote-server", f"file:///{remote_server_path(context)}")
-
-
 def _run_interactive_add(context, cmd: list[str]) -> None:
     """Run an interactive add command, driving prompts from ``context.table``."""
     # Parse the answer table into three buckets:
@@ -60,9 +55,7 @@ def _run_interactive_add(context, cmd: list[str]) -> None:
 
 @when('I run "dfetch {add_args}" with inputs')
 def step_interactive_add(context, add_args):
-    resolved = add_args.replace(
-        "some-remote-server", f"file:///{remote_server_path(context)}"
-    )
+    resolved = add_args.replace("some-remote-server", remote_server_path(context))
     _run_interactive_add(context, resolved.split())
 
 

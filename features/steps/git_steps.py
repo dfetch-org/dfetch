@@ -60,7 +60,7 @@ def step_impl(context, name=None):
 
         for submodule in context.table:
             url = submodule["url"].replace(
-                "some-remote-server", f"file:///{remote_server_path(context)}"
+                "some-remote-server", remote_server_path(context)
             )
             subprocess.check_call(["git", "submodule", "add", url, submodule["path"]])
 
