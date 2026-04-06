@@ -49,7 +49,7 @@ def step_impl(context, name, path=None):
 @then("it should generate the manifest '{name}'")
 def step_impl(context, name):
     """Check a manifest."""
-    check_file(name, apply_manifest_substitutions(context, context.text))
+    check_file(name, apply_manifest_substitutions(context, context.text), strict=True)
 
 
 @then("the manifest '{name}' in {directory} is replaced with")

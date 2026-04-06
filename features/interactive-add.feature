@@ -165,6 +165,7 @@ Feature: Add a project interactively via the CLI
               projects:
                 - name: existing
                   url: some-remote-server/existing.git
+
             """
 
     Scenario: Interactive add with empty src (repo root) does not add src field
