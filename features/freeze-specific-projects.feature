@@ -24,7 +24,7 @@ Feature: Freeze specific projects
         Then the manifest 'dfetch.yaml' is replaced with
             """
             manifest:
-              version: 0.0
+              version: '0.0'
 
               projects:
               - name: ext/test-repo-tag

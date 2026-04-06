@@ -21,7 +21,7 @@ Feature: Freeze manifest in-place inside a version-controlled superproject
         Then the manifest 'dfetch.yaml' in superproject is replaced with
             """
             manifest:
-              version: 0.0
+              version: '0.0'
 
               projects:
               - name: ext/test-repo-tag
@@ -49,7 +49,7 @@ Feature: Freeze manifest in-place inside a version-controlled superproject
         Then the manifest 'dfetch.yaml' in superproject3 is replaced with
             """
             manifest:
-              version: 0.0
+              version: '0.0'
 
               projects:
               - name: ext/test-repo-tag
@@ -81,7 +81,7 @@ Feature: Freeze manifest in-place inside a version-controlled superproject
         Then the manifest 'dfetch.yaml' in superproject2 is replaced with
             """
             manifest:
-              version: 0.0
+              version: '0.0'
 
               projects:
               - name: ext/test-repo-tag

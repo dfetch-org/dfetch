@@ -23,7 +23,7 @@ Feature: Freeze dependencies
         Then the manifest 'dfetch.yaml' is replaced with
             """
             manifest:
-              version: 0.0
+              version: '0.0'
 
               projects:
               - name: ext/test-repo-tag
@@ -51,7 +51,7 @@ Feature: Freeze dependencies
         Then the manifest 'dfetch.yaml' is replaced with
             """
             manifest:
-              version: 0.0
+              version: '0.0'
 
               projects:
               - name: cunit-svn
