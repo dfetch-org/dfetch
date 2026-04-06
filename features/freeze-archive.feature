@@ -59,10 +59,10 @@ Feature: Freeze archive dependencies
             manifest:
               version: '0.0'
               projects:
-              - name: SomeProject
-                url: some-remote-server/SomeProject.tar.gz
-                vcs: archive
-                integrity:
-                  hash: sha256:<archive-sha256>
+                - name: SomeProject
+                  url: some-remote-server/SomeProject.tar.gz
+                  vcs: archive
+                  integrity:
+                    hash: sha256:<archive-sha256>
 
             """

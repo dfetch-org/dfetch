@@ -15,29 +15,29 @@ Feature: Importing externals from an existing svn repository
         Then it should generate the manifest 'dfetch.yaml'
             """
             manifest:
-                version: '0.0'
+              version: '0.0'
 
-                remotes:
-                - name: svn-code-sf-net-p-cunit
-                  url-base: https://svn.code.sf.net/p/cunit
+              remotes:
+              - name: svn-code-sf-net-p-cunit
+                url-base: https://svn.code.sf.net/p/cunit
 
-                projects:
-                - name: ext/cunit1
-                  revision: '176'
-                  src: Man
-                  dst: ./ext/cunit1
-                  repo-path: code
+              projects:
+              - name: ext/cunit1
+                revision: '176'
+                src: Man
+                dst: ./ext/cunit1
+                repo-path: code
 
-                - name: ext/cunit2
-                  revision: '150'
-                  src: Man
-                  dst: ./ext/cunit2
-                  branch: mingw64
-                  repo-path: code
+              - name: ext/cunit2
+                revision: '150'
+                src: Man
+                dst: ./ext/cunit2
+                branch: mingw64
+                repo-path: code
 
-                - name: ext/cunit3
-                  dst: ./ext/cunit3
-                  branch: ' '
-                  repo-path: code
+              - name: ext/cunit3
+                dst: ./ext/cunit3
+                branch: ' '
+                repo-path: code
 
             """
