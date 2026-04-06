@@ -253,7 +253,7 @@ def _finalize_add(
         return
 
     superproject.manifest.append_project_entry(project_entry)
-    superproject.manifest.update_dump()
+    superproject.manifest.dump()
     logger.print_info_line(
         project_entry.name,
         f"Added '{project_entry.name}' to manifest '{superproject.manifest.path}'",

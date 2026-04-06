@@ -135,5 +135,5 @@ class Freeze(dfetch.commands.command.Command):
                         manifest_updated = True
 
             if manifest_updated:
-                superproject.manifest.update_dump()
+                superproject.manifest.dump()
                 logger.info(f"Updated manifest ({manifest_path}) in {os.getcwd()}")

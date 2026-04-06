@@ -29,7 +29,7 @@ from typing import IO, Any, cast
 
 import yaml
 from strictyaml import YAML, StrictYAMLError, YAMLValidationError, load
-from strictyaml.ruamel.comments import CommentedMap
+from strictyaml.ruamel.comments import CommentedMap, CommentedSeq
 from strictyaml.ruamel.error import CommentMark
 from strictyaml.ruamel.scalarstring import SingleQuotedScalarString
 from strictyaml.ruamel.tokens import CommentToken
@@ -61,10 +61,85 @@ def _ensure_unique(seq: list[dict[str, Any]], key: str, context: str) -> None:
 
 
 def _yaml_str(value: str) -> str | SingleQuotedScalarString:
-    """Return SingleQuotedScalarString if value would be misread as non-string."""
-    if not isinstance(yaml.safe_load(value), str):
+    """Return SingleQuotedScalarString if value would be misread as non-string.
+
+    If ``yaml.safe_load`` cannot parse *value* at all (e.g. it starts with a
+    ``%`` directive marker) the value is quoted to be safe.
+    """
+    try:
+        if not isinstance(yaml.safe_load(value), str):
+            return SingleQuotedScalarString(value)
+    except yaml.YAMLError:
         return SingleQuotedScalarString(value)
     return value
+
+
+def _ensure_blank_line_after_nested_map(parent: CommentedMap, key: str) -> None:
+    """Ensure a blank line appears after a nested mapping value.
+
+    For a block mapping value (e.g. ``integrity:`` with sub-key ``hash:``),
+    the blank line must live inside the nested map — at
+    ``nested.ca.items[last_key][2]`` — not on the parent key.  Putting it on
+    the parent key at position ``[2]`` or ``[3]`` lands it *between* the key
+    line and the first sub-key, producing a spurious blank line.
+    """
+    # Clear any spurious blanks the parent map may carry on positions [2]/[3].
+    parent_items = parent.ca.items.get(key)
+    if parent_items:
+        if parent_items[2] is not None:
+            parent_items[2] = None
+        if parent_items[3] is not None:
+            parent_items[3] = None
+
+    nested: CommentedMap = parent[key]
+    nested_keys = list(nested.keys())
+    if nested_keys:
+        _ensure_blank_line_after(nested, nested_keys[-1])
+
+
+def _ensure_blank_line_after_seq(seq: CommentedSeq) -> None:
+    """Ensure there is a blank line after the last item of *seq*.
+
+    The blank line belongs at ``seq.ca.items[last_idx][0]`` (the pre-comment
+    slot of the last element).  We also clear any extra newline stored at
+    ``seq.ca.items[0][1]``, which is where ruamel parks whitespace between the
+    parent key (e.g. ``patch:``) and the first ``-`` item — the source of the
+    spurious blank line that this function is designed to prevent.
+    """
+    if not seq:
+        return
+
+    # Clear spurious blank line between the key and the first list item.
+    first_item_ca = seq.ca.items.get(0)
+    if first_item_ca is not None and first_item_ca[1] is not None:
+        first_item_ca[1] = None
+
+    # Ensure blank line after the last item for project-entry separation.
+    last_idx = len(seq) - 1
+    existing = seq.ca.items.get(last_idx, [None, None, None, None])
+    token = existing[0]
+    if token is None:
+        existing[0] = CommentToken("\n\n", CommentMark(0), None)
+        seq.ca.items[last_idx] = existing
+    elif not token.value.endswith("\n\n"):
+        token.value = token.value.rstrip("\n") + "\n\n"
+
+
+def _ensure_blank_line_after(ca_map: CommentedMap, key: str) -> None:
+    """Ensure there is exactly one blank line after *key*'s value in *ca_map*.
+
+    Blank lines in ruamel are stored as trailing ``CommentToken`` values at
+    position ``[2]`` of ``ca_map.ca.items[key]``.  If no token exists one is
+    created; if one already exists its trailing newlines are normalised to two
+    (the line ending of the value itself plus the blank line).
+    """
+    items = ca_map.ca.items.get(key, [None, None, None, None])
+    token = items[2]
+    if token is None:
+        items[2] = CommentToken("\n\n", CommentMark(0), None)
+        ca_map.ca.items[key] = items
+    elif not token.value.endswith("\n\n"):
+        token.value = token.value.rstrip("\n") + "\n\n"
 
 
 @dataclass
@@ -133,10 +208,15 @@ class ManifestDict(TypedDict, total=True):  # pylint: disable=too-many-ancestors
     ]
 
 
-class Manifest:  # pylint: disable=too-many-instance-attributes
+class Manifest:
     """Manifest describing all the modules information.
 
     This class is created from the manifest file a project has.
+
+    ``self._doc`` is the single source of truth: all state is read from and written
+    to the underlying YAML document.  The only cached fields are ``__path``,
+    ``__relative_path``, ``__version`` (immutable after construction), and
+    ``_default_remote_name`` (also immutable: remotes are never added at runtime).
     """
 
     CURRENT_VERSION = "0.0"
@@ -159,30 +239,33 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         manifest_data: dict[str, Any] = cast(dict[str, Any], doc.data)["manifest"]
         self.__version: str = str(manifest_data.get("version", self.CURRENT_VERSION))
 
-        # Ensure version is always written as a quoted string by update_dump().
+        # Ensure version is always written as a quoted string by dump().
         doc["manifest"].as_marked_up()["version"] = SingleQuotedScalarString(
             self.__version
         )
 
-        remotes = manifest_data.get("remotes", [])
-        projects = manifest_data["projects"]
+        remotes_raw = manifest_data.get("remotes", [])
+        projects_raw = manifest_data["projects"]
 
-        _ensure_unique(remotes, "name", "manifest.remotes")
-        _ensure_unique(projects, "name", "manifest.projects")
-        _ensure_unique(projects, "dst", "manifest.projects")
+        _ensure_unique(remotes_raw, "name", "manifest.remotes")
+        _ensure_unique(projects_raw, "name", "manifest.projects")
+        _ensure_unique(projects_raw, "dst", "manifest.projects")
 
-        self._remotes, default_remotes = self._determine_remotes(remotes)
-
+        # Determine and cache the default remote name (remotes don't change at runtime).
+        remotes_dict, default_remotes = self._determine_remotes(remotes_raw)
         if not default_remotes:
-            default_remotes = list(self._remotes.values())[0:1]
-
+            default_remotes = list(remotes_dict.values())[0:1]
         self._default_remote_name = (
             "" if not default_remotes else default_remotes[0].name
         )
 
-        self._projects = self._init_projects(projects)
+        # Ensure blank lines appear before 'remotes:' and 'projects:' when dumped.
+        self._ensure_section_spacing()
 
-    def _init_projects(
+        # Re-apply quoting to scalars whose style was stripped by strictyaml.
+        self._normalize_string_scalars()
+
+    def _build_projects(
         self,
         projects: Sequence[
             ProjectEntryDict
@@ -190,44 +273,32 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
             | dict[str, str | list[str] | dict[str, str]]
         ],
     ) -> dict[str, ProjectEntry]:
-        """Iterate over projects from manifest and initialize ProjectEntries from it.
+        """Build a mapping of name → ProjectEntry from raw project data.
 
         Args:
-            projects (Sequence[
-                Union[ProjectEntryDict, ProjectEntry, Dict[str, Union[str, list[str], dict[str, str]]]]
-            ]): Iterable with projects
+            projects: Iterable of project dicts or ProjectEntry objects.
 
         Raises:
-            RuntimeError: Project unknown
+            KeyError: A project dict is missing ``name``.
+            TypeError: A project name is not a string.
+            RuntimeError: A project references an unknown remote.
 
         Returns:
-            Dict[str, ProjectEntry]: Dictionary with key: Name of project, Value: ProjectEntry
+            Dict mapping project name to ProjectEntry.
         """
+        remotes = {r.name: r for r in self.remotes}
         _projects: dict[str, ProjectEntry] = {}
 
         for project in projects:
-            if isinstance(project, dict):
-                if "name" not in project:
-                    raise KeyError("Missing name!")
-                if not isinstance(project["name"], str):
-                    raise TypeError(
-                        f"Project name must be a string, got {type(project['name']).__name__}"
-                    )
-                last_project = _projects[project["name"]] = ProjectEntry.from_yaml(
-                    project, self._default_remote_name
-                )
-            elif isinstance(project, ProjectEntry):
-                last_project = _projects[project.name] = ProjectEntry.copy(project)
-            else:
-                raise RuntimeError(f"{project} has unknown type")
-
-            if last_project.remote:
+            entry = ProjectEntry.from_raw(project, self._default_remote_name)
+            _projects[entry.name] = entry
+            if entry.remote:
                 try:
-                    last_project.set_remote(self._remotes[last_project.remote])
+                    entry.set_remote(remotes[entry.remote])
                 except KeyError as exc:
                     raise RuntimeError(
-                        f"Remote {last_project.remote} of {last_project.name} wasn't found "
-                        f"in {list(self._remotes.keys())}!",
+                        f"Remote {entry.remote} of {entry.name} wasn't found "
+                        f"in {list(remotes.keys())}!",
                     ) from exc
 
         return _projects
@@ -273,6 +344,8 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
                     ]
                 )
             ) from err
+        except ValueError as err:
+            raise RuntimeError(f"Schema validation failed: {err}") from err
         return Manifest(doc, path=path)
 
     @staticmethod
@@ -310,93 +383,56 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
     @property
     def projects(self) -> Sequence[ProjectEntry]:
         """Get a list of Projects from the manifest."""
-        return list(self._projects.values())
+        projects_mu = self._doc["manifest"]["projects"].as_marked_up()
+        return list(self._build_projects(projects_mu).values())
+
+    @staticmethod
+    def _filter_projects(
+        names: Sequence[str], all_projects: Sequence[ProjectEntry]
+    ) -> list[ProjectEntry]:
+        """Return projects whose name appears in *names*, or all if *names* is empty."""
+        if not names:
+            return list(all_projects)
+        return [p for p in all_projects if p.name in names]
 
     def selected_projects(self, names: Sequence[str]) -> Sequence[ProjectEntry]:
         """Get a list of Projects from the manifest with the given names."""
-        projects = (
-            [p for p in self._projects.values() if p.name in names]
-            if names
-            else list(self._projects.values())
-        )
-        self._check_all_names_found(names, projects)
-        return projects
+        all_projects = self.projects
+        unique_names = list(dict.fromkeys(names))
+        result = self._filter_projects(unique_names, all_projects)
 
-    def _check_all_names_found(
-        self, names: Sequence[str], projects: Sequence[ProjectEntry]
-    ) -> None:
-        """Raise if any of *names* is not represented in *projects*."""
-        unique_names = list(dict.fromkeys(names))  # deduplicate, preserve order
-        if not unique_names or len(projects) == len(unique_names):
-            return
-        found = {project.name for project in projects}
-        unfound = [name for name in unique_names if name not in found]
-        possibles = [project.name for project in self._projects.values()]
-        raise RequestedProjectNotFoundError(unfound, possibles)
+        if not unique_names or len(result) == len(unique_names):
+            return result
+
+        found = {project.name for project in result}
+
+        raise RequestedProjectNotFoundError(
+            unfound=[name for name in unique_names if name not in found],
+            possibles=[project.name for project in all_projects],
+        )
 
     @property
     def remotes(self) -> Sequence[Remote]:
         """Get a list of Remotes from the manifest."""
-        return list(self._remotes.values())
+        manifest_mu = self._doc["manifest"].as_marked_up()
+        remotes_dict, _ = self._determine_remotes(manifest_mu.get("remotes", []))
+        return list(remotes_dict.values())
 
     def __repr__(self) -> str:
         """Get string representing this object."""
-        return str(self._as_dict())
+        return str(self._doc.as_yaml())
 
-    def _as_dict(self) -> dict[str, ManifestDict]:
-        """Get this manifest as dict."""
-        remotes: Sequence[RemoteDict] = [
-            remote.as_yaml() for remote in self._remotes.values()
-        ]
+    def dump(self, path: str | None = None) -> None:
+        """Write the manifest to *path*, preserving formatting and comments.
 
-        if len(remotes) == 1:
-            remotes[0].pop("default", None)
-
-        projects: list[dict[str, str | list[str] | dict[str, str]]] = []
-        for project in self.projects:
-            project_yaml: dict[str, str | list[str] | dict[str, str]] = (
-                project.as_yaml()
-            )
-            if len(remotes) == 1:
-                project_yaml.pop("remote", None)
-            projects.append(project_yaml)
-
-        if remotes:
-            return {
-                "manifest": {
-                    "version": self.version,
-                    "remotes": remotes,
-                    "projects": projects,
-                }
-            }
-
-        return {
-            "manifest": {
-                "version": self.version,
-                "projects": projects,
-            }
-        }
-
-    def dump(self, path: str) -> None:
-        """Dump metadata file to correct path."""
-        with open(path, "w+", encoding="utf-8") as manifest_file:
-            yaml.dump(
-                self._as_dict(),
-                manifest_file,
-                Dumper=ManifestDumper,
-                sort_keys=False,
-                line_break=os.linesep,
-            )
-
-    def update_dump(self) -> None:
-        """Dump the manifest to its path, using the original text as a base to preserve formatting and comments."""
-        if not self.__path:
-            raise RuntimeError("Cannot update dump of manifest with no path")
-
-        updated_text = self._doc.as_yaml()
-
-        with open(self.__path, "w", encoding="utf-8", newline="") as manifest_file:
-            manifest_file.write(updated_text)
+        If *path* is omitted the manifest is written back to the file it was
+        loaded from.  Raises ``RuntimeError`` if no path is available.
+        """
+        target = path or self.__path
+        if not target:
+            raise RuntimeError("Cannot dump manifest with no path")
+        with open(target, "w", encoding="utf-8", newline="") as manifest_file:
+            manifest_file.write(self._doc.as_yaml())
 
     def find_name_in_manifest(self, name: str) -> ManifestEntryLocation:
         """Find the location of a project name in the manifest.
@@ -417,12 +453,59 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
         raise RuntimeError(f"{name} was not found in the manifest!")
 
     # ---------------- YAML updates ----------------
+    def _normalize_string_scalars(self) -> None:
+        """Re-apply ``SingleQuotedScalarString`` to any string that would be misread.
+
+        strictyaml strips quoting-style information during schema validation, so
+        a value like ``'176'`` (single-quoted in the source YAML) becomes a plain
+        Python ``str`` in the ruamel layer.  ruamel then serialises it without
+        quotes, producing the integer ``176``.  We walk all top-level string
+        fields in every project and remote entry and restore the quoting wherever
+        ``_yaml_str`` determines it is needed.
+        """
+        manifest_mu = self._doc["manifest"].as_marked_up()
+        for entry in manifest_mu.get("projects", []):
+            for key in list(entry.keys()):
+                if isinstance(entry[key], str):
+                    entry[key] = _yaml_str(entry[key])
+        for entry in manifest_mu.get("remotes", []):
+            for key in list(entry.keys()):
+                if isinstance(entry[key], str):
+                    entry[key] = _yaml_str(entry[key])
+
+    def _ensure_section_spacing(self) -> None:
+        """Ensure blank lines appear before ``remotes:`` and ``projects:`` and between entries."""
+        manifest_mu = self._doc["manifest"].as_marked_up()
+        _ensure_blank_line_after(manifest_mu, "version")
+
+        remotes_mu = manifest_mu.get("remotes")
+        if remotes_mu:
+            last_remote = remotes_mu[-1]
+            _ensure_blank_line_after(last_remote, list(last_remote.keys())[-1])
+
+        projects_mu = manifest_mu.get("projects", [])
+        for project in projects_mu[:-1]:  # all entries except the last
+            last_key = list(project.keys())[-1]
+            value = project[last_key]
+            if isinstance(value, CommentedSeq):
+                # Clear any spurious blank line that ended up between the key
+                # and the first list item (stored at ca.items[key][2] in the
+                # parent map), then place the blank line after the last item.
+                key_items = project.ca.items.get(last_key)
+                if key_items and key_items[2] is not None:
+                    key_items[2] = None
+                _ensure_blank_line_after_seq(value)
+            elif isinstance(value, CommentedMap):
+                _ensure_blank_line_after_nested_map(project, last_key)
+            else:
+                _ensure_blank_line_after(project, last_key)
+
     def append_project_entry(self, project_entry: "ProjectEntry") -> None:
         """Append *project_entry* to the projects list in-memory.
 
         The new entry is formatted the same way as the existing YAML in the
         document (2-space indent under ``projects:``).  Call
-        :meth:`update_dump` afterwards to persist the change to disk.
+        :meth:`dump` afterwards to persist the change to disk.
         """
         projects_mu = self._doc["manifest"]["projects"].as_marked_up()
         projects_mu.append(CommentedMap(project_entry.as_yaml()))
@@ -433,7 +516,6 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
             None,
             None,
         ]
-        self._projects[project_entry.name] = ProjectEntry.copy(project_entry)
 
     def update_project_version(self, project: ProjectEntry) -> None:
         """Update a project's version in the manifest in-place, preserving layout, comments, and line endings."""
@@ -534,25 +616,3 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
             if target.startswith(remote_base):
                 return remote
         return None
-
-
-class ManifestDumper(yaml.SafeDumper):  # pylint: disable=too-many-ancestors
-    """Dump a manifest YAML.
-
-    HACK: insert blank lines between top-level objects
-    inspired by https://stackoverflow.com/a/44284819/3786245
-    """
-
-    _last_additional_break = 0
-
-    def write_line_break(self, data: Any = None) -> None:
-        """Write a line break."""
-        super().write_line_break(data)  # type: ignore[unused-ignore, no-untyped-call]
-
-        if len(self.indents) == 2 and getattr(self.event, "value", "") != "version":
-            super().write_line_break()  # type: ignore[unused-ignore, no-untyped-call]
-
-        if len(self.indents) == 3 and self._last_additional_break != 2:
-            super().write_line_break()  # type: ignore[unused-ignore, no-untyped-call]
-
-        self._last_additional_break = len(self.indents)

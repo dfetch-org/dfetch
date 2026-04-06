@@ -175,7 +175,7 @@ def test_add_command_non_interactive_appends_entry():
             Add()(_make_args("https://github.com/org/myrepo.git"))
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -210,7 +210,7 @@ def test_add_command_non_interactive_field_overrides():
             )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -241,7 +241,7 @@ def test_add_command_suffixes_duplicate_name():
             Add()(_make_args("https://github.com/org/myrepo.git"))
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -286,7 +286,7 @@ def test_add_command_interactive_branch():
                     )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -327,7 +327,7 @@ def test_add_command_interactive_branch_by_number():
                         )
                     )
 
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -367,7 +367,7 @@ def test_add_command_interactive_tag():
                     )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -405,7 +405,7 @@ def test_add_command_interactive_abort():
                     )
 
     fake_superproject.manifest.append_project_entry.assert_not_called()
-    fake_superproject.manifest.update_dump.assert_not_called()
+    fake_superproject.manifest.dump.assert_not_called()
 
 
 def test_add_command_interactive_with_src():
@@ -441,7 +441,7 @@ def test_add_command_interactive_with_src():
                     )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -481,7 +481,7 @@ def test_add_command_interactive_with_ignore():
                     )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -562,7 +562,7 @@ def test_add_command_interactive_with_overrides():
                     )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -606,7 +606,7 @@ def test_add_command_interactive_with_all_overrides():
 
     mock_prompt.assert_not_called()
     fake_superproject.manifest.append_project_entry.assert_called_once()
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -665,7 +665,7 @@ def test_add_command_interactive_svn_trunk():
                     Add()(_make_args(_SVN_URL, interactive=True))
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -700,7 +700,7 @@ def test_add_command_interactive_svn_custom_branch():
                 ):
                     Add()(_make_args(_SVN_URL, interactive=True))
 
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -734,7 +734,7 @@ def test_add_command_interactive_svn_tag():
                 ):
                     Add()(_make_args(_SVN_URL, interactive=True))
 
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -769,7 +769,7 @@ def test_add_command_interactive_svn_branch_by_number():
                 ):
                     Add()(_make_args(_SVN_URL, interactive=True))
 
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -794,7 +794,7 @@ def test_add_command_non_interactive_svn():
             Add()(_make_args(_SVN_URL))
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]
@@ -832,7 +832,7 @@ def test_add_command_matches_existing_remote():
             )
 
     fake_superproject.manifest.append_project_entry.assert_called_once()
-    fake_superproject.manifest.update_dump.assert_called_once()
+    fake_superproject.manifest.dump.assert_called_once()
     entry: ProjectEntry = fake_superproject.manifest.append_project_entry.call_args[0][
         0
     ]

@@ -570,3 +570,27 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         }
 
         return {k: v for k, v in yamldata.items() if v}
+
+    @staticmethod
+    def from_raw(
+        project: "ProjectEntryDict | ProjectEntry | dict[str, str | list[str] | dict[str, str]]",
+        default_remote: str = "",
+    ) -> "ProjectEntry":
+        """Convert a raw project value to a :class:`ProjectEntry`.
+
+        Raises:
+            KeyError: *project* is a dict missing ``name``.
+            TypeError: The ``name`` value is not a string.
+            RuntimeError: *project* has an unrecognised type.
+        """
+        if isinstance(project, dict):
+            if "name" not in project:
+                raise KeyError("Missing name!")
+            if not isinstance(project["name"], str):
+                raise TypeError(
+                    f"Project name must be a string, got {type(project['name']).__name__}"
+                )
+            return ProjectEntry.from_yaml(project, default_remote)
+        if isinstance(project, ProjectEntry):
+            return ProjectEntry.copy(project)
+        raise RuntimeError(f"{project} has unknown type")
