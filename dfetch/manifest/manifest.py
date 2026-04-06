@@ -433,6 +433,7 @@ class Manifest:  # pylint: disable=too-many-instance-attributes
             None,
             None,
         ]
+        self._projects[project_entry.name] = ProjectEntry.copy(project_entry)
 
     def update_project_version(self, project: ProjectEntry) -> None:
         """Update a project's version in the manifest in-place, preserving layout, comments, and line endings."""
