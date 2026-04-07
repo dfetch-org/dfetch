@@ -29,7 +29,7 @@ from typing import IO, Any, cast
 
 import yaml
 from strictyaml import YAML, StrictYAMLError, YAMLValidationError, load
-from strictyaml.ruamel.comments import CommentedMap, CommentedSeq
+from strictyaml.ruamel.comments import CommentedMap
 from strictyaml.ruamel.error import CommentMark
 from strictyaml.ruamel.scalarstring import SingleQuotedScalarString
 from strictyaml.ruamel.tokens import CommentToken
@@ -72,74 +72,6 @@ def _yaml_str(value: str) -> str | SingleQuotedScalarString:
     except yaml.YAMLError:
         return SingleQuotedScalarString(value)
     return value
-
-
-def _ensure_blank_line_after_nested_map(parent: CommentedMap, key: str) -> None:
-    """Ensure a blank line appears after a nested mapping value.
-
-    For a block mapping value (e.g. ``integrity:`` with sub-key ``hash:``),
-    the blank line must live inside the nested map — at
-    ``nested.ca.items[last_key][2]`` — not on the parent key.  Putting it on
-    the parent key at position ``[2]`` or ``[3]`` lands it *between* the key
-    line and the first sub-key, producing a spurious blank line.
-    """
-    # Clear any spurious blanks the parent map may carry on positions [2]/[3].
-    parent_items = parent.ca.items.get(key)
-    if parent_items:
-        if parent_items[2] is not None:
-            parent_items[2] = None
-        if parent_items[3] is not None:
-            parent_items[3] = None
-
-    nested: CommentedMap = parent[key]
-    nested_keys = list(nested.keys())
-    if nested_keys:
-        _ensure_blank_line_after(nested, nested_keys[-1])
-
-
-def _ensure_blank_line_after_seq(seq: CommentedSeq) -> None:
-    """Ensure there is a blank line after the last item of *seq*.
-
-    The blank line belongs at ``seq.ca.items[last_idx][0]`` (the pre-comment
-    slot of the last element).  We also clear any extra newline stored at
-    ``seq.ca.items[0][1]``, which is where ruamel parks whitespace between the
-    parent key (e.g. ``patch:``) and the first ``-`` item — the source of the
-    spurious blank line that this function is designed to prevent.
-    """
-    if not seq:
-        return
-
-    # Clear spurious blank line between the key and the first list item.
-    first_item_ca = seq.ca.items.get(0)
-    if first_item_ca is not None and first_item_ca[1] is not None:
-        first_item_ca[1] = None
-
-    # Ensure blank line after the last item for project-entry separation.
-    last_idx = len(seq) - 1
-    existing = seq.ca.items.get(last_idx, [None, None, None, None])
-    token = existing[0]
-    if token is None:
-        existing[0] = CommentToken("\n\n", CommentMark(0), None)
-        seq.ca.items[last_idx] = existing
-    elif not token.value.endswith("\n\n"):
-        token.value = token.value.rstrip("\n") + "\n\n"
-
-
-def _ensure_blank_line_after(ca_map: CommentedMap, key: str) -> None:
-    """Ensure there is exactly one blank line after *key*'s value in *ca_map*.
-
-    Blank lines in ruamel are stored as trailing ``CommentToken`` values at
-    position ``[2]`` of ``ca_map.ca.items[key]``.  If no token exists one is
-    created; if one already exists its trailing newlines are normalised to two
-    (the line ending of the value itself plus the blank line).
-    """
-    items = ca_map.ca.items.get(key, [None, None, None, None])
-    token = items[2]
-    if token is None:
-        items[2] = CommentToken("\n\n", CommentMark(0), None)
-        ca_map.ca.items[key] = items
-    elif not token.value.endswith("\n\n"):
-        token.value = token.value.rstrip("\n") + "\n\n"
 
 
 @dataclass
@@ -258,9 +190,6 @@ class Manifest:
         self._default_remote_name = (
             "" if not default_remotes else default_remotes[0].name
         )
-
-        # Ensure blank lines appear before 'remotes:' and 'projects:' when dumped.
-        self._ensure_section_spacing()
 
         # Re-apply quoting to scalars whose style was stripped by strictyaml.
         self._normalize_string_scalars()
@@ -473,33 +402,6 @@ class Manifest:
                 if isinstance(entry[key], str):
                     entry[key] = _yaml_str(entry[key])
 
-    def _ensure_section_spacing(self) -> None:
-        """Ensure blank lines appear before ``remotes:`` and ``projects:`` and between entries."""
-        manifest_mu = self._doc["manifest"].as_marked_up()
-        _ensure_blank_line_after(manifest_mu, "version")
-
-        remotes_mu = manifest_mu.get("remotes")
-        if remotes_mu:
-            last_remote = remotes_mu[-1]
-            _ensure_blank_line_after(last_remote, list(last_remote.keys())[-1])
-
-        projects_mu = manifest_mu.get("projects", [])
-        for project in projects_mu[:-1]:  # all entries except the last
-            last_key = list(project.keys())[-1]
-            value = project[last_key]
-            if isinstance(value, CommentedSeq):
-                # Clear any spurious blank line that ended up between the key
-                # and the first list item (stored at ca.items[key][2] in the
-                # parent map), then place the blank line after the last item.
-                key_items = project.ca.items.get(last_key)
-                if key_items and key_items[2] is not None:
-                    key_items[2] = None
-                _ensure_blank_line_after_seq(value)
-            elif isinstance(value, CommentedMap):
-                _ensure_blank_line_after_nested_map(project, last_key)
-            else:
-                _ensure_blank_line_after(project, last_key)
-
     def append_project_entry(self, project_entry: "ProjectEntry") -> None:
         """Append *project_entry* to the projects list in-memory.
 
@@ -616,3 +518,53 @@ class Manifest:
             if target.startswith(remote_base):
                 return remote
         return None
+
+
+class ManifestBuilder:
+    """Builds a new manifest YAML document from scratch with correct blank-line formatting.
+
+    Use this when creating a manifest from scratch (e.g. ``dfetch import``).
+    For loading and modifying existing manifests use :class:`Manifest` directly.
+    """
+
+    def __init__(self) -> None:
+        """Create an empty builder."""
+        self._remotes: list[Remote] = []
+        self._project_dicts: list[dict[str, Any]] = []
+
+    def add_remote(self, remote: Remote) -> "ManifestBuilder":
+        """Add a remote entry."""
+        self._remotes.append(remote)
+        return self
+
+    def add_project_dict(self, project: dict[str, Any]) -> "ManifestBuilder":
+        """Add a project entry as a plain dict (as returned by ``ProjectEntry.as_yaml()``)."""
+        self._project_dicts.append(project)
+        return self
+
+    def build(self) -> "Manifest":
+        """Render and load the manifest."""
+        return Manifest.from_yaml(self._render())
+
+    def _render(self) -> str:
+        """Produce a correctly-formatted YAML string for the manifest."""
+        data: dict[str, Any] = {"manifest": {"version": "0.0"}}
+        if self._remotes:
+            data["manifest"]["remotes"] = [r.as_yaml() for r in self._remotes]
+        data["manifest"]["projects"] = self._project_dicts
+
+        raw = yaml.dump(data, sort_keys=False)
+
+        # Insert a blank line before the remotes: and projects: section headers.
+        raw = re.sub(r"\n(  (?:remotes|projects):)", r"\n\n\1", raw)
+
+        # Insert a blank line between consecutive entries in each section.
+        # re.split with a capturing group keeps the delimiters in the list, so
+        # every even index ≥ 2 is a section body that can be substituted
+        # independently without one pass's changes affecting the next.
+        parts = re.split(r"(\n  (?:remotes|projects):\n)", raw)
+        for i in range(2, len(parts), 2):
+            parts[i] = re.sub(r"\n(  - )", r"\n\n\1", parts[i])
+        raw = "".join(parts)
+
+        return raw

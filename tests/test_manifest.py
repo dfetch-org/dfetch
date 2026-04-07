@@ -13,11 +13,13 @@ import pytest
 from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.manifest.manifest import (
     Manifest,
+    ManifestBuilder,
     ManifestEntryLocation,
     RequestedProjectNotFoundError,
 )
 from dfetch.manifest.parse import find_manifest, get_submanifests
 from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
+from dfetch.manifest.remote import Remote
 
 BASIC_MANIFEST = """
 manifest:
@@ -451,120 +453,96 @@ def test_append_project_entry_check_name_uniqueness_sees_new_entry() -> None:
 
 
 # ---------------------------------------------------------------------------
-# patch list: no spurious blank line between 'patch:' and first item
+# ManifestBuilder
 # ---------------------------------------------------------------------------
 
-_PATCH_LIST_MANIFEST = """\
-manifest:
-  version: '0.0'
-  projects:
-  - name: first
-    url: https://example.com/first
-    patch:
-    - patches/a.patch
-    - patches/b.patch
-  - name: second
-    url: https://example.com/second
-"""
-
-_PATCH_LIST_MANIFEST_WITH_SPURIOUS_BLANK = """\
-manifest:
-  version: '0.0'
-  projects:
-  - name: first
-    url: https://example.com/first
-    patch:
-
-    - patches/a.patch
-    - patches/b.patch
-  - name: second
-    url: https://example.com/second
-"""
+_GITHUB = Remote({"name": "github", "url-base": "https://github.com/"})
 
 
-def test_patch_list_no_blank_line_before_first_item() -> None:
-    """Loading a manifest with a multi-entry patch list must not insert a blank
-    line between 'patch:' and the first list item."""
-    result = Manifest.from_yaml(_PATCH_LIST_MANIFEST)._doc.as_yaml()
-    assert (
-        "patch:\n    - patches/a.patch" in result
-    ), "spurious blank line appeared between 'patch:' and first item"
+def _builder_with_one_project() -> ManifestBuilder:
+    return ManifestBuilder().add_project_dict({"name": "mylib", "dst": "libs/mylib"})
 
 
-def test_patch_list_blank_line_after_last_item_before_next_project() -> None:
-    """A blank line must still separate consecutive project entries when the
-    first project's last key is a multi-entry patch list."""
-    result = Manifest.from_yaml(_PATCH_LIST_MANIFEST)._doc.as_yaml()
-    assert (
-        "    - patches/b.patch\n\n  - name: second" in result
-    ), "missing blank line between projects when patch list is the last key"
+def test_builder_returns_manifest() -> None:
+    manifest = _builder_with_one_project().build()
+    assert isinstance(manifest, Manifest)
 
 
-def test_patch_list_fixes_spurious_blank_when_already_present() -> None:
-    """Re-loading a manifest that already contains the spurious blank line must
-    heal it on the next serialisation."""
-    result = Manifest.from_yaml(_PATCH_LIST_MANIFEST_WITH_SPURIOUS_BLANK)._doc.as_yaml()
-    assert (
-        "patch:\n\n" not in result
-    ), "spurious blank line between 'patch:' and first item was not removed"
-    assert "patch:\n    - patches/a.patch" in result
+def test_builder_sets_version() -> None:
+    manifest = _builder_with_one_project().build()
+    assert manifest.version == "0.0"
 
 
-# ---------------------------------------------------------------------------
-# integrity block: no spurious blank line between 'integrity:' and 'hash:'
-# ---------------------------------------------------------------------------
-
-_HASH = "sha256:" + "a" * 64
-
-_INTEGRITY_MANIFEST = f"""\
-manifest:
-  version: '0.0'
-  projects:
-  - name: first
-    url: https://example.com/first
-    integrity:
-      hash: {_HASH}
-  - name: second
-    url: https://example.com/second
-"""
-
-_INTEGRITY_MANIFEST_WITH_SPURIOUS_BLANK = f"""\
-manifest:
-  version: '0.0'
-  projects:
-  - name: first
-    url: https://example.com/first
-    integrity:
-
-      hash: {_HASH}
-  - name: second
-    url: https://example.com/second
-"""
+def test_builder_projects_are_accessible() -> None:
+    manifest = (
+        ManifestBuilder()
+        .add_project_dict({"name": "alpha", "dst": "libs/alpha"})
+        .add_project_dict({"name": "beta", "dst": "libs/beta"})
+        .build()
+    )
+    names = [p.name for p in manifest.projects]
+    assert names == ["alpha", "beta"]
 
 
-def test_integrity_no_blank_line_before_hash() -> None:
-    """Loading a manifest with an integrity block must not insert a blank line
-    between 'integrity:' and 'hash:'."""
-    result = Manifest.from_yaml(_INTEGRITY_MANIFEST)._doc.as_yaml()
-    assert (
-        "integrity:\n      hash:" in result
-    ), "spurious blank line appeared between 'integrity:' and 'hash:'"
+def test_builder_remote_is_accessible() -> None:
+    manifest = (
+        ManifestBuilder()
+        .add_remote(_GITHUB)
+        .add_project_dict({"name": "mylib", "remote": "github"})
+        .build()
+    )
+    assert len(manifest.remotes) == 1
+    assert manifest.remotes[0].name == "github"
 
 
-def test_integrity_blank_line_after_hash_before_next_project() -> None:
-    """A blank line must still separate consecutive project entries when the
-    first project's last key is an integrity block."""
-    result = Manifest.from_yaml(_INTEGRITY_MANIFEST)._doc.as_yaml()
-    assert (
-        f"hash: {_HASH}\n\n  - name: second" in result
-    ), "missing blank line between projects when integrity is the last key"
+def test_builder_blank_line_after_version() -> None:
+    manifest = _builder_with_one_project().build()
+    assert "version: '0.0'\n\n" in manifest._doc.as_yaml()
 
 
-def test_integrity_fixes_spurious_blank_when_already_present() -> None:
-    """Re-loading a manifest with a spurious blank between 'integrity:' and
-    'hash:' must heal it on the next serialisation."""
-    result = Manifest.from_yaml(_INTEGRITY_MANIFEST_WITH_SPURIOUS_BLANK)._doc.as_yaml()
-    assert (
-        "integrity:\n\n" not in result
-    ), "spurious blank line between 'integrity:' and 'hash:' was not removed"
-    assert "integrity:\n      hash:" in result
+def test_builder_blank_line_before_projects() -> None:
+    manifest = _builder_with_one_project().build()
+    assert "\n\n  projects:\n" in manifest._doc.as_yaml()
+
+
+def test_builder_blank_line_before_remotes() -> None:
+    manifest = (
+        ManifestBuilder()
+        .add_remote(_GITHUB)
+        .add_project_dict({"name": "mylib"})
+        .build()
+    )
+    assert "\n\n  remotes:\n" in manifest._doc.as_yaml()
+
+
+def test_builder_blank_line_between_projects() -> None:
+    manifest = (
+        ManifestBuilder()
+        .add_project_dict({"name": "alpha", "dst": "libs/alpha"})
+        .add_project_dict({"name": "beta", "dst": "libs/beta"})
+        .build()
+    )
+    assert "\n\n  - name: beta" in manifest._doc.as_yaml()
+
+
+def test_builder_no_blank_line_before_first_project() -> None:
+    manifest = (
+        ManifestBuilder()
+        .add_project_dict({"name": "alpha", "dst": "libs/alpha"})
+        .add_project_dict({"name": "beta", "dst": "libs/beta"})
+        .build()
+    )
+    yaml_text = manifest._doc.as_yaml()
+    assert "projects:\n  - name: alpha" in yaml_text
+
+
+def test_builder_blank_line_between_remotes() -> None:
+    second = Remote({"name": "gitlab", "url-base": "https://gitlab.com/"})
+    manifest = (
+        ManifestBuilder()
+        .add_remote(_GITHUB)
+        .add_remote(second)
+        .add_project_dict({"name": "mylib"})
+        .build()
+    )
+    assert "\n\n  - name: gitlab" in manifest._doc.as_yaml()

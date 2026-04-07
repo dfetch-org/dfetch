@@ -53,7 +53,7 @@ def test_git_import(name, submodules):
         with patch(
             "dfetch.project.gitsuperproject.GitLocalRepo.submodules"
         ) as mocked_submodules:
-            with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
+            with patch("dfetch.manifest.manifest.Manifest") as mocked_manifest:
                 mocked_submodules.return_value = submodules
                 with patch(
                     "dfetch.project.gitsuperproject.GitLocalRepo.is_git"
@@ -121,7 +121,7 @@ def test_svn_import(name, externals):
         with patch(
             "dfetch.project.svnsuperproject.SvnRepo.externals"
         ) as mocked_externals:
-            with patch("dfetch.commands.import_.Manifest") as mocked_manifest:
+            with patch("dfetch.manifest.manifest.Manifest") as mocked_manifest:
                 with patch(
                     "dfetch.project.gitsuperproject.GitLocalRepo.is_git"
                 ) as is_git:
