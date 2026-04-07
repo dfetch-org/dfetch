@@ -16,12 +16,10 @@ import re
 from collections.abc import Sequence
 from itertools import combinations
 
-import yaml
-
 import dfetch.commands.command
 from dfetch import DEFAULT_MANIFEST_NAME
 from dfetch.log import get_logger
-from dfetch.manifest.manifest import Manifest
+from dfetch.manifest.manifest import ManifestBuilder
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.remote import Remote
 from dfetch.project import determine_superproject_vcs
@@ -59,21 +57,15 @@ class Import(dfetch.commands.command.Command):
                     break
 
         single_remote = len(remotes) == 1
-        project_dicts = []
+        builder = ManifestBuilder()
+        for remote in remotes:
+            builder.add_remote(remote)
         for p in projects:
             d = p.as_yaml()
             if single_remote:
                 d.pop("remote", None)
-            project_dicts.append(d)
-
-        manifest_data = {
-            "manifest": {
-                "version": "0.0",
-                "remotes": [r.as_yaml() for r in remotes],
-                "projects": project_dicts,
-            }
-        }
-        manifest = Manifest.from_yaml(yaml.dump(manifest_data, sort_keys=False))
+            builder.add_project_dict(d)
+        manifest = builder.build()
 
         manifest.dump(DEFAULT_MANIFEST_NAME)
         logger.info(f"Created manifest ({DEFAULT_MANIFEST_NAME}) in {os.getcwd()}")
