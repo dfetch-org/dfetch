@@ -8,11 +8,25 @@ The tools track vulnerabilities or can enforce a license policy within an organi
 
 See https://cyclonedx.org/use-cases/ for more details.
 
-*Dfetch* will try to parse the license of project, this is retained during an :ref:`Update`.
+*Dfetch* will try to parse the license of each project.  Detected licenses are
+recorded as SPDX identifiers.  When a license-like file is present but cannot
+be classified, or when no license file is found at all, *dfetch* sets the
+``licenses`` field to ``NOASSERTION`` and adds a ``dfetch:license:finding``
+property that explains the reason.  This ensures the ``licenses`` field is
+never silently omitted and gives downstream compliance tooling actionable
+context.
 
 .. scenario-include:: ../features/report-sbom.feature
    :scenario:
         A fetched project generates a json sbom
+
+.. scenario-include:: ../features/report-sbom-license.feature
+   :scenario:
+        A fetched archive with an unclassifiable license file gets NOASSERTION
+
+.. scenario-include:: ../features/report-sbom-license.feature
+   :scenario:
+        A fetched archive with no license file gets NOASSERTION
 
 Archive dependencies
 --------------------
@@ -90,6 +104,7 @@ from cyclonedx.model import (
     ExternalReferenceType,
     HashAlgorithm,
     HashType,
+    Property,
     XsUri,
 )
 from cyclonedx.model.bom import Bom
@@ -104,7 +119,7 @@ from cyclonedx.model.component_evidence import (
 )
 from cyclonedx.model.contact import OrganizationalEntity
 from cyclonedx.model.license import DisjunctiveLicense as CycloneDxLicense
-from cyclonedx.model.license import LicenseAcknowledgement
+from cyclonedx.model.license import LicenseAcknowledgement, LicenseExpression
 from cyclonedx.output import make_outputter
 from cyclonedx.schema import OutputFormat, SchemaVersion
 from packageurl import PackageURL
@@ -113,7 +128,7 @@ import dfetch
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
-from dfetch.util.license import License
+from dfetch.util.license import LicenseScanResult
 from dfetch.util.purl import vcs_url_to_purl
 from dfetch.vcs.archive import archive_url_to_purl, is_archive_url
 from dfetch.vcs.integrity_hash import IntegrityHash
@@ -194,7 +209,7 @@ class SbomReporter(Reporter):
     def add_project(
         self,
         project: ProjectEntry,
-        licenses: list[License],
+        license_scan: LicenseScanResult,
         version: str,
     ) -> None:
         """Add a project to the report."""
@@ -264,7 +279,7 @@ class SbomReporter(Reporter):
             ),
         )
         self._apply_external_references(component, purl, version)
-        self._apply_licenses(component, licenses)
+        self._apply_licenses(component, license_scan)
         self._bom.components.add(component)
 
     @staticmethod
@@ -332,18 +347,44 @@ class SbomReporter(Reporter):
             )
 
     @staticmethod
-    def _apply_licenses(component: Component, licenses: list[License]) -> None:
-        """Attach *licenses* to *component* and its evidence block."""
-        for lic in licenses:
-            # Prefer SPDX id when available
-            cdx_license = (
-                CycloneDxLicense(id=lic.spdx_id)
-                if lic.spdx_id
-                else CycloneDxLicense(name=lic.name)
-            )
-            component.licenses.add(cdx_license)
-            if component.evidence:
-                component.evidence.licenses.add(cdx_license)
+    def _apply_licenses(component: Component, license_scan: LicenseScanResult) -> None:
+        """Attach license information to *component* and its evidence block.
+
+        Three cases are handled:
+
+        * Project was not fetched → nothing is added (no assertion possible).
+        * License files were found and identified → SPDX identifiers are attached.
+        * License files were found but unclassified, **or** no license file was
+          found at all → ``NOASSERTION`` is set and a ``dfetch:license:finding``
+          property records the reason for downstream compliance tooling.
+        """
+        if not license_scan.was_scanned:
+            return
+
+        if license_scan.identified:
+            for lic in license_scan.identified:
+                cdx_license = (
+                    CycloneDxLicense(id=lic.spdx_id)
+                    if lic.spdx_id
+                    else CycloneDxLicense(name=lic.name)
+                )
+                component.licenses.add(cdx_license)
+                if component.evidence:
+                    component.evidence.licenses.add(cdx_license)
+            return
+
+        noassertion = LicenseExpression("NOASSERTION")
+        component.licenses.add(noassertion)
+        if component.evidence:
+            component.evidence.licenses.add(noassertion)
+
+        if license_scan.unclassified_files:
+            files_str = ", ".join(sorted(license_scan.unclassified_files))
+            finding = f"License file(s) found ({files_str}) but could not be classified"
+        else:
+            finding = "No license file found in source tree"
+
+        component.properties.add(Property(name="dfetch:license:finding", value=finding))
 
     def dump_to_file(self, outfile: str) -> bool:
         """Dump the SBoM to file."""

@@ -1,7 +1,7 @@
 """*Dfetch* uses *Infer-License* to guess licenses from files."""
 
 import fnmatch
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from os import PathLike
 
 import infer_license
@@ -52,6 +52,34 @@ class License:
             trove_classifier=inferred_license.trove_classifier,
             probability=probability,
         )
+
+
+@dataclass
+class LicenseScanResult:
+    """Outcome of scanning a fetched project directory for license files.
+
+    Three distinct states are possible:
+
+    * ``was_scanned`` is *False*: the project destination did not exist (never
+      fetched).  No assertion should be made about licensing.
+    * ``was_scanned`` is *True*, ``identified`` is non-empty: one or more
+      license files were found and successfully classified.
+    * ``was_scanned`` is *True*, ``identified`` is empty:
+
+      - ``unclassified_files`` is non-empty → license file(s) were found but
+        the text could not be matched to a known SPDX identifier with sufficient
+        confidence.
+      - ``unclassified_files`` is empty → no license file was present at all.
+    """
+
+    identified: list["License"] = field(default_factory=list)
+    """Successfully identified licenses."""
+
+    unclassified_files: list[str] = field(default_factory=list)
+    """License-like files found but whose content could not be classified."""
+
+    was_scanned: bool = False
+    """Whether the project destination was actually scanned."""
 
 
 def guess_license_in_file(
