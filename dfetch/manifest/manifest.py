@@ -60,6 +60,21 @@ def _ensure_unique(seq: list[dict[str, Any]], key: str, context: str) -> None:
         )
 
 
+def _normalize_value(value: Any) -> Any:
+    """Recursively normalize strings in mappings and sequences."""
+    if isinstance(value, str):
+        return _yaml_str(value)
+    if isinstance(value, dict):
+        for key in list(value.keys()):
+            value[key] = _normalize_value(value[key])
+        return value
+    if isinstance(value, list):
+        for i, val in enumerate(value):
+            value[i] = _normalize_value(val)
+        return value
+    return value
+
+
 def _yaml_str(value: str) -> str | SingleQuotedScalarString:
     """Return SingleQuotedScalarString if value would be misread as non-string.
 
@@ -162,6 +177,26 @@ class Manifest:
         path: str | os.PathLike[str] | None = None,
     ) -> None:
         """Create the manifest."""
+        manifest_data = self._initialize_basic_attributes(doc, path)
+        remotes_raw = manifest_data.get("remotes", [])
+        projects_raw = manifest_data["projects"]
+        self._validate_manifest_data(remotes_raw, projects_raw)
+        self._setup_default_remote(remotes_raw)
+        # Re-apply quoting to scalars whose style was stripped by strictyaml.
+        self._normalize_string_scalars()
+
+    def _initialize_basic_attributes(
+        self, doc: YAML, path: str | os.PathLike[str] | None
+    ) -> dict[str, Any]:
+        """Initialize basic manifest attributes and ensure version is properly quoted.
+
+        Args:
+            doc: The parsed YAML document.
+            path: Optional path to the manifest file.
+
+        Returns:
+            The manifest data dictionary.
+        """
         self._doc = doc
         self.__path: str = str(path) if path else ""
         self.__relative_path: str = (
@@ -171,28 +206,36 @@ class Manifest:
         manifest_data: dict[str, Any] = cast(dict[str, Any], doc.data)["manifest"]
         self.__version: str = str(manifest_data.get("version", self.CURRENT_VERSION))
 
-        # Ensure version is always written as a quoted string by dump().
         doc["manifest"].as_marked_up()["version"] = SingleQuotedScalarString(
             self.__version
         )
 
-        remotes_raw = manifest_data.get("remotes", [])
-        projects_raw = manifest_data["projects"]
+        return manifest_data
 
+    def _validate_manifest_data(
+        self,
+        remotes_raw: list[dict[str, Any]],
+        projects_raw: list[dict[str, Any]],
+    ) -> None:
+        """Validate that remotes and projects have unique names and destinations."""
         _ensure_unique(remotes_raw, "name", "manifest.remotes")
         _ensure_unique(projects_raw, "name", "manifest.projects")
-        _ensure_unique(projects_raw, "dst", "manifest.projects")
+        projects_with_effective_dst = [
+            {"effective_dst": project.get("dst") or project["name"]}
+            for project in projects_raw
+        ]
+        _ensure_unique(
+            projects_with_effective_dst, "effective_dst", "manifest.projects"
+        )
 
-        # Determine and cache the default remote name (remotes don't change at runtime).
+    def _setup_default_remote(self, remotes_raw: Sequence[RemoteDict | Remote]) -> None:
+        """Determine and cache the default remote name."""
         remotes_dict, default_remotes = self._determine_remotes(remotes_raw)
         if not default_remotes:
             default_remotes = list(remotes_dict.values())[0:1]
         self._default_remote_name = (
             "" if not default_remotes else default_remotes[0].name
         )
-
-        # Re-apply quoting to scalars whose style was stripped by strictyaml.
-        self._normalize_string_scalars()
 
     def _build_projects(
         self,
@@ -360,6 +403,10 @@ class Manifest:
         target = path or self.__path
         if not target:
             raise RuntimeError("Cannot dump manifest with no path")
+        # Re-normalize string scalars to ensure newly added/modified entries
+        # (e.g., from append_project_entry or update_project_version) are
+        # properly quoted before serializing.
+        self._normalize_string_scalars()
         with open(target, "w", encoding="utf-8", newline="") as manifest_file:
             manifest_file.write(self._doc.as_yaml())
 
@@ -388,19 +435,17 @@ class Manifest:
         strictyaml strips quoting-style information during schema validation, so
         a value like ``'176'`` (single-quoted in the source YAML) becomes a plain
         Python ``str`` in the ruamel layer.  ruamel then serialises it without
-        quotes, producing the integer ``176``.  We walk all top-level string
-        fields in every project and remote entry and restore the quoting wherever
-        ``_yaml_str`` determines it is needed.
+        quotes, producing the integer ``176``.  We walk all string fields in every
+        project and remote entry (including nested strings in mappings and sequences)
+        and restore the quoting wherever ``_yaml_str`` determines it is needed.
         """
         manifest_mu = self._doc["manifest"].as_marked_up()
         for entry in manifest_mu.get("projects", []):
             for key in list(entry.keys()):
-                if isinstance(entry[key], str):
-                    entry[key] = _yaml_str(entry[key])
+                entry[key] = _normalize_value(entry[key])
         for entry in manifest_mu.get("remotes", []):
             for key in list(entry.keys()):
-                if isinstance(entry[key], str):
-                    entry[key] = _yaml_str(entry[key])
+                entry[key] = _normalize_value(entry[key])
 
     def append_project_entry(self, project_entry: "ProjectEntry") -> None:
         """Append *project_entry* to the projects list in-memory.
