@@ -72,7 +72,7 @@ from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.metadata import Metadata
 from dfetch.reporting.reporter import Reporter
-from dfetch.util.license import License
+from dfetch.util.license import LicenseScanResult
 
 logger = get_logger(__name__)
 
@@ -85,7 +85,7 @@ class StdoutReporter(Reporter):
     def add_project(
         self,
         project: ProjectEntry,
-        licenses: list[License],
+        license_scan: LicenseScanResult,
         version: str,
     ) -> None:
         """Add a project to the report."""
@@ -101,7 +101,8 @@ class StdoutReporter(Reporter):
             logger.print_info_field("  revision", metadata.revision)
             logger.print_info_field("  patch", ", ".join(metadata.patch))
             logger.print_info_field(
-                "  licenses", ",".join(license.name for license in licenses)
+                "  licenses",
+                ",".join(license.name for license in license_scan.identified),
             )
 
             if metadata.dependencies:

@@ -20,9 +20,19 @@ Licence detection
 ~~~~~~~~~~~~~~~~~
 *Dfetch* scans each fetched project for common licence files (``LICENSE``,
 ``COPYING``, etc.) and uses a best-effort heuristic to identify the licence
-type. Only matches with a confidence of 80 % or higher are reported; ambiguous
-files are silently skipped.  If no licence is detected, the field is left
-empty rather than guessing.
+type.  Only matches with a confidence of 80 % or higher are used.
+
+In the SBOM report the ``licenses`` field is always populated for fetched
+projects:
+
+* **Identified** — the SPDX identifier is recorded.
+* **File found, unclassifiable** — ``NOASSERTION`` is set and a
+  ``dfetch:license:finding`` property names the problematic file(s).
+* **No licence file found** — ``NOASSERTION`` is set and a
+  ``dfetch:license:finding`` property states that no file was found.
+
+This guarantees the field is never silently omitted and improves transparency
+for downstream compliance analysis.
 """
 
 import argparse
@@ -37,7 +47,11 @@ from dfetch.manifest.project import ProjectEntry
 from dfetch.project import create_super_project
 from dfetch.project.metadata import Metadata
 from dfetch.reporting import REPORTERS, ReportTypes
-from dfetch.util.license import License, guess_license_in_file, is_license_file
+from dfetch.util.license import (
+    LicenseScanResult,
+    guess_license_in_file,
+    is_license_file,
+)
 
 logger = get_logger(__name__)
 
@@ -90,25 +104,26 @@ class Report(dfetch.commands.command.Command):
             reporter = REPORTERS[args.type](superproject.manifest)
 
             for project in superproject.manifest.selected_projects(args.projects):
-                determined_licenses = self._determine_licenses(project)
+                license_scan = self._determine_licenses(project)
                 version = self._determine_version(project)
                 reporter.add_project(
-                    project=project, licenses=determined_licenses, version=version
+                    project=project, license_scan=license_scan, version=version
                 )
 
             if reporter.dump_to_file(args.outfile):
                 logger.info(f"Generated {reporter.name} report: {args.outfile}")
 
     @staticmethod
-    def _determine_licenses(project: ProjectEntry) -> list[License]:
+    def _determine_licenses(project: ProjectEntry) -> LicenseScanResult:
         """Try to determine license of fetched project."""
         if not os.path.exists(project.destination):
             logger.print_warning_line(
                 project.name, "Never fetched, fetch it to get license info."
             )
-            return []
+            return LicenseScanResult(was_scanned=False)
 
-        license_files = []
+        identified = []
+        unclassified = []
         with dfetch.util.util.in_directory(project.destination):
             for license_file in filter(is_license_file, glob.glob("*")):
                 logger.debug(f"Found license file {license_file} for {project.name}")
@@ -118,12 +133,17 @@ class Report(dfetch.commands.command.Command):
                     guessed_license
                     and guessed_license.probability > LICENSE_PROBABILITY_THRESHOLD
                 ):
-                    license_files.append(guessed_license)
+                    identified.append(guessed_license)
                 else:
+                    unclassified.append(license_file)
                     logger.print_warning_line(
                         project.name, f"Could not determine license in {license_file}"
                     )
-        return license_files
+        return LicenseScanResult(
+            identified=identified,
+            unclassified_files=unclassified,
+            was_scanned=True,
+        )
 
     @staticmethod
     def _determine_version(project: ProjectEntry) -> str:

@@ -15,10 +15,28 @@ license policy across an organisation.
 
     $ dfetch report -t sbom -o dfetch.cdx.json
 
-*Dfetch* parses each project's license at report time, it can recognise common
-license files and detect the license type with high accuracy. If a project doesn't
-include a license file or has an unknown license, *Dfetch* keeps the license field
-empty in the SBOM.
+*Dfetch* parses each project's license at report time and can recognise common
+license files with high accuracy.  The ``licenses`` field is always populated:
+
+* **Identified** — the SPDX identifier is recorded (e.g. ``MIT``, ``Apache-2.0``).
+* **File found, unclassifiable** — a license-like file (``LICENSE``,
+  ``COPYING``, …) was detected but its text could not be matched to a known
+  SPDX identifier with sufficient confidence.  The field is set to
+  ``NOASSERTION`` and a ``dfetch:license:finding`` component property records
+  the filename(s) for review.
+* **No license file present** — no license-like file was found.  The field is
+  set to ``NOASSERTION`` and a ``dfetch:license:finding`` property records that
+  no file was found.
+
+This ensures the ``licenses`` field is never silently omitted and gives
+downstream compliance tooling actionable context regardless of the detection
+outcome.
+
+.. scenario-include:: ../features/report-sbom-license.feature
+   :scenario: A fetched archive with an unclassifiable license file gets NOASSERTION
+
+.. scenario-include:: ../features/report-sbom-license.feature
+   :scenario: A fetched archive with no license file gets NOASSERTION
 
 Archive dependencies (``tar.gz``, ``zip``, …) are recorded with a
 ``distribution`` external reference.  When an ``integrity.hash:`` field is set
