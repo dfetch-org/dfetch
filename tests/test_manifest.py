@@ -420,9 +420,14 @@ def test_version_parsed_as_string(manifest_text: str, expected_version: str) -> 
 def test_dump_writes_version_as_quoted_string(manifest_text: str) -> None:
     """dump must always write version as a quoted YAML string."""
     manifest = Manifest.from_yaml(manifest_text)
-    result = manifest._doc.as_yaml()
+    # Test the public dump() API by capturing its output with mock_open.
+    m = mock_open()
+    with patch("builtins.open", m):
+        manifest.dump("/tmp/test_manifest.yaml")
+    # Get the written content from mock_open's call arguments.
+    written_content = "".join(call.args[0] for call in m().write.call_args_list)
     # The version value must appear quoted so that YAML parsers read it as a string.
-    assert f"version: '{manifest.version}'" in result
+    assert f"version: '{manifest.version}'" in written_content
 
 
 # ---------------------------------------------------------------------------
