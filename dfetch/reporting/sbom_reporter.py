@@ -131,7 +131,7 @@ from cyclonedx.model.component_evidence import (
 )
 from cyclonedx.model.contact import OrganizationalEntity
 from cyclonedx.model.license import DisjunctiveLicense as CycloneDxLicense
-from cyclonedx.model.license import LicenseAcknowledgement, LicenseExpression
+from cyclonedx.model.license import LicenseAcknowledgement
 from cyclonedx.output import make_outputter
 from cyclonedx.schema import OutputFormat, SchemaVersion
 from packageurl import PackageURL
@@ -408,7 +408,7 @@ class SbomReporter(Reporter):
                     component.evidence.licenses.add(cdx_license)
                 # Record per-license confidence so auditors can compare against
                 # the threshold and re-evaluate if the threshold changes.
-                label = lic.spdx_id or lic.name
+                label = lic.spdx_id or lic.name or "unknown"
                 component.properties.add(
                     Property(
                         name=f"dfetch:license:{label}:confidence",
@@ -417,7 +417,7 @@ class SbomReporter(Reporter):
                 )
             return
 
-        noassertion = LicenseExpression("NOASSERTION")
+        noassertion = CycloneDxLicense(name="NOASSERTION")
         component.licenses.add(noassertion)
         if component.evidence:
             component.evidence.licenses.add(noassertion)
