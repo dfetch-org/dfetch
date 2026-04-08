@@ -33,6 +33,11 @@ projects:
 
 This guarantees the field is never silently omitted and improves transparency
 for downstream compliance analysis.
+
+For every scanned component, the SBOM additionally records
+``dfetch:license:<spdx-id>:confidence`` (per identified licence),
+``dfetch:license:threshold``, and ``dfetch:license:tool`` so auditors can
+reproduce or re-evaluate detection results.
 """
 
 import argparse
@@ -143,6 +148,7 @@ class Report(dfetch.commands.command.Command):
             identified=identified,
             unclassified_files=unclassified,
             was_scanned=True,
+            threshold=LICENSE_PROBABILITY_THRESHOLD,
         )
 
     @staticmethod

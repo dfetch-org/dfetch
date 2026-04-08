@@ -81,6 +81,14 @@ class LicenseScanResult:
     was_scanned: bool = False
     """Whether the project destination was actually scanned."""
 
+    threshold: float = 0.0
+    """Minimum confidence required to accept an inference (0-1).
+
+    Stored here so the SBOM reporter can reproduce exactly which threshold was
+    active when the scan was performed, enabling downstream auditors to
+    re-evaluate results if the threshold changes.
+    """
+
 
 def guess_license_in_file(
     filename: str | PathLike[str],

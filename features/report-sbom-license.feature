@@ -42,6 +42,14 @@ Feature: SBOM license transparency for unresolved licenses
                             {
                                 "name": "dfetch:license:finding",
                                 "value": "License file(s) found (LICENSE) but could not be classified"
+                            },
+                            {
+                                "name": "dfetch:license:threshold",
+                                "value": "0.80"
+                            },
+                            {
+                                "name": "dfetch:license:tool",
+                                "value": "infer-license 0.2.0"
                             }
                         ],
                         "evidence": {
@@ -87,6 +95,14 @@ Feature: SBOM license transparency for unresolved licenses
                             {
                                 "name": "dfetch:license:finding",
                                 "value": "No license file found in source tree"
+                            },
+                            {
+                                "name": "dfetch:license:threshold",
+                                "value": "0.80"
+                            },
+                            {
+                                "name": "dfetch:license:tool",
+                                "value": "infer-license 0.2.0"
                             }
                         ],
                         "evidence": {
