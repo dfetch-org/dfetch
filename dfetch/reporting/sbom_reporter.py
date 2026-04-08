@@ -16,6 +16,17 @@ property that explains the reason.  This ensures the ``licenses`` field is
 never silently omitted and gives downstream compliance tooling actionable
 context.
 
+For every scanned component, three additional properties are recorded:
+
+* ``dfetch:license:<spdx-id>:confidence`` — the probability score returned by
+  *infer-license* for each identified license (only present when a license is
+  successfully identified).
+* ``dfetch:license:threshold`` — the minimum confidence required to accept an
+  inference (``0.80`` by default).  Auditors can use this to understand under
+  what conditions a license was accepted or rejected.
+* ``dfetch:license:tool`` — the *infer-license* library version used during the
+  scan, enabling reproducible re-evaluation as the library evolves.
+
 .. scenario-include:: ../features/report-sbom.feature
    :scenario:
         A fetched project generates a json sbom
@@ -97,6 +108,7 @@ For more information see the `Github dependency submission`_.
 """
 
 from decimal import Decimal
+from importlib.metadata import version as pkg_version
 
 from cyclonedx.builder.this import this_component as cdx_lib_component
 from cyclonedx.model import (
@@ -138,6 +150,9 @@ from dfetch.vcs.integrity_hash import IntegrityHash
 # upstream fix, for now suppress, mypy will keep us safe.
 # pyright: reportCallIssue=false, reportAttributeAccessIssue=false
 
+
+#: Version of the *infer-license* library used for license text analysis.
+INFER_LICENSE_VERSION: str = pkg_version("infer-license")
 
 # Map from dfetch hash-field algorithm prefix to CycloneDX HashAlgorithm name
 DFETCH_TO_CDX_HASH_ALGORITHM: dict[str, str] = {
@@ -353,13 +368,33 @@ class SbomReporter(Reporter):
         Three cases are handled:
 
         * Project was not fetched → nothing is added (no assertion possible).
-        * License files were found and identified → SPDX identifiers are attached.
+        * License files were found and identified → SPDX identifiers are
+          attached, and per-license confidence scores are recorded.
         * License files were found but unclassified, **or** no license file was
           found at all → ``NOASSERTION`` is set and a ``dfetch:license:finding``
           property records the reason for downstream compliance tooling.
+
+        In all scanned cases, ``dfetch:license:threshold`` and
+        ``dfetch:license:tool`` properties are added so auditors can reproduce
+        or re-evaluate results if the threshold changes.
         """
         if not license_scan.was_scanned:
             return
+
+        # Always record the detection tool and threshold used during this scan
+        # so downstream consumers can reproduce or re-evaluate the results.
+        component.properties.add(
+            Property(
+                name="dfetch:license:tool",
+                value=f"infer-license {INFER_LICENSE_VERSION}",
+            )
+        )
+        component.properties.add(
+            Property(
+                name="dfetch:license:threshold",
+                value=f"{license_scan.threshold:.2f}",
+            )
+        )
 
         if license_scan.identified:
             for lic in license_scan.identified:
@@ -371,6 +406,15 @@ class SbomReporter(Reporter):
                 component.licenses.add(cdx_license)
                 if component.evidence:
                     component.evidence.licenses.add(cdx_license)
+                # Record per-license confidence so auditors can compare against
+                # the threshold and re-evaluate if the threshold changes.
+                label = lic.spdx_id or lic.name
+                component.properties.add(
+                    Property(
+                        name=f"dfetch:license:{label}:confidence",
+                        value=f"{lic.probability:.2f}",
+                    )
+                )
             return
 
         noassertion = LicenseExpression("NOASSERTION")

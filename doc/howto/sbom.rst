@@ -38,6 +38,28 @@ outcome.
 .. scenario-include:: ../features/report-sbom-license.feature
    :scenario: A fetched archive with no license file gets NOASSERTION
 
+License detection auditability
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For every scanned component *dfetch* records three properties that allow
+auditors to reproduce or re-evaluate license detection results:
+
+``dfetch:license:<spdx-id>:confidence``
+    The probability score (0–1) returned by *infer-license* for each
+    successfully identified license.  Helps reviewers judge the detection
+    reliability at a glance.
+
+``dfetch:license:threshold``
+    The minimum confidence required to accept an inference (``0.80`` by
+    default).  If the threshold is raised or lowered in the future, auditors
+    can compare stored scores against the new threshold without re-running
+    dfetch.
+
+``dfetch:license:tool``
+    The *infer-license* library version used during the scan.  Different
+    library versions may classify the same text differently; recording the
+    version enables reproducible re-evaluation.
+
 Archive dependencies (``tar.gz``, ``zip``, …) are recorded with a
 ``distribution`` external reference.  When an ``integrity.hash:`` field is set
 in the manifest the SBOM includes a ``SHA-256`` component hash for
