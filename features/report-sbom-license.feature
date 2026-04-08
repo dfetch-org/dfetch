@@ -35,7 +35,9 @@ Feature: SBOM license transparency for unresolved licenses
                         "name": "SomeProject",
                         "licenses": [
                             {
-                                "expression": "NOASSERTION"
+                                "license": {
+                                    "name": "NOASSERTION"
+                                }
                             }
                         ],
                         "properties": [
@@ -55,7 +57,9 @@ Feature: SBOM license transparency for unresolved licenses
                         "evidence": {
                             "licenses": [
                                 {
-                                    "expression": "NOASSERTION"
+                                    "license": {
+                                        "name": "NOASSERTION"
+                                    }
                                 }
                             ]
                         }
@@ -88,7 +92,9 @@ Feature: SBOM license transparency for unresolved licenses
                         "name": "SomeProject",
                         "licenses": [
                             {
-                                "expression": "NOASSERTION"
+                                "license": {
+                                    "name": "NOASSERTION"
+                                }
                             }
                         ],
                         "properties": [
@@ -108,7 +114,9 @@ Feature: SBOM license transparency for unresolved licenses
                         "evidence": {
                             "licenses": [
                                 {
-                                    "expression": "NOASSERTION"
+                                    "license": {
+                                        "name": "NOASSERTION"
+                                    }
                                 }
                             ]
                         }

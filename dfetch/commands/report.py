@@ -136,7 +136,7 @@ class Report(dfetch.commands.command.Command):
 
                 if (
                     guessed_license
-                    and guessed_license.probability > LICENSE_PROBABILITY_THRESHOLD
+                    and guessed_license.probability >= LICENSE_PROBABILITY_THRESHOLD
                 ):
                     identified.append(guessed_license)
                 else:
