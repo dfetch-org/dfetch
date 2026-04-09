@@ -73,7 +73,7 @@ class Remove(dfetch.commands.command.Command):
                 superproject.manifest.remove(project)
 
             # Persist the manifest changes
-            superproject.manifest.update_dump()
+            superproject.manifest.dump()
 
             # Only after successful persistence, perform filesystem deletions and logging
             for project, destination in projects_to_remove:
