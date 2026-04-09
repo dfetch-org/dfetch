@@ -51,7 +51,7 @@ class Remove(dfetch.commands.command.Command):
 
             # Pre-validate all projects and collect their destinations
             projects_to_remove = []
-            for project in args.projects:
+            for project in list(dict.fromkeys(args.projects)):
                 try:
                     project_entries = superproject.manifest.selected_projects([project])
                     destination = project_entries[0].destination
