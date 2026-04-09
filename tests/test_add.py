@@ -79,20 +79,21 @@ def _make_subproject(
 
 def test_check_name_uniqueness_raises_when_duplicate():
     m = Mock()
-    m.projects = [_make_project("foo"), _make_project("bar")]
+    existing = {"foo": Mock(), "bar": Mock()}
+    m._find_doc_project.side_effect = lambda name: existing.get(name)
     with pytest.raises(ValueError, match="already exists"):
         Manifest.check_name_uniqueness(m, "foo")
 
 
 def test_check_name_uniqueness_passes_for_new_name():
     m = Mock()
-    m.projects = [_make_project("foo")]
+    m._find_doc_project.return_value = None
     Manifest.check_name_uniqueness(m, "bar")  # should not raise
 
 
 def test_check_name_uniqueness_passes_for_empty_manifest():
     m = Mock()
-    m.projects = []
+    m._find_doc_project.return_value = None
     Manifest.check_name_uniqueness(m, "anything")
 
 

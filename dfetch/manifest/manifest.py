@@ -383,10 +383,17 @@ class Manifest:
             possibles=[project.name for project in all_projects],
         )
 
+    def _find_doc_project(self, name: str) -> Any | None:
+        """Return the raw YAML mapping for the project with *name*, or None."""
+        for project in self._doc["manifest"]["projects"].as_marked_up():
+            if project["name"] == name:
+                return project
+        return None
+
     def remove(self, project_name: str) -> None:
         """Remove a project from the manifest."""
-        doc_projects = self._doc["manifest"]["projects"]
-        names = [p["name"].data for p in doc_projects]
+        doc_projects = self._doc["manifest"]["projects"].as_marked_up()
+        names = [p["name"] for p in doc_projects]
         try:
             del doc_projects[names.index(project_name)]
         except ValueError as exc:
@@ -426,16 +433,15 @@ class Manifest:
             FileNotFoundError: If manifest text is not available
             RuntimeError: If the project name is not found
         """
-        for p in self._doc["manifest"]["projects"]:
-            if p["name"].data == name:
-                mu = p.as_marked_up()
-                line_0, col_0 = mu.lc.value("name")
-                return ManifestEntryLocation(
-                    line_number=line_0 + 1,
-                    start=col_0 + 1,
-                    end=col_0 + len(name),
-                )
-        raise RuntimeError(f"{name} was not found in the manifest!")
+        p = self._find_doc_project(name)
+        if p is None:
+            raise RuntimeError(f"{name} was not found in the manifest!")
+        line_0, col_0 = p.lc.value("name")
+        return ManifestEntryLocation(
+            line_number=line_0 + 1,
+            start=col_0 + 1,
+            end=col_0 + len(name),
+        )
 
     # ---------------- YAML updates ----------------
     def _normalize_string_scalars(self) -> None:
@@ -475,35 +481,34 @@ class Manifest:
 
     def update_project_version(self, project: ProjectEntry) -> None:
         """Update a project's version in the manifest in-place, preserving layout, comments, and line endings."""
-        for p in self._doc["manifest"]["projects"]:
-            if p["name"].data == project.name:
-                mu = p.as_marked_up()
-                insert_pos = 1  # right after 'name:' for any newly added key
-                for key, value in project.version._asdict().items():
-                    if value not in (None, ""):
-                        logger.debug(
-                            f"Updating {project.name} version field '{key}' to '{value}' in manifest"
-                        )
-                        if key in mu:
-                            mu[key] = _yaml_str(value)
-                        else:
-                            mu.insert(insert_pos, key, _yaml_str(value))
-                        insert_pos += 1
+        p = self._find_doc_project(project.name)
+        if p is not None:
+            mu = p
+            insert_pos = 1  # right after 'name:' for any newly added key
+            for key, value in project.version._asdict().items():
+                if value not in (None, ""):
+                    logger.debug(
+                        f"Updating {project.name} version field '{key}' to '{value}' in manifest"
+                    )
+                    if key in mu:
+                        mu[key] = _yaml_str(value)
                     else:
-                        # Remove any previously-pinned key that is no longer active
-                        # (e.g. an old 'revision' when the project is now pinned by tag).
-                        mu.pop(key, None)
-
-                if project.integrity and project.integrity.hash:
-                    mu["integrity"] = CommentedMap({"hash": project.integrity.hash})
+                        mu.insert(insert_pos, key, _yaml_str(value))
+                    insert_pos += 1
                 else:
-                    # Remove a stale integrity block if the project no longer carries one.
-                    mu.pop("integrity", None)
-                break
+                    # Remove any previously-pinned key that is no longer active
+                    # (e.g. an old 'revision' when the project is now pinned by tag).
+                    mu.pop(key, None)
+
+            if project.integrity and project.integrity.hash:
+                mu["integrity"] = CommentedMap({"hash": project.integrity.hash})
+            else:
+                # Remove a stale integrity block if the project no longer carries one.
+                mu.pop("integrity", None)
 
     def check_name_uniqueness(self, project_name: str) -> None:
         """Raise if *project_name* is already used in the manifest."""
-        if project_name in {project.name for project in self.projects}:
+        if self._find_doc_project(project_name) is not None:
             raise ValueError(
                 f"Project with name '{project_name}' already exists in manifest!"
             )
