@@ -38,7 +38,7 @@ def test_remove_in_vcs_superproject_updates_manifest_in_place() -> None:
         remove(args)
 
         fake_manifest.remove.assert_called_once_with("ext/test-repo-tag")
-        fake_manifest.update_dump.assert_called_once()
+        fake_manifest.dump.assert_called_once()
         mocked_safe_rm.assert_called_once_with("some_dest")
         mocked_copyfile.assert_not_called()
 
@@ -65,7 +65,7 @@ def test_remove_outside_vcs_creates_manifest_backup() -> None:
         remove(args)
 
         fake_manifest.remove.assert_called_once_with("ext/test-repo-tag")
-        fake_manifest.update_dump.assert_called_once()
+        fake_manifest.dump.assert_called_once()
         mocked_safe_rm.assert_called_once_with("some_dest")
         mocked_copyfile.assert_called_once_with(
             "/tmp/dfetch.yaml", "/tmp/dfetch.yaml.backup"
@@ -97,7 +97,7 @@ def test_remove_nonexistent_project_logs_error() -> None:
         remove(args)
 
         fake_manifest.remove.assert_not_called()
-        fake_manifest.update_dump.assert_not_called()
+        fake_manifest.dump.assert_not_called()
         mocked_safe_rm.assert_not_called()
         mocked_copyfile.assert_not_called()
 
@@ -127,7 +127,7 @@ def test_remove_with_empty_projects_list_does_nothing() -> None:
         remove(args)
 
         fake_manifest.remove.assert_not_called()
-        fake_manifest.update_dump.assert_not_called()
+        fake_manifest.dump.assert_not_called()
         mocked_safe_rm.assert_not_called()
         mocked_copyfile.assert_not_called()
 
@@ -169,8 +169,8 @@ def test_remove_multiple_projects_atomically() -> None:
         fake_manifest.remove.assert_any_call("project1")
         fake_manifest.remove.assert_any_call("project3")
 
-        # update_dump should be called once (after all manifest changes)
-        fake_manifest.update_dump.assert_called_once()
+        # dump should be called once (after all manifest changes)
+        fake_manifest.dump.assert_called_once()
 
         # safe_rm should be called 2 times (once for each existing destination, after persistence)
         assert mocked_safe_rm.call_count == 2
