@@ -23,12 +23,15 @@ def mock_manifest(projects, path: str = "/some/path") -> MagicMock:
     def mock_selected_projects(names):
         if not names:
             return project_mocks
-        filtered = [p for p in project_mocks if p.name in names]
-        if len(filtered) != len(names):
+        deduped_names = list(dict.fromkeys(names))
+        filtered = [p for p in project_mocks if p.name in deduped_names]
+        if len(filtered) != len(deduped_names):
             from dfetch.manifest.manifest import RequestedProjectNotFoundError
 
             unfound = [
-                name for name in names if not any(p.name == name for p in project_mocks)
+                name
+                for name in deduped_names
+                if not any(p.name == name for p in project_mocks)
             ]
             possibles = [p.name for p in project_mocks]
             raise RequestedProjectNotFoundError(unfound, possibles)
