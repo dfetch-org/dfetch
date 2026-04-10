@@ -47,6 +47,7 @@ jobs:
       - run: dfetch update-patch
       - run: dfetch format-patch
       - run: dfetch report -t sbom
+      - run: dfetch remove test-repo
       - name: Dfetch SARIF Check
         uses: ./
         with:
@@ -121,6 +122,7 @@ jobs:
       - run: dfetch update-patch
       - run: dfetch format-patch
       - run: dfetch report -t sbom
+      - run: dfetch remove test-repo
 
       - name: Dfetch SARIF Check
         uses: ./
