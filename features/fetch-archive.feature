@@ -224,3 +224,33 @@ Feature: Fetching dependencies from an archive (tar/zip)
             | path           |
             | MyProject/LibA |
             | MyProject/LibB |
+
+    Scenario: Archive with internal relative symlink using .. is fetched safely
+        Given an archive "SomeProject.tar.gz" with the files
+            | path             |
+            | README.md        |
+            | other/target.mk  |
+        And the archive "SomeProject.tar.gz" contains a symlink "sub/dir/link.mk" pointing to "../../other/target.mk"
+        And the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+              version: '0.0'
+              projects:
+                - name: SomeProject
+                  url: some-remote-server/SomeProject.tar.gz
+                  vcs: archive
+            """
+        When I run "dfetch update" in MyProject
+        Then 'MyProject' looks like:
+            """
+            MyProject/
+                SomeProject/
+                    .dfetch_data.yaml
+                    README.md
+                    other/
+                        target.mk
+                    sub/
+                        dir/
+                            link.mk
+                dfetch.yaml
+            """

@@ -70,6 +70,28 @@ def create_zip(archive_path: str, name: str, files: list[dict]) -> None:
             zf.writestr(member_path, content)
 
 
+def add_symlink_to_tar_gz(
+    archive_path: str, name: str, symlink_path: str, symlink_target: str
+) -> None:
+    """Append a symlink member to an existing .tar.gz archive.
+
+    Rewrites the archive because gzip does not support append mode in Python's tarfile.
+    """
+    existing: list[tuple[tarfile.TarInfo, bytes | None]] = []
+    with tarfile.open(archive_path, "r:gz") as tar:
+        for member in tar.getmembers():
+            fobj = tar.extractfile(member)
+            existing.append((member, fobj.read() if fobj else None))
+
+    with tarfile.open(archive_path, "w:gz") as tar:
+        for member, data in existing:
+            tar.addfile(member, io.BytesIO(data) if data is not None else None)
+        info = tarfile.TarInfo(name=f"{name}/{symlink_path}")
+        info.type = tarfile.SYMTYPE
+        info.linkname = symlink_target
+        tar.addfile(info)
+
+
 def _archive_url(context, filename: str) -> str:
     """Build the archive URL in the same format used by apply_manifest_substitutions.
 
@@ -139,3 +161,15 @@ def step_impl(context, name, license_id):
         info.size = len(content_bytes)
         tar.addfile(info, io.BytesIO(content_bytes))
     context.archive_url = _archive_url(context, f"{name}.tar.gz")
+
+
+@given(
+    'the archive "{name}.tar.gz" contains a symlink "{symlink_path}" pointing to "{symlink_target}"'
+)
+def step_impl(context, name, symlink_path, symlink_target):
+    server_path = context.remotes_dir_path
+    archive_path = os.path.join(server_path, f"{name}.tar.gz")
+    add_symlink_to_tar_gz(archive_path, name, symlink_path, symlink_target)
+    context.archive_sha256 = _file_digest(archive_path, hashlib.sha256)
+    context.archive_sha384 = _file_digest(archive_path, hashlib.sha384)
+    context.archive_sha512 = _file_digest(archive_path, hashlib.sha512)
