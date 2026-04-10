@@ -1,5 +1,29 @@
 Feature: Remove a project from the manifest
 
+    During the lifetime of a project, dependencies come and go. When a vendored
+    library is no longer needed, *DFetch* can remove it from the manifest **and**
+    delete the fetched files in one step with ``dfetch remove <name>``.
+
+    Background:
+        Given a git repository "LibAlpha.git"
+        And a git repository "LibBeta.git"
+        And the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: lib-alpha
+                  url: some-remote-server/LibAlpha.git
+                  dst: ext/lib-alpha
+
+                - name: lib-beta
+                  url: some-remote-server/LibBeta.git
+                  dst: ext/lib-beta
+
+            """
+        And all projects are updated
+
   Scenario: Remove an existing project
      Given the manifest 'dfetch.yaml'
             """
@@ -7,26 +31,32 @@ Feature: Remove a project from the manifest
               version: '0.0'
 
               projects:
-                - name: ext/test-repo-tag
-                  url: https://github.com/dfetch-org/test-repo
-                  tag: v1
+                - name: lib-alpha
+                  url: some-remote-server/LibAlpha.git
+                  dst: ext/lib-alpha
+
+                - name: lib-beta
+                  url: some-remote-server/LibBeta.git
+                  dst: ext/lib-beta
 
             """
-    And all projects are updated
-    When I run "dfetch remove ext/test-repo-tag"
+    When I run "dfetch remove lib-alpha"
     Then the manifest 'dfetch.yaml' is replaced with
             """
             manifest:
               version: '0.0'
 
-              projects: []
+              projects:
+              - name: lib-beta
+                url: some-remote-server/LibBeta.git
+                dst: ext/lib-beta
 
             """
-    And the directory 'ext/test-repo-tag' should be removed from disk
+    And the directory 'ext/lib-alpha' should be removed from disk
     And the output shows
             """
-            Dfetch (0.14.0)
-              ext/test-repo-tag:
+            Dfetch (0.13.0)
+              lib-alpha:
               > removed
             """
 
@@ -37,19 +67,16 @@ Feature: Remove a project from the manifest
               version: '0.0'
 
               projects:
-                - name: project1
-                  url: https://github.com/dfetch-org/test-repo
-                  tag: v1
-                  dst: proj1
+                - name: lib-alpha
+                  url: some-remote-server/LibAlpha.git
+                  dst: ext/lib-alpha
 
-                - name: project3
-                  url: https://github.com/dfetch-org/test-repo
-                  tag: v1
-                  dst: proj3
+                - name: lib-beta
+                  url: some-remote-server/LibBeta.git
+                  dst: ext/lib-beta
 
             """
-    And all projects are updated
-    When I run "dfetch remove project1 project2 project3"
+    When I run "dfetch remove lib-alpha lib-beta"
     Then the manifest 'dfetch.yaml' is replaced with
             """
             manifest:
@@ -58,15 +85,87 @@ Feature: Remove a project from the manifest
               projects: []
 
             """
-    And the directory 'proj1' should be removed from disk
-    And the directory 'proj3' should be removed from disk
+    And the directory 'ext/lib-alpha' should be removed from disk
+    And the directory 'ext/lib-beta' should be removed from disk
     And the output shows
             """
-            Dfetch (0.14.0)
-              project2:
-              > project 'project2' not found in manifest
-              project1:
+            Dfetch (0.13.0)
+              lib-alpha:
               > removed
-              project3:
+              lib-beta:
+              > removed
+            """
+
+  Scenario: Removing a project that does not exist in the manifest is reported
+     Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: lib-alpha
+                  url: some-remote-server/LibAlpha.git
+                  dst: ext/lib-alpha
+
+                - name: lib-beta
+                  url: some-remote-server/LibBeta.git
+                  dst: ext/lib-beta
+
+            """
+    When I run "dfetch remove lib-alpha lib-unknown lib-beta"
+    Then the manifest 'dfetch.yaml' is replaced with
+            """
+            manifest:
+              version: '0.0'
+
+              projects: []
+
+            """
+    And the directory 'ext/lib-alpha' should be removed from disk
+    And the directory 'ext/lib-beta' should be removed from disk
+    And the output shows
+            """
+            Dfetch (0.13.0)
+              lib-unknown:
+              > project 'lib-unknown' not found in manifest
+              lib-alpha:
+              > removed
+              lib-beta:
+              > removed
+            """
+
+  Scenario: Removing a project that was never fetched still removes it from the manifest
+     Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: lib-gamma
+                  url: some-remote-server/LibBeta.git
+                  dst: ext/lib-gamma
+
+                - name: lib-alpha
+                  url: some-remote-server/LibAlpha.git
+                  dst: ext/lib-alpha
+
+            """
+    And the directory 'ext/lib-gamma' does not exist on disk
+    When I run "dfetch remove lib-gamma"
+    Then the manifest 'dfetch.yaml' is replaced with
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+              - name: lib-alpha
+                url: some-remote-server/LibAlpha.git
+                dst: ext/lib-alpha
+
+            """
+    And the output shows
+            """
+            Dfetch (0.13.0)
+              lib-gamma:
               > removed
             """
