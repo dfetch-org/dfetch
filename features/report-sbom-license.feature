@@ -51,7 +51,7 @@ Feature: SBOM license transparency for unresolved licenses
                             },
                             {
                                 "name": "dfetch:license:tool",
-                                "value": "infer-license 0.2.0"
+                                "value": "<infer-license-version>"
                             }
                         ],
                         "evidence": {
@@ -108,7 +108,7 @@ Feature: SBOM license transparency for unresolved licenses
                             },
                             {
                                 "name": "dfetch:license:tool",
-                                "value": "infer-license 0.2.0"
+                                "value": "<infer-license-version>"
                             }
                         ],
                         "evidence": {
