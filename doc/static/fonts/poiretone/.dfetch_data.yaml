@@ -1,0 +1,10 @@
+# This is a generated file by dfetch. Don't edit this, but edit the manifest.
+# For more info see https://dfetch.rtfd.io/en/latest/getting_started.html
+dfetch:
+  branch: master
+  hash: a4e4b8aa1c4c48a4b80d57672565c300
+  last_fetch: 13/04/2026, 18:46:53
+  patch: ''
+  remote_url: https://github.com/alexeiva/poiretone.git
+  revision: 6d06a1fc0cc56413127af958c3ac6e6315c7b25c
+  tag: ''

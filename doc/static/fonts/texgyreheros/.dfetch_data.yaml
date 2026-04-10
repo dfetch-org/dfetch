@@ -1,0 +1,10 @@
+# This is a generated file by dfetch. Don't edit this, but edit the manifest.
+# For more info see https://dfetch.rtfd.io/en/latest/getting_started.html
+dfetch:
+  branch: ''
+  hash: 30a10fe31c4166adc68407a78d3c011a
+  last_fetch: 13/04/2026, 19:01:37
+  patch: ''
+  remote_url: https://mirrors.ctan.org/fonts/tex-gyre.zip
+  revision: sha256:1773c470f9e388e087b68e3426e115af2cd236845a7e05ceb25b2a503409a7a3
+  tag: ''

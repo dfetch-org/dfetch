@@ -5,6 +5,9 @@ manifest:
   - name: github
     url-base: https://github.com/
 
+  - name: ctan
+    url-base: https://mirrors.ctan.org/
+
   projects:
   - name: demo-magic
     repo-path: paxtonhare/demo-magic.git
@@ -67,3 +70,30 @@ manifest:
       - metadata
     integrity:
       hash: sha256:218d19fdec1bd898d1c78683f3c72e71bcc9e5f9bb3e065f99a5c3cdc48e0d66
+
+  - name: poiret-one-font
+    remote: github
+    src: fonts
+    dst: doc/static/fonts/poiretone
+    branch: master
+    repo-path: alexeiva/poiretone.git
+    ignore:
+    - otf
+
+  - name: tex-gyre-heros-font
+    remote: ctan
+    vcs: archive
+    src: opentype/
+    dst: doc/static/fonts/texgyreheros
+    repo-path: fonts/tex-gyre.zip
+    ignore:
+      - texgyreadventor*
+      - texgyrebonum*
+      - texgyrechorus*
+      - texgyrecursor*
+      - texgyreheroscn*
+      - texgyrepagella*
+      - texgyreschola*
+      - texgyretermes*
+    integrity:
+      hash: sha256:1773c470f9e388e087b68e3426e115af2cd236845a7e05ceb25b2a503409a7a3
