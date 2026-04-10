@@ -463,3 +463,9 @@ def step_impl(context, path):
 def step_impl(_, path):
     """Check if a directory is removed."""
     assert not os.path.exists(path), f"Directory {path} still exists!"
+
+
+@given("the directory '{path}' does not exist on disk")
+def step_impl(_, path):
+    """Assert that a directory has not been created."""
+    assert not os.path.exists(path), f"Directory {path} exists but should not!"
