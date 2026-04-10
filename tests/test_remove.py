@@ -91,6 +91,7 @@ def test_remove_nonexistent_project_logs_error() -> None:
             return_value=fake_superproject,
         ),
         patch("dfetch.commands.remove.in_directory"),
+        patch("dfetch.commands.remove.logger.print_info_line") as mocked_print_info,
         patch("dfetch.commands.remove.safe_rm") as mocked_safe_rm,
         patch("dfetch.commands.remove.shutil.copyfile") as mocked_copyfile,
     ):
@@ -100,7 +101,9 @@ def test_remove_nonexistent_project_logs_error() -> None:
         fake_manifest.dump.assert_not_called()
         mocked_safe_rm.assert_not_called()
         mocked_copyfile.assert_not_called()
-
+        mocked_print_info.assert_called_once_with(
+            "nonexistent", "project 'nonexistent' not found in manifest"
+        )
 
 def test_remove_with_empty_projects_list_does_nothing() -> None:
     """Remove command should do nothing when no projects are specified."""
