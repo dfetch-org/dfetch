@@ -202,14 +202,29 @@ latex_elements = {
 \usepackage{pifont}
 \newunicodechar{✔}{\ding{51}}
 \newunicodechar{✘}{\ding{55}}
-\usepackage{helvet}
-\renewcommand*\familydefault{\sfdefault}
-\usepackage[T1]{fontenc}
 \usepackage{xcolor}
 \definecolor{dfprimary}{HTML}{c2620a}
 \definecolor{dfaccent}{HTML}{4e7fa0}
 \definecolor{dftextmuted}{HTML}{78716c}
 \definecolor{dfnearblack}{HTML}{1c1917}
+% Cover page colours (dfetch brand palette)
+\definecolor{dfetchCoverTop}{HTML}{3a6682}
+\definecolor{dfetchCoverDark}{HTML}{1c1917}
+\definecolor{dfetchCoverBottom}{HTML}{c2620a}
+\definecolor{dfetchCoverAccent}{HTML}{4e7fa0}
+\definecolor{dfetchCoverLight}{HTML}{fef8f0}
+% TikZ for cover page
+\usepackage{tikz}
+""",
+    # XeLaTeX font setup: fontspec replaces helvet/fontenc.
+    # TeX Gyre Heros is a metrically compatible Helvetica substitute available
+    # in every standard TeX Live installation.
+    # \PoiretOne is declared here so it is available to the cover page.
+    "fontpkg": r"""
+\usepackage{fontspec}
+\setsansfont{TeX Gyre Heros}[Scale=0.95]
+\renewcommand*\familydefault{\sfdefault}
+\newfontface\PoiretOne{PoiretOne-Regular}[Extension=.ttf, Path=./]
 """,
     # Design-token colours for Sphinx's built-in LaTeX style hooks
     "sphinxsetup": (
@@ -221,33 +236,9 @@ latex_elements = {
         "noteBorderColor={rgb}{0.306,0.498,0.627},"
         "warningBorderColor={rgb}{0.761,0.384,0.039},"
     ),
-    # Custom title page with amber header bar, logo, and accent footer.
-    # \makeatletter/\makeatother are required to access \py@release (@ is a
-    # letter in LaTeX package code but not in regular document mode).
-    # \sphinxlogo is NOT used here because it has no size constraint; instead
-    # we include the logo directly with an explicit width to keep the page count
-    # at exactly one regardless of the image's natural resolution.
-    "maketitle": r"""
-\makeatletter
-\begin{titlepage}
-  \noindent{\color{dfprimary}\rule{\linewidth}{6pt}}\par
-  \vspace*{\fill}
-  \begin{center}
-    \includegraphics[width=0.35\linewidth]{dfetch_logo.png}\par
-    \vspace{1.2cm}
-    {\fontsize{40}{44}\selectfont\bfseries\color{dfprimary}Dfetch\par}
-    \vspace{0.3cm}
-    {\LARGE\color{dfnearblack}Documentation\par}
-    \vspace{0.6cm}
-    {\large\color{dftextmuted}\textit{vendor dependencies without the pain}\par}
-    \vspace{1.5cm}
-    {\large\color{dftextmuted}\py@release\par}
-  \end{center}
-  \vspace*{\fill}
-  \noindent{\color{dfaccent}\rule{\linewidth}{4pt}}\par
-\end{titlepage}
-\makeatother
-""",
+    # Cover page is in doc/dfetch_cover.tex (listed in latex_additional_files).
+    # \makeatletter/\makeatother expose \py@release inside the included file.
+    "maketitle": r"\makeatletter\input{dfetch_cover}\makeatother",
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
