@@ -5,7 +5,7 @@
 
 import argparse
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 import pytest
 
@@ -105,6 +105,7 @@ def test_remove_nonexistent_project_logs_error() -> None:
             "nonexistent", "project 'nonexistent' not found in manifest"
         )
 
+
 def test_remove_with_empty_projects_list_does_nothing() -> None:
     """Remove command should do nothing when no projects are specified."""
     remove = Remove()
@@ -158,33 +159,34 @@ def test_remove_multiple_projects_atomically() -> None:
         patch("dfetch.commands.remove.safe_rm") as mocked_safe_rm,
         patch("dfetch.commands.remove.shutil.copyfile") as mocked_copyfile,
     ):
+
         def _dump_side_effect():
             # Ensure no filesystem deletion happened before persistence
             mocked_safe_rm.assert_not_called()
+
         fake_manifest.dump.side_effect = _dump_side_effect
 
         remove(args)
 
-        # Verify validation and manifest updates happened before deletions
-        # selected_projects should be called 3 times (once for each project validation)
-        assert fake_manifest.selected_projects.call_count == 3
-        fake_manifest.selected_projects.assert_any_call(["project1"])
-        fake_manifest.selected_projects.assert_any_call(["project2"])
-        fake_manifest.selected_projects.assert_any_call(["project3"])
+        # Verify exact call order: validate all, then remove found projects, then dump, then delete
+        fake_manifest.assert_has_calls(
+            [
+                call.selected_projects(["project1"]),
+                call.selected_projects(["project2"]),
+                call.selected_projects(["project3"]),
+                call.remove("project1"),
+                call.remove("project3"),
+                call.dump(),
+            ],
+            any_order=False,
+        )
 
-        # remove should be called 2 times (once for each existing project)
-        assert fake_manifest.remove.call_count == 2
-        fake_manifest.remove.assert_any_call("project1")
-        fake_manifest.remove.assert_any_call("project3")
-
-        # dump should be called once (after all manifest changes)
-        fake_manifest.dump.assert_called_once()
-
-        # safe_rm should be called 2 times (once for each existing destination, after persistence)
+        # safe_rm called once per existing project destination, after dump
         assert mocked_safe_rm.call_count == 2
-        mocked_safe_rm.assert_any_call(
-            "some_dest"
-        )  # All destinations are mocked as "some_dest"
+        mocked_safe_rm.assert_has_calls(
+            [call("some_dest"), call("some_dest")],
+            any_order=False,
+        )
 
         # No backup should be created (VCS superproject)
         mocked_copyfile.assert_not_called()
