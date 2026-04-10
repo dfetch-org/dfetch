@@ -18,6 +18,7 @@ from behave.runner import Context
 
 from dfetch.__main__ import DfetchFatalException, run
 from dfetch.log import DLogger
+from dfetch.reporting.sbom_reporter import INFER_LICENSE_VERSION
 from dfetch.util.util import in_directory
 
 ansi_escape = re.compile(r"\[/?[a-z\_ ]+\]")
@@ -94,6 +95,9 @@ def apply_archive_substitutions(text: str, context) -> str:
         text = text.replace("<archive-sha512>", context.archive_sha512)
     if hasattr(context, "archive_url"):
         text = text.replace("<archive-url>", context.archive_url)
+    text = text.replace(
+        "<infer-license-version>", f"infer-license {INFER_LICENSE_VERSION}"
+    )
     return text
 
 

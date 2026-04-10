@@ -105,7 +105,7 @@ Feature: Create an CycloneDX sbom
                             },
                             {
                                 "name": "dfetch:license:tool",
-                                "value": "infer-license 0.2.0"
+                                "value": "<infer-license-version>"
                             }
                         ],
                         "type": "library",

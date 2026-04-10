@@ -108,6 +108,7 @@ For more information see the `Github dependency submission`_.
 """
 
 from decimal import Decimal
+from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as pkg_version
 
 from cyclonedx.builder.this import this_component as cdx_lib_component
@@ -140,6 +141,7 @@ import dfetch
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
+from dfetch.util.license import License as DfetchLicense
 from dfetch.util.license import LicenseScanResult
 from dfetch.util.purl import vcs_url_to_purl
 from dfetch.vcs.archive import archive_url_to_purl, is_archive_url
@@ -152,7 +154,10 @@ from dfetch.vcs.integrity_hash import IntegrityHash
 
 
 #: Version of the *infer-license* library used for license text analysis.
-INFER_LICENSE_VERSION: str = pkg_version("infer-license")
+try:
+    INFER_LICENSE_VERSION: str = pkg_version("infer-license")
+except PackageNotFoundError:
+    INFER_LICENSE_VERSION = "unknown"
 
 # Map from dfetch hash-field algorithm prefix to CycloneDX HashAlgorithm name
 DFETCH_TO_CDX_HASH_ALGORITHM: dict[str, str] = {
@@ -362,6 +367,28 @@ class SbomReporter(Reporter):
             )
 
     @staticmethod
+    def _attach_identified_licenses(
+        component: Component, identified: list[DfetchLicense]
+    ) -> None:
+        """Add each identified license to *component* and record its confidence."""
+        for lic in identified:
+            cdx_license = (
+                CycloneDxLicense(id=lic.spdx_id)
+                if lic.spdx_id
+                else CycloneDxLicense(name=lic.name)
+            )
+            component.licenses.add(cdx_license)
+            if component.evidence:
+                component.evidence.licenses.add(cdx_license)
+            label = lic.spdx_id or lic.name or "unknown"
+            component.properties.add(
+                Property(
+                    name=f"dfetch:license:{label}:confidence",
+                    value=f"{lic.probability:.2f}",
+                )
+            )
+
+    @staticmethod
     def _apply_licenses(component: Component, license_scan: LicenseScanResult) -> None:
         """Attach license information to *component* and its evidence block.
 
@@ -397,38 +424,28 @@ class SbomReporter(Reporter):
         )
 
         if license_scan.identified:
-            for lic in license_scan.identified:
-                cdx_license = (
-                    CycloneDxLicense(id=lic.spdx_id)
-                    if lic.spdx_id
-                    else CycloneDxLicense(name=lic.name)
-                )
-                component.licenses.add(cdx_license)
-                if component.evidence:
-                    component.evidence.licenses.add(cdx_license)
-                # Record per-license confidence so auditors can compare against
-                # the threshold and re-evaluate if the threshold changes.
-                label = lic.spdx_id or lic.name or "unknown"
-                component.properties.add(
-                    Property(
-                        name=f"dfetch:license:{label}:confidence",
-                        value=f"{lic.probability:.2f}",
-                    )
-                )
-            return
-
-        noassertion = CycloneDxLicense(name="NOASSERTION")
-        component.licenses.add(noassertion)
-        if component.evidence:
-            component.evidence.licenses.add(noassertion)
+            SbomReporter._attach_identified_licenses(component, license_scan.identified)
+        else:
+            noassertion = CycloneDxLicense(name="NOASSERTION")
+            component.licenses.add(noassertion)
+            if component.evidence:
+                component.evidence.licenses.add(noassertion)
 
         if license_scan.unclassified_files:
             files_str = ", ".join(sorted(license_scan.unclassified_files))
-            finding = f"License file(s) found ({files_str}) but could not be classified"
-        else:
-            finding = "No license file found in source tree"
-
-        component.properties.add(Property(name="dfetch:license:finding", value=finding))
+            component.properties.add(
+                Property(
+                    name="dfetch:license:finding",
+                    value=f"License file(s) found ({files_str}) but could not be classified",
+                )
+            )
+        elif not license_scan.identified:
+            component.properties.add(
+                Property(
+                    name="dfetch:license:finding",
+                    value="No license file found in source tree",
+                )
+            )
 
     def dump_to_file(self, outfile: str) -> bool:
         """Dump the SBoM to file."""
