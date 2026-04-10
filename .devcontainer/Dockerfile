@@ -17,10 +17,13 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 # Install LaTeX for PDF documentation generation
 # texlive packages follow the TeX Live release cycle and are not pinned
+# texlive-xetex: xelatex engine (required by latex_engine = "xelatex" in conf.py)
+# texlive-latex-extra: pulls in texlive-pictures (TikZ) as a dependency
 RUN apt-get update && apt-get install --no-install-recommends -y \
     texlive-latex-recommended \
     texlive-fonts-recommended \
     texlive-latex-extra \
+    texlive-xetex \
     latexmk && \
     rm -rf /var/lib/apt/lists/*
 

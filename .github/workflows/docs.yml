@@ -96,7 +96,7 @@ jobs:
       - name: Install LaTeX
         run: |
           sudo apt-get install -y texlive-latex-recommended texlive-fonts-recommended \
-            texlive-latex-extra latexmk
+            texlive-latex-extra texlive-xetex latexmk
 
       - name: Build PDF
         run: make -C doc latexpdf

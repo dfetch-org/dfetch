@@ -21,7 +21,9 @@
       "Bash(xargs pyupgrade:*)",
       "Bash(lint-imports)",
       "Bash(pip install:*)",
-      "Bash(pytest tests/test_sbom_reporter.py -q)"
+      "Bash(pytest tests/test_sbom_reporter.py -q)",
+      "Bash(make -C doc latexpdf)",
+      "Bash(make -C doc clean)",
     ]
   }
 }
