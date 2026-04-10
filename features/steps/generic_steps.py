@@ -331,8 +331,9 @@ def step_impl(context, name):
         check_file_exists(name)
 
 
-def check_json(path: Union[str, os.PathLike], content: str) -> None:
+def check_json(path: Union[str, os.PathLike], content: str, context) -> None:
     """Check a JSON file for exact equality (after normalising formatting)."""
+    content = apply_archive_substitutions(content, context)
     with open(path, "r", encoding="UTF-8") as file_to_check:
         actual_json = json.load(file_to_check)
     expected_json = json.loads(content)
@@ -346,7 +347,7 @@ def check_json(path: Union[str, os.PathLike], content: str) -> None:
 @then("the '{name}' file contains")
 def step_impl(context, name):
     if name.endswith(".json"):
-        check_json(name, context.text)
+        check_json(name, context.text, context)
     else:
         check_file(name, context.text)
 

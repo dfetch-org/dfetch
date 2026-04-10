@@ -38,20 +38,10 @@ def _normalise_json(obj):
 def _json_subset_matches(expected, actual) -> bool:
     """Return *True* when *expected* is a subset of *actual* (recursive).
 
-    **List matching is greedy and order-sensitive.** Each item in *expected*
-    is matched against *actual* in order, claiming the first unused actual
-    item that satisfies the subset check.  This means an earlier expected
-    item can consume the only actual item that a later, more specific
-    expected item would need.  For example, with::
-
-        expected = [{"a": 1}, {"a": 1, "b": 2}]
-        actual   = [{"a": 1, "b": 2}]
-
-    the first expected item matches ``{"a": 1, "b": 2}`` (leaving nothing
-    for the second), so the overall match returns *False* even though
-    ``{"a": 1, "b": 2}`` satisfies the second item.  Consumers should
-    **not** rely on non-deterministic matching; instead, pre-order *expected*
-    lists from most-specific to least-specific to avoid this behaviour.
+    List matching uses backtracking so that all possible assignments between
+    expected and actual items are explored.  This avoids the greedy pitfall
+    where an earlier expected item claims the only actual item that a later,
+    more specific expected item would need.
     """
     if isinstance(expected, dict):
         if not isinstance(actual, dict):
@@ -63,17 +53,18 @@ def _json_subset_matches(expected, actual) -> bool:
     if isinstance(expected, list):
         if not isinstance(actual, list):
             return False
-        matched = [False] * len(actual)
-        for exp_item in expected:
-            found = False
+
+        def _try_match(exp_index: int, used: set) -> bool:
+            if exp_index == len(expected):
+                return True
+            exp_item = expected[exp_index]
             for i, act_item in enumerate(actual):
-                if not matched[i] and _json_subset_matches(exp_item, act_item):
-                    matched[i] = True
-                    found = True
-                    break
-            if not found:
-                return False
-        return True
+                if i not in used and _json_subset_matches(exp_item, act_item):
+                    if _try_match(exp_index + 1, used | {i}):
+                        return True
+            return False
+
+        return _try_match(0, set())
     return expected == actual
 
 
