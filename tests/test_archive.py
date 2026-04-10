@@ -156,17 +156,15 @@ def test_check_zip_members_symlink_absolute_target():
 
 
 def test_check_zip_members_symlink_dotdot_target():
-    """ZIP symlink pointing outside extraction dir via .. must be rejected."""
+    """ZIP symlink with .. is allowed at pre-extraction time (post-copy check enforces boundary)."""
     zf = _make_zip_with_symlink("link", "../../etc/shadow")
-    with pytest.raises(RuntimeError, match="symlink"):
-        _check_zip_members(zf)
+    _check_zip_members(zf)  # must NOT raise
 
 
 def test_check_zip_members_symlink_windows_dotdot_target():
-    """ZIP symlink with Windows-style backslash traversal must be rejected."""
+    """ZIP symlink with Windows-style backslash .. is allowed at pre-extraction time."""
     zf = _make_zip_with_symlink("link", "..\\..\\evil")
-    with pytest.raises(RuntimeError, match="symlink"):
-        _check_zip_members(zf)
+    _check_zip_members(zf)  # must NOT raise
 
 
 def test_check_zip_members_symlink_safe_relative():
@@ -269,18 +267,17 @@ def test_check_tar_member_type_absolute_symlink():
 
 
 def test_check_tar_member_type_dotdot_symlink():
+    """Relative .. symlinks are allowed at pre-extraction time (post-copy check enforces boundary)."""
     tf = _make_tar_with_member(lambda t: _add_symlink(t, "link", "../../etc/passwd"))
     member = tf.getmembers()[0]
-    with pytest.raises(RuntimeError, match="unsafe target"):
-        _check_tar_member_type(member)
+    _check_tar_member_type(member)  # must NOT raise
 
 
 def test_check_tar_member_type_windows_dotdot_symlink():
-    """TAR symlink with Windows-style backslash traversal must be rejected."""
+    """Windows-style .. symlinks are allowed at pre-extraction time."""
     tf = _make_tar_with_member(lambda t: _add_symlink(t, "link", "..\\..\\evil"))
     member = tf.getmembers()[0]
-    with pytest.raises(RuntimeError, match="unsafe target"):
-        _check_tar_member_type(member)
+    _check_tar_member_type(member)  # must NOT raise
 
 
 # ---------------------------------------------------------------------------
@@ -344,6 +341,49 @@ def test_check_tar_members_rejects_device_file():
     tf = _make_tar_with_member(lambda t: _add_chrdev(t, "dev/mem"))
     with pytest.raises(RuntimeError, match="special file"):
         _check_tar_members(tf)
+
+
+# ---------------------------------------------------------------------------
+# ArchiveLocalRepo._check_symlinks_in_dest
+# ---------------------------------------------------------------------------
+
+
+def test_check_symlinks_in_dest_safe_internal_dotdot(tmp_path, monkeypatch):
+    """A symlink with .. that stays within dest_dir must be accepted."""
+    monkeypatch.chdir(tmp_path)
+    dest = tmp_path / "pkg"
+    dest.mkdir()
+    (dest / "other").mkdir()
+    (dest / "other" / "target.mk").write_text("content")
+    sub = dest / "sub" / "dir"
+    sub.mkdir(parents=True)
+    (sub / "link.mk").symlink_to("../../other/target.mk")
+
+    ArchiveLocalRepo._check_symlinks_in_dest(str(dest))  # must NOT raise
+
+
+def test_check_symlinks_in_dest_escaping_symlink(tmp_path, monkeypatch):
+    """A symlink that resolves outside the manifest root must be rejected."""
+    monkeypatch.chdir(tmp_path)
+    dest = tmp_path / "pkg"
+    dest.mkdir()
+    (dest / "evil.txt").symlink_to("../../../etc/passwd")
+
+    with pytest.raises(RuntimeError):
+        ArchiveLocalRepo._check_symlinks_in_dest(str(dest))
+
+
+def test_check_symlinks_in_dest_sibling_within_manifest(tmp_path, monkeypatch):
+    """A symlink pointing to a sibling project (still within manifest root) is accepted."""
+    monkeypatch.chdir(tmp_path)
+    sibling = tmp_path / "sibling"
+    sibling.mkdir()
+    (sibling / "file.txt").write_text("content")
+    dest = tmp_path / "pkg"
+    dest.mkdir()
+    (dest / "link.txt").symlink_to("../sibling/file.txt")
+
+    ArchiveLocalRepo._check_symlinks_in_dest(str(dest))  # must NOT raise
 
 
 # ---------------------------------------------------------------------------
