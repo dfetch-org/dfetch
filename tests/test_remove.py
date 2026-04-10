@@ -155,9 +155,14 @@ def test_remove_multiple_projects_atomically() -> None:
         patch("dfetch.commands.remove.safe_rm") as mocked_safe_rm,
         patch("dfetch.commands.remove.shutil.copyfile") as mocked_copyfile,
     ):
+        def _dump_side_effect():
+            # Ensure no filesystem deletion happened before persistence
+            mocked_safe_rm.assert_not_called()
+        fake_manifest.dump.side_effect = _dump_side_effect
+
         remove(args)
 
-        # Verify the order of operations through call counts and arguments
+        # Verify validation and manifest updates happened before deletions
         # selected_projects should be called 3 times (once for each project validation)
         assert fake_manifest.selected_projects.call_count == 3
         fake_manifest.selected_projects.assert_any_call(["project1"])
