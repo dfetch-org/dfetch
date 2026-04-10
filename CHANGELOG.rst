@@ -3,7 +3,7 @@ Release 0.14.0 (unreleased)
 
 * Set SBOM ``licenses`` to ``NOASSERTION`` when a license file is not found or cannot be classified (#1112)
 * Add a ``dfetch:license:finding`` property to SBOM when ``NOASSERTION`` is set, explaining the reason (#1112)
-* Add ``dfetch:license:<spdx-id>:confidence``, ``dfetch:license:threshold``, and ``dfetch:license:tool`` SBOM  properties (#1116)
+* Add ``dfetch:license:<spdx-id>:confidence``, ``dfetch:license:threshold``, and ``dfetch:license:tool`` SBOM properties (#1116)
 * Use github purl, repo and version for a github release archive in SBOM (#1063)
 * Allow ``dfetch freeze`` to accept project names to freeze only specific projects (#1063)
 * Edit manifest in-place when freezing inside a git or SVN superproject, preserving comments and layout (#1063)
