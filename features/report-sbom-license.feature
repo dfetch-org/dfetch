@@ -36,7 +36,12 @@ Feature: SBOM license transparency for unresolved licenses
                         "licenses": [
                             {
                                 "license": {
-                                    "name": "NOASSERTION"
+                                    "id": "NOASSERTION",
+                                    "acknowledgement": "concluded",
+                                    "text": {
+                                        "content": "License file(s) found (LICENSE) but could not be classified",
+                                        "contentType": "text/plain"
+                                    }
                                 }
                             }
                         ],
@@ -44,6 +49,10 @@ Feature: SBOM license transparency for unresolved licenses
                             {
                                 "name": "dfetch:license:finding",
                                 "value": "License file(s) found (LICENSE) but could not be classified"
+                            },
+                            {
+                                "name": "dfetch:license:noassertion:reason",
+                                "value": "UNCLASSIFIABLE_LICENSE_TEXT"
                             },
                             {
                                 "name": "dfetch:license:threshold",
@@ -58,7 +67,12 @@ Feature: SBOM license transparency for unresolved licenses
                             "licenses": [
                                 {
                                     "license": {
-                                        "name": "NOASSERTION"
+                                        "id": "NOASSERTION",
+                                        "acknowledgement": "concluded",
+                                        "text": {
+                                            "content": "License file(s) found (LICENSE) but could not be classified",
+                                            "contentType": "text/plain"
+                                        }
                                     }
                                 }
                             ]
@@ -93,7 +107,12 @@ Feature: SBOM license transparency for unresolved licenses
                         "licenses": [
                             {
                                 "license": {
-                                    "name": "NOASSERTION"
+                                    "id": "NOASSERTION",
+                                    "acknowledgement": "concluded",
+                                    "text": {
+                                        "content": "No license file found in source tree",
+                                        "contentType": "text/plain"
+                                    }
                                 }
                             }
                         ],
@@ -101,6 +120,10 @@ Feature: SBOM license transparency for unresolved licenses
                             {
                                 "name": "dfetch:license:finding",
                                 "value": "No license file found in source tree"
+                            },
+                            {
+                                "name": "dfetch:license:noassertion:reason",
+                                "value": "NO_LICENSE_FILE"
                             },
                             {
                                 "name": "dfetch:license:threshold",
@@ -115,7 +138,12 @@ Feature: SBOM license transparency for unresolved licenses
                             "licenses": [
                                 {
                                     "license": {
-                                        "name": "NOASSERTION"
+                                        "id": "NOASSERTION",
+                                        "acknowledgement": "concluded",
+                                        "text": {
+                                            "content": "No license file found in source tree",
+                                            "contentType": "text/plain"
+                                        }
                                     }
                                 }
                             ]

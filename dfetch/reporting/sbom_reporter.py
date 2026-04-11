@@ -16,6 +16,16 @@ property that explains the reason.  This ensures the ``licenses`` field is
 never silently omitted and gives downstream compliance tooling actionable
 context.
 
+For NOASSERTION cases, additional enhancements are provided:
+
+* ``licenses[].acknowledgement`` — set to ``CONCLUDED`` to indicate the license
+  assertion was determined by analysis.
+* ``licenses[].text`` — contains a human-readable explanation of why
+  NOASSERTION was set.
+* ``dfetch:license:noassertion:reason`` — a machine-readable enum-style value
+  indicating the specific reason (``NO_LICENSE_FILE`` or
+  ``UNCLASSIFIABLE_LICENSE_TEXT``).
+
 For every scanned component, three additional properties are recorded:
 
 * ``dfetch:license:<spdx-id>:confidence`` — the probability score returned by
@@ -113,6 +123,7 @@ from importlib.metadata import version as pkg_version
 
 from cyclonedx.builder.this import this_component as cdx_lib_component
 from cyclonedx.model import (
+    AttachedText,
     ExternalReference,
     ExternalReferenceType,
     HashAlgorithm,
@@ -398,8 +409,13 @@ class SbomReporter(Reporter):
         * License files were found and identified → SPDX identifiers are
           attached, and per-license confidence scores are recorded.
         * License files were found but unclassified, **or** no license file was
-          found at all → ``NOASSERTION`` is set and a ``dfetch:license:finding``
-          property records the reason for downstream compliance tooling.
+          found at all → ``NOASSERTION`` is set with enhanced metadata:
+          - ``acknowledgement`` set to ``CONCLUDED``
+          - ``text`` contains a human-readable explanation
+          - ``dfetch:license:noassertion:reason`` property with machine-readable
+            enum value (``NO_LICENSE_FILE`` or ``UNCLASSIFIABLE_LICENSE_TEXT``)
+          - ``dfetch:license:finding`` property records the reason for downstream
+            compliance tooling.
 
         In all scanned cases, ``dfetch:license:threshold`` and
         ``dfetch:license:tool`` properties are added so auditors can reproduce
@@ -426,10 +442,31 @@ class SbomReporter(Reporter):
         if license_scan.identified:
             SbomReporter._attach_identified_licenses(component, license_scan.identified)
         else:
-            noassertion = CycloneDxLicense(name="NOASSERTION")
+            if license_scan.unclassified_files:
+                files_str = ", ".join(sorted(license_scan.unclassified_files))
+                acknowledgement_text = (
+                    f"License file(s) found ({files_str}) but could not be classified"
+                )
+                reason = "UNCLASSIFIABLE_LICENSE_TEXT"
+            else:
+                acknowledgement_text = "No license file found in source tree"
+                reason = "NO_LICENSE_FILE"
+
+            noassertion = CycloneDxLicense(
+                id="NOASSERTION",
+                acknowledgement=LicenseAcknowledgement.CONCLUDED,
+                text=AttachedText(content=acknowledgement_text),
+            )
             component.licenses.add(noassertion)
             if component.evidence:
                 component.evidence.licenses.add(noassertion)
+
+            component.properties.add(
+                Property(
+                    name="dfetch:license:noassertion:reason",
+                    value=reason,
+                )
+            )
 
         if license_scan.unclassified_files:
             files_str = ", ".join(sorted(license_scan.unclassified_files))
