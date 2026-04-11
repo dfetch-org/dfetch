@@ -44,6 +44,7 @@ from packageurl import PackageURL
 
 from dfetch.log import get_logger
 from dfetch.util.util import (
+    check_no_path_traversal,
     copy_directory_contents,
     copy_src_subset,
     prune_files_by_pattern,
@@ -325,6 +326,8 @@ class ArchiveLocalRepo:
             else:
                 copy_directory_contents(extract_root, dest_dir)
 
+            ArchiveLocalRepo._check_symlinks_in_dest(dest_dir)
+
             if ignore:
                 prune_files_by_pattern(dest_dir, ignore)
 
@@ -384,20 +387,38 @@ class ArchiveLocalRepo:
 
     @staticmethod
     def _is_unsafe_symlink_target(target: str) -> bool:
-        r"""Return *True* when *target* is an unsafe symlink destination.
+        r"""Return *True* when *target* is an absolute symlink destination.
 
-        A target is unsafe if it is absolute or contains ``..`` components
-        under either POSIX or Windows path semantics, so that backslash-based
-        traversals like ``..\\..\\evil`` are caught on any host OS.
+        Absolute targets (POSIX ``/`` or Windows drive/UNC anchors) are
+        always unsafe regardless of context.  Relative targets that contain
+        ``..`` components are NOT rejected here; they are validated after
+        extraction by :meth:`_check_symlinks_in_dest` using the manifest
+        root as the safety boundary.
         """
         posix = pathlib.PurePosixPath(target)
         win = pathlib.PureWindowsPath(target)
-        return (
-            posix.is_absolute()
-            or bool(win.anchor)
-            or any(part == ".." for part in posix.parts)
-            or any(part == ".." for part in win.parts)
-        )
+        return posix.is_absolute() or bool(win.anchor)
+
+    @staticmethod
+    def _check_symlinks_in_dest(dest_dir: str) -> None:
+        """Raise *RuntimeError* if any symlink in *dest_dir* escapes the manifest root.
+
+        Walks *dest_dir* without following symlinks and calls
+        :func:`~dfetch.util.util.check_no_path_traversal` for every symlink
+        found.  Because :func:`os.path.realpath` follows the link to its
+        target, this catches any symlink—including deeply nested ones—whose
+        resolved destination lies outside the current working directory
+        (the manifest root, as set by :func:`~dfetch.util.util.in_directory`).
+
+        Raises:
+            RuntimeError: When a symlink resolves to a path outside the manifest root.
+        """
+        manifest_root = os.getcwd()
+        for root, dirs, files in os.walk(dest_dir, followlinks=False):
+            for name in dirs + files:
+                path = os.path.join(root, name)
+                if os.path.islink(path):
+                    check_no_path_traversal(path, manifest_root)
 
     @staticmethod
     def _check_zip_member_type(info: zipfile.ZipInfo, zf: zipfile.ZipFile) -> None:
