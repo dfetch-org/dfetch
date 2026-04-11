@@ -482,7 +482,10 @@ class SbomReporter(Reporter):
             noassertion = CycloneDxLicense(
                 id="NOASSERTION",
                 acknowledgement=LicenseAcknowledgement.CONCLUDED,
-                text=AttachedText(content=acknowledgement_text),
+                text=AttachedText(
+                    content=acknowledgement_text,
+                    content_type="text/plain",
+                ),
             )
             component.licenses.add(noassertion)
             if component.evidence:
