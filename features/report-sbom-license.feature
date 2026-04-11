@@ -1,15 +1,71 @@
-Feature: SBOM license transparency for unresolved licenses
+Feature: SBOM license transparency
 
-    When *dfetch* cannot determine the license of a fetched component it sets
-    the CycloneDX ``licenses`` field to ``NOASSERTION`` (rather than omitting
-    it) and adds a ``dfetch:license:finding`` property that explains why.
+    When *dfetch* scans a fetched component for license information it records
+    the outcome in the CycloneDX ``licenses`` field.
 
-    Two situations trigger NOASSERTION:
+    Two positive outcomes trigger inclusion of the full license text:
 
-    * A license-like file (``LICENSE``, ``COPYING``, …) was found in the
-      fetched source tree but its text could not be matched to a known SPDX
+    * A license-like file (``LICENSE``, ``COPYING``, …) was found and
+      successfully classified → the SPDX identifier **and** the raw license
+      text (base64-encoded) are embedded so downstream tooling can verify the
+      text matches the declared identifier.
+
+    Two failure cases trigger NOASSERTION instead:
+
+    * A license-like file was found but could not be matched to a known SPDX
       identifier with sufficient confidence.
     * No license-like file was present in the fetched source tree at all.
+
+    Scenario: A fetched archive with an identified license embeds base64 license text
+        Given an archive "SomeProject.tar.gz" with a "MIT" license
+        And the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: SomeProject
+                  url: some-remote-server/SomeProject.tar.gz
+                  vcs: archive
+            """
+        And all projects are updated
+        When I run "dfetch report -t sbom"
+        Then the 'report.json' json file includes
+            """
+            {
+                "components": [
+                    {
+                        "name": "SomeProject",
+                        "licenses": [
+                            {
+                                "license": {
+                                    "id": "MIT",
+                                    "text": {
+                                        "contentType": "text/plain",
+                                        "encoding": "base64",
+                                        "content": "<license-base64>"
+                                    }
+                                }
+                            }
+                        ],
+                        "evidence": {
+                            "licenses": [
+                                {
+                                    "license": {
+                                        "id": "MIT",
+                                        "text": {
+                                            "contentType": "text/plain",
+                                            "encoding": "base64",
+                                            "content": "<license-base64>"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+            """
 
     Scenario: A fetched archive with an unclassifiable license file gets NOASSERTION
         Given an archive "SomeProject.tar.gz" with the files

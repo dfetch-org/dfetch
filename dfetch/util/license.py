@@ -32,16 +32,18 @@ class License:
     spdx_id: str  #: SPDX Identifier
     trove_classifier: str | None  #: Python package classifier
     probability: float  #: Confidence level of the license inference
+    text: str | None = None  #: Raw license file text
 
     @staticmethod
     def from_inferred(
-        inferred_license: InferredLicense, probability: float
+        inferred_license: InferredLicense, probability: float, text: str | None = None
     ) -> "License":
         """Convert an infer-license License object to our internal License representation.
 
         Args:
             inferred_license: The license object from infer-license library
             probability: The confidence score (0-1) of the license detection
+            text: The raw text of the license file, if available
 
         Returns:
             License: A new License instance with the inferred information
@@ -51,6 +53,7 @@ class License:
             spdx_id=inferred_license.shortname,
             trove_classifier=inferred_license.trove_classifier,
             probability=probability,
+            text=text,
         )
 
 
@@ -117,5 +120,7 @@ def guess_license_in_file(
     probable_licenses = infer_license.api.probabilities(license_text)
 
     return (
-        None if not probable_licenses else License.from_inferred(*probable_licenses[0])
+        None
+        if not probable_licenses
+        else License.from_inferred(*probable_licenses[0], text=license_text)
     )

@@ -95,6 +95,8 @@ def apply_archive_substitutions(text: str, context) -> str:
         text = text.replace("<archive-sha512>", context.archive_sha512)
     if hasattr(context, "archive_url"):
         text = text.replace("<archive-url>", context.archive_url)
+    if hasattr(context, "license_base64"):
+        text = text.replace("<license-base64>", context.license_base64)
     text = text.replace(
         "<infer-license-version>", f"infer-license {INFER_LICENSE_VERSION}"
     )

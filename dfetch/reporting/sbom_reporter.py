@@ -16,6 +16,14 @@ property that explains the reason.  This ensures the ``licenses`` field is
 never silently omitted and gives downstream compliance tooling actionable
 context.
 
+For successfully identified licenses, the raw license file text is embedded
+directly in the SBOM:
+
+* ``licenses[].text`` — the license file content, base64-encoded, with
+  ``contentType: text/plain`` and ``encoding: base64``.  Downstream tooling
+  can decode and verify the text against the declared SPDX identifier without
+  fetching the source tree again.
+
 For NOASSERTION cases, additional enhancements are provided:
 
 * ``licenses[].acknowledgement`` — set to ``CONCLUDED`` to indicate the license
@@ -40,6 +48,10 @@ For every scanned component, three additional properties are recorded:
 .. scenario-include:: ../features/report-sbom.feature
    :scenario:
         A fetched project generates a json sbom
+
+.. scenario-include:: ../features/report-sbom-license.feature
+   :scenario:
+        A fetched archive with an identified license embeds base64 license text
 
 .. scenario-include:: ../features/report-sbom-license.feature
    :scenario:
@@ -117,6 +129,7 @@ For more information see the `Github dependency submission`_.
      https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/using-the-dependency-submission-api
 """
 
+import base64
 from decimal import Decimal
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as pkg_version
@@ -124,6 +137,7 @@ from importlib.metadata import version as pkg_version
 from cyclonedx.builder.this import this_component as cdx_lib_component
 from cyclonedx.model import (
     AttachedText,
+    Encoding,
     ExternalReference,
     ExternalReferenceType,
     HashAlgorithm,
@@ -176,6 +190,14 @@ DFETCH_TO_CDX_HASH_ALGORITHM: dict[str, str] = {
     "sha384": "SHA-384",
     "sha512": "SHA-512",
 }
+
+
+def _make_license_text_attachment(text: str) -> AttachedText:
+    """Return *text* as a base64-encoded ``AttachedText`` ready for CycloneDX."""
+    encoded = base64.b64encode(text.encode("utf-8")).decode("ascii")
+    return AttachedText(
+        content=encoded, content_type="text/plain", encoding=Encoding.BASE_64
+    )
 
 
 class SbomReporter(Reporter):
@@ -378,16 +400,20 @@ class SbomReporter(Reporter):
             )
 
     @staticmethod
+    def _build_cdx_license(lic: DfetchLicense) -> CycloneDxLicense:
+        """Build a CycloneDX license entry, embedding base64 text when available."""
+        text_attachment = _make_license_text_attachment(lic.text) if lic.text else None
+        if lic.spdx_id:
+            return CycloneDxLicense(id=lic.spdx_id, text=text_attachment)
+        return CycloneDxLicense(name=lic.name, text=text_attachment)
+
+    @staticmethod
     def _attach_identified_licenses(
         component: Component, identified: list[DfetchLicense]
     ) -> None:
         """Add each identified license to *component* and record its confidence."""
         for lic in identified:
-            cdx_license = (
-                CycloneDxLicense(id=lic.spdx_id)
-                if lic.spdx_id
-                else CycloneDxLicense(name=lic.name)
-            )
+            cdx_license = SbomReporter._build_cdx_license(lic)
             component.licenses.add(cdx_license)
             if component.evidence:
                 component.evidence.licenses.add(cdx_license)
@@ -407,7 +433,8 @@ class SbomReporter(Reporter):
 
         * Project was not fetched → nothing is added (no assertion possible).
         * License files were found and identified → SPDX identifiers are
-          attached, and per-license confidence scores are recorded.
+          attached together with the base64-encoded license text, and
+          per-license confidence scores are recorded.
         * License files were found but unclassified, **or** no license file was
           found at all → ``NOASSERTION`` is set with enhanced metadata:
           - ``acknowledgement`` set to ``CONCLUDED``
