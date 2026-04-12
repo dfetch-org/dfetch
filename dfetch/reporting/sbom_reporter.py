@@ -28,8 +28,6 @@ For NOASSERTION cases, additional enhancements are provided:
 
 * ``licenses[].acknowledgement`` — set to ``CONCLUDED`` to indicate the license
   assertion was determined by analysis.
-* ``licenses[].text`` — contains a human-readable explanation of why
-  NOASSERTION was set.
 * ``dfetch:license:noassertion:reason`` — a machine-readable enum-style value
   indicating the specific reason (``NO_LICENSE_FILE`` or
   ``UNCLASSIFIABLE_LICENSE_TEXT``).
@@ -157,7 +155,7 @@ from cyclonedx.model.component_evidence import (
 )
 from cyclonedx.model.contact import OrganizationalEntity
 from cyclonedx.model.license import DisjunctiveLicense as CycloneDxLicense
-from cyclonedx.model.license import LicenseAcknowledgement
+from cyclonedx.model.license import LicenseAcknowledgement, LicenseExpression
 from cyclonedx.output import make_outputter
 from cyclonedx.schema import OutputFormat, SchemaVersion
 from packageurl import PackageURL
@@ -438,7 +436,6 @@ class SbomReporter(Reporter):
         * License files were found but unclassified, **or** no license file was
           found at all → ``NOASSERTION`` is set with enhanced metadata:
           - ``acknowledgement`` set to ``CONCLUDED``
-          - ``text`` contains a human-readable explanation
           - ``dfetch:license:noassertion:reason`` property with machine-readable
             enum value (``NO_LICENSE_FILE`` or ``UNCLASSIFIABLE_LICENSE_TEXT``)
           - ``dfetch:license:finding`` property records the reason for downstream
@@ -479,13 +476,9 @@ class SbomReporter(Reporter):
                 finding_text = "No license file found in source tree"
                 reason = "NO_LICENSE_FILE"
 
-            noassertion = CycloneDxLicense(
-                id="NOASSERTION",
+            noassertion = LicenseExpression(
+                value="NOASSERTION",
                 acknowledgement=LicenseAcknowledgement.CONCLUDED,
-                text=AttachedText(
-                    content=finding_text,
-                    content_type="text/plain",
-                ),
             )
             component.licenses.add(noassertion)
             if component.evidence:
