@@ -8,7 +8,8 @@ import json
 from unittest.mock import MagicMock, patch
 
 from cyclonedx.model import AttachedText, Encoding, Property
-from cyclonedx.model.component import Component, ComponentEvidence, ComponentType
+from cyclonedx.model.component import Component, ComponentType
+from cyclonedx.model.component_evidence import ComponentEvidence
 from cyclonedx.model.license import DisjunctiveLicense as CycloneDxLicense
 from cyclonedx.model.license import LicenseAcknowledgement
 from cyclonedx.schema import SchemaVersion
@@ -65,6 +66,7 @@ def _make_component_with_evidence(name: str = "test-component") -> Component:
         evidence=ComponentEvidence(licenses=[placeholder]),
     )
     # Remove the placeholder so evidence starts logically empty.
+    assert component.evidence is not None
     component.evidence.licenses.discard(placeholder)
     return component
 
@@ -173,6 +175,7 @@ class TestAttachIdentifiedLicenses:
         component = _make_component_with_evidence()
         lic = _make_dfetch_license(spdx_id="MIT", probability=0.95)
         SbomReporter._attach_identified_licenses(component, [lic])
+        assert component.evidence is not None
         assert any(l.id == "MIT" for l in component.evidence.licenses)
 
     def test_does_not_add_to_evidence_when_absent(self):
@@ -337,6 +340,7 @@ class TestApplyLicensesUnclassified:
             threshold=0.80,
         )
         SbomReporter._apply_licenses(component, scan)
+        assert component.evidence is not None
         evidence_ids = [
             getattr(l, "id", None) or getattr(l, "value", None)
             for l in component.evidence.licenses
@@ -470,6 +474,7 @@ class TestApplyLicensesNoFile:
         component = _make_component_with_evidence()
         scan = LicenseScanResult(was_scanned=True, threshold=0.80)
         SbomReporter._apply_licenses(component, scan)
+        assert component.evidence is not None
         evidence_ids = [
             getattr(l, "id", None) or getattr(l, "value", None)
             for l in component.evidence.licenses

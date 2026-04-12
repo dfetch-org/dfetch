@@ -22,7 +22,6 @@ from dfetch.util.license import (
     is_license_file,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -123,7 +122,9 @@ class TestLicenseScanResultIdentified:
     """State: scanned and license was identified."""
 
     def test_identified_licenses(self):
-        lic = License(name="MIT License", spdx_id="MIT", trove_classifier=None, probability=0.95)
+        lic = License(
+            name="MIT License", spdx_id="MIT", trove_classifier=None, probability=0.95
+        )
         result = LicenseScanResult(
             identified=[lic],
             was_scanned=True,
@@ -136,8 +137,15 @@ class TestLicenseScanResultIdentified:
         assert result.threshold == 0.80
 
     def test_multiple_identified_licenses(self):
-        lic1 = License(name="MIT License", spdx_id="MIT", trove_classifier=None, probability=0.95)
-        lic2 = License(name="Apache License 2.0", spdx_id="Apache-2.0", trove_classifier=None, probability=0.91)
+        lic1 = License(
+            name="MIT License", spdx_id="MIT", trove_classifier=None, probability=0.95
+        )
+        lic2 = License(
+            name="Apache License 2.0",
+            spdx_id="Apache-2.0",
+            trove_classifier=None,
+            probability=0.91,
+        )
         result = LicenseScanResult(
             identified=[lic1, lic2],
             was_scanned=True,
@@ -188,7 +196,9 @@ def test_license_scan_result_mutable_fields_are_independent():
     r1 = LicenseScanResult(was_scanned=True)
     r2 = LicenseScanResult(was_scanned=True)
     r1.identified.append(
-        License(name="MIT License", spdx_id="MIT", trove_classifier=None, probability=0.9)
+        License(
+            name="MIT License", spdx_id="MIT", trove_classifier=None, probability=0.9
+        )
     )
     assert r2.identified == [], "Mutable default leaked between instances"
 
@@ -233,7 +243,9 @@ class TestGuessLicenseInFileTextEmbedding:
         license_file.write_text(license_content, encoding="utf-8")
 
         inferred_mock = _make_inferred()
-        with patch("infer_license.api.probabilities", return_value=[(inferred_mock, 0.95)]):
+        with patch(
+            "infer_license.api.probabilities", return_value=[(inferred_mock, 0.95)]
+        ):
             result = guess_license_in_file(license_file)
 
         assert result is not None
@@ -246,11 +258,14 @@ class TestGuessLicenseInFileTextEmbedding:
         license_file.write_bytes(license_content.encode("latin-1"))
 
         inferred_mock = _make_inferred()
-        with patch("infer_license.api.probabilities", return_value=[(inferred_mock, 0.92)]):
+        with patch(
+            "infer_license.api.probabilities", return_value=[(inferred_mock, 0.92)]
+        ):
             result = guess_license_in_file(license_file)
 
         assert result is not None
         # Text should be the latin-1 decoded string
+        assert result.text is not None
         assert "Licença MIT" in result.text
 
     def test_returns_none_on_permission_error(self, tmp_path):
