@@ -7,6 +7,7 @@ import base64
 import json
 from unittest.mock import MagicMock, patch
 
+import pytest
 from cyclonedx.model import AttachedText, Encoding, Property
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.model.component_evidence import ComponentEvidence
@@ -364,54 +365,30 @@ class TestApplyLicensesUnclassified:
         )
         assert noassertion.acknowledgement == LicenseAcknowledgement.CONCLUDED
 
-    def test_noassertion_finding_property_mentions_filename(self):
-        """The dfetch:license:finding property (not the license object) carries the filename."""
+    @pytest.mark.parametrize(
+        "unclassified_files, expected_filenames",
+        [
+            (["LICENSE"], ["LICENSE"]),
+            (["COPYING", "LICENSE"], ["COPYING", "LICENSE"]),
+        ],
+    )
+    def test_finding_and_reason_properties(
+        self, unclassified_files, expected_filenames
+    ):
+        """dfetch:license:finding lists all unclassified files; reason is UNCLASSIFIABLE_LICENSE_TEXT."""
         component = _make_bare_component()
         scan = LicenseScanResult(
-            unclassified_files=["LICENSE"],
-            was_scanned=True,
-            threshold=0.80,
-        )
-        SbomReporter._apply_licenses(component, scan)
-        val = _get_property_value(component, "dfetch:license:finding")
-        assert val is not None and "LICENSE" in val
-
-    def test_multiple_unclassified_files_sorted_in_finding_property(self):
-        """Multiple unclassified files appear sorted in the dfetch:license:finding property."""
-        component = _make_bare_component()
-        scan = LicenseScanResult(
-            unclassified_files=["COPYING", "LICENSE"],
-            was_scanned=True,
-            threshold=0.80,
-        )
-        SbomReporter._apply_licenses(component, scan)
-        val = _get_property_value(component, "dfetch:license:finding")
-        assert val is not None
-        assert "COPYING" in val
-        assert "LICENSE" in val
-
-    def test_noassertion_reason_property_is_unclassifiable(self):
-        component = _make_bare_component()
-        scan = LicenseScanResult(
-            unclassified_files=["LICENSE"],
-            was_scanned=True,
-            threshold=0.80,
-        )
-        SbomReporter._apply_licenses(component, scan)
-        val = _get_property_value(component, "dfetch:license:noassertion:reason")
-        assert val == "UNCLASSIFIABLE_LICENSE_TEXT"
-
-    def test_finding_property_is_set(self):
-        component = _make_bare_component()
-        scan = LicenseScanResult(
-            unclassified_files=["LICENSE"],
+            unclassified_files=unclassified_files,
             was_scanned=True,
             threshold=0.80,
         )
         SbomReporter._apply_licenses(component, scan)
         val = _get_property_value(component, "dfetch:license:finding")
         assert val is not None
-        assert "LICENSE" in val
+        for filename in expected_filenames:
+            assert filename in val
+        reason = _get_property_value(component, "dfetch:license:noassertion:reason")
+        assert reason == "UNCLASSIFIABLE_LICENSE_TEXT"
 
     def test_tool_and_threshold_properties_present(self):
         component = _make_bare_component()
