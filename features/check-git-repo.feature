@@ -180,9 +180,10 @@ Feature: Checking dependencies from a git repository
         Then the output shows
             """
             Dfetch (0.14.0)
-            >>>git ls-remote --heads https://giiiiiidhub.com/i-do-not-exist/broken<<< failed!
-            'https://giiiiiidhub.com/i-do-not-exist/broken' is not a valid URL or unreachable:
-            fatal: unable to access 'https://giiiiiidhub.com/i-do-not-exist/broken/': Could not resolve host: giiiiiidhub.com
+              non-existent-url:
+              > >>>git ls-remote --heads https://giiiiiidhub.com/i-do-not-exist/broken<<< failed!
+                'https://giiiiiidhub.com/i-do-not-exist/broken' is not a valid URL or unreachable:
+                fatal: unable to access 'https://giiiiiidhub.com/i-do-not-exist/broken/': Could not resolve host: giiiiiidhub.com
             """
 
       Scenario: A non-existent tag, branch or revision is reported
