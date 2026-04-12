@@ -9,7 +9,7 @@ Two report types are available via the ``-t`` / ``--type`` flag:
 
 ``sbom``
     Generates a `CycloneDX 1.6 <https://cyclonedx.org/>`_ Software Bill of
-    Materials (SBOM) as a JSON file (``report.json`` by default, override with
+    Materials (SBOM) as a JSON file (``report.cdx.json`` by default, override with
     ``-o``). The SBOM includes package URLs (PURLs), VCS references, licence
     evidence, and — for archive projects — an optional SHA-256 integrity hash.
 
@@ -80,7 +80,7 @@ class Report(dfetch.commands.command.Command):
             "--outfile",
             metavar="<filename>",
             type=str,
-            default="report.json",
+            default="report.cdx.json",
             help="Report filename",
         )
 
