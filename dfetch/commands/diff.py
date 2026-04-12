@@ -58,11 +58,12 @@ import os
 import pathlib
 
 import dfetch.commands.command
+import dfetch.manifest.project
 from dfetch.log import get_logger
 from dfetch.project import create_super_project
 from dfetch.project.metadata import Metadata
-from dfetch.project.superproject import NoVcsSuperProject, RevisionRange
-from dfetch.util.util import catch_runtime_exceptions, in_directory
+from dfetch.project.superproject import NoVcsSuperProject, RevisionRange, SuperProject
+from dfetch.util.util import in_directory
 
 logger = get_logger(__name__)
 
@@ -115,51 +116,62 @@ class Diff(dfetch.commands.command.Command):
             )
 
         with in_directory(superproject.root_directory):
-            exceptions: list[str] = []
             projects = superproject.manifest.selected_projects(args.projects)
             if not projects:
                 raise RuntimeError(
                     f"No (such) project found! {', '.join(args.projects)}"
                 )
+            had_errors: bool = False
             for project in projects:
-                with catch_runtime_exceptions(exceptions) as exceptions:
-                    if not os.path.exists(project.destination):
-                        raise RuntimeError(
-                            "You cannot generate a diff of a project that was never fetched"
-                        )
-                    subproject = superproject.get_sub_project(project)
+                try:
+                    self._diff_project(superproject, project, old_rev, new_rev)
+                except RuntimeError as exc:
+                    logger.print_warning_line(project.name, str(exc))
+                    had_errors = True
 
-                    if not subproject:
-                        raise RuntimeError("No subproject!")
+        if had_errors:
+            raise RuntimeError()
 
-                    old_rev = old_rev or superproject.get_file_revision(
-                        subproject.metadata_path
-                    )
-                    if not old_rev:
-                        raise RuntimeError(
-                            "When not providing any revisions, dfetch starts from"
-                            f" the last revision to {Metadata.FILENAME} in {subproject.local_path}."
-                            " Please either commit this, or specify a revision to start from with --revs"
-                        )
-                    patch = superproject.diff(
-                        project.destination,
-                        revisions=RevisionRange(old_rev, new_rev),
-                        ignore=(Metadata.FILENAME,),
-                    )
+    def _diff_project(
+        self,
+        superproject: SuperProject,
+        project: dfetch.manifest.project.ProjectEntry,
+        old_rev: str,
+        new_rev: str,
+    ) -> None:
+        """Generate a diff patch for a single project."""
+        if not os.path.exists(project.destination):
+            raise RuntimeError(
+                "You cannot generate a diff of a project that was never fetched"
+            )
+        subproject = superproject.get_sub_project(project)
 
-                    msg = self._rev_msg(old_rev, new_rev)
-                    if patch:
-                        patch_path = pathlib.Path(f"{project.name}.patch")
-                        logger.print_info_line(
-                            project.name,
-                            f"Generating patch {patch_path} {msg} in {superproject.root_directory}",
-                        )
-                        patch_path.write_text(patch, encoding="UTF-8")
-                    else:
-                        logger.print_info_line(project.name, f"No diffs found {msg}")
+        if not subproject:
+            raise RuntimeError("No subproject!")
 
-        if exceptions:
-            raise RuntimeError("\n".join(exceptions))
+        old_rev = old_rev or superproject.get_file_revision(subproject.metadata_path)
+        if not old_rev:
+            raise RuntimeError(
+                "When not providing any revisions, dfetch starts from"
+                f" the last revision to {Metadata.FILENAME} in {subproject.local_path}."
+                " Please either commit this, or specify a revision to start from with --revs"
+            )
+        patch = superproject.diff(
+            project.destination,
+            revisions=RevisionRange(old_rev, new_rev),
+            ignore=(Metadata.FILENAME,),
+        )
+
+        msg = self._rev_msg(old_rev, new_rev)
+        if patch:
+            patch_path = pathlib.Path(f"{project.name}.patch")
+            logger.print_info_line(
+                project.name,
+                f"Generating patch {patch_path} {msg} in {superproject.root_directory}",
+            )
+            patch_path.write_text(patch, encoding="UTF-8")
+        else:
+            logger.print_info_line(project.name, f"No diffs found {msg}")
 
     @staticmethod
     def _parse_revs(revs_arg: str) -> tuple[str, str]:
