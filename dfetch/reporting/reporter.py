@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
-from dfetch.util.license import License
+from dfetch.util.license import LicenseScanResult
 
 
 class Reporter(ABC):
@@ -29,7 +29,7 @@ class Reporter(ABC):
     def add_project(
         self,
         project: ProjectEntry,
-        licenses: list[License],
+        license_scan: LicenseScanResult,
         version: str,
     ) -> None:
         """Add a project to the report."""

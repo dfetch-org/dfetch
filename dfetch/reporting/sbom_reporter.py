@@ -8,11 +8,58 @@ The tools track vulnerabilities or can enforce a license policy within an organi
 
 See https://cyclonedx.org/use-cases/ for more details.
 
-*Dfetch* will try to parse the license of project, this is retained during an :ref:`Update`.
+*Dfetch* will try to parse the license of each project.  Detected licenses are
+recorded as SPDX identifiers.  When a license-like file is present but cannot
+be classified, or when no license file is found at all, *dfetch* sets the
+``licenses`` field to ``NOASSERTION`` and adds a ``dfetch:license:finding``
+property that explains the reason.  This ensures the ``licenses`` field is
+never silently omitted and gives downstream compliance tooling actionable
+context.
+
+For successfully identified licenses, the raw license file text is embedded
+directly in the SBOM:
+
+* ``licenses[].text`` — the license file content, base64-encoded, with
+  ``contentType: text/plain`` and ``encoding: base64``.  Downstream tooling
+  can decode and verify the text against the declared SPDX identifier without
+  fetching the source tree again.
+
+For NOASSERTION cases, additional enhancements are provided:
+
+* ``licenses[].acknowledgement`` — set to ``CONCLUDED`` to indicate the license
+  assertion was determined by analysis.
+* ``licenses[].text`` — contains a human-readable explanation of why
+  NOASSERTION was set.
+* ``dfetch:license:noassertion:reason`` — a machine-readable enum-style value
+  indicating the specific reason (``NO_LICENSE_FILE`` or
+  ``UNCLASSIFIABLE_LICENSE_TEXT``).
+
+For every scanned component, three additional properties are recorded:
+
+* ``dfetch:license:<spdx-id>:confidence`` — the probability score returned by
+  *infer-license* for each identified license (only present when a license is
+  successfully identified).
+* ``dfetch:license:threshold`` — the minimum confidence required to accept an
+  inference (``0.80`` by default).  Auditors can use this to understand under
+  what conditions a license was accepted or rejected.
+* ``dfetch:license:tool`` — the *infer-license* library version used during the
+  scan, enabling reproducible re-evaluation as the library evolves.
 
 .. scenario-include:: ../features/report-sbom.feature
    :scenario:
         A fetched project generates a json sbom
+
+.. scenario-include:: ../features/report-sbom-license.feature
+   :scenario:
+        A fetched archive with an identified license embeds base64 license text
+
+.. scenario-include:: ../features/report-sbom-license.feature
+   :scenario:
+        A fetched archive with an unclassifiable license file gets NOASSERTION
+
+.. scenario-include:: ../features/report-sbom-license.feature
+   :scenario:
+        A fetched archive with no license file gets NOASSERTION
 
 Archive dependencies
 --------------------
@@ -82,14 +129,20 @@ For more information see the `Github dependency submission`_.
      https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/using-the-dependency-submission-api
 """
 
+import base64
 from decimal import Decimal
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as pkg_version
 
 from cyclonedx.builder.this import this_component as cdx_lib_component
 from cyclonedx.model import (
+    AttachedText,
+    Encoding,
     ExternalReference,
     ExternalReferenceType,
     HashAlgorithm,
     HashType,
+    Property,
     XsUri,
 )
 from cyclonedx.model.bom import Bom
@@ -113,7 +166,8 @@ import dfetch
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.reporting.reporter import Reporter
-from dfetch.util.license import License
+from dfetch.util.license import License as DfetchLicense
+from dfetch.util.license import LicenseScanResult
 from dfetch.util.purl import vcs_url_to_purl
 from dfetch.vcs.archive import archive_url_to_purl, is_archive_url
 from dfetch.vcs.integrity_hash import IntegrityHash
@@ -124,12 +178,26 @@ from dfetch.vcs.integrity_hash import IntegrityHash
 # pyright: reportCallIssue=false, reportAttributeAccessIssue=false
 
 
+#: Version of the *infer-license* library used for license text analysis.
+try:
+    INFER_LICENSE_VERSION: str = pkg_version("infer-license")
+except PackageNotFoundError:
+    INFER_LICENSE_VERSION = "unknown"
+
 # Map from dfetch hash-field algorithm prefix to CycloneDX HashAlgorithm name
 DFETCH_TO_CDX_HASH_ALGORITHM: dict[str, str] = {
     "sha256": "SHA-256",
     "sha384": "SHA-384",
     "sha512": "SHA-512",
 }
+
+
+def _make_license_text_attachment(text: str) -> AttachedText:
+    """Return *text* as a base64-encoded ``AttachedText`` ready for CycloneDX."""
+    encoded = base64.b64encode(text.encode("utf-8")).decode("ascii")
+    return AttachedText(
+        content=encoded, content_type="text/plain", encoding=Encoding.BASE_64
+    )
 
 
 class SbomReporter(Reporter):
@@ -194,7 +262,7 @@ class SbomReporter(Reporter):
     def add_project(
         self,
         project: ProjectEntry,
-        licenses: list[License],
+        license_scan: LicenseScanResult,
         version: str,
     ) -> None:
         """Add a project to the report."""
@@ -264,7 +332,7 @@ class SbomReporter(Reporter):
             ),
         )
         self._apply_external_references(component, purl, version)
-        self._apply_licenses(component, licenses)
+        self._apply_licenses(component, license_scan)
         self._bom.components.add(component)
 
     @staticmethod
@@ -332,18 +400,109 @@ class SbomReporter(Reporter):
             )
 
     @staticmethod
-    def _apply_licenses(component: Component, licenses: list[License]) -> None:
-        """Attach *licenses* to *component* and its evidence block."""
-        for lic in licenses:
-            # Prefer SPDX id when available
-            cdx_license = (
-                CycloneDxLicense(id=lic.spdx_id)
-                if lic.spdx_id
-                else CycloneDxLicense(name=lic.name)
-            )
+    def _build_cdx_license(lic: DfetchLicense) -> CycloneDxLicense:
+        """Build a CycloneDX license entry, embedding base64 text when available."""
+        text_attachment = _make_license_text_attachment(lic.text) if lic.text else None
+        if lic.spdx_id:
+            return CycloneDxLicense(id=lic.spdx_id, text=text_attachment)
+        return CycloneDxLicense(name=lic.name, text=text_attachment)
+
+    @staticmethod
+    def _attach_identified_licenses(
+        component: Component, identified: list[DfetchLicense]
+    ) -> None:
+        """Add each identified license to *component* and record its confidence."""
+        for lic in identified:
+            cdx_license = SbomReporter._build_cdx_license(lic)
             component.licenses.add(cdx_license)
             if component.evidence:
                 component.evidence.licenses.add(cdx_license)
+            label = lic.spdx_id or lic.name or "unknown"
+            component.properties.add(
+                Property(
+                    name=f"dfetch:license:{label}:confidence",
+                    value=f"{lic.probability:.2f}",
+                )
+            )
+
+    @staticmethod
+    def _apply_licenses(component: Component, license_scan: LicenseScanResult) -> None:
+        """Attach license information to *component* and its evidence block.
+
+        Three cases are handled:
+
+        * Project was not fetched → nothing is added (no assertion possible).
+        * License files were found and identified → SPDX identifiers are
+          attached together with the base64-encoded license text, and
+          per-license confidence scores are recorded.
+        * License files were found but unclassified, **or** no license file was
+          found at all → ``NOASSERTION`` is set with enhanced metadata:
+          - ``acknowledgement`` set to ``CONCLUDED``
+          - ``text`` contains a human-readable explanation
+          - ``dfetch:license:noassertion:reason`` property with machine-readable
+            enum value (``NO_LICENSE_FILE`` or ``UNCLASSIFIABLE_LICENSE_TEXT``)
+          - ``dfetch:license:finding`` property records the reason for downstream
+            compliance tooling.
+
+        In all scanned cases, ``dfetch:license:threshold`` and
+        ``dfetch:license:tool`` properties are added so auditors can reproduce
+        or re-evaluate results if the threshold changes.
+        """
+        if not license_scan.was_scanned:
+            return
+
+        # Always record the detection tool and threshold used during this scan
+        # so downstream consumers can reproduce or re-evaluate the results.
+        component.properties.add(
+            Property(
+                name="dfetch:license:tool",
+                value=f"infer-license {INFER_LICENSE_VERSION}",
+            )
+        )
+        component.properties.add(
+            Property(
+                name="dfetch:license:threshold",
+                value=f"{license_scan.threshold:.2f}",
+            )
+        )
+
+        if license_scan.identified:
+            SbomReporter._attach_identified_licenses(component, license_scan.identified)
+        else:
+            if license_scan.unclassified_files:
+                files_str = ", ".join(sorted(license_scan.unclassified_files))
+                finding_text = (
+                    f"License file(s) found ({files_str}) but could not be classified"
+                )
+                reason = "UNCLASSIFIABLE_LICENSE_TEXT"
+            else:
+                finding_text = "No license file found in source tree"
+                reason = "NO_LICENSE_FILE"
+
+            noassertion = CycloneDxLicense(
+                id="NOASSERTION",
+                acknowledgement=LicenseAcknowledgement.CONCLUDED,
+                text=AttachedText(
+                    content=finding_text,
+                    content_type="text/plain",
+                ),
+            )
+            component.licenses.add(noassertion)
+            if component.evidence:
+                component.evidence.licenses.add(noassertion)
+
+            component.properties.add(
+                Property(
+                    name="dfetch:license:noassertion:reason",
+                    value=reason,
+                )
+            )
+            component.properties.add(
+                Property(
+                    name="dfetch:license:finding",
+                    value=finding_text,
+                )
+            )
 
     def dump_to_file(self, outfile: str) -> bool:
         """Dump the SBoM to file."""

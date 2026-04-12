@@ -18,6 +18,7 @@ from behave.runner import Context
 
 from dfetch.__main__ import DfetchFatalException, run
 from dfetch.log import DLogger
+from dfetch.reporting.sbom_reporter import INFER_LICENSE_VERSION
 from dfetch.util.util import in_directory
 
 ansi_escape = re.compile(r"\[/?[a-z\_ ]+\]")
@@ -84,19 +85,6 @@ def check_file_exists(path):
     assert os.path.isfile(path), f"Expected {path} to exist, but it didn't!"
 
 
-def check_json(path: Union[str, os.PathLike], content: str) -> None:
-    """Check a JSON file."""
-
-    with open(path, "r", encoding="UTF-8") as file_to_check:
-        actual_json = json.load(file_to_check)
-    expected_json = json.loads(content)
-
-    check_content(
-        json.dumps(expected_json, indent=4, sort_keys=True).splitlines(),
-        json.dumps(actual_json, indent=4, sort_keys=True).splitlines(),
-    )
-
-
 def apply_archive_substitutions(text: str, context) -> str:
     """Replace archive-related dynamic placeholders with values stored on *context*."""
     if hasattr(context, "archive_sha256"):
@@ -107,68 +95,12 @@ def apply_archive_substitutions(text: str, context) -> str:
         text = text.replace("<archive-sha512>", context.archive_sha512)
     if hasattr(context, "archive_url"):
         text = text.replace("<archive-url>", context.archive_url)
-    return text
-
-
-def _json_subset_matches(expected, actual) -> bool:
-    """Return *True* when *expected* is a subset of *actual* (recursive).
-
-    **List matching is greedy and order-sensitive.** Each item in *expected*
-    is matched against *actual* in order, claiming the first unused actual
-    item that satisfies the subset check.  This means an earlier expected
-    item can consume the only actual item that a later, more specific
-    expected item would need.  For example, with::
-
-        expected = [{"a": 1}, {"a": 1, "b": 2}]
-        actual   = [{"a": 1, "b": 2}]
-
-    the first expected item matches ``{"a": 1, "b": 2}`` (leaving nothing
-    for the second), so the overall match returns *False* even though
-    ``{"a": 1, "b": 2}`` satisfies the second item.  Consumers should
-    **not** rely on non-deterministic matching; instead, pre-order *expected*
-    lists from most-specific to least-specific to avoid this behaviour.
-    """
-    if isinstance(expected, dict):
-        if not isinstance(actual, dict):
-            return False
-        return all(
-            k in actual and _json_subset_matches(v, actual[k])
-            for k, v in expected.items()
-        )
-    if isinstance(expected, list):
-        if not isinstance(actual, list):
-            return False
-        matched = [False] * len(actual)
-        for exp_item in expected:
-            found = False
-            for i, act_item in enumerate(actual):
-                if not matched[i] and _json_subset_matches(exp_item, act_item):
-                    matched[i] = True
-                    found = True
-                    break
-            if not found:
-                return False
-        return True
-    return expected == actual
-
-
-def check_json_subset(path: Union[str, os.PathLike], content: str, context) -> None:
-    """Assert that a JSON file *contains* the given key-values (subset match).
-
-    Dynamic placeholders (``<archive-sha256>``, ``<archive-url>``) in
-    *content* are substituted with values from *context* before parsing.
-    """
-    content = apply_archive_substitutions(content, context)
-
-    with open(path, "r", encoding="UTF-8") as file_to_check:
-        actual_json = json.load(file_to_check)
-    expected_json = json.loads(content)
-
-    assert _json_subset_matches(expected_json, actual_json), (
-        f"JSON subset mismatch.\n"
-        f"Expected subset:\n{json.dumps(expected_json, indent=4, sort_keys=True)}\n"
-        f"Actual:\n{json.dumps(actual_json, indent=4, sort_keys=True)}"
+    if hasattr(context, "license_base64"):
+        text = text.replace("<license-base64>", context.license_base64)
+    text = text.replace(
+        "<infer-license-version>", f"infer-license {INFER_LICENSE_VERSION}"
     )
+    return text
 
 
 def check_content(
@@ -405,10 +337,23 @@ def step_impl(context, name):
         check_file_exists(name)
 
 
+def check_json(path: Union[str, os.PathLike], content: str, context) -> None:
+    """Check a JSON file for exact equality (after normalising formatting)."""
+    content = apply_archive_substitutions(content, context)
+    with open(path, "r", encoding="UTF-8") as file_to_check:
+        actual_json = json.load(file_to_check)
+    expected_json = json.loads(content)
+
+    check_content(
+        json.dumps(expected_json, indent=4, sort_keys=True).splitlines(),
+        json.dumps(actual_json, indent=4, sort_keys=True).splitlines(),
+    )
+
+
 @then("the '{name}' file contains")
 def step_impl(context, name):
     if name.endswith(".json"):
-        check_json(name, context.text)
+        check_json(name, context.text, context)
     else:
         check_file(name, context.text)
 
@@ -416,12 +361,6 @@ def step_impl(context, name):
 @then("'{name}' exists")
 def step_impl(_, name):
     assert os.path.exists(name), f"Expected {name} to exist, but it didn't!"
-
-
-@then("the '{name}' json file includes")
-def step_impl(context, name):
-    """Partial JSON match - the expected JSON must be a *subset* of the actual file."""
-    check_json_subset(name, context.text, context)
 
 
 def multisub(patterns: List[Tuple[Pattern[str], str]], text: str) -> str:

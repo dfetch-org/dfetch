@@ -22,9 +22,9 @@ Feature: Create an CycloneDX sbom
             """
         And all projects are updated
         When I run "dfetch report -t sbom"
-        Then the 'report.json' file contains
+        Then the 'report.cdx.json' json file includes
             """
-             {
+            {
                 "components": [
                     {
                         "bom-ref": "cpputest-v3.4",
@@ -39,9 +39,6 @@ Feature: Create an CycloneDX sbom
                                             "technique": "manifest-analysis",
                                             "value": "Name as used for project in dfetch.yaml"
                                         }
-                                    ],
-                                    "tools": [
-                                        "dfetch-0.13.0"
                                     ]
                                 },
                                 {
@@ -53,9 +50,6 @@ Feature: Create an CycloneDX sbom
                                             "technique": "manifest-analysis",
                                             "value": "Determined from https://github.com/cpputest/cpputest as used for the project cpputest in dfetch.yaml"
                                         }
-                                    ],
-                                    "tools": [
-                                        "dfetch-0.13.0"
                                     ]
                                 },
                                 {
@@ -67,9 +61,6 @@ Feature: Create an CycloneDX sbom
                                             "technique": "manifest-analysis",
                                             "value": "Version as used for project in dfetch.yaml"
                                         }
-                                    ],
-                                    "tools": [
-                                        "dfetch-0.13.0"
                                     ]
                                 }
                             ],
@@ -104,6 +95,19 @@ Feature: Create an CycloneDX sbom
                         ],
                         "name": "cpputest",
                         "purl": "pkg:github/cpputest/cpputest@v3.4#include/CppUTest",
+                        "properties": [
+                            {
+                                "name": "dfetch:license:BSD-3-Clause:confidence"
+                            },
+                            {
+                                "name": "dfetch:license:threshold",
+                                "value": "0.80"
+                            },
+                            {
+                                "name": "dfetch:license:tool",
+                                "value": "<infer-license-version>"
+                            }
+                        ],
                         "type": "library",
                         "version": "v3.4"
                     }
@@ -244,7 +248,7 @@ Feature: Create an CycloneDX sbom
             """
         And all projects are updated
         When I run "dfetch report -t sbom"
-        Then the 'report.json' json file includes
+        Then the 'report.cdx.json' json file includes
             """
             {
                 "components": [
