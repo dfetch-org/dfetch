@@ -16,24 +16,29 @@ license policy across an organisation.
     $ dfetch report -t sbom -o dfetch.cdx.json
 
 *Dfetch* parses each project's license at report time and can recognise common
-license files with high accuracy.  For fetched projects, the ``licenses`` field is always populated:
+license files with high accuracy.  For every fetched project the ``licenses``
+field is always populated:
 
-* **Identified** — the SPDX identifier is recorded (e.g. ``MIT``, ``Apache-2.0``).
+* **Identified** — the SPDX identifier is recorded (e.g. ``MIT``,
+  ``Apache-2.0``), and the base64-encoded license text is embedded in
+  ``licenses[].text`` so downstream tooling can verify the text matches the
+  declared identifier.
 * **File found, unclassifiable** — a license-like file (``LICENSE``,
   ``COPYING``, …) was detected but its text could not be matched to a known
   SPDX identifier with sufficient confidence.  The field is set to
-  ``NOASSERTION`` with ``acknowledgement`` set to ``concluded``, ``text``
-  containing a human-readable explanation, and ``dfetch:license:noassertion:reason``
-  set to ``UNCLASSIFIABLE_LICENSE_TEXT``.
+  ``NOASSERTION`` with ``acknowledgement`` set to ``concluded``, a
+  human-readable explanation in ``text``, and
+  ``dfetch:license:noassertion:reason`` set to
+  ``UNCLASSIFIABLE_LICENSE_TEXT``.
 * **No license file present** — no license-like file was found.  The field is
-  set to ``NOASSERTION`` with ``acknowledgement`` set to ``concluded``, ``text``
-  containing a human-readable explanation, and ``dfetch:license:noassertion:reason``
-  set to ``NO_LICENSE_FILE``.
+  set to ``NOASSERTION`` with ``acknowledgement`` set to ``concluded``, a
+  human-readable explanation in ``text``, and
+  ``dfetch:license:noassertion:reason`` set to ``NO_LICENSE_FILE``.
 
-This ensures the ``licenses`` field is never silently omitted for scanned projects
-and gives downstream compliance tooling actionable context regardless of the detection
-outcome.  Note that projects that have never been fetched are not scanned and therefore
-will not have license assertions in the SBOM output.
+This ensures the ``licenses`` field is never silently omitted for scanned
+projects, giving downstream compliance tooling actionable context regardless of
+the detection outcome.  Projects that have never been fetched are not scanned
+and will not have license assertions in the SBOM output.
 
 .. scenario-include:: ../features/report-sbom-license.feature
    :scenario: A fetched archive with an unclassifiable license file gets NOASSERTION
@@ -42,10 +47,10 @@ will not have license assertions in the SBOM output.
    :scenario: A fetched archive with no license file gets NOASSERTION
 
 License detection auditability
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
-For every scanned component *dfetch* records properties that allow
-auditors to reproduce or re-evaluate license detection results:
+For every scanned component *dfetch* records properties that let auditors
+reproduce or re-evaluate results without re-running dfetch:
 
 ``dfetch:license:<license-label>:confidence``
     The probability score (0-1) returned by *infer-license* for each
@@ -54,26 +59,30 @@ auditors to reproduce or re-evaluate license detection results:
 
 ``dfetch:license:threshold``
     The minimum confidence required to accept an inference (``0.80`` by
-    default).  If the threshold is raised or lowered in the future, auditors
-    can compare stored scores against the new threshold without re-running
-    dfetch.
+    default).  If the threshold changes, stored scores can be compared against
+    the new value without re-fetching.
 
 ``dfetch:license:tool``
     The *infer-license* library version used during the scan.  Different
     library versions may classify the same text differently; recording the
     version enables reproducible re-evaluation.
 
-For components with ``NOASSERTION`` licenses, additional properties provide
-machine-readable reasons:
+For components with ``NOASSERTION`` licenses two additional properties provide
+machine-readable context:
 
 ``dfetch:license:noassertion:reason``
-    An enum-style value indicating the specific reason for NOASSERTION:
-    ``NO_LICENSE_FILE`` (no license file found) or
-    ``UNCLASSIFIABLE_LICENSE_TEXT`` (license file present but unclassifiable).
+    ``NO_LICENSE_FILE`` or ``UNCLASSIFIABLE_LICENSE_TEXT``, indicating why the
+    license could not be asserted.
+
+``dfetch:license:finding``
+    A human-readable description of the detection outcome — for example,
+    *"License file(s) found (LICENSE) but could not be classified"* or
+    *"No license file found in source tree"*.  Useful for quick triage in
+    dashboards that surface custom component properties.
 
 Archive dependencies (``tar.gz``, ``zip``, …) are recorded with a
 ``distribution`` external reference.  When an ``integrity.hash:`` field is set
-in the manifest the SBOM includes a ``SHA-256`` component hash for
+in the manifest, the SBOM includes a ``SHA-256`` component hash for
 supply-chain integrity verification.
 
 .. scenario-include:: ../features/report-sbom.feature
@@ -85,15 +94,25 @@ supply-chain integrity verification.
 .. scenario-include:: ../features/report-sbom-archive.feature
    :scenario: A fetched archive with sha256 hash generates a json sbom with hash
 
-Viewing SBOM in DependencyTrack
--------------------------------
+Viewing the SBOM in DependencyTrack
+-------------------------------------
 
-`DependencyTrack`_ is a popular open-source SBOM analysis platform that can ingest CycloneDX SBOMs generated by dfetch.
+`DependencyTrack`_ is a popular open-source SBOM analysis platform that
+ingests CycloneDX SBOMs generated by dfetch.
 
-When viewing components with NOASSERTION licenses, the license field shows ``NOASSERTION``, and the properties panel
-displays the dfetch license detection metadata. DependencyTrack's license detail view remains empty for these entries.
-The raw CycloneDX payload still carries ``acknowledgement`` and ``text`` for human-readable explanations, while the
-``dfetch:license:noassertion:reason`` property enables machine-readable filtering and automation.
+``NOASSERTION`` is the SPDX value for a component whose license cannot be
+determined.  *Dfetch* uses it when no license file is found or when the file
+text cannot be matched to a known SPDX identifier.  See the
+`SPDX specification`_ for the full definition.
+
+When viewing a component with a ``NOASSERTION`` license in DependencyTrack:
+
+* The **license column** shows ``NOASSERTION``.
+* The **properties panel** displays the dfetch license detection metadata
+  (``dfetch:license:noassertion:reason``, ``dfetch:license:finding``, etc.).
+* The **license detail view** is empty — DependencyTrack has no detail to
+  show for a non-specific SPDX value.  The raw CycloneDX payload still carries
+  ``acknowledgement`` and ``text`` for human-readable context.
 
 .. image:: ../images/dependency-track-properties.png
    :alt: Properties view showing dfetch license detection metadata
@@ -103,20 +122,6 @@ The raw CycloneDX payload still carries ``acknowledgement`` and ``text`` for hum
 
 .. image:: ../images/dependency-track-license-detail.png
    :alt: License detail view, which remains empty for NOASSERTION components
-
-NOASSERTION is an SPDX value used when no license information can be asserted for a component.
-
-According to the `SPDX specification`_, ``NOASSERTION`` should be used if:
-
-- the SPDX creator has attempted to but cannot reach a reasonable objective determination;
-- the SPDX creator has made no attempt to determine this field; or
-- the SPDX creator has intentionally provided no information.
-
-In dfetch, ``NOASSERTION`` is set when license detection fails or no license files are found, ensuring
-the licenses field is never silently omitted.
-
-.. _`DependencyTrack`: https://dependencytrack.org/
-.. _`SPDX specification`: https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Individuals/NoAssertionElement/
 
 GitLab
 ------
@@ -160,5 +165,7 @@ submission`_ for details.
               path: dfetch.cdx.json
 
 .. _`CycloneDX`: https://cyclonedx.org/use-cases/
+.. _`DependencyTrack`: https://dependencytrack.org/
 .. _`GitLab dependency scanning`: https://docs.gitlab.com/user/application_security/dependency_scanning/dependency_scanning_sbom/#cyclonedx-software-bill-of-materials
 .. _`GitHub dependency submission`: https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/using-the-dependency-submission-api
+.. _`SPDX specification`: https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Individuals/NoAssertionElement/
