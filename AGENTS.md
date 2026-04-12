@@ -87,12 +87,12 @@ Implement the abstract interfaces in `dfetch/project/subproject.py` and `dfetch/
 
 - **Unit tests** live in `tests/` and use `pytest`. Test files mirror module names (e.g., `tests/test_manifest.py`).
 - **BDD feature tests** live in `features/` and use `behave`. Step definitions are in `features/steps/`. Feature files describe end-to-end workflows.
-- Docstrings in test functions follow Google style, same as production code (`pydocstyle` enforces this).
+- Docstrings in test functions follow Google style as a convention (CI runs `pydocstyle dfetch` and does not check `tests/`, so this is not enforced automatically).
 
 ## Code quality rules
 
 - **Cyclomatic complexity** must stay below 8 per function. If a function grows beyond this, refactor it — extract helpers, simplify conditionals, or split responsibilities.
-- **No lint suppressions without fixing the root cause.** Avoid `# noqa`, `# type: ignore`, `# pylint: disable`, `# pyright: ignore`, and similar inline suppressions. If a tool flags something, fix it properly rather than silencing it.
+- **No lint suppressions without fixing the root cause.** Avoid `# noqa`, `# type: ignore`, `# pylint: disable`, `# pyright: ignore`, and similar inline suppressions. If a tool flags something, fix it properly rather than silencing it. The one accepted exception is module-level tool headers at the top of test files (e.g. `# mypy: ignore-errors` or `# flake8: noqa` on line 1–5 of a test module); these are permitted where the test file structure genuinely prevents a clean fix.
 
 ## Documentation
 

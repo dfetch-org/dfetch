@@ -4,9 +4,7 @@
       "Bash(codespell)",
       "Bash(python -m behave *)",
       "Bash(python -m pytest tests/*)",
-      "Bash(for i:*)",
-      "Bash(do python:*)",
-      "Bash(pre-commit run:*)",
+"Bash(pre-commit run:*)",
       "Bash(git stash:*)",
       "Bash(xenon *)",
       "Bash(radon *)",
@@ -21,7 +19,9 @@
       "Bash(bandit -r dfetch)",
       "Bash(pyroma --directory --min=10 .)",
       "Bash(xargs pyupgrade:*)",
-      "Bash(lint-imports)"
+      "Bash(lint-imports)",
+      "Bash(pip install:*)",
+      "Bash(pytest tests/test_sbom_reporter.py -q)"
     ]
   }
 }
