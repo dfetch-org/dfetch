@@ -1,15 +1,18 @@
 {
   "permissions": {
     "allow": [
+      "Bash(codespell)",
       "Bash(bandit -r dfetch)",
       "Bash(black --check dfetch)",
-      "Bash(codespell)",
       "Bash(doc8 doc:*)",
+      "Bash(git add:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
       "Bash(git stash:*)",
+      "Bash(git update-index --refresh)",
       "Bash(isort --diff dfetch)",
       "Bash(lint-imports)",
       "Bash(mypy dfetch:*)",
-      "Bash(pip install:*)",
       "Bash(pip show:*)",
       "Bash(pre-commit run:*)",
       "Bash(pydocstyle dfetch:*)",
