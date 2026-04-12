@@ -47,10 +47,10 @@ License detection auditability
 For every scanned component *dfetch* records properties that allow
 auditors to reproduce or re-evaluate license detection results:
 
-``dfetch:license:<spdx-id>:confidence``
+``dfetch:license:<license-label>:confidence``
     The probability score (0-1) returned by *infer-license* for each
-    successfully identified license.  Helps reviewers judge the detection
-    reliability at a glance.
+    successfully identified license. The label is typically the SPDX ID, but
+    may fall back to another detected license label when SPDX is unavailable.
 
 ``dfetch:license:threshold``
     The minimum confidence required to accept an inference (``0.80`` by
