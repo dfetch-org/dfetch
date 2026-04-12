@@ -117,8 +117,9 @@ Feature: Fetching dependencies from an archive (tar/zip)
         When I run "dfetch update" in MyProject
         Then the output shows
             """
-            Dfetch (0.13.0)
-            Hash mismatch for SomeProject! sha256 expected 0000000000000000000000000000000000000000000000000000000000000000
+            Dfetch (0.14.0)
+              SomeProject:
+              > Hash mismatch for SomeProject! sha256 expected 0000000000000000000000000000000000000000000000000000000000000000
             """
 
     Scenario: Specific directory from archive can be fetched
@@ -194,7 +195,7 @@ Feature: Fetching dependencies from an archive (tar/zip)
         When I run "dfetch update --force" in MyProject
         Then the output shows
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               SomeProject:
               > Fetched some-remote-server/SomeProject.tar.gz
             """

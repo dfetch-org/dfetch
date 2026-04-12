@@ -45,7 +45,7 @@ from dfetch.reporting.check.jenkins_reporter import JenkinsReporter
 from dfetch.reporting.check.reporter import CheckReporter
 from dfetch.reporting.check.sarif_reporter import SarifReporter
 from dfetch.reporting.check.stdout_reporter import CheckStdoutReporter
-from dfetch.util.util import catch_runtime_exceptions, in_directory
+from dfetch.util.util import in_directory
 
 logger = get_logger(__name__)
 
@@ -102,13 +102,16 @@ class Check(dfetch.commands.command.Command):
         reporters = self._get_reporters(args, superproject.manifest)
 
         with in_directory(superproject.root_directory):
-            exceptions: list[str] = []
+            had_errors: bool = False
             for project in superproject.manifest.selected_projects(args.projects):
-                with catch_runtime_exceptions(exceptions) as exceptions:
+                try:
                     dfetch.project.create_sub_project(project).check_for_update(
                         reporters,
                         files_to_ignore=superproject.ignored_files(project.destination),
                     )
+                except RuntimeError as exc:
+                    logger.print_warning_line(project.name, str(exc))
+                    had_errors = True
 
                 if not args.no_recommendations and os.path.isdir(project.destination):
                     with in_directory(project.destination):
@@ -117,8 +120,8 @@ class Check(dfetch.commands.command.Command):
             for reporter in reporters:
                 reporter.dump_to_file()
 
-        if exceptions:
-            raise RuntimeError("\n".join(exceptions))
+        if had_errors:
+            raise RuntimeError()
 
     @staticmethod
     def _get_reporters(

@@ -11,6 +11,7 @@ Release 0.14.0 (unreleased)
 * Edit manifest in-place when freezing inside a git or SVN superproject, preserving comments and layout (#1063)
 * Add new ``remove`` command to remove projects from manifest and disk (#26)
 * Fix "unsafe symlink target" error for archives containing relative ``..`` symlinks (#1122)
+* Print runtime errors (e.g. ``svn not available on system``) directly in context of the failing subproject instead of collecting and showing them at the end (#1096)
 
 Release 0.13.0 (released 2026-03-30)
 ====================================
