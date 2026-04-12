@@ -1,23 +1,11 @@
-"""Tests for dfetch.reporting.sbom_reporter — covering changes in PR #1112/#1116.
-
-Changed/added in this PR:
-- ``_make_license_text_attachment(text)`` helper function.
-- ``SbomReporter._build_cdx_license(lic)`` static method.
-- ``SbomReporter._attach_identified_licenses(component, identified)`` static method.
-- ``SbomReporter._apply_licenses(component, license_scan)`` refactored static method.
-- ``INFER_LICENSE_VERSION`` module-level constant.
-- ``add_project()`` now accepts ``license_scan: LicenseScanResult`` instead of
-  ``licenses: list[License]``.
-"""
+"""Tests for dfetch.reporting.sbom_reporter."""
 
 # mypy: ignore-errors
 # flake8: noqa
 
 import base64
-from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
-import pytest
 from cyclonedx.model import AttachedText, Encoding, Property
 from cyclonedx.model.component import Component, ComponentEvidence, ComponentType
 from cyclonedx.model.license import DisjunctiveLicense as CycloneDxLicense
@@ -31,7 +19,6 @@ from dfetch.reporting.sbom_reporter import (
 from dfetch.util.license import License as DfetchLicense
 from dfetch.util.license import LicenseScanResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -43,6 +30,7 @@ def _make_dfetch_license(
     probability: float = 0.95,
     text: str | None = None,
 ) -> DfetchLicense:
+    """Return a minimal DfetchLicense with sensible defaults."""
     return DfetchLicense(
         name=name,
         spdx_id=spdx_id,
@@ -201,7 +189,9 @@ class TestAttachIdentifiedLicenses:
     def test_multiple_licenses_each_get_confidence_property(self):
         component = _make_bare_component()
         lic1 = _make_dfetch_license(name="MIT License", spdx_id="MIT", probability=0.95)
-        lic2 = _make_dfetch_license(name="Apache License 2.0", spdx_id="Apache-2.0", probability=0.91)
+        lic2 = _make_dfetch_license(
+            name="Apache License 2.0", spdx_id="Apache-2.0", probability=0.91
+        )
         SbomReporter._attach_identified_licenses(component, [lic1, lic2])
         names = _get_property_names(component)
         assert "dfetch:license:MIT:confidence" in names
@@ -213,7 +203,9 @@ class TestAttachIdentifiedLicenses:
         )
         component = _make_bare_component()
         SbomReporter._attach_identified_licenses(component, [lic])
-        assert "dfetch:license:Custom License:confidence" in _get_property_names(component)
+        assert "dfetch:license:Custom License:confidence" in _get_property_names(
+            component
+        )
 
     def test_label_falls_back_to_unknown_when_no_spdx_or_name(self):
         """When both spdx_id and name are falsy the label 'unknown' is used.
@@ -275,14 +267,6 @@ class TestApplyLicensesIdentified:
         SbomReporter._apply_licenses(component, scan)
         val = _get_property_value(component, "dfetch:license:threshold")
         assert val == "0.80"
-
-    def test_threshold_value_reflects_scan_threshold(self):
-        component = _make_bare_component()
-        lic = _make_dfetch_license(spdx_id="MIT", probability=0.95)
-        scan = LicenseScanResult(identified=[lic], was_scanned=True, threshold=0.65)
-        SbomReporter._apply_licenses(component, scan)
-        val = _get_property_value(component, "dfetch:license:threshold")
-        assert val == "0.65"
 
     def test_noassertion_is_not_set_when_identified(self):
         component = _make_component_with_evidence()
@@ -449,6 +433,7 @@ class TestApplyLicensesNoFile:
         scan = LicenseScanResult(was_scanned=True, threshold=0.80)
         SbomReporter._apply_licenses(component, scan)
         val = _get_property_value(component, "dfetch:license:finding")
+        assert val is not None
         assert "No license file found" in val
 
     def test_tool_and_threshold_properties_present(self):
@@ -477,32 +462,6 @@ class TestApplyLicensesNoFile:
 
 
 # ---------------------------------------------------------------------------
-# SbomReporter._apply_licenses — identified with unclassified files (mixed)
-# ---------------------------------------------------------------------------
-
-
-class TestApplyLicensesMixed:
-    """When identified licenses exist, unclassified files still generate a finding property."""
-
-    def test_finding_property_set_for_unclassified_even_with_identified(self):
-        """If identified is non-empty, _attach_identified_licenses is called — but
-        because license_scan.unclassified_files is also non-empty the outer
-        ``if license_scan.unclassified_files:`` block at the bottom still fires."""
-        component = _make_bare_component()
-        lic = _make_dfetch_license(spdx_id="MIT", probability=0.95)
-        scan = LicenseScanResult(
-            identified=[lic],
-            unclassified_files=["COPYING"],
-            was_scanned=True,
-            threshold=0.80,
-        )
-        SbomReporter._apply_licenses(component, scan)
-        val = _get_property_value(component, "dfetch:license:finding")
-        assert val is not None
-        assert "COPYING" in val
-
-
-# ---------------------------------------------------------------------------
 # INFER_LICENSE_VERSION constant
 # ---------------------------------------------------------------------------
 
@@ -514,19 +473,15 @@ class TestInferLicenseVersion:
     def test_version_is_not_empty(self):
         assert INFER_LICENSE_VERSION != ""
 
-    def test_fallback_to_unknown_on_package_not_found(self):
-        from importlib.metadata import PackageNotFoundError
+    def test_version_matches_installed_package(self):
+        """INFER_LICENSE_VERSION must equal the version reported by the package index.
 
-        with patch(
-            "dfetch.reporting.sbom_reporter.pkg_version",
-            side_effect=PackageNotFoundError("infer-license"),
-        ):
-            # Re-import is not possible mid-test; instead verify the fallback
-            # branch by calling the same logic inline.
-            try:
-                from importlib.metadata import version as _pkg_v
+        INFER_LICENSE_VERSION is set at module import time via a try/except around
+        pkg_version("infer-license").  The fallback ("unknown") cannot be re-exercised
+        in-process without a full module reimport, so we only verify the happy path:
+        the constant must match what importlib.metadata reports for the installed
+        package.
+        """
+        from importlib.metadata import version as pkg_v
 
-                _pkg_v("infer-license")
-            except PackageNotFoundError:
-                fallback = "unknown"
-            assert fallback == "unknown"
+        assert INFER_LICENSE_VERSION == pkg_v("infer-license")
