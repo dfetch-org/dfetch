@@ -387,13 +387,12 @@ class ArchiveLocalRepo:
 
     @staticmethod
     def _is_unsafe_symlink_target(target: str) -> bool:
-        r"""Return *True* when *target* is an absolute symlink destination.
+        r"""Return *True* when *target* is an unsafe symlink destination.
 
         Absolute targets (POSIX ``/`` or Windows drive/UNC anchors) are
-        always unsafe regardless of context.  Relative targets that contain
-        ``..`` components are NOT rejected here; they are validated after
-        extraction by :meth:`_check_symlinks_in_dest` using the manifest
-        root as the safety boundary.
+        always unsafe.  Relative targets containing ``..`` components are
+        permitted at pre-extraction time; :meth:`_check_symlinks_in_dest`
+        enforces the boundary after extraction.
         """
         posix = pathlib.PurePosixPath(target)
         win = pathlib.PureWindowsPath(target)

@@ -254,3 +254,4 @@ Feature: Fetching dependencies from an archive (tar/zip)
                             link.mk
                 dfetch.yaml
             """
+        And 'MyProject/SomeProject/sub/dir/link.mk' is a symlink pointing to '../../other/target.mk'
