@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(codespell)",
+      "Bash(python -m behave *)",
+      "Bash(python -m pytest tests/*)",
+      "Bash(for i:*)",
+      "Bash(do python:*)",
+      "Bash(pre-commit run:*)",
+      "Bash(git stash:*)",
+      "Bash(xenon *)",
+      "Bash(radon *)",
+      "Bash(isort --diff dfetch)",
+      "Bash(black --check dfetch)",
+      "Bash(pylint dfetch:*)",
+      "Bash(ruff check:*)",
+      "Bash(mypy dfetch:*)",
+      "Bash(pip show:*)",
+      "Bash(doc8 doc:*)",
+      "Bash(pydocstyle dfetch:*)",
+      "Bash(bandit -r dfetch)",
+      "Bash(pyroma --directory --min=10 .)",
+      "Bash(xargs pyupgrade:*)",
+      "Bash(lint-imports)"
+    ]
+  }
+}
