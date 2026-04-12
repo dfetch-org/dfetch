@@ -363,6 +363,15 @@ def step_impl(_, name):
     assert os.path.exists(name), f"Expected {name} to exist, but it didn't!"
 
 
+@then("'{path}' is a symlink pointing to '{target}'")
+def step_impl(_, path, target):
+    assert os.path.islink(
+        path
+    ), f"Expected {path!r} to be a symbolic link, but it is not"
+    actual = os.readlink(path)
+    assert actual == target, f"Expected {path!r} to point to {target!r}, got {actual!r}"
+
+
 def multisub(patterns: List[Tuple[Pattern[str], str]], text: str) -> str:
     """Apply a list of tuples that each contain a regex + replace string."""
     for pattern, replace in patterns:

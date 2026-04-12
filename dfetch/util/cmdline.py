@@ -49,8 +49,8 @@ def run_on_cmdline(
     except subprocess.CalledProcessError as exc:
         raise SubprocessCommandError(
             exc.cmd,
-            exc.output.decode().strip(),
-            exc.stderr.decode().strip(),
+            exc.output.decode(errors="replace").strip(),
+            exc.stderr.decode(errors="replace").strip(),
             exc.returncode,
         ) from exc
     except FileNotFoundError as exc:
@@ -62,7 +62,10 @@ def run_on_cmdline(
 
     if proc.returncode:
         raise SubprocessCommandError(
-            cmd, stdout.decode(), stderr.decode().strip(), proc.returncode
+            cmd,
+            stdout.decode(errors="replace"),
+            stderr.decode(errors="replace").strip(),
+            proc.returncode,
         )
 
     return proc
