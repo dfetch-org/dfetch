@@ -1,6 +1,7 @@
 Release 0.14.0 (unreleased)
 ===========================
 
+* Use ``.cdx.json`` as the default extension for CycloneDX SBOM reports (#1118)
 * Embed base64-encoded license text in SBOM ``licenses[].text`` when a license is successfully identified (#1112)
 * Set SBOM ``licenses`` to ``NOASSERTION`` when a license file is not found or cannot be classified (#1112)
 * Add a ``dfetch:license:finding`` property to SBOM when ``NOASSERTION`` is set, explaining the reason (#1112)

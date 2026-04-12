@@ -30,7 +30,7 @@ Feature: SBOM license transparency
             """
         And all projects are updated
         When I run "dfetch report -t sbom"
-        Then the 'report.json' json file includes
+        Then the 'report.cdx.json' json file includes
             """
             {
                 "components": [
@@ -83,7 +83,7 @@ Feature: SBOM license transparency
             """
         And all projects are updated
         When I run "dfetch report -t sbom"
-        Then the 'report.json' json file includes
+        Then the 'report.cdx.json' json file includes
             """
             {
                 "components": [
@@ -154,7 +154,7 @@ Feature: SBOM license transparency
             """
         And all projects are updated
         When I run "dfetch report -t sbom"
-        Then the 'report.json' json file includes
+        Then the 'report.cdx.json' json file includes
             """
             {
                 "components": [

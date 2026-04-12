@@ -24,7 +24,7 @@ Feature: Create a CycloneDX SBOM for archive dependencies
             """
         And all projects are updated
         When I run "dfetch report -t sbom"
-        Then the 'report.json' json file includes
+        Then the 'report.cdx.json' json file includes
             """
             {
                 "components": [
@@ -58,7 +58,7 @@ Feature: Create a CycloneDX SBOM for archive dependencies
             """
         And all projects are updated
         When I run "dfetch report -t sbom"
-        Then the 'report.json' json file includes
+        Then the 'report.cdx.json' json file includes
             """
             {
                 "components": [
@@ -98,7 +98,7 @@ Feature: Create a CycloneDX SBOM for archive dependencies
                     hash: sha256:<archive-sha256>
             """
         When I run "dfetch report -t sbom"
-        Then the 'report.json' json file includes
+        Then the 'report.cdx.json' json file includes
             """
             {
                 "components": [
@@ -138,7 +138,7 @@ Feature: Create a CycloneDX SBOM for archive dependencies
             """
         And all projects are updated
         When I run "dfetch report -t sbom"
-        Then the 'report.json' json file includes
+        Then the 'report.cdx.json' json file includes
             """
             {
                 "components": [

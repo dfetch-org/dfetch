@@ -14,7 +14,7 @@ clear
 # Run the command
 pe "ls -l"
 pe "dfetch report -t sbom"
-pe "cat report.json"
+pe "cat report.cdx.json"
 
 
 PROMPT_TIMEOUT=3
