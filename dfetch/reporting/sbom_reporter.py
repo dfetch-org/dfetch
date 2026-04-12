@@ -471,19 +471,19 @@ class SbomReporter(Reporter):
         else:
             if license_scan.unclassified_files:
                 files_str = ", ".join(sorted(license_scan.unclassified_files))
-                acknowledgement_text = (
+                finding_text = (
                     f"License file(s) found ({files_str}) but could not be classified"
                 )
                 reason = "UNCLASSIFIABLE_LICENSE_TEXT"
             else:
-                acknowledgement_text = "No license file found in source tree"
+                finding_text = "No license file found in source tree"
                 reason = "NO_LICENSE_FILE"
 
             noassertion = CycloneDxLicense(
                 id="NOASSERTION",
                 acknowledgement=LicenseAcknowledgement.CONCLUDED,
                 text=AttachedText(
-                    content=acknowledgement_text,
+                    content=finding_text,
                     content_type="text/plain",
                 ),
             )
@@ -497,20 +497,10 @@ class SbomReporter(Reporter):
                     value=reason,
                 )
             )
-
-        if license_scan.unclassified_files:
-            files_str = ", ".join(sorted(license_scan.unclassified_files))
             component.properties.add(
                 Property(
                     name="dfetch:license:finding",
-                    value=f"License file(s) found ({files_str}) but could not be classified",
-                )
-            )
-        elif not license_scan.identified:
-            component.properties.add(
-                Property(
-                    name="dfetch:license:finding",
-                    value="No license file found in source tree",
+                    value=finding_text,
                 )
             )
 
