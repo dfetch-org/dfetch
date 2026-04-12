@@ -68,7 +68,7 @@ import dfetch.project
 from dfetch.log import get_logger
 from dfetch.project import create_super_project
 from dfetch.project.superproject import NoVcsSuperProject
-from dfetch.util.util import catch_runtime_exceptions, in_directory
+from dfetch.util.util import in_directory
 
 logger = get_logger(__name__)
 
@@ -99,7 +99,6 @@ class Freeze(dfetch.commands.command.Command):
         superproject = create_super_project()
         make_backup = isinstance(superproject, NoVcsSuperProject)
 
-        exceptions: list[str] = []
         manifest_updated = False
 
         with in_directory(superproject.root_directory):
@@ -110,7 +109,7 @@ class Freeze(dfetch.commands.command.Command):
                 shutil.copyfile(manifest_path, manifest_path + ".backup")
 
             for project in projects_to_freeze:
-                with catch_runtime_exceptions(exceptions) as exceptions:
+                try:
                     sub_project = dfetch.project.create_sub_project(project)
                     on_disk_version = sub_project.on_disk_version()
 
@@ -133,6 +132,8 @@ class Freeze(dfetch.commands.command.Command):
                         )
                         superproject.manifest.update_project_version(project)
                         manifest_updated = True
+                except RuntimeError as exc:
+                    logger.print_warning_line(project.name, str(exc))
 
             if manifest_updated:
                 superproject.manifest.dump()
