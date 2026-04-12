@@ -4,12 +4,15 @@
 # flake8: noqa
 
 import base64
+import json
 from unittest.mock import MagicMock, patch
 
 from cyclonedx.model import AttachedText, Encoding, Property
 from cyclonedx.model.component import Component, ComponentEvidence, ComponentType
 from cyclonedx.model.license import DisjunctiveLicense as CycloneDxLicense
 from cyclonedx.model.license import LicenseAcknowledgement
+from cyclonedx.schema import SchemaVersion
+from cyclonedx.validation.json import JsonValidator
 
 from dfetch.reporting.sbom_reporter import (
     INFER_LICENSE_VERSION,
@@ -78,7 +81,14 @@ def _get_property_value(component: Component, name: str) -> str | None:
 
 
 def _get_license_ids(component: Component) -> list[str | None]:
-    return [lic.id for lic in component.licenses]
+    """Return a list of SPDX IDs or expression values from component licenses."""
+    result = []
+    for lic in component.licenses:
+        if hasattr(lic, "id"):
+            result.append(lic.id)
+        elif hasattr(lic, "value"):
+            result.append(lic.value)
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -327,7 +337,10 @@ class TestApplyLicensesUnclassified:
             threshold=0.80,
         )
         SbomReporter._apply_licenses(component, scan)
-        evidence_ids = [l.id for l in component.evidence.licenses]
+        evidence_ids = [
+            getattr(l, "id", None) or getattr(l, "value", None)
+            for l in component.evidence.licenses
+        ]
         assert "NOASSERTION" in evidence_ids
 
     def test_noassertion_has_concluded_acknowledgement(self):
@@ -338,10 +351,17 @@ class TestApplyLicensesUnclassified:
             threshold=0.80,
         )
         SbomReporter._apply_licenses(component, scan)
-        noassertion = next(l for l in component.licenses if l.id == "NOASSERTION")
+        from cyclonedx.model.license import LicenseExpression
+
+        noassertion = next(
+            l
+            for l in component.licenses
+            if isinstance(l, LicenseExpression) and l.value == "NOASSERTION"
+        )
         assert noassertion.acknowledgement == LicenseAcknowledgement.CONCLUDED
 
-    def test_noassertion_text_mentions_filename(self):
+    def test_noassertion_finding_property_mentions_filename(self):
+        """The dfetch:license:finding property (not the license object) carries the filename."""
         component = _make_bare_component()
         scan = LicenseScanResult(
             unclassified_files=["LICENSE"],
@@ -349,10 +369,11 @@ class TestApplyLicensesUnclassified:
             threshold=0.80,
         )
         SbomReporter._apply_licenses(component, scan)
-        noassertion = next(l for l in component.licenses if l.id == "NOASSERTION")
-        assert "LICENSE" in noassertion.text.content
+        val = _get_property_value(component, "dfetch:license:finding")
+        assert val is not None and "LICENSE" in val
 
-    def test_multiple_unclassified_files_sorted_in_text(self):
+    def test_multiple_unclassified_files_sorted_in_finding_property(self):
+        """Multiple unclassified files appear sorted in the dfetch:license:finding property."""
         component = _make_bare_component()
         scan = LicenseScanResult(
             unclassified_files=["COPYING", "LICENSE"],
@@ -360,10 +381,10 @@ class TestApplyLicensesUnclassified:
             threshold=0.80,
         )
         SbomReporter._apply_licenses(component, scan)
-        noassertion = next(l for l in component.licenses if l.id == "NOASSERTION")
-        # Files should be sorted
-        assert "COPYING" in noassertion.text.content
-        assert "LICENSE" in noassertion.text.content
+        val = _get_property_value(component, "dfetch:license:finding")
+        assert val is not None
+        assert "COPYING" in val
+        assert "LICENSE" in val
 
     def test_noassertion_reason_property_is_unclassifiable(self):
         component = _make_bare_component()
@@ -414,12 +435,13 @@ class TestApplyLicensesNoFile:
         ids = _get_license_ids(component)
         assert "NOASSERTION" in ids
 
-    def test_noassertion_text_says_no_file_found(self):
+    def test_noassertion_finding_property_says_no_file_found(self):
+        """The dfetch:license:finding property (not the license object) describes the reason."""
         component = _make_bare_component()
         scan = LicenseScanResult(was_scanned=True, threshold=0.80)
         SbomReporter._apply_licenses(component, scan)
-        noassertion = next(l for l in component.licenses if l.id == "NOASSERTION")
-        assert "No license file found" in noassertion.text.content
+        val = _get_property_value(component, "dfetch:license:finding")
+        assert val is not None and "No license file found" in val
 
     def test_noassertion_reason_property_is_no_license_file(self):
         component = _make_bare_component()
@@ -448,7 +470,10 @@ class TestApplyLicensesNoFile:
         component = _make_component_with_evidence()
         scan = LicenseScanResult(was_scanned=True, threshold=0.80)
         SbomReporter._apply_licenses(component, scan)
-        evidence_ids = [l.id for l in component.evidence.licenses]
+        evidence_ids = [
+            getattr(l, "id", None) or getattr(l, "value", None)
+            for l in component.evidence.licenses
+        ]
         assert "NOASSERTION" in evidence_ids
 
     def test_no_confidence_property_when_no_license(self):
@@ -464,6 +489,129 @@ class TestApplyLicensesNoFile:
 # ---------------------------------------------------------------------------
 # INFER_LICENSE_VERSION constant
 # ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# CycloneDX 1.6 schema validation
+# ---------------------------------------------------------------------------
+
+
+class TestSbomSchemaValid:
+    """The JSON emitted by SbomReporter must be valid CycloneDX 1.6."""
+
+    @staticmethod
+    def _make_reporter(manifest):
+        return SbomReporter(manifest)
+
+    @staticmethod
+    def _make_manifest(relative_path: str = "dfetch.yaml"):
+        from dfetch.manifest.manifest import ManifestEntryLocation
+
+        manifest = MagicMock()
+        manifest.relative_path = relative_path
+        manifest.find_name_in_manifest.return_value = ManifestEntryLocation(
+            line_number=5, start=13, end=20
+        )
+        return manifest
+
+    @staticmethod
+    def _make_project(
+        name: str = "mylib",
+        remote_url: str = "https://github.com/example/mylib",
+        tag: str = "v1.0",
+        source: str = "",
+        vcs: str = "git",
+    ):
+        project = MagicMock()
+        project.name = name
+        project.remote_url = remote_url
+        project.tag = tag
+        project.source = source
+        project.vcs = vcs
+        return project
+
+    def _generate_sbom_json(self, tmp_path, projects=None, license_scan=None):
+        """Build a reporter, add projects, write to file, return the JSON string."""
+        if projects is None:
+            projects = [self._make_project()]
+        if license_scan is None:
+            license_scan = LicenseScanResult(was_scanned=False)
+
+        manifest = self._make_manifest()
+        reporter = SbomReporter(manifest)
+        for project in projects:
+            reporter.add_project(
+                project=project, license_scan=license_scan, version="v1.0"
+            )
+
+        out = tmp_path / "report.cdx.json"
+        reporter.dump_to_file(str(out))
+        return out.read_text(encoding="utf-8")
+
+    def test_empty_sbom_is_schema_valid(self, tmp_path):
+        """An SBOM with no projects must satisfy the CycloneDX 1.6 schema."""
+        manifest = self._make_manifest()
+        reporter = SbomReporter(manifest)
+        out = tmp_path / "empty.cdx.json"
+        reporter.dump_to_file(str(out))
+
+        json_str = out.read_text(encoding="utf-8")
+        errors = JsonValidator(SchemaVersion.V1_6).validate_str(json_str)
+        assert errors is None, f"CycloneDX 1.6 schema violations: {errors}"
+
+    def test_single_vcs_project_is_schema_valid(self, tmp_path):
+        """An SBOM with one VCS project must satisfy the CycloneDX 1.6 schema."""
+        json_str = self._generate_sbom_json(tmp_path)
+        errors = JsonValidator(SchemaVersion.V1_6).validate_str(json_str)
+        assert errors is None, f"CycloneDX 1.6 schema violations: {errors}"
+
+    def test_identified_license_is_schema_valid(self, tmp_path):
+        """An SBOM with an identified SPDX license must satisfy the CycloneDX 1.6 schema."""
+        from dfetch.util.license import License as DfetchLicense
+
+        lic = DfetchLicense(
+            name="MIT License",
+            spdx_id="MIT",
+            trove_classifier=None,
+            probability=0.95,
+            text="MIT License\nCopyright 2024",
+        )
+        scan = LicenseScanResult(identified=[lic], was_scanned=True, threshold=0.80)
+        json_str = self._generate_sbom_json(tmp_path, license_scan=scan)
+        errors = JsonValidator(SchemaVersion.V1_6).validate_str(json_str)
+        assert errors is None, f"CycloneDX 1.6 schema violations: {errors}"
+
+    def test_noassertion_unclassified_is_schema_valid(self, tmp_path):
+        """An SBOM with NOASSERTION (unclassifiable file) must satisfy the CycloneDX 1.6 schema."""
+        scan = LicenseScanResult(
+            unclassified_files=["LICENSE"], was_scanned=True, threshold=0.80
+        )
+        json_str = self._generate_sbom_json(tmp_path, license_scan=scan)
+        errors = JsonValidator(SchemaVersion.V1_6).validate_str(json_str)
+        assert errors is None, f"CycloneDX 1.6 schema violations: {errors}"
+
+    def test_noassertion_no_license_file_is_schema_valid(self, tmp_path):
+        """An SBOM with NOASSERTION (no license file) must satisfy the CycloneDX 1.6 schema."""
+        scan = LicenseScanResult(was_scanned=True, threshold=0.80)
+        json_str = self._generate_sbom_json(tmp_path, license_scan=scan)
+        errors = JsonValidator(SchemaVersion.V1_6).validate_str(json_str)
+        assert errors is None, f"CycloneDX 1.6 schema violations: {errors}"
+
+    def test_archive_project_is_schema_valid(self, tmp_path):
+        """An SBOM with an archive (tar.gz) project must satisfy the CycloneDX 1.6 schema."""
+        archive_project = self._make_project(
+            name="SomeLib",
+            remote_url="https://example.com/SomeLib.tar.gz",
+            tag="",
+            vcs="archive",
+        )
+        json_str = self._generate_sbom_json(
+            tmp_path,
+            projects=[archive_project],
+            license_scan=LicenseScanResult(was_scanned=False),
+        )
+        errors = JsonValidator(SchemaVersion.V1_6).validate_str(json_str)
+        assert errors is None, f"CycloneDX 1.6 schema violations: {errors}"
 
 
 class TestInferLicenseVersion:

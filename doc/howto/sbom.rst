@@ -25,15 +25,14 @@ field is always populated:
   declared identifier.
 * **File found, unclassifiable** — a license-like file (``LICENSE``,
   ``COPYING``, …) was detected but its text could not be matched to a known
-  SPDX identifier with sufficient confidence.  The field is set to
-  ``NOASSERTION`` with ``acknowledgement`` set to ``concluded``, a
-  human-readable explanation in ``text``, and
+  SPDX identifier with sufficient confidence.  The field is set to the SPDX
+  expression ``NOASSERTION`` with ``acknowledgement`` set to ``concluded`` and
   ``dfetch:license:noassertion:reason`` set to
   ``UNCLASSIFIABLE_LICENSE_TEXT``.
 * **No license file present** — no license-like file was found.  The field is
-  set to ``NOASSERTION`` with ``acknowledgement`` set to ``concluded``, a
-  human-readable explanation in ``text``, and
-  ``dfetch:license:noassertion:reason`` set to ``NO_LICENSE_FILE``.
+  set to the SPDX expression ``NOASSERTION`` with ``acknowledgement`` set to
+  ``concluded`` and ``dfetch:license:noassertion:reason`` set to
+  ``NO_LICENSE_FILE``.
 
 This ensures the ``licenses`` field is never silently omitted for scanned
 projects, giving downstream compliance tooling actionable context regardless of
@@ -111,8 +110,9 @@ When viewing a component with a ``NOASSERTION`` license in DependencyTrack:
 * The **properties panel** displays the dfetch license detection metadata
   (``dfetch:license:noassertion:reason``, ``dfetch:license:finding``, etc.).
 * The **license detail view** is empty — DependencyTrack has no detail to
-  show for a non-specific SPDX value.  The raw CycloneDX payload still carries
-  ``acknowledgement`` and ``text`` for human-readable context.
+  show for a non-specific SPDX expression.  The raw CycloneDX payload carries
+  ``acknowledgement`` and the ``dfetch:license:finding`` property for
+  human-readable context.
 
 .. image:: ../images/dependency-track-properties.png
    :alt: Properties view showing dfetch license detection metadata

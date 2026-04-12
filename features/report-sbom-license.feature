@@ -91,14 +91,8 @@ Feature: SBOM license transparency
                         "name": "SomeProject",
                         "licenses": [
                             {
-                                "license": {
-                                    "id": "NOASSERTION",
-                                    "acknowledgement": "concluded",
-                                    "text": {
-                                        "content": "License file(s) found (LICENSE) but could not be classified",
-                                        "contentType": "text/plain"
-                                    }
-                                }
+                                "acknowledgement": "concluded",
+                                "expression": "NOASSERTION"
                             }
                         ],
                         "properties": [
@@ -122,14 +116,8 @@ Feature: SBOM license transparency
                         "evidence": {
                             "licenses": [
                                 {
-                                    "license": {
-                                        "id": "NOASSERTION",
-                                        "acknowledgement": "concluded",
-                                        "text": {
-                                            "content": "License file(s) found (LICENSE) but could not be classified",
-                                            "contentType": "text/plain"
-                                        }
-                                    }
+                                    "acknowledgement": "concluded",
+                                    "expression": "NOASSERTION"
                                 }
                             ]
                         }
@@ -162,14 +150,8 @@ Feature: SBOM license transparency
                         "name": "SomeProject",
                         "licenses": [
                             {
-                                "license": {
-                                    "id": "NOASSERTION",
-                                    "acknowledgement": "concluded",
-                                    "text": {
-                                        "content": "No license file found in source tree",
-                                        "contentType": "text/plain"
-                                    }
-                                }
+                                "acknowledgement": "concluded",
+                                "expression": "NOASSERTION"
                             }
                         ],
                         "properties": [
@@ -193,14 +175,8 @@ Feature: SBOM license transparency
                         "evidence": {
                             "licenses": [
                                 {
-                                    "license": {
-                                        "id": "NOASSERTION",
-                                        "acknowledgement": "concluded",
-                                        "text": {
-                                            "content": "No license file found in source tree",
-                                            "contentType": "text/plain"
-                                        }
-                                    }
+                                    "acknowledgement": "concluded",
+                                    "expression": "NOASSERTION"
                                 }
                             ]
                         }
