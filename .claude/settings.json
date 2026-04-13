@@ -4,7 +4,7 @@
       "Bash(codespell)",
       "Bash(python -m behave *)",
       "Bash(python -m pytest tests/*)",
-"Bash(pre-commit run:*)",
+      "Bash(pre-commit run:*)",
       "Bash(git stash:*)",
       "Bash(xenon *)",
       "Bash(radon *)",
@@ -24,6 +24,11 @@
       "Bash(pytest tests/test_sbom_reporter.py -q)",
       "Bash(make -C doc latexpdf)",
       "Bash(make -C doc clean)",
+      "Bash(dfetch add:*)",
+      "Bash(dfetch update:*)"
+    ],
+    "additionalDirectories": [
+      "/workspaces/dfetch/.claude"
     ]
   }
 }
