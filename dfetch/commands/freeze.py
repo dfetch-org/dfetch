@@ -100,6 +100,7 @@ class Freeze(dfetch.commands.command.Command):
         make_backup = isinstance(superproject, NoVcsSuperProject)
 
         manifest_updated = False
+        had_errors = False
 
         with in_directory(superproject.root_directory):
             manifest_path = superproject.manifest.path
@@ -134,7 +135,11 @@ class Freeze(dfetch.commands.command.Command):
                         manifest_updated = True
                 except RuntimeError as exc:
                     logger.print_warning_line(project.name, str(exc))
+                    had_errors = True
 
             if manifest_updated:
                 superproject.manifest.dump()
                 logger.info(f"Updated manifest ({manifest_path}) in {os.getcwd()}")
+
+        if had_errors:
+            raise RuntimeError()
