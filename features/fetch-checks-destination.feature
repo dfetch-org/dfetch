@@ -23,7 +23,6 @@ Feature: Fetch checks destinations
             Dfetch (0.13.0)
               ext/test-repo-tag:
               > Skipping, path "." is not allowed as destination.
-            Destination must be in a valid subfolder. "." is not valid!
             """
 
     Scenario: Path traversal is not allowed
@@ -45,5 +44,4 @@ Feature: Fetch checks destinations
             Dfetch (0.13.0)
               ext/test-repo-tag:
               > Skipping, path "../../some-higher-folder" is outside manifest directory tree.
-            Destination must be in the manifests folder or a subfolder. "../../some-higher-folder" is outside this tree!
             """

@@ -76,5 +76,5 @@ Feature: Patch after fetching from svn repo
                 source/target file does not exist:
                   --- b'build-deb2.sh'
                   +++ b'build-deb2.sh'
-            Applying patch "diff.patch" failed
+              > Applying patch "diff.patch" failed
             """

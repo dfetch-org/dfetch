@@ -118,7 +118,8 @@ Feature: Fetching dependencies from an archive (tar/zip)
         Then the output shows
             """
             Dfetch (0.13.0)
-            Hash mismatch for SomeProject! sha256 expected 0000000000000000000000000000000000000000000000000000000000000000
+              SomeProject:
+              > Hash mismatch for SomeProject! sha256 expected 0000000000000000000000000000000000000000000000000000000000000000
             """
 
     Scenario: Specific directory from archive can be fetched

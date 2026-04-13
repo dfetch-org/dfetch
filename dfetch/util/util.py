@@ -177,18 +177,6 @@ def in_directory(path: str | Path) -> Generator[str, None, None]:
 
 
 @contextmanager
-def catch_runtime_exceptions(
-    exc_list: list[str] | None = None,
-) -> Generator[list[str], None, None]:
-    """Catch all runtime errors and add it to list of strings."""
-    exc_list = exc_list or []
-    try:
-        yield exc_list
-    except RuntimeError as exc:
-        exc_list += [str(exc)]
-
-
-@contextmanager
 def prefix_runtime_exceptions(
     prefix: str,
 ) -> Generator[None, None, None]:

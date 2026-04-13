@@ -102,9 +102,7 @@ def test_add_project_prints_multiple_licenses_comma_separated():
         trove_classifier=None,
         probability=0.92,
     )
-    scan = LicenseScanResult(
-        identified=[lic1, lic2], was_scanned=True, threshold=0.80
-    )
+    scan = LicenseScanResult(identified=[lic1, lic2], was_scanned=True, threshold=0.80)
 
     meta = _make_metadata()
     with patch(

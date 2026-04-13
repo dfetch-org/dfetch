@@ -38,7 +38,6 @@ from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.util.util import (
-    catch_runtime_exceptions,
     check_no_path_traversal,
     in_directory,
 )
@@ -84,7 +83,7 @@ class FormatPatch(dfetch.commands.command.Command):
         """Perform the format patch."""
         superproject = create_super_project()
 
-        exceptions: list[str] = []
+        had_errors: bool = False
 
         output_dir_path = pathlib.Path(args.output_directory).resolve()
 
@@ -94,7 +93,7 @@ class FormatPatch(dfetch.commands.command.Command):
 
         with in_directory(superproject.root_directory):
             for project in superproject.manifest.selected_projects(args.projects):
-                with catch_runtime_exceptions(exceptions) as exceptions:
+                try:
                     subproject = dfetch.project.create_sub_project(project)
 
                     # Check if the project has a patch, maybe suggest creating one?
@@ -139,9 +138,12 @@ class FormatPatch(dfetch.commands.command.Command):
                             project.name,
                             f"formatted patch written to {output_patch_file.relative_to(os.getcwd())}",
                         )
+                except RuntimeError as exc:
+                    logger.print_warning_line(project.name, str(exc))
+                    had_errors = True
 
-        if exceptions:
-            raise RuntimeError("\n".join(exceptions))
+        if had_errors:
+            raise RuntimeError()
 
 
 def _determine_target_patch_type(subproject: SubProject) -> PatchType:
