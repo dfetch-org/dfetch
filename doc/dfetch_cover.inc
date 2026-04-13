@@ -1,6 +1,6 @@
 % dfetch cover page
 %
-% \input{dfetch_cover} is called from latex_elements['maketitle'] in conf.py.
+% \input{dfetch_cover.inc} is called from latex_elements['maketitle'] in conf.py.
 %
 % Prerequisites (declared in the preamble via latex_elements):
 %   packages : tikz, xcolor, fontspec, graphicx
