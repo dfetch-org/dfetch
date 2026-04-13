@@ -109,13 +109,14 @@ class Check(dfetch.commands.command.Command):
                         reporters,
                         files_to_ignore=superproject.ignored_files(project.destination),
                     )
+                    if not args.no_recommendations and os.path.isdir(
+                        project.destination
+                    ):
+                        with in_directory(project.destination):
+                            check_sub_manifests(superproject.manifest, project)
                 except RuntimeError as exc:
                     logger.print_warning_line(project.name, str(exc))
                     had_errors = True
-
-                if not args.no_recommendations and os.path.isdir(project.destination):
-                    with in_directory(project.destination):
-                        check_sub_manifests(superproject.manifest, project)
 
             for reporter in reporters:
                 reporter.dump_to_file()
