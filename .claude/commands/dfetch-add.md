@@ -1,3 +1,5 @@
+# DFetch add workflow
+
 Add a new project to `dfetch.yaml` and fetch it.
 
 The user may pass a URL or description as `$ARGUMENTS`. If they did not, ask for the URL before proceeding.
