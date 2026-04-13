@@ -122,7 +122,7 @@ Feature: Create an CycloneDX sbom
                     "tools": {
                         "components": [
                             {
-                                "bom-ref": "dfetch-0.14.0",
+                                "bom-ref": "dfetch-0.13.0",
                                 "externalReferences": [
                                     {
                                         "type": "build-system",
@@ -170,7 +170,7 @@ Feature: Create an CycloneDX sbom
                                     "name": "dfetch-org"
                                 },
                                 "type": "application",
-                                "version": "0.14.0"
+                                "version": "0.13.0"
                             },
                             {
                                 "description": "Python library for CycloneDX",

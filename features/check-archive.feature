@@ -24,7 +24,7 @@ Feature: Checking dependencies from an archive
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               SomeProject:
               > up-to-date (some-remote-server/SomeProject.tar.gz)
             """
@@ -48,7 +48,7 @@ Feature: Checking dependencies from an archive
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               SomeProject:
               > up-to-date (sha256:<archive-sha256>)
             """
@@ -69,7 +69,7 @@ Feature: Checking dependencies from an archive
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               SomeProject:
               > wanted (some-remote-server/SomeProject.tar.gz), available (some-remote-server/SomeProject.tar.gz)
             """
@@ -87,7 +87,7 @@ Feature: Checking dependencies from an archive
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               non-existent-archive:
               > wanted (https://dfetch.invalid/does-not-exist.tar.gz), but not available at the upstream.
             """
@@ -113,7 +113,7 @@ Feature: Checking dependencies from an archive
         When I run "dfetch check SomeProject" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               SomeProject:
               > up-to-date (some-remote-server/SomeProject.tar.gz)
             """
@@ -136,7 +136,7 @@ Feature: Checking dependencies from an archive
         When I run "dfetch check SomeProject" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               SomeProject:
               > Local changes were detected, please generate a patch using 'dfetch diff SomeProject' and add it to your manifest using 'patch:'. Alternatively overwrite the local changes with 'dfetch update --force SomeProject'
               > up-to-date (some-remote-server/SomeProject.tar.gz)

@@ -24,7 +24,7 @@ Feature: Fetch file pattern from git repo
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               SomeProjectWithAnInterestingFile:
               > Fetched v1
             """
@@ -56,7 +56,7 @@ Feature: Fetch file pattern from git repo
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
             The 'src:' filter 'SomeFolder/Some*' matches multiple directories from 'some-remote-server/SomeProjectWithAnInterestingFile.git'. Only considering files in 'SomeFolder/SomeOtherSubFolder'.
               SomeProjectWithAnInterestingFile:
               > Fetched v1

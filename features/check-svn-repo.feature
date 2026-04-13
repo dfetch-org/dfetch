@@ -29,7 +29,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               cunit-svn-rev-only:
               > wanted (176), available (trunk - 176)
               cunit-svn-rev-and-branch:
@@ -56,7 +56,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               cutter-svn-tag:
               > wanted (1.1.7), available (1.1.8)
             """
@@ -94,7 +94,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               cunit-svn-rev-only:
               > wanted (169), current (trunk - 169), available (trunk - 176)
               cunit-svn-rev-and-branch:
@@ -118,7 +118,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               SomeProject:
               > wanted (latest), current (1), available (1)
             """
@@ -137,7 +137,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               non-existent-url:
               > >>>svn info --non-interactive https://giiiiiidhub.com/i-do-not-exist/broken/trunk<<< failed!
                 'https://giiiiiidhub.com/i-do-not-exist/broken/trunk' is not a valid URL or unreachable:
@@ -163,7 +163,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               cutter-svn-tag:
               > wanted (non-existent-tag), but not available at the upstream.
             """
@@ -184,7 +184,7 @@ Feature: Checking dependencies from a svn repository
         When I run "dfetch check SomeProject"
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.13.0)
               SomeProject:
               > up-to-date (v1)
             """
