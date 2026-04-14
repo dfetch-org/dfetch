@@ -114,6 +114,7 @@ def vcs_url_to_purl(
     Supports GitHub, Bitbucket, SVN, SSH paths, and generic VCS URLs.
     Optionally specify version and subpath.
     """
+    vcs_url = vcs_url.rstrip("/")
     purl = _known_purl_types(vcs_url, version, subpath)
     if purl:
         return purl
