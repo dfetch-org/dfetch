@@ -1,3 +1,4 @@
+.mcp.json
 __pycache__
 .coverage
 .mypy_cache
