@@ -12,6 +12,7 @@ Release 0.14.0 (unreleased)
 * Edit manifest in-place when freezing inside a git or SVN superproject, preserving comments and layout (#1063)
 * Add new ``remove`` command to remove projects from manifest and disk (#26)
 * Fix "unsafe symlink target" error for archives containing relative ``..`` symlinks (#1122)
+* Fix ``dfetch add`` crashing with a ``ValueError`` when the remote URL has a trailing slash (#1137)
 
 Release 0.13.0 (released 2026-03-30)
 ====================================
