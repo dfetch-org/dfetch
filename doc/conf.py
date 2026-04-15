@@ -61,6 +61,11 @@ extensions = [
 copybutton_prompt_text = r"\$ |>>> |\.\.\. "
 copybutton_prompt_is_regexp = True
 
+# scenario_directive: tags that are not group keys (environment markers, etc.)
+# The first tag on a feature file that is not in this list determines which
+# appendix section the file ends up in.
+scenario_non_command_tags = ["remote-svn"]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
