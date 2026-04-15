@@ -1,3 +1,4 @@
+@remove
 Feature: Remove a project from the manifest
 
     During the lifetime of a project, dependencies come and go. When a vendored

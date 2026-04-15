@@ -1,3 +1,4 @@
+@validate
 Feature: Validate a manifest
 
     *DFetch* can check if the manifest is valid.

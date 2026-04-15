@@ -1,3 +1,4 @@
+@update
 Feature: Keep license in project
 
     Lots of people in the world do a lot of hard work to create software

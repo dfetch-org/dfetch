@@ -1,3 +1,4 @@
+@update
 Feature: Fetch single file from git repo
 
     Sometimes only one file is enough. *DFetch* makes it possible to specify

@@ -1,3 +1,4 @@
+@update
 Feature: Fetching dependencies from a git repository
 
     The main functionality of *DFetch* is fetching remote dependencies.

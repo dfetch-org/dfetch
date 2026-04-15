@@ -1,3 +1,4 @@
+@update
 Feature: Handle invalid metadata files
 
     *Dfetch* will keep metadata about the fetched project locally to prevent re-fetching unchanged projects

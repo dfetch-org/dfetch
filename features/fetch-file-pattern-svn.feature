@@ -1,3 +1,4 @@
+@update
 Feature: Fetch file pattern from svn repo
 
     Sometimes all files matching a pattern can be useful.

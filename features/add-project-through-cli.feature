@@ -1,3 +1,4 @@
+@add
 Feature: Add a project to the manifest via the CLI
 
     *DFetch* can add a new project entry to the manifest without requiring

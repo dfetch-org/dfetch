@@ -1,4 +1,4 @@
-@remote-svn
+@remote-svn @update
 Feature: Patch after fetching from svn repo
 
     Sometimes a patch needs to be applied after fetching. *DFetch* makes it

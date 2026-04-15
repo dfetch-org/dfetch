@@ -1,3 +1,4 @@
+@update
 Feature: Fetching dependencies from an archive (tar/zip)
 
     Some projects are distributed as tar or zip archives, for example as

@@ -1,3 +1,4 @@
+@update
 Feature: Fetching specific dependencies
 
     *DFetch* can update specific projects, this is useful when you have a lot

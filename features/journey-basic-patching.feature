@@ -1,3 +1,4 @@
+@update @diff
 Feature: Basic patch journey
 
     The main user journey for patching is:

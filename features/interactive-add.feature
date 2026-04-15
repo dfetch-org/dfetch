@@ -1,3 +1,4 @@
+@add
 Feature: Add a project interactively via the CLI
 
     Pass ``--interactive`` / ``-i`` to ``dfetch add`` to be guided step-by-step

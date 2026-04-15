@@ -1,3 +1,4 @@
+@report
 Feature: SBOM license transparency
 
     When *dfetch* scans a fetched component for license information it records

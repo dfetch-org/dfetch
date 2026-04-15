@@ -1,3 +1,4 @@
+@report
 Feature: List dependencies
 
     The report command lists the current state of the projects. It will aggregate the metadata for each project

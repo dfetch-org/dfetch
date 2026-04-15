@@ -1,3 +1,4 @@
+@import
 Feature: Importing externals from an existing svn repository
 
     One alternative to *Dfetch* is svn externals. To make the transition

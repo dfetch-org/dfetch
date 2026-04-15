@@ -1,3 +1,4 @@
+@freeze
 Feature: Freeze specific projects
 
     *DFetch* can freeze specific projects by name, leaving other projects untouched.

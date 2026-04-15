@@ -1,3 +1,4 @@
+@report
 Feature: Create a CycloneDX SBOM for archive dependencies
 
     *Dfetch* can generate a software Bill-of-Materials (SBOM) that includes
