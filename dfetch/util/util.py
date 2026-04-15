@@ -1,6 +1,7 @@
 """Generic python utilities."""
 
 import fnmatch
+import glob
 import hashlib
 import os
 import shutil
@@ -42,6 +43,15 @@ def copy_directory_contents(src_dir: str, dest_dir: str) -> None:
         )
 
 
+def _copy_license_files_from(src_root: str, dest_dir: str) -> None:
+    """Copy any license files found directly in *src_root* into *dest_dir*."""
+    for entry_name in os.listdir(src_root):
+        full_path = os.path.join(src_root, entry_name)
+        check_no_path_traversal(full_path, src_root)
+        if os.path.isfile(full_path) and is_license_file(entry_name):
+            shutil.copy2(full_path, os.path.join(dest_dir, entry_name))
+
+
 def copy_src_subset(
     src_root: str, dest_dir: str, src: str, keep_licenses: bool
 ) -> None:
@@ -69,11 +79,14 @@ def copy_src_subset(
         raise RuntimeError(f"src {src!r} was not found in the extracted archive")
 
     if keep_licenses:
-        for entry_name in os.listdir(src_root):
-            full_path = os.path.join(src_root, entry_name)
-            check_no_path_traversal(full_path, src_root)
-            if os.path.isfile(full_path) and is_license_file(entry_name):
-                shutil.copy2(full_path, os.path.join(dest_dir, entry_name))
+        _copy_license_files_from(src_root, dest_dir)
+
+
+def _is_removable(path: Path) -> bool:
+    """Return True when *path* exists and is not a protected license file."""
+    return os.path.lexists(str(path)) and not (
+        path.is_file() and is_license_file(path.name)
+    )
 
 
 def prune_files_by_pattern(directory: str, patterns: Sequence[str]) -> None:
@@ -81,22 +94,15 @@ def prune_files_by_pattern(directory: str, patterns: Sequence[str]) -> None:
 
     License files are never removed even when they match a pattern.
     """
-    seen: set[str] = set()
-    paths = []
-    for file_or_dir in find_matching_files(directory, patterns):
-        path_str = str(file_or_dir)
-        if path_str in seen:
-            continue
-        seen.add(path_str)
-        paths.append(file_or_dir)
-
-    # Remove children before parents to avoid FileNotFoundError on already-deleted paths.
-    paths.sort(key=lambda p: len(str(p)), reverse=True)
-
+    # dict.fromkeys deduplicates while preserving first-seen order.
+    # Sort longest path first so children are removed before their parents.
+    paths = sorted(
+        dict.fromkeys(find_matching_files(directory, patterns)),
+        key=lambda p: len(str(p)),
+        reverse=True,
+    )
     for file_or_dir in paths:
-        if os.path.lexists(str(file_or_dir)) and not (
-            file_or_dir.is_file() and is_license_file(file_or_dir.name)
-        ):
+        if _is_removable(file_or_dir):
             safe_rm(file_or_dir, within=directory)
 
 
@@ -129,6 +135,21 @@ def find_matching_files(directory: str, patterns: Sequence[str]) -> Iterator[Pat
             yield Path(path)
 
 
+def _safe_rm_single(path: str | Path, base: Path) -> None:
+    """Remove a single *path*, verifying it resolves within *base*."""
+    if not os.path.lexists(path):
+        return
+    if os.path.islink(path):
+        check_no_path_traversal(Path(path).parent, base)
+        os.unlink(path)
+    else:
+        check_no_path_traversal(path, base)
+        if os.path.isdir(path):
+            _safe_rmtree(str(path))
+        else:
+            os.remove(path)
+
+
 def safe_rm(
     paths: str | Path | Sequence[str | Path],
     within: str | Path = ".",
@@ -139,16 +160,7 @@ def safe_rm(
         [paths] if isinstance(paths, str) or not isinstance(paths, Sequence) else paths
     )
     for path in paths_to_remove:
-        if os.path.lexists(path):
-            if os.path.islink(path):
-                check_no_path_traversal(Path(path).parent, base)
-                os.unlink(path)
-            else:
-                check_no_path_traversal(path, base)
-                if os.path.isdir(path):
-                    _safe_rmtree(str(path))
-                else:
-                    os.remove(path)
+        _safe_rm_single(path, base)
 
 
 def _safe_rmtree(path: str) -> None:
@@ -357,6 +369,32 @@ def temp_file(suffix: str = "") -> Generator[str, None, None]:
             pass
 
 
+def glob_within_root(pattern: str, root: Path) -> tuple[list[str], list[str]]:
+    """Expand *pattern* and split results by whether they resolve within *root*.
+
+    Returns:
+        A ``(safe, escaped)`` tuple where *safe* contains sorted paths that
+        resolve inside *root* and *escaped* contains those that do not.
+    """
+    safe: list[str] = []
+    escaped: list[str] = []
+    for p in sorted(glob.glob(pattern)):
+        (safe if Path(p).resolve().is_relative_to(root) else escaped).append(p)
+    return safe, escaped
+
+
+def _dir_for_path(path: str) -> str | None:
+    """Return the directory represented by *path*.
+
+    Returns *path* itself if it is a directory, its parent if it is a file
+    (provided the parent is non-empty), or ``None`` for root-level files.
+    """
+    if os.path.isdir(path):
+        return path
+    parent = os.path.dirname(path)
+    return parent or None
+
+
 def unique_parent_dirs(paths: list[str]) -> list[str]:
     """Return the unique parent directories for a list of paths, preserving order.
 
@@ -364,15 +402,8 @@ def unique_parent_dirs(paths: list[str]) -> list[str]:
     its parent directory is used.  Root-level files (no parent) are skipped.
     Duplicates are removed while preserving the first-seen order.
     """
-    dirs: list[str] = []
-    for path in paths:
-        if os.path.isdir(path):
-            dirs.append(path)
-        else:
-            parent = os.path.dirname(path)
-            if parent:
-                dirs.append(parent)
-    return list(dict.fromkeys(dirs))
+    dirs = (_dir_for_path(p) for p in paths)
+    return list(dict.fromkeys(d for d in dirs if d is not None))
 
 
 def move_directory_contents(src_dir: str, dest_dir: str) -> None:

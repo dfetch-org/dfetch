@@ -10,7 +10,7 @@ from dfetch.project.metadata import Dependency
 from dfetch.project.subproject import SubProject
 from dfetch.util.license import LICENSE_GLOBS
 from dfetch.util.util import safe_rm
-from dfetch.vcs.git import CheckoutOptions, GitLocalRepo, GitRemote, get_git_version
+from dfetch.vcs.git import CheckoutOptions, GitLocalRepo, GitRemote
 
 logger = get_logger(__name__)
 
@@ -59,7 +59,7 @@ class GitSubProject(SubProject):
     def list_tool_info() -> None:
         """Print out version information."""
         try:
-            tool, version = get_git_version()
+            tool, version = GitLocalRepo.get_tool_version()
             SubProject._log_tool(tool, version)
         except RuntimeError as exc:
             logger.debug(

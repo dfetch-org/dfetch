@@ -45,11 +45,11 @@ class GitSuperProject(SuperProject):
 
         check_no_path_traversal(resolved_path, self.root_directory)
 
-        return GitLocalRepo.ignored_files(path)
+        return GitLocalRepo(path).ignored_files()
 
     def has_local_changes_in_dir(self, path: str) -> bool:
         """Check if the superproject has local changes."""
-        return GitLocalRepo.any_changes_or_untracked(path)
+        return GitLocalRepo(path).any_changes_or_untracked()
 
     def get_username(self) -> str:
         """Get the username of the superproject VCS."""
