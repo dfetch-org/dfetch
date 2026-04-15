@@ -1,3 +1,4 @@
+@update
 Feature: Patch application tolerates small upstream changes
 
     If an upstream git repository changes slightly after a patch was created,

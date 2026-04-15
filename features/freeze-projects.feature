@@ -1,3 +1,4 @@
+@freeze
 Feature: Freeze dependencies
 
     If a user didn't use a revision or branch in his manifest, he can add these automatically with `dfetch freeze`.

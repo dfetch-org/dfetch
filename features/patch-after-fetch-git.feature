@@ -1,3 +1,4 @@
+@update
 Feature: Patch after fetching from git repo
 
     Sometimes a patch needs to be applied after fetching. *DFetch* makes it

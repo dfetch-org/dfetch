@@ -1,3 +1,4 @@
+@check
 Feature: Checking specific projects
 
     *DFetch* can check specific projects, this is useful when you have a lot

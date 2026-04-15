@@ -1,3 +1,4 @@
+@freeze
 Feature: Freeze manifest in-place inside a version-controlled superproject
 
     When the manifest lives inside a git or SVN superproject, ``dfetch freeze``

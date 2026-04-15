@@ -1,3 +1,4 @@
+@freeze
 Feature: Freeze archive dependencies
 
     For archive projects, 'dfetch freeze' adds a sha256 hash to the manifest

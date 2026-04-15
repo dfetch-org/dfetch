@@ -1,3 +1,4 @@
+@check
 Feature: Check for dependencies in projects
 
     When a project has dependencies of its own, it can list them using its own

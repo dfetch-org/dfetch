@@ -1,4 +1,4 @@
-@remote-svn
+@remote-svn @check
 Feature: Checking dependencies from a svn repository
 
     *DFetch* can check if there are new versions in a SVN repository.

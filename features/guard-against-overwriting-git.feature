@@ -1,3 +1,4 @@
+@update
 Feature: Guard against overwriting in git
 
     Accidentally overwriting local changes could lead to introducing regressions.

@@ -1,3 +1,4 @@
+@update-patch
 Feature: Update an existing patch in git
 
     If working with external projects, local changes can be tracked using

@@ -1,3 +1,4 @@
+@import
 Feature: Importing submodules from an existing git repository
 
     One alternative to *Dfetch* is git submodules. To make the transition

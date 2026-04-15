@@ -1,3 +1,4 @@
+@update
 Feature: Fetch with ignore in git
 
     Sometimes you want to ignore files from a project

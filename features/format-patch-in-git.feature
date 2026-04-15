@@ -1,3 +1,4 @@
+@format-patch
 Feature: Formatting a patch for git repositories
 
     If a project is fetched from a git repository, and changes are made to

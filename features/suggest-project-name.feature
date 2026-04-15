@@ -1,3 +1,4 @@
+@check
 Feature: Suggest a project name
 
     Users sometimes mistype project names, this lead to blaming *DFetch* of wrong behavior.

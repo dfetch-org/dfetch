@@ -1,3 +1,4 @@
+@check
 Feature: Checking dependencies from an archive
 
     DFetch can check if archive-based projects are up-to-date.

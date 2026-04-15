@@ -1,3 +1,4 @@
+@check
 Feature: Let check report to jenkins
 
     *DFetch* can check if there are new versions available. Since this is an action a developer

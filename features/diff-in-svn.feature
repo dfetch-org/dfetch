@@ -1,3 +1,4 @@
+@diff
 Feature: Diff in svn
 
     If a project contains issues that need to be fixed, the user can work with the *Dfetch'ed* project as

@@ -1,3 +1,4 @@
+@update @check
 Feature: Basic usage journey
 
     The main user journey is:

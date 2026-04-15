@@ -1,3 +1,4 @@
+@format-patch
 Feature: Formatting a patch for svn repositories
 
     If a project is fetched from a svn repository, and changes are made to

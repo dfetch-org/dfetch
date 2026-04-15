@@ -1,3 +1,4 @@
+@update-patch
 Feature: Update an existing patch in svn
 
     If working with external projects, local changes can be tracked using

@@ -1,3 +1,4 @@
+@update
 Feature: Fetch checks destinations
 
     Destinations marked with the 'dst:' attribute can be misused and lead to

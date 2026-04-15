@@ -1,3 +1,4 @@
+@update
 Feature: Updated project has dependencies
 
     When a project has dependencies of its own, it can list them using its own
