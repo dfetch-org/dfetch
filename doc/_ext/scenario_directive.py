@@ -5,6 +5,11 @@ Usage in conf.py:
 
     extensions = ["scenario_directive"]
 
+    # Tags that are NOT group keys (e.g. environment markers).
+    # The first tag on a feature file that is not in this list becomes
+    # the appendix section for that file.  Default: no exclusions.
+    scenario_non_command_tags = ["remote-svn"]
+
 Usage in .rst files:
 
     .. scenario-include:: ../features/fetch-git-repo.feature
@@ -15,9 +20,8 @@ Usage in .rst files:
 If ``:scenario:`` is omitted, all scenarios in the feature file are included.
 
 **PDF / LaTeX builds** automatically move scenarios to an appendix grouped by
-the behave command-tag (``@update``, ``@check``, …) that was placed on the
-feature file.  The directive's original location receives a cross-reference to
-the appendix entry instead.
+the first non-excluded behave tag found on the feature file.  The directive's
+original location receives a cross-reference to the appendix entry instead.
 
 Use the ``:inline:`` flag to keep a specific inclusion in place even when
 building a PDF:
@@ -29,64 +33,23 @@ The appendix itself is rendered by placing the companion directive anywhere in
 the document tree:
 
     .. scenario-appendix::
-
-Behave tags treated as *command tags* map to the appendix sections.  Any tag
-that appears in ``_NON_COMMAND_TAGS`` (e.g. ``remote-svn``) is ignored when
-determining the command tag.
 """
 
 import html
 import os
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, FrozenSet, List, Tuple
 
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from docutils.statemachine import StringList
-
-
-# ---------------------------------------------------------------------------
-# Tags that are NOT command-name tags (infrastructure / skip markers).
-# ---------------------------------------------------------------------------
-_NON_COMMAND_TAGS = {"remote-svn"}
-
-# Human-readable section titles for each command tag.
-_TAG_LABELS: Dict[str, str] = {
-    "update": "``dfetch update`` scenarios",
-    "check": "``dfetch check`` scenarios",
-    "add": "``dfetch add`` scenarios",
-    "remove": "``dfetch remove`` scenarios",
-    "diff": "``dfetch diff`` scenarios",
-    "update-patch": "``dfetch update-patch`` scenarios",
-    "format-patch": "``dfetch format-patch`` scenarios",
-    "freeze": "``dfetch freeze`` scenarios",
-    "import": "``dfetch import`` scenarios",
-    "report": "``dfetch report`` scenarios",
-    "validate": "``dfetch validate`` scenarios",
-}
-
-# Canonical display order for command tags in the appendix.
-_TAG_ORDER = [
-    "update",
-    "check",
-    "add",
-    "remove",
-    "diff",
-    "update-patch",
-    "format-patch",
-    "freeze",
-    "import",
-    "report",
-    "validate",
-]
-
 
 # ---------------------------------------------------------------------------
 # Custom node types
 # ---------------------------------------------------------------------------
 
 
-class scenario_appendix_placeholder(nodes.General, nodes.Element):
+class ScenarioAppendixPlaceholder(nodes.General, nodes.Element):
     """Replaced by the full appendix content during the resolve phase."""
 
 
@@ -108,10 +71,10 @@ def _feature_tags(feature_path: str) -> List[str]:
     return tags
 
 
-def _command_tag(feature_path: str) -> str:
-    """Return the first non-infrastructure tag from the feature file, or 'other'."""
+def _group_tag(feature_path: str, non_group_tags: FrozenSet[str]) -> str:
+    """Return the first tag not in *non_group_tags*, or ``'other'``."""
     for tag in _feature_tags(feature_path):
-        if tag not in _NON_COMMAND_TAGS:
+        if tag not in non_group_tags:
             return tag
     return "other"
 
@@ -126,12 +89,13 @@ def _feature_title(feature_path: str) -> str:
     return os.path.basename(feature_path)
 
 
-def _all_scenarios(feature_path: str) -> Tuple[str, ...]:
-    """Return all scenario titles in the feature file (preserves order)."""
+def _all_scenarios(feature_path: str) -> Tuple[Tuple[str, str], ...]:
+    """Return (header, title) pairs for all scenarios in the feature file."""
     with open(feature_path, encoding="utf-8") as fh:
         return tuple(
-            re.findall(
-                r"^\s*Scenario(?:\s+Outline)?:\s*(.+)$", fh.read(), re.MULTILINE
+            (m[0], m[1])
+            for m in re.findall(
+                r"^\s*(Scenario(?:\s+Outline)?):\s*(.+)$", fh.read(), re.MULTILINE
             )
         )
 
@@ -140,6 +104,29 @@ def _full_feature_content(feature_path: str) -> str:
     """Return the complete textual content of a feature file."""
     with open(feature_path, encoding="utf-8") as fh:
         return fh.read()
+
+
+def _selected_scenarios_content(feature_path: str, scenario_titles: List[str]) -> str:
+    """Return content containing only the selected scenario blocks."""
+    with open(feature_path, encoding="utf-8") as fh:
+        content = fh.read()
+    blocks = []
+    for title in scenario_titles:
+        pattern = re.compile(
+            r"([ \t]*Scenario(?:[ \t]+Outline)?:[ \t]*"
+            + re.escape(title)
+            + r"[ \t]*\n(?:(?![ \t]*Scenario(?:[ \t]+Outline)?:).)*)",
+            re.DOTALL,
+        )
+        match = pattern.search(content)
+        if match:
+            blocks.append(match.group(1).rstrip())
+    return "\n\n".join(blocks)
+
+
+def _tag_section_title(tag: str) -> str:
+    """Human-readable section title derived from *tag* alone."""
+    return tag.replace("-", " ").title()
 
 
 # ---------------------------------------------------------------------------
@@ -166,12 +153,14 @@ class ScenarioIncludeDirective(Directive):
     # Internal helpers
     # ------------------------------------------------------------------
 
+    def _env(self):
+        return self.state.document.settings.env
+
     def _is_pdf(self) -> bool:
-        env = self.state.document.settings.env
-        return env.app.builder.name in ("latex", "rinoh")
+        return self._env().app.builder.name in ("latex", "rinoh")
 
     def _feature_abs(self, feature_file: str) -> str:
-        env = self.state.document.settings.env
+        env = self._env()
         path = os.path.abspath(os.path.join(env.app.srcdir, feature_file))
         if not os.path.exists(path):
             raise self.error(f"Feature file not found: {path}")
@@ -179,20 +168,29 @@ class ScenarioIncludeDirective(Directive):
 
     def _include_path(self, feature_abs: str) -> str:
         """Path for literalinclude, relative to the current RST document."""
-        env = self.state.document.settings.env
-        current_doc_dir = os.path.dirname(
-            os.path.join(env.app.srcdir, env.docname)
-        )
+        env = self._env()
+        current_doc_dir = os.path.dirname(os.path.join(env.app.srcdir, env.docname))
         return os.path.relpath(feature_abs, current_doc_dir)
 
-    def _requested_scenarios(
-        self, available: Tuple[str, ...]
-    ) -> List[str]:
+    @staticmethod
+    def _end_before(available: Tuple[Tuple[str, str], ...], title: str) -> str:
+        """Return the :end-before: value for *title*, or '' for the last scenario."""
+        all_titles = tuple(t for _, t in available)
+        try:
+            idx = all_titles.index(title)
+        except ValueError:
+            return ""
+        if idx < len(available) - 1:
+            next_header, next_title = available[idx + 1]
+            return f":end-before: {next_header}: {next_title}"
+        return ""
+
+    def _requested_scenarios(self, available: Tuple[Tuple[str, str], ...]) -> List[str]:
         return [
             t.strip()
             for t in self.options.get("scenario", "").splitlines()
             if t.strip()
-        ] or list(available)
+        ] or [title for _, title in available]
 
     # ------------------------------------------------------------------
     # HTML / inline rendering (original behaviour)
@@ -203,15 +201,13 @@ class ScenarioIncludeDirective(Directive):
         include_path: str,
         feature_file: str,
         scenario_titles: List[str],
-        available: Tuple[str, ...],
+        available: Tuple[Tuple[str, str], ...],
     ) -> List[nodes.Node]:
+        title_to_header = {title: header for header, title in available}
         container = nodes.section()
         for title in scenario_titles:
-            end_before = (
-                ":end-before: Scenario:"
-                if title != available[-1]
-                else ""
-            )
+            header = title_to_header.get(title, "Scenario")
+            end_before = self._end_before(available, title)
             directive_rst = f"""
 .. raw:: html
 
@@ -223,7 +219,7 @@ class ScenarioIncludeDirective(Directive):
     :caption: {feature_file}
     :force:
     :dedent:
-    :start-after: Scenario: {title}
+    :start-after: {header}: {title}
     {end_before}
 
 .. raw:: html
@@ -246,10 +242,11 @@ class ScenarioIncludeDirective(Directive):
         feature_abs: str,
         scenario_titles: List[str],
     ) -> List[nodes.Node]:
-        env = self.state.document.settings.env
+        env = self._env()
+        non_group_tags = frozenset(getattr(env.config, "scenario_non_command_tags", []))
         basename = os.path.splitext(os.path.basename(feature_abs))[0]
         label = f"appendix-{basename}"
-        tag = _command_tag(feature_abs)
+        tag = _group_tag(feature_abs, non_group_tags)
         title = _feature_title(feature_abs)
 
         # ----------------------------------------------------------
@@ -265,13 +262,14 @@ class ScenarioIncludeDirective(Directive):
                 "feature_file": feature_file,
                 "feature_abs": feature_abs,
                 "feature_title": title,
-                "command_tag": tag,
+                "group_tag": tag,
                 "label": label,
-                "source_doc": env.docname,
+                "source_docs": {env.docname},
                 "scenarios": list(scenario_titles),
             }
         else:
             existing = env.scenario_appendix_entries[feature_abs]
+            existing["source_docs"].add(env.docname)
             for s in scenario_titles:
                 if s not in existing["scenarios"]:
                     existing["scenarios"].append(s)
@@ -319,7 +317,8 @@ class ScenarioAppendixDirective(Directive):
 
     Place this directive once in the document (typically in an appendix
     page).  During the write phase it is replaced by sections grouped by
-    command tag, containing the full content of each referenced feature file.
+    the first non-excluded tag, sorted alphabetically, containing the full
+    content of each referenced feature file.
 
     In HTML builds scenarios appear inline in the main text, so this
     directive emits an explanatory note instead.
@@ -332,18 +331,17 @@ class ScenarioAppendixDirective(Directive):
     def run(self) -> List[nodes.Node]:
         env = self.state.document.settings.env
         if env.app.builder.name not in ("latex", "rinoh"):
-            # HTML: scenarios are inline; provide a brief orientation note.
             note = nodes.note()
             para = nodes.paragraph()
             para += nodes.Text(
                 "In the HTML edition, feature scenarios appear as expandable "
                 "examples directly within each guide section. "
-                "In the PDF edition they are collected here, grouped by command."
+                "In the PDF edition they are collected here, grouped by tag."
             )
             note += para
             return [note]
 
-        node = scenario_appendix_placeholder()
+        node = ScenarioAppendixPlaceholder()
         return [node]
 
 
@@ -351,34 +349,22 @@ class ScenarioAppendixDirective(Directive):
 # Event: replace placeholder with actual appendix content
 # ---------------------------------------------------------------------------
 
-def _build_appendix_nodes(
-    entries: Dict,
-) -> List[nodes.Node]:
+
+def _build_appendix_nodes(entries: Dict) -> List[nodes.Node]:
     """Build docutils section nodes for every collected appendix entry."""
-    # Group by command tag
     by_tag: Dict[str, List] = {}
     for entry in entries.values():
-        by_tag.setdefault(entry["command_tag"], []).append(entry)
-
-    # Determine display order
-    ordered_tags = sorted(
-        by_tag.keys(),
-        key=lambda t: (
-            _TAG_ORDER.index(t) if t in _TAG_ORDER else len(_TAG_ORDER),
-            t,
-        ),
-    )
+        by_tag.setdefault(entry["group_tag"], []).append(entry)
 
     result: List[nodes.Node] = []
-    for tag in ordered_tags:
+    for tag in sorted(by_tag):
         tag_entries = sorted(by_tag[tag], key=lambda e: e["feature_title"])
         label = f"appendix-{tag}"
-        section_title = _TAG_LABELS.get(tag, f"``dfetch {tag}`` scenarios")
 
         tag_section = nodes.section()
         tag_section["ids"] = [label]
         tag_section["names"] = [label]
-        tag_section += nodes.title(text=section_title)
+        tag_section += nodes.title(text=_tag_section_title(tag))
 
         for entry in tag_entries:
             feat_section = nodes.section()
@@ -386,7 +372,9 @@ def _build_appendix_nodes(
             feat_section["names"] = [entry["label"]]
             feat_section += nodes.title(text=entry["feature_title"])
 
-            content = _full_feature_content(entry["feature_abs"])
+            content = _selected_scenarios_content(
+                entry["feature_abs"], entry["scenarios"]
+            )
             code = nodes.literal_block(content, content)
             code["language"] = "gherkin"
             feat_section += code
@@ -398,11 +386,9 @@ def _build_appendix_nodes(
     return result
 
 
-def process_scenario_appendix(
-    app, doctree: nodes.document, fromdocname: str
-) -> None:
-    """Replace scenario_appendix_placeholder nodes with generated content."""
-    placeholders = list(doctree.traverse(scenario_appendix_placeholder))
+def process_scenario_appendix(app, doctree: nodes.document, _fromdocname: str) -> None:
+    """Replace ScenarioAppendixPlaceholder nodes with generated content."""
+    placeholders = list(doctree.traverse(ScenarioAppendixPlaceholder))
     if not placeholders:
         return
 
@@ -413,18 +399,20 @@ def process_scenario_appendix(
         placeholder.replace_self(appendix_nodes)
 
 
-def purge_scenario_appendix(app, env, docname: str) -> None:
+def purge_scenario_appendix(_app, env, docname: str) -> None:
     """Remove appendix entries that originated from a re-read document."""
     if not hasattr(env, "scenario_appendix_entries"):
         return
-    env.scenario_appendix_entries = {
-        k: v
-        for k, v in env.scenario_appendix_entries.items()
-        if v.get("source_doc") != docname
-    }
+    to_delete = []
+    for k, v in env.scenario_appendix_entries.items():
+        v["source_docs"].discard(docname)
+        if not v["source_docs"]:
+            to_delete.append(k)
+    for k in to_delete:
+        del env.scenario_appendix_entries[k]
 
 
-def merge_scenario_appendix(app, env, docnames, other) -> None:
+def merge_scenario_appendix(_app, env, _docnames, other) -> None:
     """Merge appendix entries from a parallel read worker."""
     if not hasattr(env, "scenario_appendix_entries"):
         env.scenario_appendix_entries = {}
@@ -433,6 +421,7 @@ def merge_scenario_appendix(app, env, docnames, other) -> None:
             env.scenario_appendix_entries[key] = entry
         else:
             existing = env.scenario_appendix_entries[key]
+            existing["source_docs"].update(entry["source_docs"])
             for scenario in entry["scenarios"]:
                 if scenario not in existing["scenarios"]:
                     existing["scenarios"].append(scenario)
@@ -445,15 +434,16 @@ def merge_scenario_appendix(app, env, docnames, other) -> None:
 
 def setup(app):
     """Register directives, nodes, and event hooks."""
+    app.add_config_value("scenario_non_command_tags", [], "env")
     app.add_directive("scenario-include", ScenarioIncludeDirective)
     app.add_directive("scenario-appendix", ScenarioAppendixDirective)
-    app.add_node(scenario_appendix_placeholder)
+    app.add_node(ScenarioAppendixPlaceholder)
     app.connect("doctree-resolved", process_scenario_appendix)
     app.connect("env-purge-doc", purge_scenario_appendix)
     app.connect("env-merge-info", merge_scenario_appendix)
 
     return {
-        "version": "0.2",
+        "version": "0.3",
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }
