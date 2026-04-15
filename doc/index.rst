@@ -76,3 +76,9 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    explanation/vendoring
    explanation/alternatives
    explanation/architecture
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Appendix
+
+   appendix/scenarios
