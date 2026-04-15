@@ -98,7 +98,7 @@ def test_move_src_folder_up_rejects_traversal_src(tmp_path):
     (outside / "secret.txt").write_text("data")
 
     with patch("dfetch.vcs.git.move_directory_contents") as mock_move:
-        with patch("dfetch.vcs.git.glob.glob", return_value=[str(outside)]):
+        with patch("dfetch.util.util.glob.glob", return_value=[str(outside)]):
             with patch("dfetch.vcs.git.os.getcwd", return_value=str(tmp_path)):
                 GitLocalRepo._move_src_folder_up("my-remote", "../outside")
     mock_move.assert_not_called()

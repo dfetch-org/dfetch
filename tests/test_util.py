@@ -7,6 +7,7 @@ import pytest
 
 from dfetch.util.util import (
     copy_src_subset,
+    glob_within_root,
     hash_directory,
     prune_files_by_pattern,
     strip_glob_prefix,
@@ -184,3 +185,44 @@ def test_prune_skips_already_removed_paths(tmp_path):
 )
 def test_strip_glob_prefix(path, pattern, expected):
     assert strip_glob_prefix(path, pattern) == expected
+
+
+# ---------------------------------------------------------------------------
+# glob_within_root
+# ---------------------------------------------------------------------------
+
+
+def test_glob_within_root_returns_safe_paths(tmp_path):
+    """Files inside the root are returned as safe."""
+    (tmp_path / "a.txt").write_text("x")
+    (tmp_path / "b.txt").write_text("x")
+
+    safe, escaped = glob_within_root(str(tmp_path / "*.txt"), tmp_path)
+
+    assert sorted(safe) == sorted([str(tmp_path / "a.txt"), str(tmp_path / "b.txt")])
+    assert escaped == []
+
+
+def test_glob_within_root_rejects_escaped_paths(tmp_path):
+    """Paths that resolve outside the root are returned in the escaped list."""
+    outside = tmp_path.parent / "outside_glob_test"
+    outside.mkdir(exist_ok=True)
+    (outside / "secret.txt").write_text("data")
+
+    from unittest.mock import patch
+
+    with patch(
+        "dfetch.util.util.glob.glob", return_value=[str(outside / "secret.txt")]
+    ):
+        safe, escaped = glob_within_root("../outside_glob_test/*.txt", tmp_path)
+
+    assert safe == []
+    assert escaped == [str(outside / "secret.txt")]
+
+
+def test_glob_within_root_empty_pattern(tmp_path):
+    """A pattern that matches nothing returns two empty lists."""
+    safe, escaped = glob_within_root(str(tmp_path / "nonexistent_*.xyz"), tmp_path)
+
+    assert safe == []
+    assert escaped == []

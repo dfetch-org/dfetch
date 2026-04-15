@@ -8,53 +8,25 @@ import re
 import shutil
 import tempfile
 from collections.abc import Callable, Generator, Sequence
-from dataclasses import dataclass
 from pathlib import Path
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.license import is_license_file
 from dfetch.util.util import (
+    glob_within_root,
     in_directory,
     move_directory_contents,
     safe_rm,
     strip_glob_prefix,
     unique_parent_dirs,
 )
+from dfetch.vcs.git_types import CheckoutOptions, Submodule
+
+__all__ = ["CheckoutOptions", "GitLocalRepo", "GitRemote", "Submodule"]
 from dfetch.vcs.patch import Patch, PatchType
 
 logger = get_logger(__name__)
-
-
-@dataclass
-class Submodule:
-    """Information about a submodule."""
-
-    name: str
-    toplevel: str
-    path: str
-    sha: str
-    url: str
-    branch: str
-    tag: str
-
-
-@dataclass
-class CheckoutOptions:
-    """Options for checking out a specific version from a remote git repository."""
-
-    remote: str
-    version: str
-    src: str | None = None
-    must_keeps: list[str] | None = None
-    ignore: Sequence[str] | None = None
-
-
-def get_git_version() -> tuple[str, str]:
-    """Get the name and version of git."""
-    result = run_on_cmdline(logger, ["git", "--version"])
-    tool, version = result.stdout.decode().strip().split("version", maxsplit=1)
-    return (str(tool), str(version))
 
 
 def _build_git_ssh_command() -> str:
@@ -343,6 +315,13 @@ class GitLocalRepo:
     METADATA_DIR = ".git"
     GIT_MODULES_FILE = ".gitmodules"
 
+    @staticmethod
+    def get_tool_version() -> tuple[str, str]:
+        """Get the name and version of git."""
+        result = run_on_cmdline(logger, ["git", "--version"])
+        tool, version = result.stdout.decode().strip().split("version", maxsplit=1)
+        return (str(tool), str(version))
+
     def __init__(self, path: str | Path = ".") -> None:
         """Create a local git repo."""
         self._path = str(path)
@@ -446,6 +425,33 @@ class GitLocalRepo:
         return [s for s in submodules if os.path.exists(s.path)]
 
     @staticmethod
+    def _collect_safe_paths(src: str, repo_root: Path, remote: str) -> list[str]:
+        """Return glob-matched paths for *src* that are within *repo_root*.
+
+        Paths that escape the repo root are skipped with a warning.
+        """
+        safe_matched, escaped = glob_within_root(src, repo_root)
+        for p in escaped:
+            logger.warning(
+                f"The 'src:' filter '{src}' matched '{p}' outside the repo root"
+                f" for '{remote}'; skipping"
+            )
+        return safe_matched
+
+    @staticmethod
+    def _apply_move(chosen: Path, repo_root: Path, remote: str) -> None:
+        """Move the contents of *chosen* to the repo root and remove the empty parent."""
+        try:
+            move_directory_contents(str(chosen), ".")
+            parts = chosen.relative_to(repo_root).parts
+            if parts:
+                safe_rm(repo_root / parts[0], within=repo_root)
+        except FileNotFoundError:
+            logger.warning(
+                f"The 'src:' filter '{chosen}' didn't match any files from '{remote}'"
+            )
+
+    @staticmethod
     def _move_src_folder_up(remote: str, src: str) -> None:
         """Move the files from the src folder into the root of the project.
 
@@ -460,14 +466,7 @@ class GitLocalRepo:
             return
 
         repo_root = Path(os.getcwd()).resolve()
-        safe_matched: list[str] = []
-        for p in sorted(glob.glob(src)):
-            if Path(p).resolve().is_relative_to(repo_root):
-                safe_matched.append(p)
-            else:
-                logger.warning(
-                    f"The 'src:' filter '{src}' matched '{p}' outside the repo root; skipping"
-                )
+        safe_matched = GitLocalRepo._collect_safe_paths(src, repo_root, remote)
 
         if not safe_matched:
             logger.warning(
@@ -487,16 +486,7 @@ class GitLocalRepo:
             )
 
         if resolved_dirs:
-            chosen = resolved_dirs[0]
-            try:
-                move_directory_contents(str(chosen), ".")
-                parts = chosen.relative_to(repo_root).parts
-                if parts:
-                    safe_rm(repo_root / parts[0], within=repo_root)
-            except FileNotFoundError:
-                logger.warning(
-                    f"The 'src:' filter '{chosen}' didn't match any files from '{remote}'"
-                )
+            GitLocalRepo._apply_move(resolved_dirs[0], repo_root, remote)
 
     @staticmethod
     def _determine_ignore_paths(
@@ -578,13 +568,12 @@ class GitLocalRepo:
 
         return str(result.stdout.decode())
 
-    @staticmethod
-    def ignored_files(path: str) -> Sequence[str]:
-        """List of ignored files."""
-        if not Path(path).exists():
+    def ignored_files(self) -> Sequence[str]:
+        """List of ignored files in this repository."""
+        if not Path(self._path).exists():
             return []
 
-        with in_directory(path):
+        with in_directory(self._path):
             return list(
                 run_on_cmdline(
                     logger,
@@ -601,13 +590,12 @@ class GitLocalRepo:
                 .splitlines()
             )
 
-    @staticmethod
-    def any_changes_or_untracked(path: str) -> bool:
-        """Return True if the repo at *path* has any changed or untracked files."""
-        if not Path(path).exists():
+    def any_changes_or_untracked(self) -> bool:
+        """Return True if the repo has any changed or untracked files."""
+        if not Path(self._path).exists():
             raise RuntimeError("Path does not exist.")
 
-        with in_directory(path):
+        with in_directory(self._path):
             return bool(
                 run_on_cmdline(
                     logger,

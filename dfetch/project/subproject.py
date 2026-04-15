@@ -184,6 +184,24 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
             applied_patches.append(normalized_patch_path)
         return applied_patches
 
+    def _report_unavailable_version(
+        self, reporters: Sequence[AbstractCheckReporter]
+    ) -> None:
+        for reporter in reporters:
+            reporter.unavailable_project_version(self.__project, self.wanted_version)
+
+    def _report_unfetched_project(
+        self, reporters: Sequence[AbstractCheckReporter], latest_version: Version
+    ) -> None:
+        for reporter in reporters:
+            reporter.unfetched_project(
+                self.__project, self.wanted_version, latest_version
+            )
+
+    def _report_local_changes(self, reporters: Sequence[AbstractCheckReporter]) -> None:
+        for reporter in reporters:
+            reporter.local_changes(self.__project)
+
     def check_for_update(
         self, reporters: Sequence[AbstractCheckReporter], files_to_ignore: Sequence[str]
     ) -> None:
@@ -195,26 +213,42 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
             latest_version = self._check_for_newer_version()
 
         if not latest_version:
-            for reporter in reporters:
-                reporter.unavailable_project_version(
-                    self.__project, self.wanted_version
-                )
+            self._report_unavailable_version(reporters)
             return
 
         if not on_disk_version:
-            for reporter in reporters:
-                reporter.unfetched_project(
-                    self.__project, self.wanted_version, latest_version
-                )
-
+            self._report_unfetched_project(reporters, latest_version)
             return
 
         if self._are_there_local_changes(files_to_ignore):
-            for reporter in reporters:
-                reporter.local_changes(self.__project)
+            self._report_local_changes(reporters)
 
         self._check_latest_with_on_disk_version(
             latest_version, on_disk_version, reporters
+        )
+
+    def _versions_match(
+        self, latest_version: Version, on_disk_version: Version
+    ) -> bool:
+        """Return True when latest and on-disk versions are considered equal."""
+        return (latest_version == on_disk_version) or (
+            self.revision_is_enough()
+            and bool(latest_version.revision)
+            and latest_version.revision == on_disk_version.revision
+        )
+
+    def _select_check_action(
+        self, latest_version: Version, on_disk_version: Version
+    ) -> Callable[[AbstractCheckReporter], None]:
+        """Return the single reporter callback that matches the version comparison."""
+        if self._versions_match(latest_version, on_disk_version):
+            return lambda r: r.up_to_date_project(self.__project, latest_version)
+        if on_disk_version == self.wanted_version:
+            return lambda r: r.pinned_but_out_of_date_project(
+                self.__project, self.wanted_version, latest_version
+            )
+        return lambda r: r.out_of_date_project(
+            self.__project, self.wanted_version, on_disk_version, latest_version
         )
 
     def _check_latest_with_on_disk_version(
@@ -223,23 +257,9 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
         on_disk_version: Version,
         reporters: Sequence[AbstractCheckReporter],
     ) -> None:
-        if (latest_version == on_disk_version) or (
-            self.revision_is_enough()
-            and latest_version.revision
-            and latest_version.revision == on_disk_version.revision
-        ):
-            for reporter in reporters:
-                reporter.up_to_date_project(self.__project, latest_version)
-        elif on_disk_version == self.wanted_version:
-            for reporter in reporters:
-                reporter.pinned_but_out_of_date_project(
-                    self.__project, self.wanted_version, latest_version
-                )
-        else:
-            for reporter in reporters:
-                reporter.out_of_date_project(
-                    self.__project, self.wanted_version, on_disk_version, latest_version
-                )
+        report = self._select_check_action(latest_version, on_disk_version)
+        for reporter in reporters:
+            report(reporter)
 
     def _log_project(self, msg: str) -> None:
         logger.print_info_line(self.__project.name, msg)
@@ -352,6 +372,14 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
             )
             return None
 
+    def _revision_only_mode(self) -> bool:
+        """Return True when the wanted version should be resolved by revision alone."""
+        return (
+            not self.wanted_version.branch
+            and bool(self.wanted_version.revision)
+            and self.revision_is_enough()
+        )
+
     def _check_for_newer_version(self) -> Version | None:
         """Check if a newer version is available on the given branch.
 
@@ -369,11 +397,7 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
         else:
             branch = self.wanted_version.branch or self.get_default_branch()
 
-        if (
-            not self.wanted_version.branch
-            and self.wanted_version.revision
-            and self.revision_is_enough()
-        ):
+        if self._revision_only_mode():
             return (
                 Version(revision=self.wanted_version.revision)
                 if self._does_revision_exist(self.wanted_version.revision)
@@ -430,12 +454,7 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
                 download error).  Callers should catch and report these.
         """
         on_disk_version = self.on_disk_version()
-        if (
-            on_disk_version
-            and project.version.tag == on_disk_version.tag
-            and project.version.revision == on_disk_version.revision
-            and (bool(project.version.tag) or self.revision_is_enough())
-        ):
+        if on_disk_version and self._is_already_pinned(project, on_disk_version):
             return None
         if on_disk_version:
             project.version = on_disk_version
@@ -443,3 +462,13 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
                 on_disk_version.revision or on_disk_version.tag or str(on_disk_version)
             )
         return None
+
+    def _is_already_pinned(
+        self, project: ProjectEntry, on_disk_version: Version
+    ) -> bool:
+        """Return True if *project* is already pinned to its on-disk version."""
+        return (
+            project.version.tag == on_disk_version.tag
+            and project.version.revision == on_disk_version.revision
+            and (bool(project.version.tag) or self.revision_is_enough())
+        )
