@@ -53,6 +53,15 @@ class ScenarioAppendixPlaceholder(nodes.General, nodes.Element):
     """Replaced by the full appendix content during the resolve phase."""
 
 
+class ScenarioAppendixRef(nodes.General, nodes.Inline, nodes.Element):
+    """Deferred cross-reference to a scenario appendix entry.
+
+    Stores ``label`` and ``reftitle`` as attributes.  Resolved to a proper
+    ``nodes.reference`` with ``refdocname`` set during ``doctree-resolved``,
+    once the appendix document name is known from the environment.
+    """
+
+
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -276,13 +285,18 @@ class ScenarioIncludeDirective(Directive):
 
         # ----------------------------------------------------------
         # Return a short paragraph pointing to the appendix.
-        # nodes.reference(internal=True, refid=...) produces a
-        # \hyperref in LaTeX, which works within one compiled PDF.
+        # Use a deferred ScenarioAppendixRef node; it is resolved to a
+        # nodes.reference with refdocname set in doctree-resolved, once
+        # the appendix document name is known.  Sphinx's LaTeX writer
+        # requires refdocname to construct the \hyperref[docname:id]
+        # label correctly — omitting it silently drops the hyperlink.
         # ----------------------------------------------------------
+        ref_node = ScenarioAppendixRef()
+        ref_node["label"] = label
+        ref_node["reftitle"] = title
         para = nodes.paragraph()
         para += nodes.emphasis(text="Scenarios: see ")
-        ref = nodes.reference("", title, internal=True, refid=label)
-        para += ref
+        para += ref_node
         para += nodes.emphasis(text=" in the appendix.")
         return [para]
 
@@ -341,6 +355,9 @@ class ScenarioAppendixDirective(Directive):
             note += para
             return [note]
 
+        # Record which document hosts the appendix so that ScenarioAppendixRef
+        # nodes in other documents can be resolved with the correct refdocname.
+        env.scenario_appendix_docname = env.docname
         node = ScenarioAppendixPlaceholder()
         return [node]
 
@@ -386,6 +403,29 @@ def _build_appendix_nodes(entries: Dict) -> List[nodes.Node]:
     return result
 
 
+def resolve_scenario_appendix_refs(
+    app, doctree: nodes.document, _fromdocname: str
+) -> None:
+    """Replace ScenarioAppendixRef nodes with resolved cross-references.
+
+    Called for every document during doctree-resolved.  By that point all
+    source files have been read, so ``env.scenario_appendix_docname`` is set.
+    Sphinx's LaTeX writer needs ``refdocname`` on internal references to build
+    the ``docname:id`` label key used for ``\\hyperref`` targets.
+    """
+    appendix_docname = getattr(app.env, "scenario_appendix_docname", None)
+    for ref_node in doctree.traverse(ScenarioAppendixRef):
+        label = ref_node["label"]
+        title = ref_node["reftitle"]
+        if appendix_docname:
+            ref = nodes.reference(
+                "", title, internal=True, refid=label, refdocname=appendix_docname
+            )
+        else:
+            ref = nodes.inline("", title)
+        ref_node.replace_self(ref)
+
+
 def process_scenario_appendix(app, doctree: nodes.document, _fromdocname: str) -> None:
     """Replace ScenarioAppendixPlaceholder nodes with generated content."""
     placeholders = list(doctree.traverse(ScenarioAppendixPlaceholder))
@@ -414,6 +454,10 @@ def purge_scenario_appendix(_app, env, docname: str) -> None:
 
 def merge_scenario_appendix(_app, env, _docnames, other) -> None:
     """Merge appendix entries from a parallel read worker."""
+    if hasattr(other, "scenario_appendix_docname") and not hasattr(
+        env, "scenario_appendix_docname"
+    ):
+        env.scenario_appendix_docname = other.scenario_appendix_docname
     if not hasattr(env, "scenario_appendix_entries"):
         env.scenario_appendix_entries = {}
     for key, entry in getattr(other, "scenario_appendix_entries", {}).items():
@@ -438,6 +482,8 @@ def setup(app):
     app.add_directive("scenario-include", ScenarioIncludeDirective)
     app.add_directive("scenario-appendix", ScenarioAppendixDirective)
     app.add_node(ScenarioAppendixPlaceholder)
+    app.add_node(ScenarioAppendixRef)
+    app.connect("doctree-resolved", resolve_scenario_appendix_refs)
     app.connect("doctree-resolved", process_scenario_appendix)
     app.connect("env-purge-doc", purge_scenario_appendix)
     app.connect("env-merge-info", merge_scenario_appendix)
