@@ -24,5 +24,5 @@ class CheckoutOptions:
     remote: str
     version: str
     src: str | None = None
-    must_keeps: list[str] | None = None
+    must_keeps: Sequence[str] | None = None
     ignore: Sequence[str] | None = None
