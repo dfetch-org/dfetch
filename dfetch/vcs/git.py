@@ -22,9 +22,9 @@ from dfetch.util.util import (
     unique_parent_dirs,
 )
 from dfetch.vcs.git_types import CheckoutOptions, Submodule
+from dfetch.vcs.patch import Patch, PatchType
 
 __all__ = ["CheckoutOptions", "GitLocalRepo", "GitRemote", "Submodule"]
-from dfetch.vcs.patch import Patch, PatchType
 
 logger = get_logger(__name__)
 

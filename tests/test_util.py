@@ -203,10 +203,9 @@ def test_glob_within_root_returns_safe_paths(tmp_path):
     assert escaped == []
 
 
-def test_glob_within_root_rejects_escaped_paths(tmp_path):
+def test_glob_within_root_rejects_escaped_paths(tmp_path, tmp_path_factory):
     """Paths that resolve outside the root are returned in the escaped list."""
-    outside = tmp_path.parent / "outside_glob_test"
-    outside.mkdir(exist_ok=True)
+    outside = tmp_path_factory.mktemp("outside_glob_test")
     (outside / "secret.txt").write_text("data")
 
     from unittest.mock import patch
@@ -214,7 +213,7 @@ def test_glob_within_root_rejects_escaped_paths(tmp_path):
     with patch(
         "dfetch.util.util.glob.glob", return_value=[str(outside / "secret.txt")]
     ):
-        safe, escaped = glob_within_root("../outside_glob_test/*.txt", tmp_path)
+        safe, escaped = glob_within_root(str(outside / "*.txt"), tmp_path)
 
     assert safe == []
     assert escaped == [str(outside / "secret.txt")]
