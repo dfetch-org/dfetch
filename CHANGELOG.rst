@@ -1,6 +1,10 @@
 Release 0.14.0 (unreleased)
 ===========================
 
+* Add CRA / EN 18031-aligned security model documentation covering asset register,
+  trust boundaries, data flows, implemented controls, and known gaps across the full
+  SDLC (runtime, CI/CD, PyPI distribution).  The threat model is maintained as
+  executable code in ``security/threat_model.py`` using the ``pytm`` framework.
 * Use ``.cdx.json`` as the default extension for CycloneDX SBOM reports (#1118)
 * Embed base64-encoded license text in SBOM ``licenses[].text`` when a license is successfully identified (#1112)
 * Set SBOM ``licenses`` to the SPDX expression ``NOASSERTION`` when a license file is not found or cannot be classified (#1112)
