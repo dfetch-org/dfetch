@@ -100,6 +100,7 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    explanation/vendoring
    explanation/alternatives
    explanation/architecture
+   explanation/security
 
 .. only:: latex
 
