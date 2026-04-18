@@ -374,7 +374,11 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
 
     def _revision_only_mode(self) -> bool:
         """Return True when the wanted version should be resolved by revision alone."""
-        return bool(self.wanted_version.revision) and self.revision_is_enough()
+        return (
+            not self.wanted_version.branch
+            and bool(self.wanted_version.revision)
+            and self.revision_is_enough()
+        )
 
     def _check_for_newer_version(self) -> Version | None:
         """Check if a newer version is available on the given branch.
