@@ -443,13 +443,14 @@ class GitLocalRepo:
         """Move the contents of *chosen* to the repo root and remove the empty parent."""
         try:
             move_directory_contents(str(chosen), ".")
-            parts = chosen.relative_to(repo_root).parts
-            if parts:
-                safe_rm(repo_root / parts[0], within=repo_root)
         except FileNotFoundError:
             logger.warning(
                 f"The 'src:' filter '{chosen}' didn't match any files from '{remote}'"
             )
+            return
+        parts = chosen.relative_to(repo_root).parts
+        if parts:
+            safe_rm(repo_root / parts[0], within=repo_root)
 
     @staticmethod
     def _move_src_folder_up(remote: str, src: str) -> None:
@@ -569,7 +570,11 @@ class GitLocalRepo:
         return str(result.stdout.decode())
 
     def ignored_files(self) -> Sequence[str]:
-        """List of ignored files in this repository."""
+        """List of ignored files in this repository.
+
+        Returns an empty list if the repository path does not exist (e.g. during
+        an initial fetch before the local copy has been created).
+        """
         if not Path(self._path).exists():
             return []
 
@@ -591,7 +596,12 @@ class GitLocalRepo:
             )
 
     def any_changes_or_untracked(self) -> bool:
-        """Return True if the repo has any changed or untracked files."""
+        """Return True if the repo has any changed or untracked files.
+
+        Raises RuntimeError if the repository path does not exist.  Callers are
+        expected to verify existence first (e.g. via on_disk_version) before
+        invoking this method.
+        """
         if not Path(self._path).exists():
             raise RuntimeError("Path does not exist.")
 
