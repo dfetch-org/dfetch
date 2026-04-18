@@ -463,10 +463,11 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
         self, project: ProjectEntry, on_disk_version: Version
     ) -> bool:
         """Return True if *project* is already pinned to *on_disk_version*."""
-        if project.version.tag and project.version.tag == on_disk_version.tag:
-            return True
+        if project.version.tag:
+            return project.version.tag == on_disk_version.tag
+        if not project.version.revision or not on_disk_version.revision:
+            return False
         return (
-            project.version.tag == on_disk_version.tag
-            and project.version.revision == on_disk_version.revision
+            project.version.revision == on_disk_version.revision
             and self.revision_is_enough()
         )
