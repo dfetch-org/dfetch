@@ -41,6 +41,7 @@ extensions = [
     "sphinx_design",
     "plantweb.directive",
     "scenario_directive",
+    "latex_tabs",
     "unique_section_ids",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
