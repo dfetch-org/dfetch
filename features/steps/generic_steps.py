@@ -282,6 +282,14 @@ def step_impl(_, metadata_file, project_path):
     )
 
 
+@given('the metadata file "{metadata_file}" of "{project_path}" has invalid yaml')
+def step_impl(_, metadata_file, project_path):
+    generate_file(
+        os.path.join(os.getcwd(), project_path, metadata_file),
+        "key: [unclosed bracket\n",
+    )
+
+
 @given('the metadata file "{metadata_file}" of "{project_path}" is changed')
 def step_impl(_, metadata_file, project_path):
     extend_file(
