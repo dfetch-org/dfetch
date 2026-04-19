@@ -23,6 +23,9 @@ behave features/
 # Single feature file
 behave features/git-fetch.feature
 
+# Feature tests for a specific command (e.g. update, check, diff, report)
+behave features/ --tags=update
+
 # Full test run with coverage (as CI does it)
 pytest --cov=dfetch tests/
 coverage run --source=dfetch --append -m behave features
@@ -87,6 +90,7 @@ Implement the abstract interfaces in `dfetch/project/subproject.py` and `dfetch/
 
 - **Unit tests** live in `tests/` and use `pytest`. Test files mirror module names (e.g., `tests/test_manifest.py`).
 - **BDD feature tests** live in `features/` and use `behave`. Step definitions are in `features/steps/`. Feature files describe end-to-end workflows.
+- Feature files are tagged with the command they exercise (e.g. `@update`, `@check`). If your change affects a command, run its feature tests using the command tag: `behave features/ --tags=<command>`.
 - Docstrings in test functions follow Google style as a convention (CI runs `pydocstyle dfetch` and does not check `tests/`, so this is not enforced automatically).
 
 ## Code quality rules
