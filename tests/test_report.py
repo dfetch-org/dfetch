@@ -174,7 +174,9 @@ class TestDetermineLicenses:
             "COPYING": bad_guess,
         }
 
-        with patch("dfetch.commands.report.glob.glob", return_value=["LICENSE", "COPYING"]):
+        with patch(
+            "dfetch.commands.report.glob.glob", return_value=["LICENSE", "COPYING"]
+        ):
             with patch("dfetch.commands.report.is_license_file", return_value=True):
                 with patch(
                     "dfetch.commands.report.guess_license_in_file",

@@ -450,7 +450,12 @@ class GitLocalRepo:
             return
         parts = chosen.relative_to(repo_root).parts
         if parts:
-            safe_rm(repo_root / parts[0], within=repo_root)
+            try:
+                safe_rm(repo_root / parts[0], within=repo_root)
+            except FileNotFoundError:
+                logger.debug(
+                    f"Nothing left to remove at '{repo_root / parts[0]}' after moving '{chosen}' for '{remote}'"
+                )
 
     @staticmethod
     def _move_src_folder_up(remote: str, src: str) -> None:

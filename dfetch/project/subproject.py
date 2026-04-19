@@ -187,18 +187,21 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
     def _report_unavailable_version(
         self, reporters: Sequence[AbstractCheckReporter]
     ) -> None:
+        """Report that the wanted version is not available on the remote."""
         for reporter in reporters:
             reporter.unavailable_project_version(self.__project, self.wanted_version)
 
     def _report_unfetched_project(
         self, reporters: Sequence[AbstractCheckReporter], latest_version: Version
     ) -> None:
+        """Report that the project is not fetched yet."""
         for reporter in reporters:
             reporter.unfetched_project(
                 self.__project, self.wanted_version, latest_version
             )
 
     def _report_local_changes(self, reporters: Sequence[AbstractCheckReporter]) -> None:
+        """Report that there are local changes."""
         for reporter in reporters:
             reporter.local_changes(self.__project)
 
