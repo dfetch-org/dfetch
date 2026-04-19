@@ -2,9 +2,9 @@
 # For more info see https://dfetch.rtfd.io/en/latest/getting_started.html
 dfetch:
   branch: ''
-  hash: f4abafca39b328491c53a4f4f4d86ef4
-  last_fetch: 29/03/2026, 18:08:24
+  hash: a95be5e050279a3ba7dfdb018f1883d9
+  last_fetch: 19/04/2026, 21:34:20
   patch: ''
   remote_url: https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip
-  revision: https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip
+  revision: sha256:6f6376c6ed2960ea8a963cd7387ec9d76e3f629125bc33d1fdcd7eb7012f7bbf
   tag: ''

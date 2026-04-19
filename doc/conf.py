@@ -222,6 +222,9 @@ latex_elements = {
   ItalicFont=texgyreheros-italic,
   BoldItalicFont=texgyreheros-bolditalic]
 \renewcommand*\familydefault{\sfdefault}
+\setmonofont{JetBrainsMono-Regular}[
+  Extension=.ttf, Path=./, Scale=0.85,
+  BoldFont=JetBrainsMono-Medium]
 \newfontface\PoiretOne{PoiretOne-Regular}[Extension=.ttf, Path=./]
 """,
     # Design-token colours for Sphinx's built-in LaTeX style hooks.
@@ -234,6 +237,10 @@ latex_elements = {
         "OuterLinkColor={rgb}{0.306,0.498,0.627},"
         "VerbatimColor={rgb}{0.996,0.973,0.941},"
         "VerbatimBorderColor={rgb}{0.906,0.878,0.847},"
+        # Table: warm-cream header, white body rows (no striping, matches website)
+        "TableRowColorHeader={rgb}{0.996,0.973,0.941},"
+        "TableRowColorOdd={rgb}{1.000,1.000,1.000},"
+        "TableRowColorEven={rgb}{1.000,1.000,1.000},"
     ),
     # Cover page is in doc/dfetch_cover.inc (listed in latex_additional_files).
     # \makeatletter/\makeatother expose \py@release inside the included file.
@@ -260,6 +267,8 @@ latex_additional_files = [
     "static/fonts/texgyreheros/texgyreheros-bold.otf",
     "static/fonts/texgyreheros/texgyreheros-italic.otf",
     "static/fonts/texgyreheros/texgyreheros-bolditalic.otf",
+    "static/fonts/jetbrains-mono/ttf/JetBrainsMono-Regular.ttf",
+    "static/fonts/jetbrains-mono/ttf/JetBrainsMono-Medium.ttf",
 ]
 
 

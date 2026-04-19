@@ -12,6 +12,7 @@
 % ---- Design tokens ----------------------------------------------------------
 \usepackage{xcolor}
 \definecolor{dfprimary}{HTML}{c2620a}
+\definecolor{dfprimarydark}{HTML}{a0510a}
 \definecolor{dfaccent}{HTML}{4e7fa0}
 \definecolor{dftextmuted}{HTML}{78716c}
 \definecolor{dfnearblack}{HTML}{1c1917}
@@ -58,6 +59,33 @@
   {\normalfont\sffamily\normalsize\bfseries\color{dfnearblack}}
   {\textcolor{dftextmuted}{\thesubsubsection}}
   {0.75em}{}
+
+% ---- Tables: match website style -------------------------------------------
+% Rules: thin border colour, no vertical separators (horizontal-only, like site).
+% Header: warm-cream background set via TableRowColorHeader in sphinxsetup.
+%   \sphinxstyletheadfamily is Sphinx's zero-arg font-switch for header cells.
+% Body: \small (≈ 0.8 rem) + generous row padding to match website cell spacing.
+\usepackage{colortbl}
+\usepackage{etoolbox}
+\setlength{\arrayrulewidth}{0.4pt}
+\arrayrulecolor{dfborder}
+\renewcommand{\vline}{}                % suppress all vertical column rules
+\renewcommand{\arraystretch}{1.35}     % generous row height (website 0.5rem top/bottom)
+\setlength{\tabcolsep}{8pt}            % horizontal cell padding (website 0.875rem)
+\BeforeBeginEnvironment{tabulary}{\small}
+\BeforeBeginEnvironment{longtable}{\small}
+\providecommand{\sphinxstyletheadfamily}{\sffamily}
+\renewcommand{\sphinxstyletheadfamily}{\small\bfseries}
+
+% ---- Inline code: amber text on tinted background matching website ----------
+% website: color: --primary-dark; background: --bg-tint; border: --border; border-radius: 4px
+% \tcbox (tcolorbox inline box) supports arc= for rounded corners; \fcolorbox does not.
+\renewcommand{\sphinxcode}[1]{%
+  \tcbox[on line, arc=2pt, outer arc=2pt,
+    colback=dfbgtint, colframe=dfborder, boxrule=0.4pt,
+    boxsep=0pt, left=2pt, right=2pt, top=1pt, bottom=1pt]%
+  {\textcolor{dfprimarydark}{\texttt{#1}}}%
+}
 
 % ---- Admonitions: left-stripe card style matching the website ---------------
 % Sphinx 5+ emits \begin{sphinxadmonition}{type}{Title:} for every admonition.

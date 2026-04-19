@@ -45,7 +45,7 @@ manifest:
   - name: jetbrains-mono-font
     remote: github
     vcs: archive
-    src: fonts/webfonts/
+    src: fonts
     dst: doc/static/fonts/jetbrains-mono
     repo-path: JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip
     ignore:
@@ -55,6 +55,7 @@ manifest:
       - JetBrainsMono-Semi*
       - JetBrainsMono-Thin*
       - JetBrainsMono-*Italic*
+      - JetBrainsMonoNL*
     integrity:
       hash: sha256:6f6376c6ed2960ea8a963cd7387ec9d76e3f629125bc33d1fdcd7eb7012f7bbf
 
