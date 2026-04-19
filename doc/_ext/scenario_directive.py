@@ -1,5 +1,5 @@
 """
-Custom Sphinx directive for including Gherkin scenarios from feature files.
+Custom Sphinx directive for including feature examples from feature files.
 
 Usage in conf.py:
 
@@ -14,12 +14,12 @@ Usage in .rst files:
 
     .. scenario-include:: ../features/fetch-git-repo.feature
        :scenario:
-          Scenario Title 1
-          Scenario Title 2
+          Example Title 1
+          Example Title 2
 
-If ``:scenario:`` is omitted, all scenarios in the feature file are included.
+If ``:scenario:`` is omitted, all examples in the feature file are included.
 
-**PDF / LaTeX builds** automatically move scenarios to an appendix grouped by
+**PDF / LaTeX builds** automatically move examples to an appendix grouped by
 the first non-excluded behave tag found on the feature file.  The directive's
 original location receives a cross-reference to the appendix entry instead.
 
@@ -144,9 +144,9 @@ def _tag_section_title(tag: str) -> str:
 
 
 class ScenarioIncludeDirective(Directive):
-    """Include Gherkin scenarios from a feature file.
+    """Include feature examples from a feature file.
 
-    In PDF/LaTeX builds the scenarios are moved to a dedicated appendix and
+    In PDF/LaTeX builds the examples are moved to a dedicated appendix and
     replaced inline by a cross-reference, unless ``:inline:`` is given.
     """
 
@@ -295,9 +295,9 @@ class ScenarioIncludeDirective(Directive):
         ref_node["label"] = label
         ref_node["reftitle"] = title
         para = nodes.paragraph()
-        para += nodes.emphasis(text="Scenarios: see ")
+        para += nodes.Text("See the example \u201c")
         para += ref_node
-        para += nodes.emphasis(text=" in the appendix.")
+        para += nodes.Text("\u201d in the Appendix.")
         return [para]
 
     # ------------------------------------------------------------------
@@ -327,14 +327,14 @@ class ScenarioIncludeDirective(Directive):
 
 
 class ScenarioAppendixDirective(Directive):
-    """Render the appendix of all PDF-deferred scenarios.
+    """Render the appendix of all PDF-deferred feature examples.
 
     Place this directive once in the document (typically in an appendix
     page).  During the write phase it is replaced by sections grouped by
     the first non-excluded tag, sorted alphabetically, containing the full
     content of each referenced feature file.
 
-    In HTML builds scenarios appear inline in the main text, so this
+    In HTML builds examples appear inline in the main text, so this
     directive emits an explanatory note instead.
     """
 
@@ -348,9 +348,9 @@ class ScenarioAppendixDirective(Directive):
             note = nodes.note()
             para = nodes.paragraph()
             para += nodes.Text(
-                "In the HTML edition, feature scenarios appear as expandable "
-                "examples directly within each guide section. "
-                "In the PDF edition they are collected here, grouped by tag."
+                "In the HTML edition, feature examples appear as expandable "
+                "blocks directly within each guide section. "
+                "In the PDF edition they are collected here, grouped by command."
             )
             note += para
             return [note]

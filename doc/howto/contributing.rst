@@ -83,19 +83,27 @@ Feature tests
 ~~~~~~~~~~~~~
 Feature tests are used for higher-level integration testing of functionality.
 For this `behave <https://behave.readthedocs.io/en/latest/>`_ is used as testing framework.
-Features are specified in *Gherkin* in so-called feature files in the ``features`` folder.
-The sentences in the feature files, map to steps in the ``features/steps`` folder.
+Feature files in the ``features`` folder contain plain-language examples that
+demonstrate dfetch's behaviour. The sentences in the feature files map to step
+definitions in the ``features/steps`` folder.
 
-Test can be run directly from the command-line
+Tests can be run directly from the command-line:
 
 .. code-block:: bash
 
     behave features
 
+Feature files are tagged with the command they exercise (e.g. ``@update``,
+``@check``). You can run just the examples for a specific command using its tag:
+
+.. code-block:: bash
+
+    behave features --tags=update
+
 Alternatively in VSCode run the ``Run all feature tests`` task from the command palette.
 
 To debug these tests, mark the ``Feature:`` or ``Scenario:`` to debug with the ``@wip`` tag
-and add run the ``Feature tests (wip)`` debug configuration in VSCode.
+and run the ``Feature tests (wip)`` debug configuration in VSCode.
 
 
 Creating documentation
