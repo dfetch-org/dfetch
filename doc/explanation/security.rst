@@ -27,6 +27,14 @@ using the `pytm`_ framework.  Regenerate analysis output with:
 
 .. note::
 
+   The ``security/`` package is intentionally excluded from built wheels and is
+   **not** installed by ``pip install dfetch[security]``.  These commands must
+   be run from a source checkout with the repository root on ``PYTHONPATH`` (or
+   simply from the repository root, where Python resolves the ``security``
+   package automatically).
+
+.. note::
+
    The ``--seq`` and ``--dfd`` commands require **PlantUML** and **Graphviz**
    to be installed on the system.  These are not Python packages and are not
    installed by ``pip install .[security]``.  Install them separately (e.g.
@@ -399,10 +407,11 @@ with the security controls that are currently implemented.
        in ``ci.yml`` propagates secrets to test and docs workflows triggered
        on PR — a malicious workflow step could exfiltrate secrets.
    * - DF-12
-     - GitHub Actions Runner → GitHub Repository
+     - GitHub Repository → GitHub Actions Runner
      - HTTPS
-     - CI checkout and build.  ``persist-credentials: false`` on all checkout
-       steps; all third-party actions pinned by commit SHA.
+     - CI checkout and build.  GitHub Actions checks out source from the
+       repository into the runner.  ``persist-credentials: false`` on all
+       checkout steps; all third-party actions pinned by commit SHA.
    * - DF-13
      - GitHub Actions Runner → PyPI
      - HTTPS
@@ -439,7 +448,7 @@ The following controls are already in place and are reflected in the
        ``pathlib.Path.resolve``), then rejects any path whose resolved prefix
        does not start with the resolved root.  Applied to every file copy and
        post-extraction symlink.
-       ``dfetch/util/util.py`` — ``check_no_path_traversal`` at line 277
+       ``check_no_path_traversal()`` in ``dfetch/util/util.py``
    * - Decompression-bomb protection
      - SA-05, PA-02
      - Archives are rejected if uncompressed size exceeds 500 MB or the member

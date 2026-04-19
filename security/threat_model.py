@@ -91,20 +91,20 @@ archive_server.description = (
     "hashes — the integrity.hash field is optional."
 )
 
-gh_actions_runner = ExternalEntity("EA-04: GitHub Actions Runner")
-gh_actions_runner.inBoundary = boundary_github
-gh_actions_runner.description = (
-    "Microsoft-operated ephemeral runner executing CI/CD workflows. "
-    "Egress policy is 'audit' (not 'block') — exfiltration of secrets is possible "
-    "if any workflow step is compromised."
-)
-
 gh_repository = ExternalEntity("EA-03: GitHub Repository")
 gh_repository.inBoundary = boundary_github
 gh_repository.description = (
     "Source code, PRs, releases, and workflow definitions. "
     "GitHub Actions workflows (.github/workflows/) with contents:write permission "
     "can modify repository state and trigger releases."
+)
+
+gh_actions_runner = ExternalEntity("EA-04: GitHub Actions Infrastructure")
+gh_actions_runner.inBoundary = boundary_github
+gh_actions_runner.description = (
+    "Microsoft-operated ephemeral runner executing CI/CD workflows. "
+    "Egress policy is 'audit' (not 'block') — exfiltration of secrets is possible "
+    "if any workflow step is compromised."
 )
 
 pypi = ExternalEntity("EA-05: PyPI / TestPyPI")
@@ -124,7 +124,7 @@ consumer_build.description = (
 
 # ── Processes ────────────────────────────────────────────────────────────────
 
-dfetch_cli = Process("SA-01: dfetch CLI")
+dfetch_cli = Process("SA-01: dfetch Process")
 dfetch_cli.inBoundary = boundary_dev_env
 dfetch_cli.description = (
     "Python CLI entry point dispatching to: update, check, diff, add, remove, "
@@ -320,7 +320,7 @@ gh_workflows.description = (
     "RISK: 'secrets: inherit' in ci.yml propagates ALL secrets to test and docs workflows."
 )
 gh_workflows.storesSensitiveData = False
-gh_workflows.hasWriteAccess = True   # PRs can modify .github/workflows/ definitions
+gh_workflows.hasWriteAccess = True  # PRs can modify .github/workflows/ definitions
 gh_workflows.classification = Classification.RESTRICTED
 gh_workflows.controls.isHardened = True
 
@@ -414,9 +414,11 @@ df03_tls.description = (
 )
 df03_tls.protocol = "HTTPS / SSH"
 df03_tls.controls.isEncrypted = True
-df03_tls.controls.isHardened = True    # BatchMode=yes, --non-interactive
+df03_tls.controls.isHardened = True  # BatchMode=yes, --non-interactive
 
-df03_plain = Dataflow(dfetch_cli, remote_git_svn, "DF-03b: Fetch VCS content — svn:// / http://")
+df03_plain = Dataflow(
+    dfetch_cli, remote_git_svn, "DF-03b: Fetch VCS content — svn:// / http://"
+)
 df03_plain.description = (
     "git fetch over http:// or SVN over svn:// (plain, non-TLS). "
     "dfetch accepts these protocols without enforcement — no TLS check in manifest "
@@ -428,7 +430,9 @@ df03_plain.protocol = "http / svn"
 df03_plain.controls.isEncrypted = False
 df03_plain.controls.isHardened = False
 
-df04_tls = Dataflow(remote_git_svn, dfetch_cli, "DF-04a: VCS content inbound — HTTPS/SSH")
+df04_tls = Dataflow(
+    remote_git_svn, dfetch_cli, "DF-04a: VCS content inbound — HTTPS/SSH"
+)
 df04_tls.description = (
     "Repository tree and file content over HTTPS or SSH. Transport is encrypted. "
     "No end-to-end content hash for Git or SVN — authenticity relies on transport "
@@ -438,7 +442,9 @@ df04_tls.protocol = "HTTPS / SSH"
 df04_tls.controls.isEncrypted = True
 df04_tls.controls.providesIntegrity = False  # no end-to-end hash for git/svn content
 
-df04_plain = Dataflow(remote_git_svn, dfetch_cli, "DF-04b: VCS content inbound — svn:// / http://")
+df04_plain = Dataflow(
+    remote_git_svn, dfetch_cli, "DF-04b: VCS content inbound — svn:// / http://"
+)
 df04_plain.description = (
     "Repository content over unencrypted http:// or svn://. "
     "A network-positioned attacker can substitute arbitrary content without detection "
@@ -472,7 +478,9 @@ df07.description = (
     "check_no_path_traversal(). Symlinks validated post-extraction."
 )
 df07.controls.sanitizesInput = True
-df07.controls.providesIntegrity = True
+df07.controls.providesIntegrity = (
+    False  # integrity is conditional on hash presence (checked in DF-05/DF-06)
+)
 
 df08 = Dataflow(dfetch_cli, metadata_store, "DF-08: Write dependency metadata")
 df08.description = "Writes .dfetch_data.yaml tracking remote_url, revision, hash."
@@ -498,7 +506,7 @@ df11.description = (
 df11.protocol = "HTTPS"
 df11.controls.hasAccessControl = True
 
-df12 = Dataflow(gh_actions_runner, gh_repository, "DF-12: CI checkout and build")
+df12 = Dataflow(gh_repository, gh_actions_runner, "DF-12: CI checkout and build")
 df12.description = (
     "GitHub Actions checks out source, installs deps, runs tests, lints, builds. "
     "persist-credentials:false on all checkout steps. "
