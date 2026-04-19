@@ -132,7 +132,7 @@ from decimal import Decimal
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as pkg_version
 
-from cyclonedx.builder.this import this_component as cdx_lib_component
+from cyclonedx.contrib.this.builders import this_component as cdx_lib_component
 from cyclonedx.model import (
     AttachedText,
     Encoding,
