@@ -218,6 +218,13 @@ latex_elements = {
 \definecolor{dfaccent}{HTML}{4e7fa0}
 \definecolor{dftextmuted}{HTML}{78716c}
 \definecolor{dfnearblack}{HTML}{1c1917}
+\definecolor{dfbgtint}{HTML}{fef8f0}
+\definecolor{dfbgmint}{HTML}{eff6fa}
+\definecolor{dfborder}{HTML}{e7e0d8}
+\definecolor{dfgreen}{HTML}{7aad6b}
+\definecolor{dfbggreen}{HTML}{f3faf2}
+\definecolor{dferror}{HTML}{c0544a}
+\definecolor{dfbgerror}{HTML}{fff5f4}
 % Cover page colours (dfetch brand palette)
 \definecolor{dfetchCoverTop}{HTML}{3a6682}
 \definecolor{dfetchCoverDark}{HTML}{1c1917}
@@ -226,6 +233,80 @@ latex_elements = {
 \definecolor{dfetchCoverLight}{HTML}{fef8f0}
 % TikZ for cover page
 \usepackage{tikz}
+% ---- Chapter & section titles -----------------------------------------------
+% titlesec overrides fncychap so we get full control of colours and spacing.
+\usepackage{titlesec}
+% Chapter: small muted "CHAPTER N" eyebrow + large near-black title + amber rule
+\titleformat{\chapter}[display]
+  {\normalfont\sffamily}
+  {\color{dftextmuted}\fontsize{9}{11}\selectfont\bfseries
+   \MakeUppercase{\chaptertitlename}~\thechapter}
+  {4pt}
+  {\color{dfnearblack}\fontsize{22}{26}\selectfont\bfseries}
+  [\vspace{6pt}{\color{dfprimary}\rule{\linewidth}{1.5pt}}]
+\titlespacing*{\chapter}{0pt}{-6pt}{18pt}
+% Section: amber number pip + near-black title text
+\titleformat{\section}
+  {\normalfont\sffamily\Large\bfseries\color{dfnearblack}}
+  {\textcolor{dfprimary}{\thesection}}
+  {0.75em}{}
+% Subsection: muted number + near-black title text
+\titleformat{\subsection}
+  {\normalfont\sffamily\large\bfseries\color{dfnearblack}}
+  {\textcolor{dftextmuted}{\thesubsection}}
+  {0.75em}{}
+\titleformat{\subsubsection}
+  {\normalfont\sffamily\normalsize\bfseries\color{dfnearblack}}
+  {\textcolor{dftextmuted}{\thesubsubsection}}
+  {0.75em}{}
+% ---- Admonitions: left-stripe card style matching the website ---------------
+% Sphinx 5+ emits \begin{sphinxadmonition}{type}{Title:} for every admonition.
+% We override that single two-arg environment and dispatch to per-type opener
+% commands defined here (outside \AtBeginDocument so # needs no escaping).
+% tcolorbox skins library supplies `borderline west` (left stripe only) and
+% `frame hidden` (no outer box border).
+\usepackage{tcolorbox}
+\tcbuselibrary{skins}
+\usepackage{etoolbox}
+\tcbset{
+  dfnote/.style={enhanced, frame hidden,
+    borderline west={3.5pt}{0pt}{dfaccent}, colback=dfbgmint,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+    before skip=\baselineskip, after skip=0.5\baselineskip},
+  dfwarn/.style={enhanced, frame hidden,
+    borderline west={3.5pt}{0pt}{dfprimary}, colback=dfbgtint,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+    before skip=\baselineskip, after skip=0.5\baselineskip},
+  dftip/.style={enhanced, frame hidden,
+    borderline west={3.5pt}{0pt}{dfgreen}, colback=dfbggreen,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+    before skip=\baselineskip, after skip=0.5\baselineskip},
+  dferrstyle/.style={enhanced, frame hidden,
+    borderline west={3.5pt}{0pt}{dferror}, colback=dfbgerror,
+    left=10pt, right=10pt, top=8pt, bottom=8pt,
+    before skip=\baselineskip, after skip=0.5\baselineskip},
+}
+% Per-type opener commands (no # escaping needed outside \AtBeginDocument)
+\newcommand{\dfadmonnote}[1]{\begin{tcolorbox}[dfnote]{\color{dfaccent}\sffamily\bfseries#1}\par\smallskip}
+\newcommand{\dfadmonimportant}[1]{\begin{tcolorbox}[dfnote]{\color{dfaccent}\sffamily\bfseries#1}\par\smallskip}
+\newcommand{\dfadmontip}[1]{\begin{tcolorbox}[dftip]{\color{dfgreen}\sffamily\bfseries#1}\par\smallskip}
+\newcommand{\dfadmonhint}[1]{\begin{tcolorbox}[dftip]{\color{dfgreen}\sffamily\bfseries#1}\par\smallskip}
+\newcommand{\dfadmonwarning}[1]{\begin{tcolorbox}[dfwarn]{\color{dfprimary}\sffamily\bfseries#1}\par\smallskip}
+\newcommand{\dfadmoncaution}[1]{\begin{tcolorbox}[dfwarn]{\color{dfprimary}\sffamily\bfseries#1}\par\smallskip}
+\newcommand{\dfadmondanger}[1]{\begin{tcolorbox}[dferrstyle]{\color{dferror}\sffamily\bfseries#1}\par\smallskip}
+\newcommand{\dfadmonerror}[1]{\begin{tcolorbox}[dferrstyle]{\color{dferror}\sffamily\bfseries#1}\par\smallskip}
+% Dispatcher: look up \dfadmon<type>; fall back to note style for unknown types
+\newcommand{\dfadmonbegin}[2]{%
+  \ifcsdef{dfadmon#1}{\csuse{dfadmon#1}{#2}}{\dfadmonnote{#2}}%
+}
+% sphinx.sty is loaded by \documentclass before the user preamble runs, so
+% sphinxadmonition is already defined here and \renewenvironment works directly
+% with plain #1/#2 — no \AtBeginDocument or ## escaping needed.
+\renewenvironment{sphinxadmonition}[2]{%
+  \dfadmonbegin{#1}{#2}%
+}{%
+  \end{tcolorbox}%
+}
 """,
     # XeLaTeX font setup using vendored fonts (see dfetch.yaml).
     # Both fonts are copied into the LaTeX build root via latex_additional_files,
@@ -241,15 +322,16 @@ latex_elements = {
 \renewcommand*\familydefault{\sfdefault}
 \newfontface\PoiretOne{PoiretOne-Regular}[Extension=.ttf, Path=./]
 """,
-    # Design-token colours for Sphinx's built-in LaTeX style hooks
+    # Design-token colours for Sphinx's built-in LaTeX style hooks.
+    # TitleColor affects TOC entries and any headings not overridden by titlesec.
+    # Admonition styling is handled entirely by tcolorbox (see preamble above),
+    # so no admonition-specific sphinxsetup keys are needed here.
     "sphinxsetup": (
-        "TitleColor={rgb}{0.761,0.384,0.039},"
+        "TitleColor={rgb}{0.110,0.098,0.090},"
         "InnerLinkColor={rgb}{0.306,0.498,0.627},"
         "OuterLinkColor={rgb}{0.306,0.498,0.627},"
         "VerbatimColor={rgb}{0.996,0.973,0.941},"
         "VerbatimBorderColor={rgb}{0.906,0.878,0.847},"
-        "noteBorderColor={rgb}{0.306,0.498,0.627},"
-        "warningBorderColor={rgb}{0.761,0.384,0.039},"
     ),
     # Cover page is in doc/dfetch_cover.inc (listed in latex_additional_files).
     # \makeatletter/\makeatother expose \py@release inside the included file.

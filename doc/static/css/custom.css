@@ -181,9 +181,9 @@ code .pre, tt .pre {
    Admonitions
    ============================================================ */
 div.admonition {
-  border: none !important;
-  border-radius: var(--r-sm) !important;
+  border: 1px solid var(--border) !important;
   border-left: 4px solid var(--accent) !important;
+  border-radius: var(--r-sm) !important;
   box-shadow: var(--shad-sm) !important;
   font-family: Inter, sans-serif;
   padding: 1.25rem 1.5rem !important;
@@ -194,18 +194,21 @@ div.admonition {
 
 div.admonition.warning,
 div.admonition.caution {
+  border-color: var(--border) !important;
   border-left-color: var(--primary) !important;
   background: var(--bg-tint) !important;
 }
 
 div.admonition.danger,
 div.admonition.error {
+  border-color: var(--border) !important;
   border-left-color: #c0544a !important;
   background: #fff5f4 !important;
 }
 
 div.admonition.tip,
 div.admonition.hint {
+  border-color: var(--border) !important;
   border-left-color: #7aad6b !important;
   background: #f3faf2 !important;
 }
