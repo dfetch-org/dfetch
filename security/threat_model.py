@@ -19,7 +19,6 @@ from pytm import (
     Datastore,
     ExternalEntity,
     Process,
-    Server,
 )
 
 # ── Threat model metadata ────────────────────────────────────────────────────
@@ -78,14 +77,14 @@ consumer.inBoundary = boundary_dev_env
 
 # ── External entities ────────────────────────────────────────────────────────
 
-remote_git_svn = ExternalEntity("Remote VCS Server")
+remote_git_svn = ExternalEntity("EA-01: Remote VCS Server")
 remote_git_svn.inBoundary = boundary_remote_vcs
 remote_git_svn.description = (
     "Upstream Git or SVN host: GitHub, GitLab, Gitea, self-hosted Git/SVN. "
     "Not controlled by the dfetch project; content is untrusted until verified."
 )
 
-archive_server = ExternalEntity("Archive HTTP Server")
+archive_server = ExternalEntity("EA-02: Archive HTTP Server")
 archive_server.inBoundary = boundary_remote_vcs
 archive_server.description = (
     "HTTP/HTTPS server serving .tar.gz, .tgz, .tar.bz2, .tar.xz, or .zip files. "
@@ -93,7 +92,7 @@ archive_server.description = (
     "hashes — the integrity.hash field is optional."
 )
 
-gh_actions_runner = ExternalEntity("GitHub Actions Runner")
+gh_actions_runner = ExternalEntity("EA-04: GitHub Actions Runner")
 gh_actions_runner.inBoundary = boundary_github
 gh_actions_runner.description = (
     "Microsoft-operated ephemeral runner executing CI/CD workflows. "
@@ -101,7 +100,7 @@ gh_actions_runner.description = (
     "if any workflow step is compromised."
 )
 
-gh_repository = ExternalEntity("GitHub Repository")
+gh_repository = ExternalEntity("EA-03: GitHub Repository")
 gh_repository.inBoundary = boundary_github
 gh_repository.description = (
     "Source code, PRs, releases, and workflow definitions. "
@@ -109,7 +108,7 @@ gh_repository.description = (
     "can modify repository state and trigger releases."
 )
 
-pypi = ExternalEntity("PyPI / TestPyPI")
+pypi = ExternalEntity("EA-05: PyPI / TestPyPI")
 pypi.inBoundary = boundary_pypi
 pypi.description = (
     "Python Package Index. dfetch is published via OIDC trusted publishing "
@@ -117,7 +116,7 @@ pypi.description = (
     "would affect every consumer installing dfetch."
 )
 
-consumer_build = ExternalEntity("Consumer Build System")
+consumer_build = ExternalEntity("EA-07: Consumer Build System")
 consumer_build.inBoundary = boundary_dev_env
 consumer_build.description = (
     "Build system that compiles fetched source code (PA-02). "
@@ -126,7 +125,7 @@ consumer_build.description = (
 
 # ── Processes ────────────────────────────────────────────────────────────────
 
-dfetch_cli = Process("dfetch CLI")
+dfetch_cli = Process("SA-01: dfetch CLI")
 dfetch_cli.inBoundary = boundary_dev_env
 dfetch_cli.description = (
     "Python CLI entry point dispatching to: update, check, diff, add, remove, "
@@ -134,12 +133,14 @@ dfetch_cli.description = (
     "Invokes Git and SVN as subprocesses (shell=False, list args). "
     "Extracts archives with decompression-bomb limits and path-traversal checks."
 )
-dfetch_cli.controls.validatesInput = True          # StrictYAML + SAFE_STR regex
-dfetch_cli.controls.sanitizesInput = True          # check_no_path_traversal realpath-based
-dfetch_cli.controls.usesParameterizedInput = True  # shell=False, list-based subprocesses
-dfetch_cli.controls.checksInputBounds = True       # 500MB / 10k-member archive limits
-dfetch_cli.controls.isHardened = True              # BatchMode=yes, --non-interactive, type checks
-dfetch_cli.controls.providesIntegrity = True       # hmac.compare_digest SHA-256/384/512
+dfetch_cli.controls.validatesInput = True  # StrictYAML + SAFE_STR regex
+dfetch_cli.controls.sanitizesInput = True  # check_no_path_traversal realpath-based
+dfetch_cli.controls.usesParameterizedInput = (
+    True  # shell=False, list-based subprocesses
+)
+dfetch_cli.controls.checksInputBounds = True  # 500MB / 10k-member archive limits
+dfetch_cli.controls.isHardened = True  # BatchMode=yes, --non-interactive, type checks
+dfetch_cli.controls.providesIntegrity = True  # hmac.compare_digest SHA-256/384/512
 
 gh_actions_workflow = Process("GitHub Actions Workflow")
 gh_actions_workflow.inBoundary = boundary_github
@@ -149,8 +150,12 @@ gh_actions_workflow.description = (
     "All actions pinned by commit SHA. "
     "harden-runner used in every workflow (egress: audit only)."
 )
-gh_actions_workflow.controls.isHardened = True        # SHA-pinned actions, persist-credentials:false
-gh_actions_workflow.controls.providesIntegrity = True # CodeQL + Scorecard + dependency-review
+gh_actions_workflow.controls.isHardened = (
+    True  # SHA-pinned actions, persist-credentials:false
+)
+gh_actions_workflow.controls.providesIntegrity = (
+    True  # CodeQL + Scorecard + dependency-review
+)
 gh_actions_workflow.controls.hasAccessControl = True  # minimal permissions per workflow
 
 python_build = Process("Python Build (wheel / sdist)")
@@ -182,7 +187,7 @@ manifest_store.hasWriteAccess = True
 manifest_store.isSQL = False
 manifest_store.classification = Classification.SENSITIVE
 manifest_store.controls.isEncryptedAtRest = False
-manifest_store.controls.validatesInput = True      # StrictYAML validation on read
+manifest_store.controls.validatesInput = True  # StrictYAML validation on read
 
 fetched_source = Datastore("PA-02: Fetched Source Code")
 fetched_source.inBoundary = boundary_dev_env
@@ -209,7 +214,9 @@ integrity_hash_record.description = (
     "authenticity relies entirely on transport security (TLS/SSH)."
 )
 integrity_hash_record.storesSensitiveData = False
-integrity_hash_record.hasWriteAccess = False
+integrity_hash_record.hasWriteAccess = (
+    True  # developers and processes write this field in dfetch.yaml
+)
 integrity_hash_record.classification = Classification.SENSITIVE
 integrity_hash_record.controls.providesIntegrity = True
 
@@ -222,7 +229,9 @@ pypi_package.description = (
     "Compromise of the PyPI account or registry affects every consumer."
 )
 pypi_package.storesSensitiveData = False
-pypi_package.hasWriteAccess = False
+pypi_package.hasWriteAccess = (
+    True  # publish pipeline writes new releases to this package
+)
 pypi_package.classification = Classification.SENSITIVE
 pypi_package.controls.usesCodeSigning = False  # no Sigstore/cosign signing
 
@@ -382,6 +391,9 @@ scorecard_results.classification = Classification.RESTRICTED
 # EA-03: GitHub Repository — modelled as gh_repository (ExternalEntity above)
 # EA-04: GitHub Actions Infrastructure — modelled as gh_actions_runner (ExternalEntity above)
 # EA-05: PyPI / TestPyPI — modelled as pypi (ExternalEntity above)
+# EA-06: Developer Workstation / CI Runner — modelled as developer / gh_actions_runner (Actors/ExternalEntity above)
+# EA-07: Consumer Build System — modelled as consumer_build (ExternalEntity above)
+# EA-08: Network Transport — modelled as boundary_network (Boundary above); symbol: network_transport
 
 # ── DATA FLOWS ───────────────────────────────────────────────────────────────
 #
@@ -402,8 +414,8 @@ df03.description = (
     "no protocol enforcement in manifest schema."
 )
 df03.protocol = "HTTPS / SSH / svn"
-df03.controls.isEncrypted = True   # for HTTPS/SSH paths; NOT for svn:// or http://
-df03.controls.isHardened = True    # BatchMode=yes, --non-interactive
+df03.controls.isEncrypted = True  # for HTTPS/SSH paths; NOT for svn:// or http://
+df03.controls.isHardened = True  # BatchMode=yes, --non-interactive
 
 df04 = Dataflow(remote_git_svn, dfetch_cli, "DF-04: VCS content (inbound, untrusted)")
 df04.description = (
@@ -431,7 +443,7 @@ df06.description = (
 )
 df06.protocol = "HTTP or HTTPS"
 df06.controls.providesIntegrity = False  # hash is optional; may be absent
-df06.controls.isEncrypted = False        # http:// allowed
+df06.controls.isEncrypted = False  # http:// allowed
 
 df07 = Dataflow(dfetch_cli, fetched_source, "DF-07: Write vendored files")
 df07.description = (
@@ -453,7 +465,7 @@ df10.description = (
     "RISK: patch files are not integrity-verified (no hash in manifest schema). "
     "patch-ng path safety depends on its own internal implementation."
 )
-df10.controls.validatesInput = False   # no integrity hash on patch files
+df10.controls.validatesInput = False  # no integrity hash on patch files
 
 df11 = Dataflow(contributor, gh_repository, "DF-11: Submit pull request")
 df11.description = (

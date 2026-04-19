@@ -14,7 +14,7 @@ The model is aligned with the `Cyber Resilience Act (CRA)`_ and the
 classification methodology.
 
 .. _`Cyber Resilience Act (CRA)`: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847
-.. _`EN 18031`: https://www.etsi.org/deliver/etsi_en/18031_18031_18031_18031/
+.. _`EN 18031`: https://www.cenelec.eu/
 
 The threat model is maintained as executable code in ``security/threat_model.py``
 using the `pytm`_ framework.  Regenerate analysis output with:
@@ -24,6 +24,14 @@ using the `pytm`_ framework.  Regenerate analysis output with:
    python -m security.threat_model --seq    # PlantUML sequence diagram (stdout)
    python -m security.threat_model --dfd    # Graphviz DFD (stdout)
    python -m security.threat_model --report # STRIDE findings report
+
+.. note::
+
+   The ``--seq`` and ``--dfd`` commands require **PlantUML** and **Graphviz**
+   to be installed on the system.  These are not Python packages and are not
+   installed by ``pip install .[security]``.  Install them separately (e.g.
+   ``apt install plantuml graphviz`` or via your platform package manager)
+   before running the diagram commands.
 
 .. _pytm: https://github.com/izar/pytm
 
@@ -202,7 +210,7 @@ Supporting Assets
    * - SA-06
      - GitHub Actions Workflows
      - Restricted
-     - ``/.github/workflows/*.yml`` — 11 CI/CD pipeline definitions checked into
+     - ``.github/workflows/*.yml`` — 11 CI/CD pipeline definitions checked into
        the repository.  A malicious pull request modifying workflows can
        exfiltrate secrets or publish a backdoored release.  Mitigated by
        SHA-pinned actions and ``persist-credentials: false``.  Risk: ``secrets:
@@ -294,9 +302,12 @@ Environmental Assets
        receives untrusted third-party source.
    * - EA-08
      - Network Transport
-     - —
+     - Public
      - HTTPS, SSH, SVN, and plain HTTP carrying all remote fetch traffic.  TLS
-       enforcement is the responsibility of the OS and VCS clients.
+       enforcement is the responsibility of the OS and VCS clients.  Classified
+       Public because the transport channel itself is shared infrastructure with
+       no inherent confidentiality — confidentiality of the data it carries is
+       the responsibility of the higher-layer protocols (TLS/SSH).
 
 
 Data Flows
@@ -407,7 +418,7 @@ The following controls are already in place and are reflected in the
      - PA-02, SA-05
      - ``check_no_path_traversal()`` uses ``os.path.realpath`` to reject any
        path that escapes the destination root.
-       ``dfetch/util/util.py:265–285``
+       ``check_no_path_traversal()`` in ``dfetch/util/util.py``
    * - Decompression-bomb protection
      - SA-05, PA-02
      - Archives are rejected if uncompressed size exceeds 500 MB or the member
@@ -473,7 +484,9 @@ The following controls are already in place and are reflected in the
    * - OpenSSF Scorecard
      - EA-03, SA-10
      - Weekly OSSF Scorecard analysis uploaded to GitHub Code Scanning covers
-       17 supply-chain health checks.
+       the full set of OpenSSF Scorecard checks (see the
+       `OpenSSF Scorecard project <https://github.com/ossf/scorecard>`_ for
+       the authoritative list).
        ``.github/workflows/scorecard.yml``
    * - CodeQL static analysis
      - SA-01, SA-06
