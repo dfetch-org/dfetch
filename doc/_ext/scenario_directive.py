@@ -43,6 +43,7 @@ from typing import Dict, FrozenSet, List, Tuple
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from docutils.statemachine import StringList
+from sphinx.util.nodes import make_refnode
 
 # ---------------------------------------------------------------------------
 # Custom node types
@@ -53,12 +54,12 @@ class ScenarioAppendixPlaceholder(nodes.General, nodes.Element):
     """Replaced by the full appendix content during the resolve phase."""
 
 
-class ScenarioAppendixRef(nodes.General, nodes.Inline, nodes.Element):
+class ScenarioAppendixRef(nodes.General, nodes.Element):
     """Deferred cross-reference to a scenario appendix entry.
 
-    Stores ``label`` and ``reftitle`` as attributes.  Resolved to a proper
-    ``nodes.reference`` with ``refdocname`` set during ``doctree-resolved``,
-    once the appendix document name is known from the environment.
+    Stores ``label``, ``reftitle``, ``group_tag``, and ``group_label`` as
+    attributes.  Resolved to a paragraph with ``make_refnode`` links during
+    ``doctree-resolved``, once the appendix document name is known.
     """
 
 
@@ -284,21 +285,19 @@ class ScenarioIncludeDirective(Directive):
                     existing["scenarios"].append(s)
 
         # ----------------------------------------------------------
-        # Return a short paragraph pointing to the appendix.
-        # Use a deferred ScenarioAppendixRef node; it is resolved to a
-        # nodes.reference with refdocname set in doctree-resolved, once
-        # the appendix document name is known.  Sphinx's LaTeX writer
-        # requires refdocname to construct the \hyperref[docname:id]
-        # label correctly — omitting it silently drops the hyperlink.
+        # Return a deferred ScenarioAppendixRef block node.  It is
+        # resolved to a full paragraph with make_refnode links during
+        # doctree-resolved, once the appendix document name is known.
+        # Sphinx's make_refnode handles LaTeX/HTML builder differences,
+        # producing a proper \hyperref in PDF output.
         # ----------------------------------------------------------
         ref_node = ScenarioAppendixRef()
         ref_node["label"] = label
         ref_node["reftitle"] = title
-        para = nodes.paragraph()
-        para += nodes.Text("See the example \u201c")
-        para += ref_node
-        para += nodes.Text("\u201d in the Appendix.")
-        return [para]
+        ref_node["group_tag"] = tag
+        ref_node["group_label"] = f"appendix-{tag}"
+        ref_node["scenario_count"] = len(scenario_titles)
+        return [ref_node]
 
     # ------------------------------------------------------------------
     # Entry point
@@ -404,26 +403,60 @@ def _build_appendix_nodes(entries: Dict) -> List[nodes.Node]:
 
 
 def resolve_scenario_appendix_refs(
-    app, doctree: nodes.document, _fromdocname: str
+    app, doctree: nodes.document, fromdocname: str
 ) -> None:
-    """Replace ScenarioAppendixRef nodes with resolved cross-references.
+    """Replace ScenarioAppendixRef nodes with a paragraph containing clickable links.
 
     Called for every document during doctree-resolved.  By that point all
-    source files have been read, so ``env.scenario_appendix_docname`` is set.
-    Sphinx's LaTeX writer needs ``refdocname`` on internal references to build
-    the ``docname:id`` label key used for ``\\hyperref`` targets.
+    source files have been read so ``env.scenario_appendix_docname`` is set.
+    ``make_refnode`` is used so that both the HTML and LaTeX (PDF) builders
+    receive a properly formed internal reference — LaTeX needs this to emit a
+    working ``\\hyperref``.
+
+    The paragraph text names the group section so readers can locate the entry
+    without guessing where in the appendix it lives, e.g.:
+
+        See "Fetch Git Repo" example in the Fetch section of the Appendix.
     """
     appendix_docname = getattr(app.env, "scenario_appendix_docname", None)
     for ref_node in doctree.traverse(ScenarioAppendixRef):
         label = ref_node["label"]
         title = ref_node["reftitle"]
+        group_tag = ref_node.get("group_tag", "")
+        group_label = ref_node.get("group_label", "")
+
+        count = ref_node.get("scenario_count", 1)
+        examples = "examples" if count > 1 else "example"
+
+        para = nodes.paragraph()
         if appendix_docname:
-            ref = nodes.reference(
-                "", title, internal=True, refid=label, refdocname=appendix_docname
+            feat_ref = make_refnode(
+                app.builder,
+                fromdocname,
+                appendix_docname,
+                label,
+                nodes.inline("", title),
             )
+            para += nodes.Text("See \u201c")
+            para += feat_ref
+            para += nodes.Text(f"\u201d {examples}")
+            if group_label and group_tag:
+                group_ref = make_refnode(
+                    app.builder,
+                    fromdocname,
+                    appendix_docname,
+                    group_label,
+                    nodes.inline("", _tag_section_title(group_tag)),
+                )
+                para += nodes.Text(" in the ")
+                para += group_ref
+                para += nodes.Text(" section of the Appendix.")
+            else:
+                para += nodes.Text(" in the Appendix.")
         else:
-            ref = nodes.inline("", title)
-        ref_node.replace_self(ref)
+            para += nodes.Text(f"See \u201c{title}\u201d {examples} in the Appendix.")
+
+        ref_node.replace_self(para)
 
 
 def process_scenario_appendix(app, doctree: nodes.document, _fromdocname: str) -> None:
