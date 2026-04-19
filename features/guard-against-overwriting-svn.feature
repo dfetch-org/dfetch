@@ -1,4 +1,4 @@
-@update
+@remote-svn @update
 Feature: Guard against overwriting in svn
 
     Accidentally overwriting local changes could lead to introducing regressions.

@@ -43,7 +43,10 @@ from typing import Dict, FrozenSet, List, Tuple
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from docutils.statemachine import StringList
+from sphinx.util import logging
 from sphinx.util.nodes import make_refnode
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Custom node types
@@ -309,6 +312,19 @@ class ScenarioIncludeDirective(Directive):
         available = _all_scenarios(feature_abs)
         scenario_titles = self._requested_scenarios(available)
 
+        if "scenario" in self.options:
+            available_titles = {title for _, title in available}
+            requested = [
+                t.strip() for t in self.options["scenario"].splitlines() if t.strip()
+            ]
+            missing = [t for t in requested if t not in available_titles]
+            if missing:
+                raise self.error(
+                    f"Scenario(s) not found in {feature_file}: {', '.join(missing)}"
+                )
+            if not scenario_titles:
+                raise self.error(f"No scenarios matched in {feature_file}.")
+
         if self._is_pdf() and "inline" not in self.options:
             return self._render_pdf(feature_file, feature_abs, scenario_titles)
 
@@ -454,6 +470,12 @@ def resolve_scenario_appendix_refs(
             else:
                 para += nodes.Text(" in the Appendix.")
         else:
+            logger.warning(
+                "PDF build will omit deferred scenario examples because no "
+                "'.. scenario-appendix::' directive was found in the document tree; "
+                "add it to a page (e.g. an appendix) to include deferred examples.",
+                location=ref_node,
+            )
             para += nodes.Text(f"See \u201c{title}\u201d {examples} in the Appendix.")
 
         ref_node.replace_self(para)

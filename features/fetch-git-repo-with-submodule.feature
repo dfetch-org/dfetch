@@ -1,4 +1,4 @@
-@update
+@update @report
 Feature: Fetch projects with nested VCS dependencies
 
     Some projects include nested version control dependencies
