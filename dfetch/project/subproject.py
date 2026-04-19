@@ -348,7 +348,7 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
 
         try:
             return Metadata.from_file(self.__metadata.path).version
-        except TypeError:
+        except (TypeError, ValueError):
             logger.print_warning_line(
                 self.__project.name,
                 f"{pathlib.Path(self.__metadata.path).relative_to(os.getcwd()).as_posix()}"
@@ -367,7 +367,7 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
 
         try:
             return Metadata.from_file(self.__metadata.path).hash
-        except TypeError:
+        except (TypeError, ValueError):
             logger.print_warning_line(
                 self.__project.name,
                 f"{pathlib.Path(self.__metadata.path).relative_to(os.getcwd()).as_posix()}"

@@ -88,7 +88,11 @@ class Metadata:
     def from_file(cls, path: str) -> "Metadata":
         """Load metadata file."""
         with open(path, encoding="utf-8") as metadata_file:
-            data: Options = yaml.safe_load(metadata_file)["dfetch"]
+            try:
+                data: Options = yaml.safe_load(metadata_file)["dfetch"]
+            except yaml.YAMLError as exc:
+                raise ValueError(str(exc)) from exc
+
             return cls(data)
 
     def fetched(
