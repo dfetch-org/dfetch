@@ -266,8 +266,14 @@ Environmental Assets
      - Remote VCS Servers
      - Public
      - Upstream Git and SVN hosts: GitHub, GitLab, Gitea, self-hosted.  Not
-       controlled by the dfetch project.  MITM on non-TLS paths is a concern
-       addressed by ``BatchMode=yes`` and SSH host-key verification.
+       controlled by the dfetch project.
+       **SSH transports**: ``BatchMode=yes`` and SSH host-key verification
+       prevent credential prompts and protect against host impersonation.
+       **Non-TLS transports** (plain ``http://`` or ``svn://``): these controls
+       do not apply — a network-positioned attacker can intercept or substitute
+       content without detection.  Use HTTPS, ``svn+https://``, or an SSH
+       tunnel for all VCS remotes; dfetch does not enforce this in the manifest
+       schema.
    * - EA-02
      - Archive HTTP Servers
      - Public
@@ -332,18 +338,30 @@ with the security controls that are currently implemented.
      - Manifest → dfetch CLI
      - (local)
      - StrictYAML parse; ``SAFE_STR`` regex rejects control characters.
-   * - DF-03
-     - dfetch CLI → Remote VCS Server
-     - HTTPS / SSH / svn
-     - Outbound: ``git fetch``, ``git ls-remote``, ``svn ls``, ``svn info``.
-       ``BatchMode=yes`` and ``--non-interactive`` prevent credential prompts.
-       Risk: ``svn://`` and ``http://`` protocols are accepted by dfetch — no
-       protocol enforcement in the manifest schema.
-   * - DF-04
-     - Remote VCS Server → dfetch CLI
-     - HTTPS / SSH / svn
-     - Repository tree and file content.  No end-to-end hash for Git or SVN
-       content — authenticity relies entirely on transport security.
+   * - DF-03a
+     - dfetch CLI → Remote VCS Server (HTTPS/SSH)
+     - HTTPS / SSH
+     - ``git fetch``, ``git ls-remote``, ``svn ls`` over encrypted transport.
+       ``BatchMode=yes`` and ``GIT_TERMINAL_PROMPT=0`` suppress prompts; SSH
+       host-key verification prevents impersonation.
+   * - DF-03b
+     - dfetch CLI → Remote VCS Server (svn:// / http://)
+     - http / svn
+     - Same commands over unencrypted transports accepted by dfetch.
+       **No TLS, no host verification** — a MITM can substitute repository
+       content or intercept credentials.  Manifest schema does not enforce
+       HTTPS.  Mitigate by using HTTPS or ``svn+https://`` instead.
+   * - DF-04a
+     - Remote VCS Server → dfetch CLI (HTTPS/SSH)
+     - HTTPS / SSH
+     - Repository content over encrypted transport.  No end-to-end content
+       hash — authenticity relies on transport security and upstream integrity.
+   * - DF-04b
+     - Remote VCS Server → dfetch CLI (svn:// / http://)
+     - http / svn
+     - Repository content over unencrypted transport.  An attacker can
+       substitute arbitrary content without detection — no encryption and no
+       content hash.
    * - DF-05
      - dfetch CLI → Archive HTTP Server
      - HTTP or HTTPS
@@ -416,9 +434,12 @@ The following controls are already in place and are reflected in the
      - Implementation
    * - Path-traversal prevention
      - PA-02, SA-05
-     - ``check_no_path_traversal()`` uses ``os.path.realpath`` to reject any
-       path that escapes the destination root.
-       ``check_no_path_traversal()`` in ``dfetch/util/util.py``
+     - ``check_no_path_traversal()`` resolves both the candidate path and the
+       destination root via ``os.path.realpath`` (symlink-aware, not
+       ``pathlib.Path.resolve``), then rejects any path whose resolved prefix
+       does not start with the resolved root.  Applied to every file copy and
+       post-extraction symlink.
+       ``dfetch/util/util.py`` — ``check_no_path_traversal`` at line 277
    * - Decompression-bomb protection
      - SA-05, PA-02
      - Archives are rejected if uncompressed size exceeds 500 MB or the member

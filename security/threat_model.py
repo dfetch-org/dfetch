@@ -34,7 +34,6 @@ tm = TM(
         "Scope: full SDLC from source contribution through CI/CD, PyPI "
         "distribution, and runtime execution in developer/CI environments."
     ),
-    threatsFile=None,
     isOrdered=True,
     mergeResponses=True,
 )
@@ -321,7 +320,7 @@ gh_workflows.description = (
     "RISK: 'secrets: inherit' in ci.yml propagates ALL secrets to test and docs workflows."
 )
 gh_workflows.storesSensitiveData = False
-gh_workflows.hasWriteAccess = False
+gh_workflows.hasWriteAccess = True   # PRs can modify .github/workflows/ definitions
 gh_workflows.classification = Classification.RESTRICTED
 gh_workflows.controls.isHardened = True
 
@@ -406,26 +405,48 @@ df02 = Dataflow(manifest_store, dfetch_cli, "DF-02: Read manifest")
 df02.description = "StrictYAML parse; SAFE_STR regex rejects control characters."
 df02.controls.validatesInput = True
 
-df03 = Dataflow(dfetch_cli, remote_git_svn, "DF-03: Fetch VCS content (outbound)")
-df03.description = (
-    "git fetch / git ls-remote / svn ls / svn info outbound. "
-    "HTTPS uses redirect following (max 10). SSH uses BatchMode=yes. "
-    "RISK: svn:// and http:// (non-TLS) protocols are accepted by dfetch; "
-    "no protocol enforcement in manifest schema."
+df03_tls = Dataflow(dfetch_cli, remote_git_svn, "DF-03a: Fetch VCS content — HTTPS/SSH")
+df03_tls.description = (
+    "git fetch / git ls-remote over HTTPS or SSH. "
+    "HTTPS follows up to 10 redirects. SSH enforces BatchMode=yes and "
+    "GIT_TERMINAL_PROMPT=0 (no credential prompts). SVN over svn+https:// or "
+    "SSH tunnel. Transport is encrypted and host identity verified."
 )
-df03.protocol = "HTTPS / SSH / svn"
-df03.controls.isEncrypted = True  # for HTTPS/SSH paths; NOT for svn:// or http://
-df03.controls.isHardened = True  # BatchMode=yes, --non-interactive
+df03_tls.protocol = "HTTPS / SSH"
+df03_tls.controls.isEncrypted = True
+df03_tls.controls.isHardened = True    # BatchMode=yes, --non-interactive
 
-df04 = Dataflow(remote_git_svn, dfetch_cli, "DF-04: VCS content (inbound, untrusted)")
-df04.description = (
-    "Repository tree / file content arriving from upstream VCS. "
-    "No integrity verification for Git or SVN content beyond transport security. "
-    "Content is controlled by the upstream repository owner."
+df03_plain = Dataflow(dfetch_cli, remote_git_svn, "DF-03b: Fetch VCS content — svn:// / http://")
+df03_plain.description = (
+    "git fetch over http:// or SVN over svn:// (plain, non-TLS). "
+    "dfetch accepts these protocols without enforcement — no TLS check in manifest "
+    "schema. Traffic is unencrypted; MITM can substitute repository content or "
+    "capture credentials passed over these transports. "
+    "RECOMMENDATION: restrict manifest URLs to HTTPS / svn+https:// / SSH."
 )
-df04.protocol = "HTTPS / SSH / svn"
-df04.controls.isEncrypted = True
-df04.controls.providesIntegrity = False  # no end-to-end hash for git/svn content
+df03_plain.protocol = "http / svn"
+df03_plain.controls.isEncrypted = False
+df03_plain.controls.isHardened = False
+
+df04_tls = Dataflow(remote_git_svn, dfetch_cli, "DF-04a: VCS content inbound — HTTPS/SSH")
+df04_tls.description = (
+    "Repository tree and file content over HTTPS or SSH. Transport is encrypted. "
+    "No end-to-end content hash for Git or SVN — authenticity relies on transport "
+    "security and upstream repository integrity."
+)
+df04_tls.protocol = "HTTPS / SSH"
+df04_tls.controls.isEncrypted = True
+df04_tls.controls.providesIntegrity = False  # no end-to-end hash for git/svn content
+
+df04_plain = Dataflow(remote_git_svn, dfetch_cli, "DF-04b: VCS content inbound — svn:// / http://")
+df04_plain.description = (
+    "Repository content over unencrypted http:// or svn://. "
+    "A network-positioned attacker can substitute arbitrary content without detection "
+    "— there is no transport encryption and no content hash."
+)
+df04_plain.protocol = "http / svn"
+df04_plain.controls.isEncrypted = False
+df04_plain.controls.providesIntegrity = False
 
 df05 = Dataflow(dfetch_cli, archive_server, "DF-05: Archive download request")
 df05.description = (
