@@ -120,11 +120,12 @@
 \newcommand{\dfadmonhint}[1]{\begin{tcolorbox}[dftip]{\color{dfgreen}\sffamily\bfseries#1}\par\smallskip}
 \newcommand{\dfadmonwarning}[1]{\begin{tcolorbox}[dfwarn]{\color{dfprimary}\sffamily\bfseries#1}\par\smallskip}
 \newcommand{\dfadmoncaution}[1]{\begin{tcolorbox}[dfwarn]{\color{dfprimary}\sffamily\bfseries#1}\par\smallskip}
+\newcommand{\dfadmonattention}[1]{\begin{tcolorbox}[dfwarn]{\color{dfprimary}\sffamily\bfseries#1}\par\smallskip}
 \newcommand{\dfadmondanger}[1]{\begin{tcolorbox}[dferrstyle]{\color{dferror}\sffamily\bfseries#1}\par\smallskip}
 \newcommand{\dfadmonerror}[1]{\begin{tcolorbox}[dferrstyle]{\color{dferror}\sffamily\bfseries#1}\par\smallskip}
 % Dispatcher: look up \dfadmon<type>; fall back to note style for unknown types
 \newcommand{\dfadmonbegin}[2]{%
-  \ifcsdef{dfadmon#1}{\csuse{dfadmon#1}{#2}}{\dfadmonnote{#2}}%
+  \ifcsdef{dfadmon#1}{\csuse{dfadmon#1}{`#2`}}{\dfadmonnote{`#2`}}%
 }
 % sphinx.sty is loaded by \documentclass before the user preamble runs, so
 % sphinxadmonition is already defined here and \renewenvironment works directly.
