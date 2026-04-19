@@ -320,7 +320,7 @@ class GitLocalRepo:
         """Get the name and version of git."""
         result = run_on_cmdline(logger, ["git", "--version"])
         tool, version = result.stdout.decode().strip().split("version", maxsplit=1)
-        return (str(tool), str(version))
+        return (tool.strip(), version.strip())
 
     def __init__(self, path: str | Path = ".") -> None:
         """Create a local git repo."""
