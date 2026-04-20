@@ -14,6 +14,14 @@ import os
 import sys
 from importlib.metadata import PackageNotFoundError, version
 
+# _ext/ must be on sys.path before any local imports.
+ext_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "_ext"))
+sys.path.insert(0, ext_path)
+
+import dfetch_style
+
+dfetch_style.register()
+
 try:
     __version__ = version("dfetch")
 except PackageNotFoundError:
@@ -25,9 +33,6 @@ except PackageNotFoundError:
 os.environ["NO_COLOR"] = "1"
 
 # -- General configuration ------------------------------------------------
-
-ext_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "_ext"))
-sys.path.insert(0, ext_path)
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
@@ -106,7 +111,7 @@ language = "en"
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "venv", "landing-page"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "sphinx"
+pygments_style = "dfetch"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False

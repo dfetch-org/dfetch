@@ -96,26 +96,31 @@
 \tcbuselibrary{skins}
 \usepackage{etoolbox}
 \tcbset{
-  dfnote/.style={enhanced, frame hidden,
-    borderline west={3.5pt}{0pt}{dfaccent}, colback=dfbgmint,
-    left=10pt, right=10pt, top=8pt, bottom=8pt,
+  dfnote/.style={enhanced,
+    leftrule=3.5pt, rightrule=0pt, toprule=0pt, bottomrule=0pt,
+    colframe=dfaccent, colback=dfbgmint,
+    arc=4pt, left=10pt, right=10pt, top=8pt, bottom=8pt,
     before skip=\baselineskip, after skip=0.5\baselineskip},
-  dfwarn/.style={enhanced, frame hidden,
-    borderline west={3.5pt}{0pt}{dfprimary}, colback=dfbgtint,
-    left=10pt, right=10pt, top=8pt, bottom=8pt,
+  dfwarn/.style={enhanced,
+    leftrule=3.5pt, rightrule=0pt, toprule=0pt, bottomrule=0pt,
+    colframe=dfprimary, colback=dfbgtint,
+    arc=4pt, left=10pt, right=10pt, top=8pt, bottom=8pt,
     before skip=\baselineskip, after skip=0.5\baselineskip},
-  dftip/.style={enhanced, frame hidden,
-    borderline west={3.5pt}{0pt}{dfgreen}, colback=dfbggreen,
-    left=10pt, right=10pt, top=8pt, bottom=8pt,
+  dftip/.style={enhanced,
+    leftrule=3.5pt, rightrule=0pt, toprule=0pt, bottomrule=0pt,
+    colframe=dfgreen, colback=dfbggreen,
+    arc=4pt, left=10pt, right=10pt, top=8pt, bottom=8pt,
     before skip=\baselineskip, after skip=0.5\baselineskip},
-  dferrstyle/.style={enhanced, frame hidden,
-    borderline west={3.5pt}{0pt}{dferror}, colback=dfbgerror,
-    left=10pt, right=10pt, top=8pt, bottom=8pt,
+  dferrstyle/.style={enhanced,
+    leftrule=3.5pt, rightrule=0pt, toprule=0pt, bottomrule=0pt,
+    colframe=dferror, colback=dfbgerror,
+    arc=4pt, left=10pt, right=10pt, top=8pt, bottom=8pt,
     before skip=\baselineskip, after skip=0.5\baselineskip},
 }
 % Per-type opener commands
 \newcommand{\dfadmonnote}[1]{\begin{tcolorbox}[dfnote]{\color{dfaccent}\sffamily\bfseries#1}\par\smallskip}
 \newcommand{\dfadmonimportant}[1]{\begin{tcolorbox}[dfnote]{\color{dfaccent}\sffamily\bfseries#1}\par\smallskip}
+\newcommand{\dfadmonseealso}[1]{\begin{tcolorbox}[dfnote]{\color{dfaccent}\sffamily\bfseries#1}\par\smallskip}
 \newcommand{\dfadmontip}[1]{\begin{tcolorbox}[dftip]{\color{dfgreen}\sffamily\bfseries#1}\par\smallskip}
 \newcommand{\dfadmonhint}[1]{\begin{tcolorbox}[dftip]{\color{dfgreen}\sffamily\bfseries#1}\par\smallskip}
 \newcommand{\dfadmonwarning}[1]{\begin{tcolorbox}[dfwarn]{\color{dfprimary}\sffamily\bfseries#1}\par\smallskip}
@@ -128,9 +133,15 @@
   \ifcsdef{dfadmon#1}{\csuse{dfadmon#1}{#2}}{\dfadmonnote{#2}}%
 }
 % sphinx.sty is loaded by \documentclass before the user preamble runs, so
-% sphinxadmonition is already defined here and \renewenvironment works directly.
+% sphinxadmonition and sphinxseealso are already defined here and
+% \renewenvironment works directly.
 \renewenvironment{sphinxadmonition}[2]{%
   \dfadmonbegin{#1}{#2}%
+}{%
+  \end{tcolorbox}%
+}
+\renewenvironment{sphinxseealso}[1]{%
+  \dfadmonseealso{#1}%
 }{%
   \end{tcolorbox}%
 }
