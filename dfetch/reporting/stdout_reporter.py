@@ -70,7 +70,7 @@ Each dependency entry contains:
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
-from dfetch.project.metadata import Metadata
+from dfetch.project.metadata import InvalidMetadataError, Metadata
 from dfetch.reporting.reporter import Reporter
 from dfetch.util.license import LicenseScanResult
 
@@ -119,7 +119,7 @@ class StdoutReporter(Reporter):
                 )
                 logger.info("")
 
-        except FileNotFoundError:
+        except (FileNotFoundError, InvalidMetadataError):
             logger.print_info_field("  last fetch", "never")
 
     def dump_to_file(self, outfile: str) -> bool:

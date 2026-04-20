@@ -16,6 +16,10 @@ DONT_EDIT_WARNING = """\
 """
 
 
+class InvalidMetadataError(Exception):
+    """Raised when a metadata file exists but cannot be parsed."""
+
+
 class Dependency(TypedDict):
     """Argument types for dependency class construction."""
 
@@ -91,7 +95,9 @@ class Metadata:
             try:
                 data: Options = yaml.safe_load(metadata_file)["dfetch"]
             except yaml.YAMLError as exc:
-                raise ValueError(str(exc)) from exc
+                raise InvalidMetadataError(str(exc)) from exc
+            except (KeyError, TypeError) as exc:
+                raise InvalidMetadataError(str(exc)) from exc
 
             return cls(data)
 
