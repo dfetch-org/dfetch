@@ -5,7 +5,7 @@ repos:
     rev: v6.0.0
     hooks:
     -   id: trailing-whitespace
-        exclude: ^doc/static/
+        exclude: ^doc/static/|\.patch$
     -   id: end-of-file-fixer
         exclude: ^doc/static/
     -   id: check-yaml

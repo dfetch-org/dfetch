@@ -26,6 +26,7 @@ manifest:
     patch:
      - doc/_ext/patches/001-autoformat-sphinxcontrib.asciinema.patch
      - doc/_ext/patches/002-fix-options-sphinxcontrib.asciinema.patch
+     - doc/_ext/patches/003-only-handle-html-sphinxcontrib.asciinema.patch
 
   - name: inter-font
     remote: github
