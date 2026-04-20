@@ -225,6 +225,30 @@ def test_ls_remote():
             None,
             "ssh -o BatchMode=yes",
         ),
+        (
+            "injection via semicolon in env var",
+            "ssh; rm -rf /",
+            None,
+            "ssh -o BatchMode=yes",
+        ),
+        (
+            "injection via pipe in env var",
+            "ssh | evil",
+            None,
+            "ssh -o BatchMode=yes",
+        ),
+        (
+            "injection via subshell in git config",
+            None,
+            "$(evil_cmd)",
+            "ssh -o BatchMode=yes",
+        ),
+        (
+            "injection via backtick in env var",
+            "ssh `evil`",
+            None,
+            "ssh -o BatchMode=yes",
+        ),
     ],
 )
 def test_build_git_ssh_command(name, env_ssh, git_config_ssh, expected):
