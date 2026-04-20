@@ -1,4 +1,3 @@
-@update
 Feature: Handle invalid metadata files
 
     *Dfetch* will keep metadata about the fetched project locally to prevent re-fetching unchanged projects
@@ -6,6 +5,7 @@ Feature: Handle invalid metadata files
     to unpredictable behavior in *DFetch*.
     For instance, the metadata may be invalid
 
+    @update
     Scenario: Metadata with invalid YAML syntax is treated as invalid
         Given the manifest 'dfetch.yaml'
             """
@@ -30,6 +30,31 @@ Feature: Handle invalid metadata files
               > Fetched v1
             """
 
+    @check
+    Scenario: Metadata with invalid YAML syntax is treated as invalid during check
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: ext/test-repo-tag
+                  url: https://github.com/dfetch-org/test-repo
+                  tag: v1
+
+            """
+        And all projects are updated
+        And the metadata file ".dfetch_data.yaml" of "ext/test-repo-tag" has invalid yaml
+        When I run "dfetch check"
+        Then the output shows
+            """
+            Dfetch (0.13.0)
+              ext/test-repo-tag:
+              > ext/test-repo-tag/.dfetch_data.yaml is an invalid metadata file, not checking on disk version!
+              > wanted (v1), available (v2.0)
+            """
+
+    @update
     Scenario: Invalid metadata is ignored
         Given the manifest 'dfetch.yaml'
             """

@@ -50,7 +50,7 @@ import dfetch.util.util
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project import create_super_project
-from dfetch.project.metadata import Metadata
+from dfetch.project.metadata import InvalidMetadataError, Metadata
 from dfetch.reporting import REPORTERS, ReportTypes
 from dfetch.util.license import (
     LicenseScanResult,
@@ -171,6 +171,6 @@ class Report(dfetch.commands.command.Command):
                 or project.hash
                 or ""
             )
-        except FileNotFoundError:
+        except (FileNotFoundError, InvalidMetadataError):
             version = project.tag or project.revision or project.hash or ""
         return version

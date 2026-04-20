@@ -9,7 +9,7 @@ from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.abstract_check_reporter import AbstractCheckReporter
-from dfetch.project.metadata import Dependency, Metadata
+from dfetch.project.metadata import Dependency, InvalidMetadataError, Metadata
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.util.versions import latest_tag_from_list
 from dfetch.vcs.patch import Patch
@@ -348,7 +348,7 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
 
         try:
             return Metadata.from_file(self.__metadata.path).version
-        except (TypeError, ValueError):
+        except InvalidMetadataError:
             logger.print_warning_line(
                 self.__project.name,
                 f"{pathlib.Path(self.__metadata.path).relative_to(os.getcwd()).as_posix()}"
@@ -367,7 +367,7 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
 
         try:
             return Metadata.from_file(self.__metadata.path).hash
-        except (TypeError, ValueError):
+        except InvalidMetadataError:
             logger.print_warning_line(
                 self.__project.name,
                 f"{pathlib.Path(self.__metadata.path).relative_to(os.getcwd()).as_posix()}"
