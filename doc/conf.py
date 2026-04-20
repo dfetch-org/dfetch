@@ -110,8 +110,6 @@ language = "en"
 # This patterns also effect to html_static_path and html_extra_path
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "venv", "landing-page"]
 
-# The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "dfetch"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -275,6 +273,16 @@ latex_additional_files = [
     "static/fonts/jetbrains-mono/ttf/JetBrainsMono-Regular.ttf",
     "static/fonts/jetbrains-mono/ttf/JetBrainsMono-Medium.ttf",
 ]
+
+
+def _set_latex_pygments_style(app):
+    if app.builder.name.startswith("latex"):
+        app.config.pygments_style = "dfetch"
+
+
+def setup(app):
+    """Apply custom Pygments style only for LaTeX builds."""
+    app.connect("builder-inited", _set_latex_pygments_style)
 
 
 # -- Options for manual page output ---------------------------------------
