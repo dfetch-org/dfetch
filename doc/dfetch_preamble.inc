@@ -145,3 +145,21 @@
 }{%
   \end{tcolorbox}%
 }
+% ---- CLI Cheatsheet (PDF) --------------------------------------------------
+\definecolor{dfpurple}{HTML}{7a5a9a}
+\definecolor{dfsage}{HTML}{4a7a62}
+% Syntax token commands
+\newcommand{\cskw}[1]{{\footnotesize\color{black!40}\ttfamily #1}}
+\newcommand{\cssc}[1]{{\footnotesize\color{dfprimary}\ttfamily\bfseries #1}}
+\newcommand{\csfl}[1]{{\footnotesize\color{dfaccent}\ttfamily #1}}
+\newcommand{\csag}[1]{{\footnotesize\color{black!50}\ttfamily\itshape #1}}
+\newcommand{\csdsc}[1]{{\footnotesize\sffamily\color{black!65}#1}}
+% Section label: \cslabel{color}{TITLE}{subtitle}
+\newcommand{\cslabel}[3]{%
+  \vspace{5pt}\par
+  \noindent{%
+    \sffamily\bfseries\tiny\color{#1}\MakeUppercase{#2}%
+    \hfill\normalfont\sffamily\tiny\color{black!40}#3%
+  }\par\nointerlineskip
+  \noindent\textcolor{#1}{\rule{\linewidth}{0.5pt}}\par\vspace{2pt}%
+}
