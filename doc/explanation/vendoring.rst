@@ -1,5 +1,7 @@
 
 
+.. _vendoring:
+
 Vendoring
 =========
 
