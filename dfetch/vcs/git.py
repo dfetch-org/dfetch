@@ -13,6 +13,7 @@ from pathlib import Path
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.license import is_license_file
+from dfetch.util.ssh import InvalidSshCommandError, sanitize_ssh_cmd
 from dfetch.util.util import (
     glob_within_root,
     in_directory,
@@ -29,18 +30,14 @@ __all__ = ["CheckoutOptions", "GitLocalRepo", "GitRemote", "Submodule"]
 logger = get_logger(__name__)
 
 
-_SHELL_METACHAR_RE = re.compile(r"[;&|`$(){}<>\n\r!]")
-
-
-def _sanitize_ssh_cmd(ssh_cmd: str, source: str) -> str | None:
-    """Return *ssh_cmd* if it is safe to use, otherwise log a warning and return None."""
-    if _SHELL_METACHAR_RE.search(ssh_cmd):
-        logger.warning(
-            "Ignoring %s: contains unsafe shell characters, falling back to 'ssh'",
-            source,
-        )
+def _try_sanitize(source: str, raw: str | None) -> str | None:
+    if not raw:
         return None
-    return ssh_cmd
+    try:
+        return sanitize_ssh_cmd(raw)
+    except InvalidSshCommandError as exc:
+        logger.warning("Ignoring %s: %s, falling back to 'ssh'", source, exc)
+        return None
 
 
 def _build_git_ssh_command() -> str:
@@ -48,21 +45,16 @@ def _build_git_ssh_command() -> str:
 
     Respects existing GIT_SSH_COMMAND and git core.sshCommand.
     """
-    raw = os.environ.get("GIT_SSH_COMMAND")
-    ssh_cmd = _sanitize_ssh_cmd(raw, "GIT_SSH_COMMAND") if raw else None
+    ssh_cmd = _try_sanitize("GIT_SSH_COMMAND", os.environ.get("GIT_SSH_COMMAND"))
 
     if not ssh_cmd:
-
         try:
             result = run_on_cmdline(
-                logger,
-                ["git", "config", "--get", "core.sshCommand"],
+                logger, ["git", "config", "--get", "core.sshCommand"]
             )
-            raw_config = result.stdout.decode().strip()
-            ssh_cmd = (
-                _sanitize_ssh_cmd(raw_config, "core.sshCommand") if raw_config else None
+            ssh_cmd = _try_sanitize(
+                "core.sshCommand", result.stdout.decode().strip() or None
             )
-
         except SubprocessCommandError:
             ssh_cmd = None
 

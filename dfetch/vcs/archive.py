@@ -510,23 +510,21 @@ class ArchiveLocalRepo:
         and provides defence-in-depth on newer ones.
 
         Raises:
-            RuntimeError: When a non-symlink member's path passes through a
-                symlink member name.
+            RuntimeError: When a member's path passes through a symlink member
+                name, including symlink-through-symlink chains.
         """
-        symlink_names = {m.name for m in members if m.issym()}
-        if not symlink_names:
-            return
+        symlink_names: set[str] = set()
         for member in members:
-            if member.issym():
-                continue
             parts = pathlib.PurePosixPath(member.name).parts
-            for depth in range(1, len(parts)):
+            for depth in range(1, len(parts) + 1):
                 parent = str(pathlib.PurePosixPath(*parts[:depth]))
                 if parent in symlink_names:
                     raise RuntimeError(
                         f"Archive member {member.name!r} would be written "
                         f"through symlink {parent!r}"
                     )
+            if member.issym():
+                symlink_names.add(str(pathlib.PurePosixPath(member.name)))
 
     @staticmethod
     def _check_tar_members(tf: tarfile.TarFile) -> None:
