@@ -134,20 +134,14 @@ You can verify the formatted patch applies cleanly before submitting:
 
             $ git apply --check formatted-some-project.patch
 
+        .. scenario-include:: ../features/format-patch-in-git.feature
+
     .. tab:: SVN
 
         .. code-block:: console
 
             $ svn patch formatted-some-project.patch
 
-.. asciinema:: ../asciicasts/format-patch.cast
-
-.. tabs::
-
-    .. tab:: Git
-
-        .. scenario-include:: ../features/format-patch-in-git.feature
-
-    .. tab:: SVN
-
         .. scenario-include:: ../features/format-patch-in-svn.feature
+
+.. asciinema:: ../asciicasts/format-patch.cast

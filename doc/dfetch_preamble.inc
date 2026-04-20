@@ -69,11 +69,10 @@
 \usepackage{etoolbox}
 \setlength{\arrayrulewidth}{0.4pt}
 \arrayrulecolor{dfborder}
-\renewcommand{\vline}{}                % suppress all vertical column rules
 \renewcommand{\arraystretch}{1.35}     % generous row height (website 0.5rem top/bottom)
 \setlength{\tabcolsep}{8pt}            % horizontal cell padding (website 0.875rem)
-\AtBeginEnvironment{tabulary}{\small}
-\AtBeginEnvironment{longtable}{\small}
+\AtBeginEnvironment{tabulary}{\small\renewcommand{\vline}{}}
+\AtBeginEnvironment{longtable}{\small\renewcommand{\vline}{}}
 \providecommand{\sphinxstyletheadfamily}{\sffamily}
 \renewcommand{\sphinxstyletheadfamily}{\small\bfseries}
 
