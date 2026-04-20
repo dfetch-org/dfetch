@@ -3,8 +3,8 @@
 dfetch:
   branch: ''
   hash: 428a1aa8c0009c0c0583bbb49edd99b7
-  last_fetch: 29/03/2026, 18:08:23
+  last_fetch: 20/04/2026, 21:25:15
   patch: ''
   remote_url: https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip
-  revision: https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip
+  revision: sha256:9883fdd4a49d4fb66bd8177ba6625ef9a64aa45899767dde3d36aa425756b11e
   tag: ''
