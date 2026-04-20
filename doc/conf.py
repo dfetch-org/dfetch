@@ -212,6 +212,9 @@ with open(_preamble_file, encoding="utf-8") as _f:
     _preamble = _f.read()
 
 latex_elements = {
+    # cmap is pdfTeX-only; preempt it so XeLaTeX doesn't emit the warning.
+    # Defining \ver@cmap.sty makes \usepackage{cmap} a no-op (already-loaded check).
+    "passoptionstopackages": r"\makeatletter\@namedef{ver@cmap.sty}{}\makeatother",
     "preamble": _preamble,
     # XeLaTeX font setup using vendored fonts (see dfetch.yaml).
     # Both fonts are copied into the LaTeX build root via latex_additional_files,
