@@ -29,6 +29,9 @@
 \definecolor{dfetchCoverBottom}{HTML}{c2620a}
 \definecolor{dfetchCoverAccent}{HTML}{4e7fa0}
 \definecolor{dfetchCoverLight}{HTML}{fef8f0}
+% Diataxis section accent (mutable; updated by \dfpart* commands below)
+\newcommand{\dxtcolor}{dftextmuted}
+\newcommand{\setdxtcolor}[1]{\renewcommand{\dxtcolor}{#1}}
 
 % ---- Cover page -------------------------------------------------------------
 \usepackage{tikz}
@@ -43,12 +46,12 @@
    \MakeUppercase{\chaptertitlename}~\thechapter}
   {4pt}
   {\color{dfnearblack}\fontsize{22}{26}\selectfont\bfseries}
-  [\vspace{6pt}{\color{dfprimary}\rule{\linewidth}{1.5pt}}]
+  [\vspace{6pt}{\color{\dxtcolor}\rule{\linewidth}{1.5pt}}]
 \titlespacing*{\chapter}{0pt}{-6pt}{18pt}
-% Section: amber number pip + near-black title text
+% Section: section-accent number pip + near-black title text
 \titleformat{\section}
   {\normalfont\sffamily\Large\bfseries\color{dfnearblack}}
-  {\textcolor{dfprimary}{\thesection}}
+  {\textcolor{\dxtcolor}{\thesection}}
   {0.75em}{}
 % Subsection: muted number + near-black title text
 \titleformat{\subsection}
@@ -59,6 +62,20 @@
   {\normalfont\sffamily\normalsize\bfseries\color{dfnearblack}}
   {\textcolor{dftextmuted}{\thesubsubsection}}
   {0.75em}{}
+% Part: large right-aligned number + coloured title + coloured rule
+\titleformat{\part}[display]
+  {\normalfont\sffamily}
+  {\color{\dxtcolor}\fontsize{72}{72}\selectfont\bfseries\hfill\thepart}
+  {-4pt}
+  {\color{\dxtcolor}\fontsize{28}{34}\selectfont\bfseries}
+  [\vspace{10pt}{\color{\dxtcolor}\rule{\linewidth}{2pt}}]
+\titlespacing*{\part}{0pt}{60pt}{80pt}
+% Named Diataxis part commands — set the section accent then open the part
+\newcommand{\dfpartTutorials}{\setdxtcolor{dfprimary}\part{Tutorials}}
+\newcommand{\dfpartHowto}{\setdxtcolor{dfaccent}\part{How-to Guides}}
+\newcommand{\dfpartReference}{\setdxtcolor{dfsage}\part{Reference}}
+\newcommand{\dfpartExplanation}{\setdxtcolor{dfpurple}\part{Explanation}}
+\newcommand{\dfpartAppendix}{\setdxtcolor{dftextmuted}\part{Appendix}}
 
 % ---- Tables: match website style -------------------------------------------
 % Rules: thin border colour, no vertical separators (horizontal-only, like site).

@@ -37,12 +37,24 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
 
 .. asciinema:: asciicasts/basic.cast
 
+.. only:: latex
+
+   .. raw:: latex
+
+      \dfpartTutorials
+
 .. toctree::
    :maxdepth: 2
    :caption: Tutorials
 
    tutorials/installation
    tutorials/getting_started
+
+.. only:: latex
+
+   .. raw:: latex
+
+      \dfpartHowto
 
 .. toctree::
    :maxdepth: 2
@@ -58,6 +70,12 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    howto/troubleshooting
    howto/contributing
 
+.. only:: latex
+
+   .. raw:: latex
+
+      \dfpartReference
+
 .. toctree::
    :maxdepth: 2
    :caption: Reference
@@ -69,6 +87,12 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    reference/changelog
    reference/legal
 
+.. only:: latex
+
+   .. raw:: latex
+
+      \dfpartExplanation
+
 .. toctree::
    :maxdepth: 2
    :caption: Explanation
@@ -76,6 +100,12 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    explanation/vendoring
    explanation/alternatives
    explanation/architecture
+
+.. only:: latex
+
+   .. raw:: latex
+
+      \dfpartAppendix
 
 .. toctree::
    :maxdepth: 2
