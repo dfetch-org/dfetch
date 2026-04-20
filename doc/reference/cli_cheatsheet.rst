@@ -183,3 +183,61 @@ CLI Cheatsheet
      });
    })();
    </script>
+
+.. raw:: latex
+
+   \begin{tcolorbox}[
+     enhanced, arc=4pt,
+     boxrule=0.5pt, colframe=black!25, colback=white,
+     left=10pt, right=10pt, top=8pt, bottom=8pt,
+     before skip=\baselineskip, after skip=\baselineskip,
+   ]
+   % masthead
+   {\sffamily\bfseries\normalsize Dfetch CLI Cheatsheet}\hfill
+   {\ttfamily\tiny\color{black!50}dfetch.yaml~found~automatically}\par\vspace{3pt}
+   {\setlength{\fboxsep}{2pt}\tiny\sffamily
+     \colorbox{dfprimary!15}{\strut\,\textcolor{dfprimary}{\ttfamily\bfseries subcommand}\,}\,
+     \colorbox{dfaccent!15}{\strut\,\textcolor{dfaccent}{\ttfamily --flag}\,}\,
+     \colorbox{black!8}{\strut\,\textcolor{black!50}{\ttfamily\itshape <arg>}\,}%
+   }\par\nointerlineskip\vspace{5pt}%
+   \noindent\textcolor{black!20}{\rule{\linewidth}{0.5pt}}\par\vspace{5pt}%
+   % body: two columns
+   \noindent\begin{minipage}[t]{0.482\linewidth}
+   \cslabel{dfprimary}{Foundational}{core workflow · daily use}
+   \begin{tabular}{@{}p{0.57\linewidth}p{0.39\linewidth}@{}}
+   \cskw{dfetch} \cssc{init} & \csdsc{Create a new \texttt{dfetch.yaml}} \\[1pt]
+   \cskw{dfetch} \cssc{add} \csag{<url>} & \csdsc{Add a dependency} \\[1pt]
+   \cskw{dfetch} \cssc{add} \csfl{-i} \csag{<url>} & \csdsc{Add interactively} \\[1pt]
+   \cskw{dfetch} \cssc{import} & \csdsc{Migrate from submodules / externals} \\[1pt]
+   \cskw{dfetch} \cssc{check} \csag{[project]} & \csdsc{Show outdated dependencies} \\[1pt]
+   \cskw{dfetch} \cssc{update} \csag{[-f] [project]} & \csdsc{Fetch / update dependencies} \\
+   \end{tabular}
+   \cslabel{dfsage}{Utilities}{maintenance · setup · validation}
+   \begin{tabular}{@{}p{0.57\linewidth}p{0.39\linewidth}@{}}
+   \cskw{dfetch} \cssc{freeze} & \csdsc{Pin to currently fetched version} \\[1pt]
+   \cskw{dfetch} \cssc{environment} & \csdsc{Verify VCS tools} \\[1pt]
+   \cskw{dfetch} \cssc{validate} & \csdsc{Validate manifest} \\
+   \end{tabular}
+   \end{minipage}\hfill%
+   \begin{minipage}[t]{0.482\linewidth}
+   \cslabel{dfaccent}{Patching}{local changes · upstream sync}
+   \begin{tabular}{@{}p{0.60\linewidth}p{0.36\linewidth}@{}}
+   \cskw{dfetch} \cssc{diff} \csag{[project]} & \csdsc{Capture changes as patch} \\[1pt]
+   \cskw{dfetch} \cssc{update-patch} \csag{[project]} & \csdsc{Re-apply after version bump} \\[1pt]
+   \cskw{dfetch} \cssc{format-patch} \csag{[project]} & \csdsc{Export unified diff} \\
+   \end{tabular}
+   \cslabel{dfpurple}{CI / CD Integration}{reports · sbom · security}
+   \begin{tabular}{@{}p{0.60\linewidth}p{0.36\linewidth}@{}}
+   \cskw{dfetch} \cssc{check} \csfl{--jenkins-json} & \csdsc{Jenkins JSON report} \\[1pt]
+   \cskw{dfetch} \cssc{check} \csfl{--sarif} & \csdsc{SARIF / GitHub Security} \\[1pt]
+   \cskw{dfetch} \cssc{check} \csfl{--code-climate} & \csdsc{Code Climate / GitLab} \\[1pt]
+   \cskw{dfetch} \cssc{report} & \csdsc{Dependency inventory} \\[1pt]
+   \cskw{dfetch} \cssc{report} \csfl{-t} \csag{sbom} & \csdsc{Software Bill of Materials} \\
+   \end{tabular}
+   \end{minipage}%
+   % footer
+   \par\nointerlineskip\vspace{5pt}%
+   \noindent\textcolor{black!20}{\rule{\linewidth}{0.5pt}}\par\vspace{3pt}%
+   {\centering\tiny\sffamily\color{black!50}%
+     dfetch.readthedocs.io · github.com/dfetch-org/dfetch\par}%
+   \end{tcolorbox}
