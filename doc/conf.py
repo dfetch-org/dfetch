@@ -227,7 +227,8 @@ latex_elements = {
 \renewcommand*\familydefault{\sfdefault}
 \setmonofont{JetBrainsMono-Regular}[
   Extension=.ttf, Path=./, Scale=0.85,
-  BoldFont=JetBrainsMono-Medium]
+  BoldFont=JetBrainsMono-Medium,
+  AutoFakeSlant]
 \newfontface\PoiretOne{PoiretOne-Regular}[Extension=.ttf, Path=./]
 """,
     # Design-token colours for Sphinx's built-in LaTeX style hooks.
