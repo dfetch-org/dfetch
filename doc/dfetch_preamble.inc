@@ -72,8 +72,8 @@
 \renewcommand{\vline}{}                % suppress all vertical column rules
 \renewcommand{\arraystretch}{1.35}     % generous row height (website 0.5rem top/bottom)
 \setlength{\tabcolsep}{8pt}            % horizontal cell padding (website 0.875rem)
-\BeforeBeginEnvironment{tabulary}{\small}
-\BeforeBeginEnvironment{longtable}{\small}
+\AtBeginEnvironment{tabulary}{\small}
+\AtBeginEnvironment{longtable}{\small}
 \providecommand{\sphinxstyletheadfamily}{\sffamily}
 \renewcommand{\sphinxstyletheadfamily}{\small\bfseries}
 

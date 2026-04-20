@@ -2,6 +2,7 @@
 
 import sys
 import types
+from typing import MutableMapping, cast
 
 import pygments.styles
 from pygments.style import Style
@@ -18,7 +19,7 @@ from pygments.token import (
 )
 
 
-class DfetchStyle(Style):
+class DfetchStyle(Style):  # pylint: disable=too-few-public-methods
     """Brand-matched Pygments style — mirrors the website palette."""
 
     background_color = "#fef8f0"  # --bg-tint
@@ -61,4 +62,6 @@ def register() -> None:
     mod = types.ModuleType("pygments.styles.dfetch")
     mod.DfetchStyle = DfetchStyle  # type: ignore[attr-defined]
     sys.modules["pygments.styles.dfetch"] = mod
-    pygments.styles.STYLE_MAP["dfetch"] = "dfetch::DfetchStyle"
+    cast(MutableMapping[str, str], pygments.styles.STYLE_MAP)[
+        "dfetch"
+    ] = "dfetch::DfetchStyle"
