@@ -10,7 +10,7 @@ downward.
 
 This page is the complete CLI reference — flags, arguments, and
 behaviour for every subcommand. If you are new to *Dfetch*, start with
-:doc:`../tutorials/getting_started` instead. For specific tasks the How-to Guides
+:ref:`Getting Started <getting-started>` instead. For specific tasks the How-to Guides
 in the sidebar go further.
 
 .. program-output:: dfetch --help
@@ -40,7 +40,7 @@ Import
 
 .. automodule:: dfetch.commands.import_
 
-.. seealso:: :doc:`../howto/migration` — step-by-step guide for switching from Git submodules or SVN externals.
+.. seealso:: :ref:`Migrate to Dfetch <migration>` — step-by-step guide for switching from Git submodules or SVN externals.
 
 Add
 ---
@@ -52,7 +52,7 @@ Add
 
 .. automodule:: dfetch.commands.add
 
-.. seealso:: :doc:`../howto/adding-a-project` — walks through adding a new dependency from start to finish.
+.. seealso:: :ref:`Add a project <adding-a-project>` — walks through adding a new dependency from start to finish.
 
 Remove
 ------
@@ -66,7 +66,7 @@ Remove
 
 .. automodule:: dfetch.commands.remove
 
-.. seealso:: :doc:`../howto/remove-a-project` — how to remove projects from your manifest.
+.. seealso:: :ref:`Remove a project <remove-a-project>` — how to remove projects from your manifest.
 
 Check
 -----
@@ -80,7 +80,7 @@ Check
 
 .. automodule:: dfetch.commands.check
 
-.. seealso:: :doc:`../howto/check-ci` — how to run dependency checks in CI pipelines and interpret the output formats.
+.. seealso:: :ref:`Check projects in CI <check-ci>` — how to run dependency checks in CI pipelines and interpret the output formats.
 
 Update
 ------
@@ -94,7 +94,7 @@ Update
 
 .. automodule:: dfetch.commands.update
 
-.. seealso:: :doc:`../howto/updating-projects` — covers the update workflow, pinning versions, and force-fetching.
+.. seealso:: :ref:`Update projects <updating-projects>` — covers the update workflow, pinning versions, and force-fetching.
 
 Diff
 ----
@@ -106,7 +106,7 @@ Diff
 
 .. asciinema:: ../asciicasts/diff.cast
 
-.. seealso:: :doc:`../howto/patching` — creating, applying, and maintaining patches across upstream version bumps.
+.. seealso:: :ref:`Patch a project <patching>` — creating, applying, and maintaining patches across upstream version bumps.
 
 Update patch
 ------------
@@ -142,7 +142,7 @@ Report
 
 .. automodule:: dfetch.reporting.stdout_reporter
 
-.. seealso:: :doc:`../howto/sbom` — generating a Software Bill of Materials with ``dfetch report``.
+.. seealso:: :ref:`Generate an SBOM <sbom>` — generating a Software Bill of Materials with ``dfetch report``.
 
 Freeze
 ------

@@ -99,5 +99,5 @@ Glossary
       The practice of copying third-party source code directly into your own
       repository rather than relying on a package manager to fetch it at build
       time.  *Dfetch* automates the fetch, version-pinning, patching, and
-      update lifecycle of vendored dependencies.  See :doc:`../explanation/vendoring`
+      update lifecycle of vendored dependencies.  See :ref:`Vendoring <vendoring>`
       for a detailed discussion of the trade-offs.
