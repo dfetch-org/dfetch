@@ -358,6 +358,52 @@ def test_check_tar_members_rejects_two_step_symlink_attack():
         _check_tar_members(tf)
 
 
+def test_check_tar_members_rejects_two_step_symlink_attack_dotprefix():
+    """Two-step tar-slip via a ./ prefixed symlink name must be rejected."""
+
+    def _setup(tf: tarfile.TarFile) -> None:
+        _add_symlink(tf, "./project/link", "../../outside")
+        content = b"escaped"
+        info = tarfile.TarInfo("project/link/payload.txt")
+        info.size = len(content)
+        tf.addfile(info, io.BytesIO(content))
+
+    tf = _make_tar_with_member(_setup)
+    with pytest.raises(RuntimeError, match="symlink"):
+        _check_tar_members(tf)
+
+
+def test_check_tar_members_rejects_symlink_chain():
+    """A second symlink whose path passes through an earlier symlink must be rejected."""
+
+    def _setup(tf: tarfile.TarFile) -> None:
+        _add_symlink(tf, "project/link", "../../outside")
+        _add_symlink(tf, "project/link/evil", "../payload")
+
+    tf = _make_tar_with_member(_setup)
+    with pytest.raises(RuntimeError, match="symlink"):
+        _check_tar_members(tf)
+
+
+def test_check_tar_members_rejects_symlink_exact_path_overwrite():
+    """A non-symlink member with the same path as an earlier symlink must be rejected.
+
+    Python's tarfile.extract follows a symlink when writing a file over it, so
+    allowing this would write content to the symlink's (potentially external) target.
+    """
+
+    def _setup(tf: tarfile.TarFile) -> None:
+        _add_symlink(tf, "project/link", "../../outside")
+        content = b"escaped"
+        info = tarfile.TarInfo("project/link")
+        info.size = len(content)
+        tf.addfile(info, io.BytesIO(content))
+
+    tf = _make_tar_with_member(_setup)
+    with pytest.raises(RuntimeError, match="symlink"):
+        _check_tar_members(tf)
+
+
 def test_check_tar_members_allows_file_next_to_symlink():
     """A file sibling to a symlink (not written through it) must be accepted."""
 
