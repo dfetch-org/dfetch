@@ -99,6 +99,10 @@ class Metadata:
             except (KeyError, TypeError) as exc:
                 raise InvalidMetadataError(str(exc)) from exc
 
+            if not isinstance(data, dict):
+                raise InvalidMetadataError(
+                    f"Expected a mapping under 'dfetch', got {type(data).__name__}"
+                )
             return cls(data)
 
     def fetched(
