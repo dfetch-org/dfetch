@@ -389,14 +389,24 @@ class ArchiveLocalRepo:
     def _is_unsafe_symlink_target(target: str) -> bool:
         r"""Return *True* when *target* is an unsafe symlink destination.
 
-        Absolute targets (POSIX ``/`` or Windows drive/UNC anchors) are
-        always unsafe.  Relative targets containing ``..`` components are
-        permitted at pre-extraction time; :meth:`_check_symlinks_in_dest`
-        enforces the boundary after extraction.
+        Only absolute targets are rejected here: POSIX ``/`` prefixes and
+        Windows drive/UNC anchors (``C:\``, ``\\server\share``).
+
+        Relative targets — including those with ``..`` components — are
+        permitted because they may legitimately cross subproject boundaries
+        within the superproject (e.g. ``../../sibling-lib/include``).
+        :meth:`_check_symlinks_in_dest` enforces the hard boundary (the
+        superproject root, i.e. the directory containing the manifest) after
+        the archive is copied into place.
+
+        On Python ≥ 3.11.4 the ``filter="tar"`` argument to
+        :meth:`tarfile.TarFile.extractall` additionally prevents any member
+        from being written outside the extraction destination during the
+        intermediate temp-dir extraction.
         """
-        posix = pathlib.PurePosixPath(target)
-        win = pathlib.PureWindowsPath(target)
-        return posix.is_absolute() or bool(win.anchor)
+        posix_target = pathlib.PurePosixPath(target)
+        win_target = pathlib.PureWindowsPath(target)
+        return posix_target.is_absolute() or bool(win_target.anchor)
 
     @staticmethod
     def _check_symlinks_in_dest(dest_dir: str) -> None:
@@ -425,7 +435,8 @@ class ArchiveLocalRepo:
 
         Detects Unix symlinks encoded in the ``external_attr`` high word and
         validates their targets with the same rules applied to TAR symlinks:
-        absolute targets and targets containing ``..`` are rejected.
+        absolute targets are rejected; relative targets (including ``..``) are
+        validated post-copy by :meth:`_check_symlinks_in_dest`.
 
         Raises:
             RuntimeError: When *info* is a symlink with an unsafe target.
@@ -458,8 +469,9 @@ class ArchiveLocalRepo:
 
         Rejected member types:
 
-        * **Symlinks with absolute or escaping targets** — could create a
-          foothold outside the extraction directory for later writes.
+        * **Symlinks with absolute targets** — absolute paths bypass the
+          extraction root entirely; relative ``..`` targets are permitted and
+          validated post-copy by :meth:`_check_symlinks_in_dest`.
         * **Hard links with absolute or escaping targets** — same risk as
           dangerous symlinks; the target path is validated like a regular
           member name.
@@ -488,6 +500,35 @@ class ArchiveLocalRepo:
             )
 
     @staticmethod
+    def _check_no_member_traverses_symlink(members: list[tarfile.TarInfo]) -> None:
+        """Raise *RuntimeError* if any member would be written through a symlink member.
+
+        Detects the two-step tar-slip attack: a symlink is extracted first and
+        a subsequent member whose path descends through that symlink name would
+        be written to wherever the symlink points.  On Python ≥ 3.11.4 this is
+        also blocked by ``filter="tar"``; this check covers older Python versions
+        and provides defence-in-depth on newer ones.
+
+        Raises:
+            RuntimeError: When a non-symlink member's path passes through a
+                symlink member name.
+        """
+        symlink_names = {m.name for m in members if m.issym()}
+        if not symlink_names:
+            return
+        for member in members:
+            if member.issym():
+                continue
+            parts = pathlib.PurePosixPath(member.name).parts
+            for depth in range(1, len(parts)):
+                parent = str(pathlib.PurePosixPath(*parts[:depth]))
+                if parent in symlink_names:
+                    raise RuntimeError(
+                        f"Archive member {member.name!r} would be written "
+                        f"through symlink {parent!r}"
+                    )
+
+    @staticmethod
     def _check_tar_members(tf: tarfile.TarFile) -> None:
         """Validate TAR members against decompression bombs and unsafe member types.
 
@@ -498,6 +539,8 @@ class ArchiveLocalRepo:
         * **Unsafe member types** — reject symlinks with absolute or escaping
           targets, hardlinks with escaping targets, device files, and FIFOs
           (see :meth:`_check_tar_member_type`).
+        * **Two-step symlink traversal** — reject any member whose path passes
+          through a symlink member (see :meth:`_check_no_member_traverses_symlink`).
 
         On Python ≥ 3.11.4 the ``filter="tar"`` passed to
         :meth:`tarfile.TarFile.extractall` provides additional OS-level
@@ -515,6 +558,7 @@ class ArchiveLocalRepo:
         for member in members:
             ArchiveLocalRepo._check_archive_member_path(member.name)
             ArchiveLocalRepo._check_tar_member_type(member)
+        ArchiveLocalRepo._check_no_member_traverses_symlink(members)
 
     @staticmethod
     def _extract_raw(archive_path: str, dest_dir: str) -> None:
