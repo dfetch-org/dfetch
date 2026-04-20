@@ -29,12 +29,27 @@ __all__ = ["CheckoutOptions", "GitLocalRepo", "GitRemote", "Submodule"]
 logger = get_logger(__name__)
 
 
+_SHELL_METACHAR_RE = re.compile(r"[;&|`$(){}<>\n\r!]")
+
+
+def _sanitize_ssh_cmd(ssh_cmd: str, source: str) -> str | None:
+    """Return *ssh_cmd* if it is safe to use, otherwise log a warning and return None."""
+    if _SHELL_METACHAR_RE.search(ssh_cmd):
+        logger.warning(
+            "Ignoring %s: contains unsafe shell characters, falling back to 'ssh'",
+            source,
+        )
+        return None
+    return ssh_cmd
+
+
 def _build_git_ssh_command() -> str:
     """Returns a safe SSH command string for Git that enforces non-interactive mode.
 
     Respects existing GIT_SSH_COMMAND and git core.sshCommand.
     """
-    ssh_cmd = os.environ.get("GIT_SSH_COMMAND")
+    raw = os.environ.get("GIT_SSH_COMMAND")
+    ssh_cmd = _sanitize_ssh_cmd(raw, "GIT_SSH_COMMAND") if raw else None
 
     if not ssh_cmd:
 
@@ -43,7 +58,10 @@ def _build_git_ssh_command() -> str:
                 logger,
                 ["git", "config", "--get", "core.sshCommand"],
             )
-            ssh_cmd = result.stdout.decode().strip()
+            raw_config = result.stdout.decode().strip()
+            ssh_cmd = (
+                _sanitize_ssh_cmd(raw_config, "core.sshCommand") if raw_config else None
+            )
 
         except SubprocessCommandError:
             ssh_cmd = None
