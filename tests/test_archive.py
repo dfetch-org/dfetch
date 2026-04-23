@@ -156,14 +156,14 @@ def test_check_zip_members_symlink_absolute_target():
 
 
 def test_check_zip_members_symlink_dotdot_target():
-    """ZIP symlink with .. is allowed at pre-extraction time (post-copy check enforces boundary)."""
-    zf = _make_zip_with_symlink("link", "../../etc/shadow")
+    """ZIP symlink with .. is allowed; _check_symlinks_in_dest enforces the superproject boundary."""
+    zf = _make_zip_with_symlink("project/link", "../../sibling")
     _check_zip_members(zf)  # must NOT raise
 
 
 def test_check_zip_members_symlink_windows_dotdot_target():
     """ZIP symlink with Windows-style backslash .. is allowed at pre-extraction time."""
-    zf = _make_zip_with_symlink("link", "..\\..\\evil")
+    zf = _make_zip_with_symlink("project/link", "..\\..\\sibling")
     _check_zip_members(zf)  # must NOT raise
 
 
@@ -267,15 +267,19 @@ def test_check_tar_member_type_absolute_symlink():
 
 
 def test_check_tar_member_type_dotdot_symlink():
-    """Relative .. symlinks are allowed at pre-extraction time (post-copy check enforces boundary)."""
-    tf = _make_tar_with_member(lambda t: _add_symlink(t, "link", "../../etc/passwd"))
+    """Relative .. symlinks are allowed; _check_symlinks_in_dest enforces the superproject boundary."""
+    tf = _make_tar_with_member(
+        lambda t: _add_symlink(t, "project/link", "../../sibling")
+    )
     member = tf.getmembers()[0]
     _check_tar_member_type(member)  # must NOT raise
 
 
 def test_check_tar_member_type_windows_dotdot_symlink():
-    """Windows-style .. symlinks are allowed at pre-extraction time."""
-    tf = _make_tar_with_member(lambda t: _add_symlink(t, "link", "..\\..\\evil"))
+    """Windows-style relative .. symlinks are allowed at pre-extraction time."""
+    tf = _make_tar_with_member(
+        lambda t: _add_symlink(t, "project/link", "..\\..\\sibling")
+    )
     member = tf.getmembers()[0]
     _check_tar_member_type(member)  # must NOT raise
 
@@ -329,6 +333,89 @@ def test_check_tar_member_type_fifo():
 # ---------------------------------------------------------------------------
 # _check_tar_members — integration of member-type validation
 # ---------------------------------------------------------------------------
+
+
+def test_check_tar_members_allows_dotdot_symlink():
+    """Relative .. symlinks pass _check_tar_members; superproject boundary enforced post-copy."""
+    tf = _make_tar_with_member(
+        lambda t: _add_symlink(t, "project/link", "../../sibling")
+    )
+    _check_tar_members(tf)  # must NOT raise
+
+
+def test_check_tar_members_rejects_two_step_symlink_attack():
+    """Member written through a symlink member must be rejected (two-step tar slip)."""
+
+    def _setup(tf: tarfile.TarFile) -> None:
+        _add_symlink(tf, "project/link", "../../outside")
+        content = b"escaped"
+        info = tarfile.TarInfo("project/link/payload.txt")
+        info.size = len(content)
+        tf.addfile(info, io.BytesIO(content))
+
+    tf = _make_tar_with_member(_setup)
+    with pytest.raises(RuntimeError, match="symlink"):
+        _check_tar_members(tf)
+
+
+def test_check_tar_members_rejects_two_step_symlink_attack_dotprefix():
+    """Two-step tar-slip via a ./ prefixed symlink name must be rejected."""
+
+    def _setup(tf: tarfile.TarFile) -> None:
+        _add_symlink(tf, "./project/link", "../../outside")
+        content = b"escaped"
+        info = tarfile.TarInfo("project/link/payload.txt")
+        info.size = len(content)
+        tf.addfile(info, io.BytesIO(content))
+
+    tf = _make_tar_with_member(_setup)
+    with pytest.raises(RuntimeError, match="symlink"):
+        _check_tar_members(tf)
+
+
+def test_check_tar_members_rejects_symlink_chain():
+    """A second symlink whose path passes through an earlier symlink must be rejected."""
+
+    def _setup(tf: tarfile.TarFile) -> None:
+        _add_symlink(tf, "project/link", "../../outside")
+        _add_symlink(tf, "project/link/evil", "../payload")
+
+    tf = _make_tar_with_member(_setup)
+    with pytest.raises(RuntimeError, match="symlink"):
+        _check_tar_members(tf)
+
+
+def test_check_tar_members_rejects_symlink_exact_path_overwrite():
+    """A non-symlink member with the same path as an earlier symlink must be rejected.
+
+    Python's tarfile.extract follows a symlink when writing a file over it, so
+    allowing this would write content to the symlink's (potentially external) target.
+    """
+
+    def _setup(tf: tarfile.TarFile) -> None:
+        _add_symlink(tf, "project/link", "../../outside")
+        content = b"escaped"
+        info = tarfile.TarInfo("project/link")
+        info.size = len(content)
+        tf.addfile(info, io.BytesIO(content))
+
+    tf = _make_tar_with_member(_setup)
+    with pytest.raises(RuntimeError, match="symlink"):
+        _check_tar_members(tf)
+
+
+def test_check_tar_members_allows_file_next_to_symlink():
+    """A file sibling to a symlink (not written through it) must be accepted."""
+
+    def _setup(tf: tarfile.TarFile) -> None:
+        _add_symlink(tf, "project/link", "../../sibling")
+        content = b"ok"
+        info = tarfile.TarInfo("project/other.txt")
+        info.size = len(content)
+        tf.addfile(info, io.BytesIO(content))
+
+    tf = _make_tar_with_member(_setup)
+    _check_tar_members(tf)  # must NOT raise
 
 
 def test_check_tar_members_rejects_absolute_symlink():
@@ -418,6 +505,40 @@ def _make_tar_gz_file(archive_path: str, members: dict[str, bytes]) -> None:
             info = tarfile.TarInfo(name=name)
             info.size = len(content)
             tf.addfile(info, io.BytesIO(content))
+
+
+def test_extract_raw_absolute_symlink_rejected():
+    """Absolute symlink targets must be rejected during extraction."""
+    with tempfile.TemporaryDirectory() as tmp:
+        archive = os.path.join(tmp, "evil.tar.gz")
+        with tarfile.open(archive, "w:gz") as tf:
+            sym = tarfile.TarInfo("project/link")
+            sym.type = tarfile.SYMTYPE
+            sym.linkname = "/etc/passwd"
+            tf.addfile(sym)
+        dest = os.path.join(tmp, "dest")
+        os.makedirs(dest)
+        with pytest.raises(RuntimeError, match="unsafe target"):
+            ArchiveLocalRepo._extract_raw(archive, dest)
+
+
+def test_extract_raw_two_step_symlink_attack_rejected():
+    """Two-step tar slip via symlink + write-through must be rejected on all Python versions."""
+    with tempfile.TemporaryDirectory() as tmp:
+        archive = os.path.join(tmp, "evil.tar.gz")
+        with tarfile.open(archive, "w:gz") as tf:
+            sym = tarfile.TarInfo("project/link")
+            sym.type = tarfile.SYMTYPE
+            sym.linkname = "../../outside"
+            tf.addfile(sym)
+            content = b"escaped"
+            info = tarfile.TarInfo("project/link/payload.txt")
+            info.size = len(content)
+            tf.addfile(info, io.BytesIO(content))
+        dest = os.path.join(tmp, "dest")
+        os.makedirs(dest)
+        with pytest.raises(RuntimeError, match="symlink"):
+            ArchiveLocalRepo._extract_raw(archive, dest)
 
 
 def test_extract_tar_gz_strips_top_level_dir():

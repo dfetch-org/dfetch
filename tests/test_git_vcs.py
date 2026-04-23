@@ -213,10 +213,10 @@ def test_ls_remote():
             "ssh -i keyfile -o BatchMode=yes",
         ),
         (
-            "git config",
+            "git config with unsupported flag",
             None,
             "ssh -F configfile",
-            "ssh -F configfile -o BatchMode=yes",
+            "ssh -o BatchMode=yes",
         ),
         ("no env or git config", None, None, "ssh -o BatchMode=yes"),
         (
@@ -224,6 +224,72 @@ def test_ls_remote():
             "ssh -o BatchMode=yes",
             None,
             "ssh -o BatchMode=yes",
+        ),
+        (
+            "injection via semicolon in env var",
+            "ssh; rm -rf /",
+            None,
+            "ssh -o BatchMode=yes",
+        ),
+        (
+            "injection via pipe in env var",
+            "ssh | evil",
+            None,
+            "ssh -o BatchMode=yes",
+        ),
+        (
+            "injection via subshell in git config",
+            None,
+            "$(evil_cmd)",
+            "ssh -o BatchMode=yes",
+        ),
+        (
+            "injection via backtick in env var",
+            "ssh `evil`",
+            None,
+            "ssh -o BatchMode=yes",
+        ),
+        (
+            "injection via ProxyCommand option",
+            "ssh -o ProxyCommand=evil",
+            None,
+            "ssh -o BatchMode=yes",
+        ),
+        (
+            "absolute path ssh binary accepted",
+            "/usr/bin/ssh",
+            None,
+            "/usr/bin/ssh -o BatchMode=yes",
+        ),
+        (
+            "absolute path with arguments rejected",
+            "/usr/bin/ssh -F config",
+            None,
+            "ssh -o BatchMode=yes",
+        ),
+        (
+            "semicolon in identity file value is shell-quoted",
+            "ssh -i /tmp/x;evil",
+            None,
+            "ssh -i '/tmp/x;evil' -o BatchMode=yes",
+        ),
+        (
+            "command substitution in identity file value is shell-quoted",
+            "ssh -i $(evil)",
+            None,
+            "ssh -i '$(evil)' -o BatchMode=yes",
+        ),
+        (
+            "backtick in identity file value is shell-quoted",
+            "ssh -i `evil`",
+            None,
+            "ssh -i '`evil`' -o BatchMode=yes",
+        ),
+        (
+            "command substitution in BatchMode value is shell-quoted",
+            "ssh -o BatchMode=$(evil)",
+            None,
+            "ssh -o 'BatchMode=$(evil)'",
         ),
     ],
 )
@@ -247,3 +313,8 @@ def test_build_git_ssh_command(name, env_ssh, git_config_ssh, expected):
                     mock_logger.debug.assert_called_once()
                 else:
                     mock_logger.debug.assert_not_called()
+
+                if "injection" in name or "unsupported" in name or "rejected" in name:
+                    mock_logger.warning.assert_called()
+                else:
+                    mock_logger.warning.assert_not_called()

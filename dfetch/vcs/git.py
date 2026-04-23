@@ -13,6 +13,7 @@ from pathlib import Path
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
 from dfetch.util.license import is_license_file
+from dfetch.util.ssh import InvalidSshCommandError, sanitize_ssh_cmd
 from dfetch.util.util import (
     glob_within_root,
     in_directory,
@@ -29,22 +30,31 @@ __all__ = ["CheckoutOptions", "GitLocalRepo", "GitRemote", "Submodule"]
 logger = get_logger(__name__)
 
 
+def _try_sanitize(source: str, raw: str | None) -> str | None:
+    if not raw:
+        return None
+    try:
+        return sanitize_ssh_cmd(raw)
+    except InvalidSshCommandError as exc:
+        logger.warning("Ignoring %s: %s, falling back to 'ssh'", source, exc)
+        return None
+
+
 def _build_git_ssh_command() -> str:
     """Returns a safe SSH command string for Git that enforces non-interactive mode.
 
     Respects existing GIT_SSH_COMMAND and git core.sshCommand.
     """
-    ssh_cmd = os.environ.get("GIT_SSH_COMMAND")
+    ssh_cmd = _try_sanitize("GIT_SSH_COMMAND", os.environ.get("GIT_SSH_COMMAND"))
 
     if not ssh_cmd:
-
         try:
             result = run_on_cmdline(
-                logger,
-                ["git", "config", "--get", "core.sshCommand"],
+                logger, ["git", "config", "--get", "core.sshCommand"]
             )
-            ssh_cmd = result.stdout.decode().strip()
-
+            ssh_cmd = _try_sanitize(
+                "core.sshCommand", result.stdout.decode().strip() or None
+            )
         except SubprocessCommandError:
             ssh_cmd = None
 
