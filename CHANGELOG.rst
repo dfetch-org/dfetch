@@ -14,6 +14,8 @@ Release 0.14.0 (unreleased)
 * Fix "unsafe symlink target" error for archives containing relative ``..`` symlinks (#1122)
 * Fix ``dfetch add`` crashing with a ``ValueError`` when the remote URL has a trailing slash (#1137)
 * Fix unhelpful error message when a metadata file is malformed (#1145)
+* Fix arbitrary file write via malicious tar/zip symlink (#1152)
+* Prevent SSH command injection (#1152)
 
 Release 0.13.0 (released 2026-03-30)
 ====================================

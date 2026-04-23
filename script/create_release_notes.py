@@ -49,7 +49,13 @@ def main():
     )
     args = parser.parse_args()
 
-    changelog_path = Path(args.changelog)
+    try:
+        changelog_path = Path(args.changelog).resolve()
+        changelog_path.relative_to(Path.cwd().resolve())
+    except ValueError:
+        print(f"Error: {args.changelog} is outside the current directory.")
+        sys.exit(1)
+
     if not changelog_path.exists():
         print(f"Error: {changelog_path} not found.")
         sys.exit(1)
