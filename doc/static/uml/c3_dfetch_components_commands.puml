@@ -10,6 +10,7 @@ System_Boundary(DFetch, "Dfetch") {
         Component(compCommon, "Common", "python", "Common actions for commands")
         Component(compCommand, "Command", "python", "Base class for commands")
 
+        Component(compAdd, "Add", "python", "Adds a new project to the manifest")
         Component(compCheck, "Check", "python", "Checks for updates")
         Component(compDiff, "Diff", "python", "Creates patch of local changes")
         Component(compEnv, "Environment", "python", "Shows local tools")
@@ -17,11 +18,13 @@ System_Boundary(DFetch, "Dfetch") {
         Component(compFreeze, "Freeze", "python", "Pins all projects")
         Component(compImport, "Import", "python", "Imports from VCS")
         Component(compInit, "Init", "python", "Initializes a manifest")
+        Component(compRemove, "Remove", "python", "Removes a project from the manifest")
         Component(compReport, "Report", "python", "Reports status")
         Component(compUpdate, "Update", "python", "Updates all projects")
         Component(compUpdatePatch, "UpdatePatch", "python", "Updates patch")
         Component(compValidate, "Validate", "python", "Validates manifest")
 
+        Rel_U(compAdd, compCommand, "Extends")
         Rel_U(compCheck, compCommand, "Extends")
         Rel_U(compDiff, compCommand, "Extends")
         Rel_U(compEnv, compCommand, "Extends")
@@ -29,6 +32,7 @@ System_Boundary(DFetch, "Dfetch") {
         Rel_U(compFreeze, compCommand, "Extends")
         Rel_U(compImport, compCommand, "Extends")
         Rel_U(compInit, compCommand, "Extends")
+        Rel_U(compRemove, compCommand, "Extends")
         Rel_U(compReport, compCommand, "Extends")
         Rel_U(compUpdate, compCommand, "Extends")
         Rel_U(compUpdatePatch, compCommand, "Extends")
@@ -42,6 +46,9 @@ System_Boundary(DFetch, "Dfetch") {
     Container(contProject, "Project", "python", "Main project that has a manifest.")
     Container(contVcs, "Vcs", "python", "Abstraction of various Version Control Systems.")
     Container(contReporting, "Reporting", "python", "Output formatters for various reporting formats.")
+
+    Rel(compAdd, contManifest, "Uses")
+    Rel(compAdd, contProject, "Uses")
 
     Rel(compCheck, contManifest, "Uses")
     Rel(compCheck, contProject, "Uses")
@@ -62,6 +69,9 @@ System_Boundary(DFetch, "Dfetch") {
     Rel(compImport, contManifest, "Uses")
     Rel(compImport, contProject, "Uses")
     Rel(compImport, contVcs, "Uses")
+
+    Rel(compRemove, contManifest, "Uses")
+    Rel(compRemove, contProject, "Uses")
 
     Rel(compReport, contManifest, "Uses")
     Rel(compReport, contProject, "Uses")
