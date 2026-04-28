@@ -10,16 +10,18 @@ System_Boundary(DFetch, "Dfetch") {
 
     Boundary(DFetchManifest, "Manifest") {
         Component(compManifest, "Manifest", "python", "Main configuration file describing all projects.")
+        Component(compParse, "Parse", "python", "Utilities for finding manifest files.")
         Component(compProject, "Project", "python", "A single project requirement with optionally specific version")
         Component(compRemote, "Remote", "python", "A remote source that contains one or more projects.")
-        Component(compValidate, "Validate", "python", "Validate a manifest.")
+        Component(compSchema, "Schema", "python", "StrictYAML schema for the manifest.")
         Component(compVersion, "Version", "python", "Check and compare versions.")
 
         Rel(compManifest, compProject, "Uses")
+        Rel(compManifest, compRemote, "Uses")
+        Rel(compManifest, compSchema, "Uses")
+        Rel(compParse, compManifest, "Uses")
         Rel(compProject, compVersion, "Uses")
         Rel_L(compProject, compRemote, "Uses")
-        Rel(compManifest, compValidate, "Uses")
-        Rel(compManifest, compRemote, "Uses")
     }
 
     Container(contProject, "Project", "python", "Main project that has a manifest.")

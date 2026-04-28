@@ -12,6 +12,7 @@ System_Boundary(DFetch, "Dfetch") {
     Boundary(DfetchProject, "Project", "python", "Main project that has a manifest.") {
 
         Component(compAbstractCheckReporter, "AbstractCheckReporter", "python", "Abstract interface for generating a check report.")
+        Component(compArchiveSub, "ArchiveSubProject", "python", "A subproject based on an archive.")
         Component(compGitSub, "GitSubproject", "python", "A subproject based on git.")
         Component(compMetadata, "Metadata", "python", "A file containing metadata about a project.")
         Component(compSvnSub, "SvnSubproject", "python", "A subproject based on svn.")
@@ -21,6 +22,7 @@ System_Boundary(DFetch, "Dfetch") {
         Component(compSvnSuper, "SvnSuperProject", "python", "A superproject based on svn.")
         Component(compNoVcsSuper, "NoVcsSuperProject", "python", "A superproject without VCS.")
 
+        Rel_U(compArchiveSub, compSubProject, "Implements")
         Rel_U(compGitSub, compSubProject, "Implements")
         Rel_U(compSvnSub, compSubProject, "Implements")
         Rel(compSubProject, compAbstractCheckReporter, "Uses")
@@ -41,6 +43,7 @@ System_Boundary(DFetch, "Dfetch") {
     Rel_U(compMetadata, contManifest, "Has")
     Rel(compSuperProject, contManifest, "Has")
     Rel_U(contReporting, contManifest, "Uses")
+    Rel(compArchiveSub, contVcs, "Uses")
     Rel(compGitSub, contVcs, "Uses")
     Rel(compSvnSub, contVcs, "Uses")
     Rel(compGitSuper, contVcs, "Uses")
