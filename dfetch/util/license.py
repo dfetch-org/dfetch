@@ -119,8 +119,7 @@ def guess_license_in_file(
 
     probable_licenses = infer_license.api.probabilities(license_text)
 
-    return (
-        None
-        if not probable_licenses
-        else License.from_inferred(*probable_licenses[0], text=license_text)
-    )
+    if not probable_licenses:
+        return None
+    inferred_lic, probability = probable_licenses[0]
+    return License.from_inferred(inferred_lic, probability, text=license_text)

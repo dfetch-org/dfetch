@@ -72,7 +72,7 @@ class ArchiveFetcher:
     :class:`~dfetch.project.fetcher.Fetcher` protocol.
     """
 
-    NAME = "archive"
+    NAME: str = "archive"
 
     def __init__(self, remote: str) -> None:
         """Create an ArchiveFetcher for *remote*."""
@@ -124,12 +124,12 @@ class ArchiveFetcher:
 
         return version, []
 
-    def _download_and_verify(
-        self, revision: str, tmp_path: str, name: str
-    ) -> None:
+    def _download_and_verify(self, revision: str, tmp_path: str, name: str) -> None:
         expected = IntegrityHash.parse(revision)
         if expected:
-            actual_hex = self._remote_repo.download(tmp_path, algorithm=expected.algorithm)
+            actual_hex = self._remote_repo.download(
+                tmp_path, algorithm=expected.algorithm
+            )
             if not expected.matches(actual_hex):
                 raise RuntimeError(
                     f"Hash mismatch for {name}! "

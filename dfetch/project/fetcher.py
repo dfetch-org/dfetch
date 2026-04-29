@@ -26,6 +26,7 @@ class Fetcher(Protocol):
     @classmethod
     def handles(cls, remote: str) -> bool:
         """Return True when this fetcher can handle the given remote URL."""
+        raise NotImplementedError
 
     def fetch(
         self,
@@ -36,9 +37,11 @@ class Fetcher(Protocol):
         ignore: Sequence[str],
     ) -> tuple[Version, list[Dependency]]:
         """Retrieve *version* and place it at *local_path*."""
+        raise NotImplementedError
 
     def wanted_version(self, project_entry: ProjectEntry) -> Version:
         """Derive the desired version from the manifest entry."""
+        raise NotImplementedError
 
     def freeze(
         self, project: ProjectEntry, on_disk_version: Version | None
@@ -59,29 +62,37 @@ class VcsFetcher(Fetcher, Protocol):
 
     def revision_is_enough(self) -> bool:
         """Return True when a revision alone uniquely identifies a version."""
+        raise NotImplementedError
 
     def get_default_branch(self) -> str:
         """Return the default branch name for this repository."""
+        raise NotImplementedError
 
     def list_of_tags(self) -> list[str]:
         """Return all available tags."""
+        raise NotImplementedError
 
     def list_of_branches(self) -> list[str]:
         """Return all available branches."""
+        raise NotImplementedError
 
     def latest_revision_on_branch(self, branch: str) -> str:
         """Return the latest revision on *branch*."""
+        raise NotImplementedError
 
     def does_revision_exist(self, revision: str) -> bool:
         """Return True if *revision* exists on the remote."""
+        raise NotImplementedError
 
     def browse_tree(
         self, version: str
     ) -> AbstractContextManager[Callable[[str], list[tuple[str, bool]]]]:
         """Return a context manager yielding a directory-listing callable."""
+        raise NotImplementedError
 
     def patch_type(self) -> PatchType:
         """Return the patch format used by this VCS."""
+        raise NotImplementedError
 
 
 class AbstractVcsFetcher(ABC):
@@ -137,7 +148,9 @@ class AbstractVcsFetcher(ABC):
         return Version(tag=latest_tag_from_list(tag, tags))
 
     def _revision_version_if_exists(self, revision: str) -> Version | None:
-        return Version(revision=revision) if self.does_revision_exist(revision) else None
+        return (
+            Version(revision=revision) if self.does_revision_exist(revision) else None
+        )
 
     def freeze(
         self, project: ProjectEntry, on_disk_version: Version | None
