@@ -34,9 +34,7 @@ import dfetch.manifest.project
 import dfetch.project
 from dfetch.log import get_logger
 from dfetch.project import create_super_project
-from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.subproject import SubProject
-from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.util.util import (
     catch_runtime_exceptions,
     check_no_path_traversal,
@@ -145,12 +143,6 @@ class FormatPatch(dfetch.commands.command.Command):
 
 
 def _determine_target_patch_type(subproject: SubProject) -> PatchType:
-    """Determine the subproject type for the patch."""
-    if isinstance(subproject, GitSubProject):
-        required_type = PatchType.GIT
-    elif isinstance(subproject, SvnSubProject):
-        required_type = PatchType.SVN
-    else:
-        required_type = PatchType.PLAIN
-
-    return required_type
+    """Determine the patch format for *subproject*."""
+    vcs = subproject.as_vcs()
+    return vcs.patch_type() if vcs is not None else PatchType.PLAIN

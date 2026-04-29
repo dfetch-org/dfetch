@@ -29,10 +29,8 @@ from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote
 from dfetch.manifest.version import Version
 from dfetch.project import create_sub_project, create_super_project
-from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import SuperProject
-from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.terminal import Entry, LsFunction
 from dfetch.terminal.tree_browser import (
     BrowserConfig,
@@ -86,9 +84,9 @@ def browse_tree(subproject: SubProject, version: str = "") -> Generator[LsFuncti
     Adds '.' as the first entry to allow selecting the repo root (which is
     treated as empty src).
     """
-    if isinstance(subproject, (GitSubProject, SvnSubProject)):
-        remote = subproject.remote_repo
-        with remote.browse_tree(version) as vcs_ls:
+    vcs = subproject.as_vcs()
+    if vcs is not None:
+        with vcs.browse_tree(version) as vcs_ls:
 
             def ls(path: str = "") -> list[Entry]:
                 entries = [

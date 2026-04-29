@@ -66,9 +66,12 @@ def _make_subproject(
         branches if branches is not None else [default_branch]
     )
     sp.list_of_tags.return_value = tags if tags is not None else []
-    # browse_tree returns an empty ls_fn by default (no remote tree available)
-    sp.browse_tree.return_value.__enter__ = Mock(return_value=lambda path="": [])
-    sp.browse_tree.return_value.__exit__ = Mock(return_value=False)
+
+    # as_vcs() returns a VCS mock with browse_tree as a context manager
+    vcs_mock = Mock()
+    vcs_mock.browse_tree.return_value.__enter__ = Mock(return_value=lambda path="": [])
+    vcs_mock.browse_tree.return_value.__exit__ = Mock(return_value=False)
+    sp.as_vcs.return_value = vcs_mock
     return sp
 
 
