@@ -3,7 +3,7 @@
 # mypy: ignore-errors
 # flake8: noqa
 
-from contextlib import ExitStack
+from contextlib import ExitStack, nullcontext
 from typing import Optional, Union
 from unittest.mock import MagicMock, patch
 
@@ -48,7 +48,7 @@ class MockVcsFetcher(AbstractVcsFetcher):
         return True
 
     def browse_tree(self, version: str) -> object:
-        return None
+        return nullcontext(lambda path="": [])
 
     def patch_type(self) -> PatchType:
         return PatchType.GIT

@@ -7,47 +7,33 @@ import os
 import sys
 import types
 from contextlib import nullcontext
-from logging import LogRecord
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
 
-from rich.console import Console, ConsoleRenderable
+from rich._log_render import LogRender  # type: ignore[import-untyped]
+from rich.console import Console
 from rich.highlighter import NullHighlighter
 from rich.logging import RichHandler
 from rich.markup import escape as markup_escape
 from rich.status import Status
-from rich.table import Table
 
 from dfetch import __version__
 
-if TYPE_CHECKING:
-    from rich.traceback import Traceback
 
+def _make_non_expanding_log_render(**kwargs: Any) -> Any:
+    """Return a LogRender callable that disables table expansion.
 
-class _NoExpandRichHandler(RichHandler):
-    """RichHandler that disables table expansion to prevent blank lines in asciicasts.
-
-    Rich's LogRender uses expand=True on its Table.grid, which pads every
-    log message with trailing spaces to fill the full terminal width.  When
-    asciinema records the output the padded line fills the terminal exactly,
-    causing the subsequent newline to produce a blank line in the cast
-    player.  Overriding render to set expand=False removes the trailing
-    spaces and avoids the spurious blank lines.
+    Used when recording with asciinema to prevent Rich's ``expand=True`` from
+    padding log lines to the full terminal width, which produces spurious blank
+    lines in the cast player.
     """
+    renderer = LogRender(**kwargs)
 
-    def render(
-        self,
-        *,
-        record: LogRecord,
-        traceback: Traceback | None,
-        message_renderable: ConsoleRenderable,
-    ) -> ConsoleRenderable:
-        """Render log entry without expanding the table to the full terminal width."""
-        renderable = super().render(
-            record=record, traceback=traceback, message_renderable=message_renderable
-        )
-        if isinstance(renderable, Table):
-            renderable.expand = False
-        return renderable
+    def _render(*args: Any, **kw: Any) -> Any:
+        table = renderer(*args, **kw)
+        table.expand = False
+        return table
+
+    return _render
 
 
 def make_console(no_color: bool = False) -> Console:
@@ -63,8 +49,7 @@ def configure_root_logger(console: Console | None = None) -> None:
     """Configure the root logger with RichHandler using the provided Console."""
     console = console or make_console()
 
-    handler_class = _NoExpandRichHandler if os.getenv("ASCIINEMA_REC") else RichHandler
-    handler = handler_class(
+    handler = RichHandler(
         console=console,
         show_time=False,
         show_path=False,
@@ -73,6 +58,18 @@ def configure_root_logger(console: Console | None = None) -> None:
         rich_tracebacks=True,
         highlighter=NullHighlighter(),
     )
+
+    if os.getenv("ASCIINEMA_REC"):
+        # Rich's LogRender uses expand=True on its Table.grid, which pads every
+        # log message with trailing spaces to fill the full terminal width.  When
+        # asciinema records the output the padded line fills the terminal exactly,
+        # causing the subsequent newline to produce a blank line in the cast
+        # player.  Wrapping _log_render so it returns a non-expanding table
+        # removes the trailing spaces and avoids the spurious blank lines.
+        no_expand = _make_non_expanding_log_render(
+            show_time=False, show_level=False, show_path=False
+        )
+        handler._log_render = no_expand  # pylint: disable=protected-access
 
     logging.basicConfig(
         level=logging.INFO,

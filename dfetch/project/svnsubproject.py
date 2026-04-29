@@ -66,6 +66,18 @@ class SvnFetcher(AbstractVcsFetcher):
             "In SVN only a revision is NOT enough, this should not be called!"
         )
 
+    def latest_available_version(self, wanted: Version) -> Version | None:
+        """Return the latest version matching *wanted*, or None if unavailable.
+
+        For revision-only pins (no branch, no tag) the pinned revision is
+        returned with the default branch so version comparison works correctly.
+        SVN revisions are globally ordered within a repository, so a bare
+        ``revision:`` in the manifest is always relative to trunk.
+        """
+        if wanted.revision and not wanted.branch and not wanted.tag:
+            return Version(revision=wanted.revision, branch=self.get_default_branch())
+        return super().latest_available_version(wanted)
+
     def browse_tree(
         self, version: str
     ) -> AbstractContextManager[Callable[[str], list[tuple[str, bool]]]]:
