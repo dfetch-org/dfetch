@@ -3,8 +3,6 @@
 import pathlib
 from collections.abc import Callable, Sequence
 from contextlib import AbstractContextManager
-from functools import lru_cache
-
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
@@ -28,6 +26,7 @@ class GitFetcher(AbstractVcsFetcher):
         """Create a GitFetcher for *remote*."""
         self._remote = remote
         self._remote_repo = GitRemote(remote)
+        self._default_branch: str | None = None
 
     @classmethod
     def handles(cls, remote: str) -> bool:
@@ -38,10 +37,11 @@ class GitFetcher(AbstractVcsFetcher):
         """Git SHAs are globally unique; revision alone identifies a commit."""
         return True
 
-    @lru_cache  # type: ignore[misc]
     def get_default_branch(self) -> str:
-        """Return the default branch of this repository."""
-        return self._remote_repo.get_default_branch()
+        """Return the default branch of this repository (cached after first network fetch)."""
+        if self._default_branch is None:
+            self._default_branch = self._remote_repo.get_default_branch()
+        return self._default_branch
 
     def list_of_tags(self) -> list[str]:
         """Return all tags."""

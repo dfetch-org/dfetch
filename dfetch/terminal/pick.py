@@ -74,16 +74,16 @@ def _render_pick_item(
     return f"  {cursor} {check}{styled}"
 
 
-def _render_pick_lines(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+def _render_pick_lines(
     title: str,
     items: list[str],
     idx: int,
     top: int,
     selected: set[int],
     multi: bool,
-    n: int,
 ) -> list[str]:
     """Build the list of lines to draw for one frame of the pick widget."""
+    n = len(items)
     lines: list[str] = [f"  {BOLD}{title}{RESET}"]
     if top > 0:
         lines.append(f"    {DIM}↑ {top} more above{RESET}")
@@ -133,7 +133,7 @@ def scrollable_pick(
         idx = max(0, min(idx, n - 1))
         top = _clamp_scroll(idx, top)
         screen.draw(
-            _render_pick_lines(title, display_items, idx, top, selected, multi, n)
+            _render_pick_lines(title, display_items, idx, top, selected, multi)
         )
         key = read_key()
 
