@@ -3,8 +3,9 @@
 # mypy: ignore-errors
 # flake8: noqa
 
+from contextlib import ExitStack
 from typing import Optional, Union
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -21,7 +22,7 @@ class MockVcsFetcher(AbstractVcsFetcher):
 
     NAME = "mock"
 
-    def __init__(self, wanted: Version = None) -> None:
+    def __init__(self, wanted: Version | None = None) -> None:
         self._wanted = wanted or Version()
 
     @classmethod
@@ -66,7 +67,7 @@ class MockVcsFetcher(AbstractVcsFetcher):
 
 
 def _make_subproject(
-    name: str = "proj1", wanted: Version = None
+    name: str = "proj1", wanted: Version | None = None
 ) -> tuple[SubProject, MockVcsFetcher]:
     fetcher = MockVcsFetcher(wanted)
     return SubProject(ProjectEntry({"name": name}), fetcher), fetcher
@@ -172,28 +173,34 @@ def test_update_uses_ignored_files_callback_for_stored_hash():
     # Return different values on successive calls to simulate pre/post extraction
     callback = MagicMock(side_effect=[pre_fetch_ignored, post_fetch_ignored])
 
-    with patch("dfetch.project.subproject.os.path.exists") as mock_exists:
-        with patch("dfetch.project.subproject.Metadata.from_file") as mock_meta_file:
-            with patch("dfetch.project.subproject.hash_directory") as mock_hash:
-                with patch("dfetch.project.subproject.safe_rm"):
-                    with patch("dfetch.project.metadata.Metadata.fetched"):
-                        with patch("dfetch.project.metadata.Metadata.dump"):
-                            mock_exists.return_value = True
-                            mock_meta_file.return_value.version = Version(revision="abc")
-                            mock_meta_file.return_value.hash = None
-                            mock_hash.return_value = "hash123"
+    with ExitStack() as stack:
+        mock_exists = stack.enter_context(
+            patch("dfetch.project.subproject.os.path.exists")
+        )
+        mock_meta_file = stack.enter_context(
+            patch("dfetch.project.subproject.Metadata.from_file")
+        )
+        mock_hash = stack.enter_context(
+            patch("dfetch.project.subproject.hash_directory")
+        )
+        stack.enter_context(patch("dfetch.project.subproject.safe_rm"))
+        stack.enter_context(patch("dfetch.project.metadata.Metadata.fetched"))
+        stack.enter_context(patch("dfetch.project.metadata.Metadata.dump"))
 
-                            subproject, _ = _make_subproject(
-                                name="p1", wanted=Version(revision="new")
-                            )
+        mock_exists.return_value = True
+        mock_meta_file.return_value.version = Version(revision="abc")
+        mock_meta_file.return_value.hash = None
+        mock_hash.return_value = "hash123"
 
-                            subproject.update(force=True, ignored_files_callback=callback)
+        subproject, _ = _make_subproject(name="p1", wanted=Version(revision="new"))
 
-                            assert callback.call_count == 2
-                            # The hash must be computed with the post-fetch ignored list
-                            hash_call_skiplist = mock_hash.call_args[1]["skiplist"]
-                            assert "new_ignored.txt" in hash_call_skiplist
-                            assert "old_file.txt" not in hash_call_skiplist
+        subproject.update(force=True, ignored_files_callback=callback)
+
+        assert callback.call_count == 2
+        # The hash must be computed with the post-fetch ignored list
+        hash_call_skiplist = mock_hash.call_args[1]["skiplist"]
+        assert "new_ignored.txt" in hash_call_skiplist
+        assert "old_file.txt" not in hash_call_skiplist
 
 
 @pytest.mark.parametrize(

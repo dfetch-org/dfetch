@@ -38,7 +38,7 @@ def create_sub_project(
         if fetcher_type.handles(project_entry.remote_url):
             return SubProject(project_entry, fetcher_type(project_entry.remote_url))
 
-    raise RuntimeError("vcs type unsupported")
+    raise RuntimeError(f"vcs type unsupported for {project_entry.remote_url}")
 
 
 def create_super_project() -> SuperProject:
