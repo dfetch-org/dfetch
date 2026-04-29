@@ -9,7 +9,8 @@ from unittest.mock import patch
 import pytest
 
 from dfetch.manifest.project import ProjectEntry
-from dfetch.project.svnsubproject import SvnSubProject
+from dfetch.project.subproject import SubProject
+from dfetch.project.svnsubproject import SvnFetcher
 from dfetch.util.cmdline import SubprocessCommandError
 from dfetch.vcs.svn import External, SvnRemote, SvnRepo
 
@@ -223,11 +224,16 @@ def test_get_info():
 
 @pytest.fixture
 def svn_subproject():
-    return SvnSubProject(ProjectEntry({"name": "proj3", "url": "some_url"}))
+    return SubProject(
+        ProjectEntry({"name": "proj3", "url": "some_url"}),
+        SvnFetcher("some_url"),
+    )
 
 
 def test_svn_subproject_name(svn_subproject):
-    assert svn_subproject.NAME == "svn"
+    vcs = svn_subproject.as_vcs()
+    assert vcs is not None
+    assert vcs.NAME == "svn"
 
 
 @pytest.fixture

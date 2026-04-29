@@ -156,6 +156,10 @@ max-line-length = 120
 disable = "logging-fstring-interpolation"
 min-similarity-lines = 10
 
+[tool.pylint.design]
+max-args = 6
+max-positional-arguments = 6
+
 [tool.pylint.MASTER]
 ignore-paths = [
     "doc/_build/",
