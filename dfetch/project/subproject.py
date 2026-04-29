@@ -135,9 +135,8 @@ class SubProject:
         if not (self.wanted_version.revision and vcs.revision_is_enough()):
             wanted_branch = self.wanted_version.branch or vcs.get_default_branch()
             on_disk_branch = on_disk.branch
-        wanted_revision = (
-            self.wanted_version.revision
-            or vcs.latest_revision_on_branch(wanted_branch)
+        wanted_revision = self.wanted_version.revision or vcs.latest_revision_on_branch(
+            wanted_branch
         )
         return (
             Version(revision=wanted_revision, branch=wanted_branch),
@@ -288,7 +287,9 @@ class SubProject:
         ):
             if warning := plaintext_warning(self.__project.remote_url):
                 logger.print_warning_line(self.__project.name, warning)
-            latest_version = self.__fetcher.latest_available_version(self.wanted_version)
+            latest_version = self.__fetcher.latest_available_version(
+                self.wanted_version
+            )
 
         if not latest_version:
             self._report_unavailable_version(reporters)
@@ -301,7 +302,9 @@ class SubProject:
         if self._are_there_local_changes(files_to_ignore):
             self._report_local_changes(reporters)
 
-        self._check_latest_with_on_disk_version(latest_version, on_disk_version, reporters)
+        self._check_latest_with_on_disk_version(
+            latest_version, on_disk_version, reporters
+        )
 
     def _versions_match(self, latest: Version, on_disk: Version) -> bool:
         vcs = self.as_vcs()
@@ -398,7 +401,9 @@ class SubProject:
         self, reporters: Sequence[AbstractCheckReporter], latest_version: Version
     ) -> None:
         for reporter in reporters:
-            reporter.unfetched_project(self.__project, self.wanted_version, latest_version)
+            reporter.unfetched_project(
+                self.__project, self.wanted_version, latest_version
+            )
 
     def _report_local_changes(self, reporters: Sequence[AbstractCheckReporter]) -> None:
         for reporter in reporters:

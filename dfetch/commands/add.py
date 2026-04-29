@@ -272,23 +272,26 @@ def _finalize_add(
         Update()(update_args)
 
 
+def _resolve_entry_version(ctx: _AddContext, raw_version: str) -> Version:
+    """Resolve a raw version string to a ``Version`` using remote branches and tags."""
+    branches = ctx.subproject.list_of_branches()
+    tags = ctx.subproject.list_of_tags()
+    choices: list[Version] = [
+        *[Version(branch=b) for b in prioritise_default(branches, ctx.default_branch)],
+        *[Version(tag=t) for t in sort_tags_newest_first(tags)],
+    ]
+    return _resolve_raw_version(raw_version, choices) or Version(
+        branch=ctx.default_branch
+    )
+
+
 def _non_interactive_entry(ctx: _AddContext, overrides: _Overrides) -> ProjectEntry:
     """Build a ``ProjectEntry`` using inferred defaults (no user interaction)."""
-    if overrides.version:
-        branches = ctx.subproject.list_of_branches()
-        tags = ctx.subproject.list_of_tags()
-        choices: list[Version] = [
-            *[
-                Version(branch=b)
-                for b in prioritise_default(branches, ctx.default_branch)
-            ],
-            *[Version(tag=t) for t in sort_tags_newest_first(tags)],
-        ]
-        version = _resolve_raw_version(overrides.version, choices) or Version(
-            branch=ctx.default_branch
-        )
-    else:
-        version = Version(branch=ctx.default_branch)
+    version = (
+        _resolve_entry_version(ctx, overrides.version)
+        if overrides.version
+        else Version(branch=ctx.default_branch)
+    )
     existing_names = {p.name for p in ctx.manifest.projects}
     entry = _build_entry(
         name=overrides.name or _unique_name(ctx.default_name, existing_names),
@@ -507,10 +510,12 @@ def _ask_src(ls_function: LsFunction) -> str:
         src = tree_single_pick(ls_function, "Source path", dirs_selectable=True)
         return "" if src == "." else src
 
-    return Prompt.ask(
-        _PROMPT_FORMAT.format(label="Source path")
-        + "  (sub-path/glob, or Enter to fetch whole repo)",
-        default="",
+    return str(
+        Prompt.ask(
+            _PROMPT_FORMAT.format(label="Source path")
+            + "  (sub-path/glob, or Enter to fetch whole repo)",
+            default="",
+        )
     ).strip()
 
 

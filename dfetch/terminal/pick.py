@@ -132,9 +132,7 @@ def scrollable_pick(
     while True:
         idx = max(0, min(idx, n - 1))
         top = _clamp_scroll(idx, top)
-        screen.draw(
-            _render_pick_lines(title, display_items, idx, top, selected, multi)
-        )
+        screen.draw(_render_pick_lines(title, display_items, idx, top, selected, multi))
         key = read_key()
 
         if key in ("UP", "DOWN", "PGUP", "PGDN"):

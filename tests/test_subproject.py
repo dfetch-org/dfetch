@@ -20,7 +20,7 @@ from dfetch.vcs.patch import PatchType
 class MockVcsFetcher(AbstractVcsFetcher):
     """Minimal concrete VCS fetcher for unit tests."""
 
-    NAME = "mock"
+    NAME: str = "mock"
 
     def __init__(self, wanted: Version | None = None) -> None:
         self._wanted = wanted or Version()
