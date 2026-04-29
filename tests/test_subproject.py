@@ -10,42 +10,66 @@ import pytest
 
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
+from dfetch.project.fetcher import AbstractVcsFetcher
 from dfetch.project.metadata import Dependency
 from dfetch.project.subproject import SubProject
+from dfetch.vcs.patch import PatchType
 
 
-class ConcreteSubProject(SubProject):
-    _wanted_version: Version
+class MockVcsFetcher(AbstractVcsFetcher):
+    """Minimal concrete VCS fetcher for unit tests."""
 
-    def _fetch_impl(self, version: Version) -> tuple[Version, list[Dependency]]:
-        return Version(), []
+    NAME = "mock"
 
-    def _latest_revision_on_branch(self, branch):
-        return "latest"
+    def __init__(self, wanted: Version = None) -> None:
+        self._wanted = wanted or Version()
 
-    def check(self):
+    @classmethod
+    def handles(cls, remote: str) -> bool:
         return False
 
-    @staticmethod
-    def list_tool_info():
-        pass
-
-    @staticmethod
-    def revision_is_enough():
+    def revision_is_enough(self) -> bool:
         return False
 
-    def _does_revision_exist(self, revision):
-        return True
+    def get_default_branch(self) -> str:
+        return ""
 
-    @property
-    def wanted_version(self):
-        return self._wanted_version
-
-    def _list_of_tags(self):
+    def list_of_tags(self) -> list[str]:
         return []
 
-    def get_default_branch(self):
-        return ""
+    def list_of_branches(self) -> list[str]:
+        return []
+
+    def latest_revision_on_branch(self, branch: str) -> str:
+        return "latest"
+
+    def does_revision_exist(self, revision: str) -> bool:
+        return True
+
+    def browse_tree(self, version: str) -> object:
+        return None
+
+    def patch_type(self) -> PatchType:
+        return PatchType.GIT
+
+    def fetch(
+        self, version, local_path, name, source, ignore
+    ) -> tuple[Version, list[Dependency]]:
+        return version, []
+
+    def wanted_version(self, project_entry: ProjectEntry) -> Version:
+        return self._wanted
+
+    @staticmethod
+    def list_tool_info() -> None:
+        pass
+
+
+def _make_subproject(
+    name: str = "proj1", wanted: Version = None
+) -> tuple[SubProject, MockVcsFetcher]:
+    fetcher = MockVcsFetcher(wanted)
+    return SubProject(ProjectEntry({"name": name}), fetcher), fetcher
 
 
 @pytest.mark.parametrize(
@@ -98,12 +122,10 @@ def test_check_wanted_with_local(
 ):
     with patch("dfetch.project.subproject.os.path.exists") as mocked_path_exists:
         with patch("dfetch.project.subproject.Metadata.from_file") as mocked_metadata:
-            subproject = ConcreteSubProject(ProjectEntry({"name": "proj1"}))
+            subproject, _ = _make_subproject(wanted=given_wanted)
 
             mocked_path_exists.return_value = bool(given_on_disk)
             mocked_metadata().version = given_on_disk
-
-            subproject._wanted_version = given_wanted
 
             wanted, have = subproject.check_wanted_with_local()
 
@@ -126,7 +148,7 @@ def test_are_there_local_changes(
         with patch(
             "dfetch.project.subproject.SubProject._on_disk_hash"
         ) as mocked_on_disk_hash:
-            subproject = ConcreteSubProject(ProjectEntry({"name": "proj1"}))
+            subproject, _ = _make_subproject()
 
             mocked_on_disk_hash.return_value = hash_in_metadata
             mocked_hash_directory.return_value = current_hash
@@ -154,21 +176,24 @@ def test_update_uses_ignored_files_callback_for_stored_hash():
         with patch("dfetch.project.subproject.Metadata.from_file") as mock_meta_file:
             with patch("dfetch.project.subproject.hash_directory") as mock_hash:
                 with patch("dfetch.project.subproject.safe_rm"):
-                    with patch("dfetch.project.subproject.Metadata.dump"):
-                        mock_exists.return_value = True
-                        mock_meta_file.return_value.version = Version(revision="abc")
-                        mock_hash.return_value = "hash123"
+                    with patch("dfetch.project.metadata.Metadata.fetched"):
+                        with patch("dfetch.project.metadata.Metadata.dump"):
+                            mock_exists.return_value = True
+                            mock_meta_file.return_value.version = Version(revision="abc")
+                            mock_meta_file.return_value.hash = None
+                            mock_hash.return_value = "hash123"
 
-                        subproject = ConcreteSubProject(ProjectEntry({"name": "p1"}))
-                        subproject._wanted_version = Version(revision="new")
+                            subproject, _ = _make_subproject(
+                                name="p1", wanted=Version(revision="new")
+                            )
 
-                        subproject.update(force=True, ignored_files_callback=callback)
+                            subproject.update(force=True, ignored_files_callback=callback)
 
-                        assert callback.call_count == 2
-                        # The hash must be computed with the post-fetch ignored list
-                        hash_call_skiplist = mock_hash.call_args[1]["skiplist"]
-                        assert "new_ignored.txt" in hash_call_skiplist
-                        assert "old_file.txt" not in hash_call_skiplist
+                            assert callback.call_count == 2
+                            # The hash must be computed with the post-fetch ignored list
+                            hash_call_skiplist = mock_hash.call_args[1]["skiplist"]
+                            assert "new_ignored.txt" in hash_call_skiplist
+                            assert "old_file.txt" not in hash_call_skiplist
 
 
 @pytest.mark.parametrize(
@@ -227,7 +252,7 @@ def test_freeze_project(
 ):
     with patch("dfetch.project.subproject.os.path.exists") as mocked_path_exists:
         with patch("dfetch.project.subproject.Metadata.from_file") as mocked_metadata:
-            subproject = ConcreteSubProject(ProjectEntry({"name": "proj1"}))
+            subproject, _ = _make_subproject()
 
             mocked_path_exists.return_value = bool(on_disk_version)
             mocked_metadata().version = on_disk_version
@@ -263,4 +288,4 @@ def test_ci_enabled(
     else:
         monkeypatch.setenv("CI", str(ci_env_value))
 
-    assert ConcreteSubProject._running_in_ci() == expected_result
+    assert SubProject._running_in_ci() == expected_result
