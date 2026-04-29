@@ -50,6 +50,165 @@ using the `pytm`_ framework.  Regenerate analysis output with:
    added in subsequent phases.
 
 
+Product Security Context
+------------------------
+
+This section is the *Product Security Context note* required by
+prEN 40000-1-2 §6.2 (Step 0 of the security-by-design methodology).  It
+establishes the foundation on which all subsequent asset, threat, and control
+analysis is built.
+
+**1 — Product and manufacturer identification**
+
+.. list-table::
+   :widths: 30 70
+
+   * - Product name
+     - dfetch
+   * - Current series
+     - 0.x (pre-1.0, API not frozen)
+   * - Maintainer
+     - Ben Spoor — dfetch@spoor.cc
+   * - Distribution channel
+     - PyPI (``pip install dfetch``); GitHub Releases (stand-alone binary)
+   * - Source repository
+     - https://github.com/dfetch-org/dfetch
+   * - License
+     - MIT
+   * - CRA applicability
+     - dfetch is a non-commercial open-source project and is not legally subject
+       to the Cyber Resilience Act.  This security model is maintained as a
+       matter of good practice and transparency.  If the project is ever
+       redistributed commercially or classified as a *Product with Digital
+       Elements* (PDE) under Article 3(1) of Regulation (EU) 2024/2847, the
+       obligations under Articles 13–16 would apply in full.
+
+**2 — Intended purpose, foreseeable use, and reasonably foreseeable misuse (IPFRU)**
+
+*Intended purpose*: fetch and vendor external source-code dependencies (from
+Git repositories, SVN repositories, or plain archive URLs) as plain files into
+a project repository.  dfetch reads a declarative manifest (``dfetch.yaml``),
+resolves each declared dependency to the requested revision, copies the source
+tree to the declared destination path, and records metadata for subsequent
+up-to-date checks.
+
+*Foreseeable use*: invoked interactively on a developer workstation, or
+non-interactively inside a CI/CD pipeline (GitHub Actions, GitLab CI, Jenkins,
+etc.) to reproduce a known dependency state.
+
+*Reasonably foreseeable misuse*:
+
+- A manifest crafted with a malicious ``dst:`` path could attempt to write
+  files outside the project root (path-traversal).  dfetch mitigates this with
+  ``check_no_path_traversal()`` applied to every file copy.
+- A manifest pointing to an attacker-controlled upstream could deliver
+  malicious source code to the consuming build.  This is the primary supply-
+  chain threat; the ``integrity.hash`` field provides an optional mitigation
+  for archive sources.
+- Passing secret-bearing environment variables to dfetch in a CI environment
+  with inadequate egress controls could allow exfiltration if a dependency
+  source is compromised.
+
+**3 — User roles**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 25 55
+
+   * - Role
+     - Typical actor
+     - Responsibilities and trust level
+   * - **Manifest author** (Developer)
+     - Human software developer
+     - Writes and reviews ``dfetch.yaml``; responsible for choosing upstream
+       sources, pinning revisions, and enabling ``integrity.hash`` for archive
+       dependencies.  Trusted at workstation invocation time.
+   * - **CI runner** (Automated)
+     - GitHub Actions workflow, GitLab CI job, Jenkins agent
+     - Invokes ``dfetch update`` non-interactively to reproduce the declared
+       dependency set.  Runs in an ephemeral, semi-trusted environment;
+       credential access is governed by the CI platform's secret store.
+   * - **Security / compliance operator**
+     - Security engineer, auditor, legal/compliance team
+     - Reviews ``dfetch check`` and ``dfetch report --sbom`` output for
+       outdated dependencies, known-vulnerable components, or licence compliance.
+       Read-only interaction with dfetch artifacts.
+
+**4 — Operating environment**
+
+- **Developer workstation**: Linux, macOS, or Windows; Python 3.10 +; ``git``
+  and/or ``svn`` clients available on ``PATH``.  No network listener or
+  persistent service is started.  dfetch exits after completing each command.
+- **CI/CD pipeline**: ephemeral runner (GitHub Actions, GitLab CI, etc.);
+  access to upstream VCS hosts and PyPI.  dfetch does not require root or
+  elevated privileges.
+- **No runtime daemon**: dfetch is a pure CLI tool.  It does not bind ports,
+  start background services, write to system directories, or persist state
+  beyond the vendor directory and ``.dfetch_data.yaml`` metadata files.
+- **Network requirements**: outbound HTTPS or SSH to the VCS/archive hosts
+  declared in the manifest.  No inbound connections.
+
+**5 — Architecture and connectivity**
+
+dfetch is a single-process Python CLI application with no embedded network
+server, no plugin system, and no IPC interface.  Its communication surface is:
+
+- *stdin / argv*: command-line arguments and interactive prompts (only during
+  ``dfetch add``).
+- *Filesystem (read)*: ``dfetch.yaml`` manifest; patch files; existing vendor
+  directory.
+- *Filesystem (write)*: vendor directory (fetched source); ``.dfetch_data.yaml``
+  metadata files; report files (SARIF, JSON, CycloneDX).
+- *Outbound network*: ``git fetch`` / ``svn export`` / ``urllib``-based HTTP GET
+  to hosts declared in the manifest.  All connections are outbound only.
+
+No credentials are stored by dfetch.  VCS authentication is delegated to the
+OS/SSH agent, Git credential helper, or SVN auth cache.
+
+**6 — External dependencies**
+
+Runtime Python packages: ``PyYAML``, ``strictyaml``, ``rich``, ``tldextract``,
+``sarif-om``, ``semver``, ``patch-ng``, ``cyclonedx-python-lib``,
+``infer-license``.  System binaries: ``git`` (optional), ``svn`` (optional).
+None of these dependencies handle PII or secrets on behalf of dfetch.
+
+The CI/CD pipeline additionally depends on GitHub Actions marketplace actions
+(all SHA-pinned) and ``pip``/``build`` for packaging.
+
+**7 — Security assumptions and prerequisites**
+
+#. The developer workstation is trusted at the time dfetch is invoked.  A
+   compromised workstation is outside the scope of the dfetch threat model.
+#. TLS certificate validation is performed by the OS trust store and the
+   ``git`` / ``svn`` / ``urllib`` clients.  dfetch does not independently
+   validate certificates.
+#. The manifest (``dfetch.yaml``) is under version control and subject to code
+   review.  An adversary with write access to the manifest can redirect fetches
+   to attacker-controlled sources; this threat is addressed at the code-review
+   boundary, not within dfetch itself.
+#. dfetch is responsible only for *its own* security posture.  The security of
+   fetched third-party source code is the responsibility of the manifest author
+   who selects and pins each dependency.
+#. HTTPS enforcement is the responsibility of the manifest author.  dfetch
+   accepts ``http://``, ``svn://``, and other non-TLS scheme URLs as written —
+   it does not upgrade or reject them.
+#. No secrets are stored by dfetch.  Any secrets present in the CI environment
+   are the responsibility of the CI platform's secret store and the workflow
+   author.
+
+**8 — Support period and data handling**
+
+- *Support period*: the **latest released version** only.  No security patches
+  are backported to older releases.  Users are responsible for upgrading.
+- *Personal data*: dfetch does not collect, store, or transmit any personal
+  data.  It does not implement analytics, telemetry, or error reporting.  The
+  fetched source code may contain personal data (e.g. author email addresses in
+  VCS history) — handling of that data is the responsibility of the consuming
+  project, not dfetch.
+- *Vulnerability reporting*: see ``SECURITY.md`` and ``security.txt`` in the
+  repository root for the coordinated vulnerability disclosure (CVD) policy.
+
+
 Scope and Assumptions
 ---------------------
 
