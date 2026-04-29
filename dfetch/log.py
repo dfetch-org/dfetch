@@ -5,7 +5,7 @@ import os
 import sys
 import types
 from contextlib import nullcontext
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, cast
 
 from rich._log_render import LogRender  # type: ignore[import-untyped]
 from rich.console import Console
@@ -16,25 +16,22 @@ from rich.status import Status
 
 from dfetch import __version__
 
-if TYPE_CHECKING:
 
-    class _LogRenderBase:  # pylint: disable=too-few-public-methods
-        def __init__(self, **_kwargs: Any) -> None: ...
+def _make_non_expanding_log_render(**kwargs: Any) -> Any:
+    """Return a LogRender callable that disables table expansion.
 
-        def __call__(self, *_args: Any, **_kwargs: Any) -> Any: ...
+    Used when recording with asciinema to prevent Rich's ``expand=True`` from
+    padding log lines to the full terminal width, which produces spurious blank
+    lines in the cast player.
+    """
+    renderer = LogRender(**kwargs)
 
-else:
-    _LogRenderBase = LogRender
-
-
-class _NoExpandLogRender(_LogRenderBase):  # pylint: disable=too-few-public-methods
-    """LogRender that disables table expansion to prevent blank lines in asciicasts."""
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        """Render log entry without expanding the table to the full terminal width."""
-        table = super().__call__(*args, **kwargs)
+    def _render(*args: Any, **kw: Any) -> Any:
+        table = renderer(*args, **kw)
         table.expand = False
         return table
+
+    return _render
 
 
 def make_console(no_color: bool = False) -> Console:
@@ -67,9 +64,10 @@ def configure_root_logger(console: Console | None = None) -> None:
         # causing the subsequent newline to produce a blank line in the cast
         # player.  Wrapping _log_render so it returns a non-expanding table
         # removes the trailing spaces and avoids the spurious blank lines.
-        handler._log_render = _NoExpandLogRender(  # pylint: disable=protected-access
+        no_expand = _make_non_expanding_log_render(
             show_time=False, show_level=False, show_path=False
         )
+        handler._log_render = no_expand  # pylint: disable=protected-access
 
     logging.basicConfig(
         level=logging.INFO,
