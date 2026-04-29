@@ -3,6 +3,7 @@
 import pathlib
 from collections.abc import Callable, Sequence
 from contextlib import AbstractContextManager
+
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
@@ -20,7 +21,7 @@ logger = get_logger(__name__)
 class GitFetcher(AbstractVcsFetcher):
     """Fetcher for git repositories."""
 
-    NAME = "git"
+    NAME: str = "git"
 
     def __init__(self, remote: str) -> None:
         """Create a GitFetcher for *remote*."""
@@ -105,9 +106,7 @@ class GitFetcher(AbstractVcsFetcher):
             )
         )
 
-        vcs_deps = [
-            self._submodule_dependency(sub, name) for sub in submodules
-        ]
+        vcs_deps = [self._submodule_dependency(sub, name) for sub in submodules]
 
         targets = {local_repo.METADATA_DIR, local_repo.GIT_MODULES_FILE}
         for path in pathlib.Path(local_path).rglob("*"):
@@ -157,5 +156,7 @@ class GitFetcher(AbstractVcsFetcher):
             tool, version = GitLocalRepo.get_tool_version()
             get_logger(__name__).print_report_line(tool, version.strip())
         except RuntimeError as exc:
-            logger.debug(f"Something went wrong trying to get the version of git: {exc}")
+            logger.debug(
+                f"Something went wrong trying to get the version of git: {exc}"
+            )
             get_logger(__name__).print_report_line("git", "<not found in PATH>")

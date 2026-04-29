@@ -17,8 +17,8 @@ from dfetch.util.util import (
     find_non_matching_files,
     safe_rm,
 )
-from dfetch.vcs.svn import SvnRemote, SvnRepo, get_svn_version
 from dfetch.vcs.patch import PatchType
+from dfetch.vcs.svn import SvnRemote, SvnRepo, get_svn_version
 
 logger = get_logger(__name__)
 
@@ -26,7 +26,7 @@ logger = get_logger(__name__)
 class SvnFetcher(AbstractVcsFetcher):
     """Fetcher for SVN repositories."""
 
-    NAME = "svn"
+    NAME: str = "svn"
 
     def __init__(self, remote: str) -> None:
         """Create a SvnFetcher for *remote*."""
@@ -88,11 +88,12 @@ class SvnFetcher(AbstractVcsFetcher):
         self,
         version: Version,
         local_path: str,
-        _name: str,
+        name: str,
         source: str,
         ignore: Sequence[str],
     ) -> tuple[Version, list[Dependency]]:
         """Export *version* from SVN and place it at *local_path*."""
+        logger.debug("Fetching SVN dependency: %s", name)
         branch, branch_path, revision = self._determine_what_to_fetch(version)
 
         complete_path = "/".join(
@@ -133,12 +134,12 @@ class SvnFetcher(AbstractVcsFetcher):
         root_branch_path = "/".join([self._remote, branch_path]).strip("/")
         license_files = SvnFetcher._license_files(root_branch_path)
         if license_files:
-            dest = local_path if os.path.isdir(local_path) else os.path.dirname(local_path)
+            dest = (
+                local_path if os.path.isdir(local_path) else os.path.dirname(local_path)
+            )
             SvnRepo.export(f"{root_branch_path}/{license_files[0]}", revision, dest)
 
-    def _remove_ignored_files(
-        self, local_path: str, ignore: Sequence[str]
-    ) -> None:
+    def _remove_ignored_files(self, local_path: str, ignore: Sequence[str]) -> None:
         for file_or_dir in find_matching_files(local_path, ignore):
             if not (file_or_dir.is_file() and is_license_file(file_or_dir.name)):
                 safe_rm(file_or_dir)
@@ -151,7 +152,9 @@ class SvnFetcher(AbstractVcsFetcher):
             return " ", ""
         branch = version.branch or SvnRepo.DEFAULT_BRANCH
         branch_path = (
-            f"branches/{branch}" if branch != SvnRepo.DEFAULT_BRANCH else SvnRepo.DEFAULT_BRANCH
+            f"branches/{branch}"
+            if branch != SvnRepo.DEFAULT_BRANCH
+            else SvnRepo.DEFAULT_BRANCH
         )
         return branch, branch_path
 
@@ -197,5 +200,7 @@ class SvnFetcher(AbstractVcsFetcher):
             tool, version = get_svn_version()
             get_logger(__name__).print_report_line(tool, version.strip())
         except RuntimeError as exc:
-            logger.debug(f"Something went wrong trying to get the version of svn: {exc}")
+            logger.debug(
+                f"Something went wrong trying to get the version of svn: {exc}"
+            )
             get_logger(__name__).print_report_line("svn", "<not found in PATH>")

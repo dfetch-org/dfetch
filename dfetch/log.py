@@ -5,7 +5,7 @@ import os
 import sys
 import types
 from contextlib import nullcontext
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from rich._log_render import LogRender  # type: ignore[import-untyped]
 from rich.console import Console
@@ -16,8 +16,18 @@ from rich.status import Status
 
 from dfetch import __version__
 
+if TYPE_CHECKING:
 
-class _NoExpandLogRender(LogRender):  # pylint: disable=too-few-public-methods
+    class _LogRenderBase:  # pylint: disable=too-few-public-methods
+        def __init__(self, **_kwargs: Any) -> None: ...
+
+        def __call__(self, *_args: Any, **_kwargs: Any) -> Any: ...
+
+else:
+    _LogRenderBase = LogRender
+
+
+class _NoExpandLogRender(_LogRenderBase):  # pylint: disable=too-few-public-methods
     """LogRender that disables table expansion to prevent blank lines in asciicasts."""
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
