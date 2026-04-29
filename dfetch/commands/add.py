@@ -273,7 +273,13 @@ def _finalize_add(
 
 
 def _resolve_entry_version(ctx: _AddContext, raw_version: str) -> Version:
-    """Resolve a raw version string to a ``Version`` using remote branches and tags."""
+    """Resolve a raw version string to a ``Version`` using remote branches and tags.
+
+    For archive-backed subprojects ``raw_version`` is preserved as a revision
+    identifier (URL or hash) because archives have no branch/tag semantics.
+    """
+    if ctx.subproject.as_vcs() is None:
+        return Version(revision=raw_version)
     branches = ctx.subproject.list_of_branches()
     tags = ctx.subproject.list_of_tags()
     choices: list[Version] = [
