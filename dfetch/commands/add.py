@@ -290,18 +290,20 @@ def _non_interactive_entry(ctx: _AddContext, overrides: _Overrides) -> ProjectEn
     else:
         version = Version(branch=ctx.default_branch)
     existing_names = {p.name for p in ctx.manifest.projects}
-    return _build_entry(
+    entry = _build_entry(
         name=overrides.name or _unique_name(ctx.default_name, existing_names),
         remote_url=ctx.url,
         dst=overrides.dst or ctx.default_dst,
         version=version,
         src=overrides.src or "",
         ignore=overrides.ignore or [],
-        remote_to_use=ctx.remote_to_use,
     )
+    if ctx.remote_to_use:
+        entry.set_remote(ctx.remote_to_use)
+    return entry
 
 
-def _build_entry(  # pylint: disable=too-many-arguments
+def _build_entry(
     *,
     name: str,
     remote_url: str,
@@ -309,7 +311,6 @@ def _build_entry(  # pylint: disable=too-many-arguments
     version: Version,
     src: str,
     ignore: list[str],
-    remote_to_use: Remote | None,
 ) -> ProjectEntry:
     """Assemble a ``ProjectEntry`` from the fields collected by the wizard."""
     kind, value = version.field
@@ -323,10 +324,7 @@ def _build_entry(  # pylint: disable=too-many-arguments
         entry_dict["src"] = src
     if ignore:
         entry_dict["ignore"] = ignore
-    entry = ProjectEntry(entry_dict)
-    if remote_to_use:
-        entry.set_remote(remote_to_use)
-    return entry
+    return ProjectEntry(entry_dict)
 
 
 # ---------------------------------------------------------------------------
@@ -338,15 +336,17 @@ def _show_url_fields(
     name: str, remote_url: str, default_branch: str, remote_to_use: Remote | None
 ) -> None:
     """Print the fields determined solely by the URL (name, remote, url, repo-path)."""
-    seed = _build_entry(
+    entry = _build_entry(
         name=name,
         remote_url=remote_url,
         dst=name,
         version=Version(branch=default_branch),
         src="",
         ignore=[],
-        remote_to_use=remote_to_use,
-    ).as_yaml()
+    )
+    if remote_to_use:
+        entry.set_remote(remote_to_use)
+    seed = entry.as_yaml()
     logger.print_yaml(
         {k: seed[k] for k in ("name", "remote", "url", "repo-path") if k in seed}
     )
@@ -412,15 +412,17 @@ def _interactive_flow(ctx: _AddContext, overrides: _Overrides) -> ProjectEntry:
 
     src, ignore = _pick_src_and_ignore(ctx.subproject, version_value, overrides)
 
-    return _build_entry(
+    entry = _build_entry(
         name=name,
         remote_url=ctx.url,
         dst=dst,
         version=version,
         src=src,
         ignore=ignore,
-        remote_to_use=ctx.remote_to_use,
     )
+    if ctx.remote_to_use:
+        entry.set_remote(ctx.remote_to_use)
+    return entry
 
 
 # ---------------------------------------------------------------------------
