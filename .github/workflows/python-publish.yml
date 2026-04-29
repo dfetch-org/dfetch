@@ -37,11 +37,23 @@ jobs:
       run: python -m pip install --upgrade pip build --user
     - name: Build a binary wheel and a source tarball
       run: python3 -m build
+    - name: Install built package and SBOM generation tool
+      run: pip install dist/*.whl "cyclonedx-bom==7.3.0"
+    - name: Generate SBOM for Python distribution
+      run: |
+        VERSION=$(python -c "from importlib.metadata import version; print(version('dfetch'))")
+        mkdir -p dist-sbom
+        python -m cyclonedx_py environment -o "dist-sbom/dfetch-${VERSION}-py.cdx.json"
     - name: Store the distribution packages
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: python-package-distributions
         path: dist/
+    - name: Store the SBOM
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: python-sbom
+        path: dist-sbom/
 
   publish-to-testpypi:
     name: Publish Python distribution 📦 to TestPyPI
@@ -83,6 +95,7 @@ jobs:
       url: https://pypi.org/p/dfetch
     permissions:
       id-token: write
+      contents: write
 
     steps:
     - name: Download all the dists
@@ -92,3 +105,15 @@ jobs:
         path: dist/
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1
+    - name: Download SBOM
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v5
+      with:
+        name: python-sbom
+        path: dist-sbom/
+    - name: Upload SBOM to GitHub Release
+      uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v2.5.0
+      with:
+        tag_name: ${{ github.event.release.tag_name }}
+        files: dist-sbom/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
