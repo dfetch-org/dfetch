@@ -22,10 +22,26 @@ jobs:
       security-events: write
 
     steps:
-      - name: Harden the runner (Audit all outbound calls)
+      - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
         uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
         with:
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: >+
+            github.com:443
+            api.github.com:443
+            release-assets.githubusercontent.com:443
+            uploads.github.com:443
+            pypi.org:443
+            files.pythonhosted.org:443
+            packages.microsoft.com:443
+            azure.archive.ubuntu.com:80
+            esm.ubuntu.com:443
+            index.rubygems.org:443
+            rubygems.org:443
+            community.chocolatey.org:443
+            community.chocolatey.org:80
+            packages.chocolatey.org:443
+            api.nuget.org:443
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -207,10 +223,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Harden the runner (Audit all outbound calls)
+    - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
       uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
       with:
-        egress-policy: audit
+        egress-policy: block
+        allowed-endpoints: >+
+          github.com:443
+          api.github.com:443
+          release-assets.githubusercontent.com:443
+          pypi.org:443
+          files.pythonhosted.org:443
+
 
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:

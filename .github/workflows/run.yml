@@ -15,10 +15,19 @@ jobs:
       security-events: write
 
     steps:
-      - name: Harden the runner (Audit all outbound calls)
+      - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
         uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
         with:
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: >+
+            github.com:443
+            api.github.com:443
+            release-assets.githubusercontent.com:443
+            pypi.org:443
+            files.pythonhosted.org:443
+            community.chocolatey.org:443
+            community.chocolatey.org:80
+            packages.chocolatey.org:443
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -67,16 +76,81 @@ jobs:
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+        include:
+          - platform: ubuntu-latest
+            allowed-endpoints: >+
+              _http._tcp.azure.archive.ubuntu.com:443
+              _https._tcp.archive.ubuntu.com:443
+              _https._tcp.dl.google.com:443
+              _https._tcp.esm.ubuntu.com:443
+              _https._tcp.motd.ubuntu.com:443
+              _https._tcp.security.ubuntu.com:443
+              0.pool.ntp.org:443
+              api.github.com:443
+              archive.ubuntu.com:443
+              azure.archive.ubuntu.com:443
+              azure.archive.ubuntu.com:80
+              cfhcable.dl.sourceforge.net:443
+              cytranet-dal.dl.sourceforge.net:443
+              dl.google.com:443
+              downloads.sourceforge.net:443
+              esm.ubuntu.com:443
+              files.pythonhosted.org:443
+              gigenet.dl.sourceforge.net:443
+              github.com:443
+              motd.ubuntu.com:443
+              netactuate.dl.sourceforge.net:443
+              pilotfiber.dl.sourceforge.net:443
+              psychz.dl.sourceforge.net:443
+              pypi.org:443
+              release-assets.githubusercontent.com:443
+              security.ubuntu.com:443
+              sourceforge.net:443
+          - platform: macos-latest
+            allowed-endpoints: >+
+              api.apple-cloudkit.com:443
+              api.github.com:443
+              files.pythonhosted.org:443
+              formulae.brew.sh:443
+              gdmf.apple.com:443
+              ghcr.io:443
+              github.com:443
+              init.itunes.apple.com:443
+              mask.icloud.com:443
+              mesu.apple.com:443
+              mirrors.ctan.org:443
+              ocsp.sectigo.com:80
+              ocsp2.apple.com:443
+              pkg-containers.githubusercontent.com:443
+              pypi.org:443
+              release-assets.githubusercontent.com:443
+          - platform: windows-latest
+            allowed-endpoints: >+
+              _https._tcp.packages.microsoft.com:443
+              api.github.com:443
+              community.chocolatey.org:443
+              community.chocolatey.org:80
+              dc.services.visualstudio.com:443
+              fe2cr.update.microsoft.com:443
+              files.pythonhosted.org:443
+              github.com:443
+              mobile.events.data.microsoft.com:443
+              packages.chocolatey.org:443
+              packages.microsoft.com:443
+              pypi.org:443
+              release-assets.githubusercontent.com:443
+              ziglang.org:443
     runs-on: ${{ matrix.platform }}
     permissions:
       contents: read
       security-events: write
 
     steps:
-      - name: Harden the runner (Audit all outbound calls)
+      - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
         uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
         with:
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: ${{ matrix.allowed-endpoints }}
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 

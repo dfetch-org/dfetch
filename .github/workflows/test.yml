@@ -10,10 +10,41 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Harden the runner (Audit all outbound calls)
+      - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
         uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
         with:
-          egress-policy: audit
+          egress-policy: block
+          # dfetch.invalid and giiiiiidhub.com are intentionally invalid test
+          # domains used to verify network blocking/allowlist behaviour in the
+          # feature tests; they are never reachable from the runner.
+          allowed-endpoints: >+
+            _http._tcp.azure.archive.ubuntu.com:443
+            _https._tcp.archive.ubuntu.com:443
+            _https._tcp.dl.google.com:443
+            _https._tcp.esm.ubuntu.com:443
+            _https._tcp.motd.ubuntu.com:443
+            _https._tcp.packages.microsoft.com:443
+            _https._tcp.security.ubuntu.com:443
+            api.codacy.com:443
+            archive.ubuntu.com:443
+            artifacts.codacy.com:443
+            azure.archive.ubuntu.com:443
+            azure.archive.ubuntu.com:80
+            coverage.codacy.com:443
+            dfetch.invalid:443
+            dl.google.com:443
+            esm.ubuntu.com:443
+            files.pythonhosted.org:443
+            giiiiiidhub.com:443
+            github.com:22
+            github.com:443
+            motd.ubuntu.com:443
+            packages.microsoft.com:443
+            pypi.org:443
+            release-assets.githubusercontent.com:443
+            security.ubuntu.com:443
+            svn.code.sf.net:3690
+            svn.code.sf.net:443
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
