@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generate an sbom of the tool."""
 
+import argparse
 import contextlib
 import logging
 import subprocess  # nosec
@@ -12,7 +13,6 @@ from pathlib import Path
 logging.basicConfig(level=logging.INFO)
 
 PROJECT_DIR = Path(__file__).parent.parent.resolve()
-
 
 DEPS = f"{PROJECT_DIR}[sbom]"
 
@@ -46,10 +46,37 @@ def temporary_venv():
         yield str(python_bin)
 
 
+def parse_args() -> argparse.Namespace:
+    """Parse and return command-line arguments."""
+    parser = argparse.ArgumentParser(description="Generate a CycloneDX SBOM for dfetch.")
+    parser.add_argument(
+        "--py",
+        action="store_true",
+        help="Generate SBOM for the Python distribution instead of the platform binary.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=None,
+        metavar="DIR",
+        help="Directory to write the SBOM into (default: dist/ for --py, build/dfetch-package/ otherwise).",
+    )
+    return parser.parse_args()
+
+
+args = parse_args()
+
+if args.py:
+    suffix = "py"
+    output_dir = args.output_dir or PROJECT_DIR / "dist"
+else:
+    suffix = PLATFORM_NAME
+    output_dir = args.output_dir or PROJECT_DIR / "build" / "dfetch-package"
+
 with temporary_venv() as python:
     subprocess.check_call([python, "-m", "pip", "install", DEPS])  # nosec
 
-    __version__ = (
+    version = (
         subprocess.run(  # nosec
             [
                 python,
@@ -63,15 +90,10 @@ with temporary_venv() as python:
         .strip()
     )
 
-    OUTPUT_FILE = (
-        PROJECT_DIR
-        / "build"
-        / "dfetch-package"
-        / f"dfetch-{__version__}-{PLATFORM_NAME}.cdx.json"
-    )
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / f"dfetch-{version}-{suffix}.cdx.json"
+    output_file.parent.mkdir(parents=True, exist_ok=True)
     subprocess.check_call(  # nosec
-        [python, "-m", "cyclonedx_py", "environment", "-o", str(OUTPUT_FILE)]
+        [python, "-m", "cyclonedx_py", "environment", "-o", str(output_file)]
     )
 
-logging.info(f"SBOM generated at {OUTPUT_FILE}")
+logging.info(f"SBOM generated at {output_file}")
