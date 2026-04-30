@@ -87,3 +87,19 @@ Run the following command to verify the installation
    $ dfetch environment
 
 .. asciinema:: ../asciicasts/environment.cast
+
+Verifying release integrity
+---------------------------
+
+Every dfetch release artifact is published with a `cryptographic attestation`_ that ties
+it to the SBOM describing its dependencies. You can verify any downloaded artifact using
+the GitHub CLI:
+
+.. code-block:: console
+
+    $ gh attestation verify dfetch-<version>-nix.deb --repo dfetch-org/dfetch
+
+See `GitHub artifact attestations`_ for more information on how attestations work.
+
+.. _`cryptographic attestation`: https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations/using-artifact-attestations-to-establish-provenance-for-builds
+.. _`GitHub artifact attestations`: https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations

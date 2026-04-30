@@ -18,6 +18,10 @@ jobs:
   build:
     name: Build distribution 📦
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      attestations: write
+      id-token: write
 
     steps:
     - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
@@ -30,6 +34,9 @@ jobs:
           release-assets.githubusercontent.com:443
           pypi.org:443
           files.pythonhosted.org:443
+          fulcio.sigstore.dev:443
+          rekor.sigstore.dev:443
+          tuf-repo-cdn.sigstore.dev:443
 
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
@@ -50,6 +57,17 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
+    - name: Find SBOM path
+      id: find-sbom
+      run: |
+        SBOM=$(find dist-sbom -name '*.cdx.json' -maxdepth 1 | head -1)
+        echo "path=$SBOM" >> "$GITHUB_OUTPUT"
+    - name: Attest Python distribution with SBOM
+      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+      with:
+        subject-path: 'dist/*.whl,dist/*.tar.gz'
+        predicate-type: 'https://cyclonedx.org/bom'
+        predicate-path: ${{ steps.find-sbom.outputs.path }}
     - name: Store the SBOM
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
