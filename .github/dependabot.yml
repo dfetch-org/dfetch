@@ -22,3 +22,7 @@ updates:
     directory: "/.devcontainer"
     schedule:
       interval: "daily"
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "daily"
