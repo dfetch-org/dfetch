@@ -43,13 +43,15 @@ jobs:
     uses: ./.github/workflows/test.yml
     permissions:
       contents: read
-    secrets: inherit
+    secrets:
+      CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
   docs:
     needs: prep-release
     uses: ./.github/workflows/docs.yml
     permissions:
       contents: write
-    secrets: inherit
+    secrets:
+      GH_DFETCH_ORG_DEPLOY: ${{ secrets.GH_DFETCH_ORG_DEPLOY }}
     with:
       release_id: ${{ needs.prep-release.outputs.release_id }}
