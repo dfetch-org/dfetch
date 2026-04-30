@@ -16,10 +16,17 @@ jobs:
     name: Documentation
     runs-on: ubuntu-latest
     steps:
-    - name: Harden the runner (Audit all outbound calls)
+    - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
       uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
       with:
-        egress-policy: audit
+        egress-policy: block
+        allowed-endpoints: >+
+          github.com:443
+          pypi.org:443
+          files.pythonhosted.org:443
+          plantuml.com:80
+          plantuml.com:443
+          www.plantuml.com:80
 
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
@@ -41,10 +48,18 @@ jobs:
     name: Landing page
     runs-on: ubuntu-latest
     steps:
-      - name: Harden the runner (Audit all outbound calls)
+      - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
         uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
         with:
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: >+
+            github.com:443
+            github.com:22
+            pypi.org:443
+            files.pythonhosted.org:443
+            plantuml.com:80
+            plantuml.com:443
+            www.plantuml.com:80
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -75,10 +90,26 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Harden the runner (Audit all outbound calls)
+      - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
         uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
         with:
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: >+
+            _http._tcp.azure.archive.ubuntu.com:443
+            _https._tcp.archive.ubuntu.com:443
+            _https._tcp.security.ubuntu.com:443
+            archive.ubuntu.com:443
+            azure.archive.ubuntu.com:443
+            azure.archive.ubuntu.com:80
+            files.pythonhosted.org:443
+            github.com:443
+            api.github.com:443
+            uploads.github.com:443
+            plantuml.com:443
+            plantuml.com:80
+            pypi.org:443
+            security.ubuntu.com:443
+            www.plantuml.com:80
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
