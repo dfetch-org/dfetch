@@ -7,6 +7,9 @@ on:
         required: false
         type: string
         default: ''
+    secrets:
+      GH_DFETCH_ORG_DEPLOY:
+        required: false
 
 permissions:
   contents: read
