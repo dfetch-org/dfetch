@@ -231,8 +231,9 @@ Modelling assumptions:
    transport (which is itself absent for plain ``http://`` URLs).
 #. Branch- and tag-pinned Git dependencies are **mutable references** — upstream
    force-pushes silently change fetched content without triggering a manifest diff.
-#. The ``harden-runner`` egress policy is set to ``audit``, not ``block`` —
-   outbound network connections from CI runners are logged but not prevented.
+#. Outbound network connections from CI runners are restricted by
+   ``harden-runner`` with ``egress-policy: block``; only explicitly listed
+   endpoints are reachable.
 #. dfetch's own build and development dependencies are **not** installed with
    ``--require-hashes``, so a compromised PyPI mirror can substitute build tooling.
 
@@ -251,8 +252,9 @@ Trust Boundaries
        time.  Hosts the manifest, vendor directory, metadata, and patch files.
    * - **GitHub Actions Infrastructure**
      - Microsoft-operated ephemeral runners executing the 11 CI/CD workflows.
-       Semi-trusted: egress is audited but not blocked; secrets are inherited
-       across workflows via ``secrets: inherit``.
+       Semi-trusted: egress is blocked to an explicit allowlist via
+       ``harden-runner``; secrets are forwarded explicitly by name — no
+       ``secrets: inherit``.
    * - **Internet**
      - All traffic crossing the local/remote boundary.  TLS enforcement is the
        responsibility of the OS and VCS clients; dfetch does not enforce HTTPS
@@ -351,8 +353,8 @@ Supporting Assets
      - SSH private keys, HTTPS Personal Access Tokens, SVN passwords.  Used to
        authenticate to private upstream repositories.  dfetch never persists
        these — managed by OS keychain or CI secret store.  Exfiltration via a
-       compromised CI workflow step is the primary risk (harden-runner is in
-       audit mode, not block mode).
+       compromised CI workflow step is mitigated by ``harden-runner`` blocking
+       unexpected outbound connections.
    * - SA-03
      - Dependency Metadata (``.dfetch_data.yaml``)
      - Restricted
@@ -562,9 +564,9 @@ with the security controls that are currently implemented.
    * - DF-11
      - Contributor → GitHub Repository
      - HTTPS
-     - External contributor opens a pull request.  Risk: ``secrets: inherit``
-       in ``ci.yml`` propagates secrets to test and docs workflows triggered
-       on PR — a malicious workflow step could exfiltrate secrets.
+     - External contributor opens a pull request.  ``ci.yml`` forwards only
+       the named secrets required by each reusable workflow — no
+       ``secrets: inherit``.  ``harden-runner`` blocks unexpected egress.
    * - DF-12
      - GitHub Repository → GitHub Actions Runner
      - HTTPS
@@ -575,7 +577,9 @@ with the security controls that are currently implemented.
      - GitHub Actions Runner → PyPI
      - HTTPS
      - On release event: wheel/sdist published via OIDC trusted publishing.
-       Missing: no SLSA provenance attestation or Sigstore package signing.
+       A CycloneDX SBOM is generated, attached to the GitHub Release, and
+       used as the predicate of a Sigstore in-toto attestation (signed via
+       Fulcio/Rekor) for both the wheel and the source distribution.
    * - DF-14
      - Consumer → PyPI
      - HTTPS
@@ -665,11 +669,27 @@ The following controls are already in place and are reflected in the
      - All ``actions/checkout`` steps drop the GitHub token from the working
        tree after checkout.
        ``.github/workflows/*.yml``
-   * - Harden-runner (egress audit)
+   * - Harden-runner (egress block)
      - SA-02, EA-04
-     - ``step-security/harden-runner`` is used in every workflow to audit
-       outbound network connections.  Note: policy is ``audit``, not ``block``.
+     - ``step-security/harden-runner`` is used in every workflow with
+       ``egress-policy: block`` and an explicit allowlist of permitted
+       endpoints.  Unexpected outbound connections are denied.
        ``.github/workflows/*.yml``
+   * - Explicit secret forwarding
+     - SA-02, EA-04
+     - ``ci.yml`` forwards only named secrets to reusable workflows
+       (``CODACY_PROJECT_TOKEN``, ``GH_DFETCH_ORG_DEPLOY``).  No workflow
+       uses ``secrets: inherit``, limiting the blast radius of a compromised
+       workflow step.
+       ``.github/workflows/ci.yml``
+   * - SBOM attestation (Sigstore)
+     - EA-01, EA-03
+     - ``python-publish.yml`` generates a CycloneDX SBOM for each release
+       and creates a Sigstore in-toto attestation (predicate type
+       ``https://cyclonedx.org/bom``) for the wheel and source distribution,
+       signed via Fulcio/Rekor.  The SBOM is also uploaded to the GitHub
+       Release for consumer verification.
+       ``.github/workflows/python-publish.yml``
    * - OpenSSF Scorecard
      - EA-03, SA-10
      - Weekly OSSF Scorecard analysis uploaded to GitHub Code Scanning covers
@@ -717,23 +737,7 @@ areas where existing controls are absent or incomplete.
    * - No patch-file integrity
      - Patch files referenced in the manifest carry no integrity hash.  A
        tampered patch can write to arbitrary paths through ``patch-ng``.
-   * - No SLSA provenance
-     - The release pipeline does not generate SLSA provenance attestations or
-       Sigstore/cosign signatures for the published wheel.  Consumers cannot
-       verify build provenance.
-   * - No dfetch-self SBOM on PyPI
-     - The CycloneDX SBOM generated by ``dfetch report`` covers vendored
-       dependencies only.  dfetch itself has no machine-readable SBOM published
-       alongside its PyPI release, as CRA Article 13 requires.
    * - Build deps without hash pinning
      - ``pip install .`` and ``pip install --upgrade pip build`` in CI do not
        use ``--require-hashes``.  A compromised PyPI mirror can substitute
        malicious build tooling.
-   * - ``secrets: inherit`` scope
-     - ``ci.yml`` passes all repository secrets to the test and docs workflows
-       via ``secrets: inherit``.  A malicious pull request step in either
-       workflow could exfiltrate secrets.
-   * - Harden-runner in audit mode
-     - ``step-security/harden-runner`` is configured with ``egress-policy:
-       audit``.  Outbound connections are logged but not blocked — secret
-       exfiltration via a compromised CI step is possible.
