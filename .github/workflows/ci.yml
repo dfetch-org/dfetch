@@ -28,6 +28,8 @@ jobs:
     permissions:
       contents: write
       security-events: write
+      attestations: write
+      id-token: write
     with:
       release_id: ${{ needs.prep-release.outputs.release_id }}
 
