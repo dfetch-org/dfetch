@@ -107,7 +107,7 @@ build = [
     "setuptools-scm==10.0.5", # For determining version
 ]
 sbom = ["cyclonedx-bom==7.3.0"]
-wheel = ["build==1.2.2"]
+wheel = ["build==1.5.0"]
 
 [project.scripts]
 dfetch = "dfetch.__main__:main"
