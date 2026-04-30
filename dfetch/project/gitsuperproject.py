@@ -13,7 +13,7 @@ from collections.abc import Sequence
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
-from dfetch.project.gitsubproject import GitSubProject
+from dfetch.project.gitsubproject import GitFetcher
 from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import RevisionRange, SuperProject
 from dfetch.util.util import check_no_path_traversal, resolve_absolute_path
@@ -37,7 +37,7 @@ class GitSuperProject(SuperProject):
 
     def get_sub_project(self, project: ProjectEntry) -> SubProject | None:
         """Get the subproject in the same vcs type as the superproject."""
-        return GitSubProject(project)
+        return SubProject(project, GitFetcher(project.remote_url))
 
     def ignored_files(self, path: str) -> Sequence[str]:
         """Return a list of files that can be ignored in a given path."""
