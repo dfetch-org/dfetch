@@ -48,7 +48,9 @@ def temporary_venv():
 
 def parse_args() -> argparse.Namespace:
     """Parse and return command-line arguments."""
-    parser = argparse.ArgumentParser(description="Generate a CycloneDX SBOM for dfetch.")
+    parser = argparse.ArgumentParser(
+        description="Generate a CycloneDX SBOM for dfetch."
+    )
     parser.add_argument(
         "--py",
         action="store_true",
@@ -67,10 +69,10 @@ def parse_args() -> argparse.Namespace:
 args = parse_args()
 
 if args.py:
-    suffix = "py"
+    SUFFIX = "py"
     output_dir = args.output_dir or PROJECT_DIR / "dist"
 else:
-    suffix = PLATFORM_NAME
+    SUFFIX = PLATFORM_NAME
     output_dir = args.output_dir or PROJECT_DIR / "build" / "dfetch-package"
 
 with temporary_venv() as python:
@@ -90,7 +92,7 @@ with temporary_venv() as python:
         .strip()
     )
 
-    output_file = output_dir / f"dfetch-{version}-{suffix}.cdx.json"
+    output_file = output_dir / f"dfetch-{version}-{SUFFIX}.cdx.json"
     output_file.parent.mkdir(parents=True, exist_ok=True)
     subprocess.check_call(  # nosec
         [python, "-m", "cyclonedx_py", "environment", "-o", str(output_file)]
