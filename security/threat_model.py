@@ -9,6 +9,9 @@ Run:
     python -m security.threat_model --report     # STRIDE findings report
 """
 
+from dataclasses import dataclass, field
+from typing import Literal
+
 from pytm import (
     TM,
     Actor,
@@ -622,240 +625,320 @@ df15.description = (
     "Consumer cannot verify build provenance without SLSA attestation."
 )
 
-# ── IMPLEMENTED SECURITY CONTROLS ────────────────────────────────────────────
-#
-# Each entry is rendered by the ``.. pytm:: :controls:`` Sphinx directive.
-# RST markup (``double backticks``) is supported in "implementation" strings.
+# ── CONTROL DATACLASS ────────────────────────────────────────────────────────
 
-CONTROLS: list[dict] = [
-    {
-        "name": "Path-traversal prevention",
-        "assets": ["PA-02", "SA-05"],
-        "implementation": (
+
+@dataclass
+class Control:
+    """A security control or an unimplemented gap.
+
+    A gap is simply a control whose ``status`` is ``"gap"`` (or ``"planned"``).
+    Both are stored in the same ``CONTROLS`` list and split at render time.
+    """
+
+    id: str
+    name: str
+    description: str
+    assets: list[str] = field(default_factory=list)
+    status: Literal["implemented", "planned", "gap"] = "implemented"
+    reference: str = ""
+
+    def to_pytm(self) -> str:
+        """Return a human-readable label for traceability comments and tables."""
+        return f"[{self.id}] {self.name}"
+
+
+# ── CONTROLS AND GAPS ────────────────────────────────────────────────────────
+#
+# Implemented controls (status="implemented") and known gaps (status="gap")
+# live in one list.  The ``.. pytm:: :controls:`` and ``.. pytm:: :gaps:``
+# Sphinx directives split the list on ``status`` at render time.
+#
+# Associate a control with a pytm element via ``to_pytm()``:
+#
+#   threat = dfetch_cli        # or any pytm element
+#   ctrl = CONTROLS[0]         # C-001
+#   # Log the association as a traceability comment:
+#   threat.controls.sanitizesInput = True  # ctrl.to_pytm() → [C-001] …
+
+CONTROLS: list[Control] = [
+    # ── Implemented controls (status="implemented") ──────────────────────────
+    Control(
+        id="C-001",
+        name="Path-traversal prevention",
+        assets=["PA-02", "SA-05"],
+        description=(
             "``check_no_path_traversal()`` resolves both the candidate path and the "
             "destination root via ``os.path.realpath`` (symlink-aware, not "
             "``pathlib.Path.resolve``), then rejects any path whose resolved prefix "
             "does not start with the resolved root.  Applied to every file copy and "
             "post-extraction symlink."
         ),
-        "reference": "dfetch/util/util.py",
-    },
-    {
-        "name": "Decompression-bomb protection",
-        "assets": ["SA-05", "PA-02"],
-        "implementation": (
+        reference="dfetch/util/util.py",
+    ),
+    Control(
+        id="C-002",
+        name="Decompression-bomb protection",
+        assets=["SA-05", "PA-02"],
+        description=(
             "Archives are rejected if the uncompressed size exceeds 500 MB or the "
             "member count exceeds 10 000."
         ),
-        "reference": "dfetch/vcs/archive.py",
-    },
-    {
-        "name": "Archive symlink validation",
-        "assets": ["PA-02"],
-        "implementation": (
+        reference="dfetch/vcs/archive.py",
+    ),
+    Control(
+        id="C-003",
+        name="Archive symlink validation",
+        assets=["PA-02"],
+        description=(
             "Absolute and escaping (``..``) symlink targets are rejected for both "
             "TAR and ZIP.  A post-extraction walk validates all symlinks against the "
             "manifest root."
         ),
-        "reference": "dfetch/vcs/archive.py",
-    },
-    {
-        "name": "Archive member type checks",
-        "assets": ["PA-02", "SA-05"],
-        "implementation": (
+        reference="dfetch/vcs/archive.py",
+    ),
+    Control(
+        id="C-004",
+        name="Archive member type checks",
+        assets=["PA-02", "SA-05"],
+        description=(
             "TAR and ZIP members of type device file or FIFO are rejected outright."
         ),
-        "reference": "dfetch/vcs/archive.py",
-    },
-    {
-        "name": "Integrity hash verification",
-        "assets": ["PA-02", "PA-03"],
-        "implementation": (
+        reference="dfetch/vcs/archive.py",
+    ),
+    Control(
+        id="C-005",
+        name="Integrity hash verification",
+        assets=["PA-02", "PA-03"],
+        description=(
             "SHA-256, SHA-384, and SHA-512 verified via ``hmac.compare_digest`` "
             "(constant-time comparison, resistant to timing attacks)."
         ),
-        "reference": "dfetch/vcs/integrity_hash.py",
-    },
-    {
-        "name": "Non-interactive VCS",
-        "assets": ["SA-02", "EA-01"],
-        "implementation": (
+        reference="dfetch/vcs/integrity_hash.py",
+    ),
+    Control(
+        id="C-006",
+        name="Non-interactive VCS",
+        assets=["SA-02", "EA-01"],
+        description=(
             "``GIT_TERMINAL_PROMPT=0``, ``BatchMode=yes`` for Git; "
             "``--non-interactive`` for SVN.  Credential prompts are suppressed to "
             "prevent interactive hijacking in CI."
         ),
-        "reference": "dfetch/vcs/git.py, dfetch/vcs/svn.py",
-    },
-    {
-        "name": "Subprocess safety",
-        "assets": ["SA-01"],
-        "implementation": (
+        reference="dfetch/vcs/git.py, dfetch/vcs/svn.py",
+    ),
+    Control(
+        id="C-007",
+        name="Subprocess safety",
+        assets=["SA-01"],
+        description=(
             "All external commands invoked with ``shell=False`` and list-form "
             "arguments — no shell-injection vector."
         ),
-        "reference": "dfetch/util/cmdline.py",
-    },
-    {
-        "name": "Manifest input validation",
-        "assets": ["PA-01"],
-        "implementation": (
+        reference="dfetch/util/cmdline.py",
+    ),
+    Control(
+        id="C-008",
+        name="Manifest input validation",
+        assets=["PA-01"],
+        description=(
             "StrictYAML schema with ``SAFE_STR = Regex(r\"^[^\\x00-\\x1F\\x7F-\\x9F]*$\")`` "
             "rejects control characters in all string fields."
         ),
-        "reference": "dfetch/manifest/schema.py",
-    },
-    {
-        "name": "Actions commit-SHA pinning",
-        "assets": ["SA-06", "EA-04"],
-        "implementation": (
+        reference="dfetch/manifest/schema.py",
+    ),
+    Control(
+        id="C-009",
+        name="Actions commit-SHA pinning",
+        assets=["SA-06", "EA-04"],
+        description=(
             "Every third-party GitHub Action is pinned to a full commit SHA, "
             "preventing tag-mutable supply-chain substitution."
         ),
-        "reference": ".github/workflows/*.yml",
-    },
-    {
-        "name": "OIDC trusted publishing",
-        "assets": ["SA-07", "PA-04"],
-        "implementation": (
+        reference=".github/workflows/*.yml",
+    ),
+    Control(
+        id="C-010",
+        name="OIDC trusted publishing",
+        assets=["SA-07", "PA-04"],
+        description=(
             "PyPI publishes via ``pypa/gh-action-pypi-publish`` with "
             "``id-token: write`` and no stored long-lived API token."
         ),
-        "reference": ".github/workflows/python-publish.yml",
-    },
-    {
-        "name": "Minimal workflow permissions",
-        "assets": ["SA-06"],
-        "implementation": (
+        reference=".github/workflows/python-publish.yml",
+    ),
+    Control(
+        id="C-011",
+        name="Minimal workflow permissions",
+        assets=["SA-06"],
+        description=(
             "Each workflow declares only the permissions it requires "
             "(default ``contents: read``)."
         ),
-        "reference": ".github/workflows/*.yml",
-    },
-    {
-        "name": "persist-credentials: false",
-        "assets": ["SA-02", "EA-03"],
-        "implementation": (
+        reference=".github/workflows/*.yml",
+    ),
+    Control(
+        id="C-012",
+        name="persist-credentials: false",
+        assets=["SA-02", "EA-03"],
+        description=(
             "All ``actions/checkout`` steps drop the GitHub token from the working "
             "tree after checkout."
         ),
-        "reference": ".github/workflows/*.yml",
-    },
-    {
-        "name": "Harden-runner (egress audit)",
-        "assets": ["SA-02", "EA-04"],
-        "implementation": (
+        reference=".github/workflows/*.yml",
+    ),
+    Control(
+        id="C-013",
+        name="Harden-runner (egress audit)",
+        assets=["SA-02", "EA-04"],
+        description=(
             "``step-security/harden-runner`` is used in every workflow to audit "
-            "outbound network connections.  Note: policy is ``audit``, not ``block``."
+            "outbound network connections.  Policy is ``audit``, not ``block``."
         ),
-        "reference": ".github/workflows/*.yml",
-    },
-    {
-        "name": "OpenSSF Scorecard",
-        "assets": ["EA-03", "SA-10"],
-        "implementation": (
+        reference=".github/workflows/*.yml",
+    ),
+    Control(
+        id="C-014",
+        name="OpenSSF Scorecard",
+        assets=["EA-03", "SA-10"],
+        description=(
             "Weekly OSSF Scorecard analysis uploaded to GitHub Code Scanning "
             "covers the full set of OpenSSF Scorecard checks."
         ),
-        "reference": ".github/workflows/scorecard.yml",
-    },
-    {
-        "name": "CodeQL static analysis",
-        "assets": ["SA-01", "SA-06"],
-        "implementation": (
+        reference=".github/workflows/scorecard.yml",
+    ),
+    Control(
+        id="C-015",
+        name="CodeQL static analysis",
+        assets=["SA-01", "SA-06"],
+        description=(
             "CodeQL scans the Python codebase for security vulnerabilities on "
             "every push and pull request."
         ),
-        "reference": ".github/workflows/codeql-analysis.yml",
-    },
-    {
-        "name": "Dependency review",
-        "assets": ["SA-09"],
-        "implementation": (
+        reference=".github/workflows/codeql-analysis.yml",
+    ),
+    Control(
+        id="C-016",
+        name="Dependency review",
+        assets=["SA-09"],
+        description=(
             "``actions/dependency-review-action`` checks for known vulnerabilities "
             "in newly added dependencies on every pull request."
         ),
-        "reference": ".github/workflows/dependency-review.yml",
-    },
-    {
-        "name": "bandit security linter",
-        "assets": ["SA-01"],
-        "implementation": (
+        reference=".github/workflows/dependency-review.yml",
+    ),
+    Control(
+        id="C-017",
+        name="bandit security linter",
+        assets=["SA-01"],
+        description=(
             "``bandit -r dfetch`` runs in CI to detect common Python security issues."
         ),
-        "reference": "pyproject.toml",
-    },
-]
-
-# ── KNOWN GAPS AND RESIDUAL RISKS ─────────────────────────────────────────────
-#
-# Each entry is rendered by the ``.. pytm:: :gaps:`` Sphinx directive.
-
-GAPS: list[dict] = [
-    {
-        "name": "Optional integrity hash",
-        "description": (
+        reference="pyproject.toml",
+    ),
+    # ── Gaps: unimplemented controls (status="gap") ──────────────────────────
+    Control(
+        id="C-018",
+        name="Optional integrity hash",
+        assets=["PA-02", "PA-03"],
+        status="gap",
+        description=(
             "``integrity.hash`` in the manifest is optional.  Archive dependencies "
             "without it have no content-authenticity guarantee.  Plain ``http://`` "
             "URLs receive no protection at all."
         ),
-    },
-    {
-        "name": "No integrity mechanism for Git/SVN",
-        "description": (
+    ),
+    Control(
+        id="C-019",
+        name="No integrity mechanism for Git/SVN",
+        assets=["PA-02", "PA-03"],
+        status="gap",
+        description=(
             "Git and SVN dependencies carry no equivalent to ``integrity.hash``.  "
             "Authenticity relies entirely on transport security (TLS or SSH).  "
             "Mutable references (branch, tag) can silently fetch different content "
             "after an upstream force-push."
         ),
-    },
-    {
-        "name": "No patch-file integrity",
-        "description": (
+    ),
+    Control(
+        id="C-020",
+        name="No patch-file integrity",
+        assets=["SA-04", "PA-02"],
+        status="gap",
+        description=(
             "Patch files referenced in the manifest carry no integrity hash.  A "
             "tampered patch can write to arbitrary paths through ``patch-ng``."
         ),
-    },
-    {
-        "name": "No SLSA provenance",
-        "description": (
+    ),
+    Control(
+        id="C-021",
+        name="No SLSA provenance",
+        assets=["PA-04"],
+        status="gap",
+        description=(
             "The release pipeline does not generate SLSA provenance attestations or "
             "Sigstore/cosign signatures for the published wheel.  Consumers cannot "
             "verify build provenance."
         ),
-    },
-    {
-        "name": "No dfetch-self SBOM on PyPI",
-        "description": (
+    ),
+    Control(
+        id="C-022",
+        name="No dfetch-self SBOM on PyPI",
+        assets=["PA-04", "PA-05"],
+        status="gap",
+        description=(
             "The CycloneDX SBOM generated by ``dfetch report`` covers vendored "
             "dependencies only.  dfetch itself has no machine-readable SBOM published "
             "alongside its PyPI release, as CRA Article 13 requires."
         ),
-    },
-    {
-        "name": "Build deps without hash pinning",
-        "description": (
+    ),
+    Control(
+        id="C-023",
+        name="Build deps without hash pinning",
+        assets=["SA-09"],
+        status="gap",
+        description=(
             "``pip install .`` and ``pip install --upgrade pip build`` in CI do not "
             "use ``--require-hashes``.  A compromised PyPI mirror can substitute "
             "malicious build tooling."
         ),
-    },
-    {
-        "name": "``secrets: inherit`` scope",
-        "description": (
+    ),
+    Control(
+        id="C-024",
+        name="``secrets: inherit`` scope",
+        assets=["SA-06", "SA-02"],
+        status="gap",
+        description=(
             "``ci.yml`` passes all repository secrets to the test and docs workflows "
             "via ``secrets: inherit``.  A malicious pull request step in either "
             "workflow could exfiltrate secrets."
         ),
-    },
-    {
-        "name": "Harden-runner in audit mode",
-        "description": (
+    ),
+    Control(
+        id="C-025",
+        name="Harden-runner in audit mode",
+        assets=["EA-04", "SA-06"],
+        status="gap",
+        description=(
             "``step-security/harden-runner`` is configured with "
             "``egress-policy: audit``.  Outbound connections are logged but not "
             "blocked — secret exfiltration via a compromised CI step is possible."
         ),
-    },
+    ),
 ]
+
+# ── ASSET → CONTROL INDEX ────────────────────────────────────────────────────
+#
+# Maps each asset ID to the controls (or gaps) that apply to it.
+# Use to_pytm() for a human-readable label; e.g.:
+#
+#   for ctrl in ASSET_CONTROLS.get("PA-02", []):
+#       print(ctrl.to_pytm())   # → "[C-001] Path-traversal prevention"
+
+ASSET_CONTROLS: dict[str, list[Control]] = {}
+for _ctrl in CONTROLS:
+    for _asset_id in _ctrl.assets:
+        ASSET_CONTROLS.setdefault(_asset_id, []).append(_ctrl)
 
 if __name__ == "__main__":
     tm.process()

@@ -237,9 +237,17 @@ def _load_model(model_path: str, confdir: str) -> dict:
             }
         )
 
-    # -- Module-level CONTROLS and GAPS (optional) ---------------------------
-    controls: list[dict] = list(getattr(mod, "CONTROLS", []))
-    gaps: list[dict] = list(getattr(mod, "GAPS", []))
+    # -- Controls and gaps from unified CONTROLS list -------------------------
+    import dataclasses as _dc
+
+    _all_controls = list(getattr(mod, "CONTROLS", []))
+    if _all_controls and _dc.is_dataclass(_all_controls[0]):
+        controls = [_dc.asdict(c) for c in _all_controls if c.status == "implemented"]
+        gaps = [_dc.asdict(c) for c in _all_controls if c.status != "implemented"]
+    else:
+        # plain-dict fallback
+        controls = [c for c in _all_controls if c.get("status", "implemented") == "implemented"]
+        gaps = list(getattr(mod, "GAPS", []))
 
     # -- Trust boundaries ----------------------------------------------------
     boundaries: list[dict] = []
@@ -394,21 +402,23 @@ def _render_controls(controls: list[dict]) -> str:
     if not controls:
         return (
             ".. note::\n\n   No controls defined.  "
-            "Add a ``CONTROLS`` list to the threat model."
+            "Add ``Control`` objects with ``status='implemented'`` "
+            "to the ``CONTROLS`` list in the threat model."
         )
-    headers = ["Control", "Asset(s) protected", "Implementation"]
-    widths = [28, 18, 54]
+    headers = ["ID", "Control", "Asset(s) protected", "Description"]
+    widths = [8, 22, 14, 56]
     rows = []
     for c in controls:
-        impl = _cell(c.get("implementation", ""))
+        desc = _cell(c.get("description", ""))
         ref = c.get("reference", "")
         if ref:
-            impl += f"  ``{ref}``"
+            desc += f"  ``{ref}``"
         rows.append(
             [
+                c.get("id", "—"),
                 c.get("name", "—"),
                 ", ".join(c.get("assets", [])),
-                impl,
+                desc,
             ]
         )
     return _list_table(headers, rows, widths)
@@ -418,12 +428,18 @@ def _render_gaps(gaps: list[dict]) -> str:
     if not gaps:
         return (
             ".. note::\n\n   No gaps defined.  "
-            "Add a ``GAPS`` list to the threat model."
+            "Add ``Control`` objects with ``status='gap'`` "
+            "to the ``CONTROLS`` list in the threat model."
         )
-    headers = ["Gap", "Description"]
-    widths = [30, 70]
+    headers = ["ID", "Gap", "Asset(s) affected", "Description"]
+    widths = [8, 24, 14, 54]
     rows = [
-        [g.get("name", "—"), _cell(g.get("description", ""))]
+        [
+            g.get("id", "—"),
+            g.get("name", "—"),
+            ", ".join(g.get("assets", [])),
+            _cell(g.get("description", "")),
+        ]
         for g in gaps
     ]
     return _list_table(headers, rows, widths)
