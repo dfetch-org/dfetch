@@ -44,6 +44,7 @@ os.environ["NO_COLOR"] = "1"
 extensions = [
     "sphinx_sitemap",
     "sphinx_design",
+    "sphinx.ext.graphviz",
     "plantweb.directive",
     "scenario_directive",
     "latex_tabs",
@@ -62,7 +63,6 @@ extensions = [
     "colordot",
     "designguide",
     "pytm_directive",
-    "sphinx.ext.graphviz",
 ]
 
 # Path to the pytm threat model; used by the ``.. pytm::`` directive.
