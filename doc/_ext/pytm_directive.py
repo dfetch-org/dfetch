@@ -47,15 +47,29 @@ model path overrides the ``pytm_model`` config value::
 
 from __future__ import annotations
 
+import contextlib
+import dataclasses as _dc
 import importlib.util
+import io as _io
 import os
-import sys
+import re as _re
 import threading
 from typing import TYPE_CHECKING, Any
 
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from docutils.statemachine import StringList
+from pytm import (
+    TM,
+)
+from pytm import Actor as _Actor
+from pytm import (
+    Data,
+    Dataflow,
+    Datastore,
+    ExternalEntity,
+    Process,
+)
 from sphinx.util import logging
 
 if TYPE_CHECKING:
@@ -96,7 +110,7 @@ class PytmDirective(Directive):
         if model_path is None:
             return [
                 nodes.error(
-                    None,
+                    "No model path",
                     nodes.paragraph(
                         text=(
                             "pytm directive: no model path. "
@@ -109,8 +123,10 @@ class PytmDirective(Directive):
         if not os.path.isfile(model_path):
             return [
                 nodes.error(
-                    None,
-                    nodes.paragraph(text=f"pytm directive: model not found: {model_path}"),
+                    "Model not found",
+                    nodes.paragraph(
+                        text=f"pytm directive: model not found: {model_path}"
+                    ),
                 )
             ]
 
@@ -169,14 +185,13 @@ def _get_model_data(app: Any, model_path: str) -> dict:
     with _load_lock:
         # Re-check after acquiring lock (another thread may have loaded it).
         if key not in cache:
-            cache[key] = _load_model(model_path, app.confdir)
+            cache[key] = _load_model(model_path)
             app._pytm_cache = cache
     return cache[key]
 
 
-def _load_model(model_path: str, confdir: str) -> dict:
+def _load_model(model_path: str) -> dict:
     """Import the threat model file and extract all structured data."""
-    from pytm import TM, Data, Dataflow, Datastore, ExternalEntity  # type: ignore[import]
 
     # The model calls TM.reset() at module level; executing it again resets
     # the singleton cleanly.
@@ -191,7 +206,6 @@ def _load_model(model_path: str, confdir: str) -> dict:
 
     # -- Assets --------------------------------------------------------------
     # pytm stores Data objects in TM._data, not TM._elements.
-    from pytm import Process  # type: ignore[import]
 
     id_prefixes = ("PA-", "SA-", "EA-", "DA-", "HW-", "FA-", "NI-", "OA-")
     candidate_elements = list(TM._elements) + list(getattr(TM, "_data", []))
@@ -254,7 +268,6 @@ def _load_model(model_path: str, confdir: str) -> dict:
     threats.sort(key=lambda t: (sev_order.get(t["severity"], 9), t["id"]))
 
     # -- Controls and gaps from unified CONTROLS list -------------------------
-    import dataclasses as _dc
 
     _all_controls = list(getattr(mod, "CONTROLS", []))
     if _all_controls and _dc.is_dataclass(_all_controls[0]):
@@ -262,7 +275,9 @@ def _load_model(model_path: str, confdir: str) -> dict:
         gaps = [_dc.asdict(c) for c in _all_controls if c.status != "implemented"]
     else:
         # plain-dict fallback
-        controls = [c for c in _all_controls if c.get("status", "implemented") == "implemented"]
+        controls = [
+            c for c in _all_controls if c.get("status", "implemented") == "implemented"
+        ]
         gaps = list(getattr(mod, "GAPS", []))
 
     # Cross-reference: threats → controls
@@ -274,8 +289,6 @@ def _load_model(model_path: str, confdir: str) -> dict:
         t["controls"] = threat_controls_map.get(t["id"], [])
 
     # -- Sequence diagram and DFD strings ------------------------------------
-    import contextlib
-    import io as _io
 
     seq_str = ""
     dfd_str = ""
@@ -283,19 +296,22 @@ def _load_model(model_path: str, confdir: str) -> dict:
         buf = _io.StringIO()
         with contextlib.redirect_stdout(buf):
             result = mod.tm.seq()
-        seq_str = result if isinstance(result, str) and result.strip() else buf.getvalue()
+        seq_str = (
+            result if isinstance(result, str) and result.strip() else buf.getvalue()
+        )
     except Exception:
         seq_str = ""
     try:
         buf = _io.StringIO()
         with contextlib.redirect_stdout(buf):
             result = mod.tm.dfd()
-        dfd_str = result if isinstance(result, str) and result.strip() else buf.getvalue()
+        dfd_str = (
+            result if isinstance(result, str) and result.strip() else buf.getvalue()
+        )
     except Exception:
         dfd_str = ""
 
     # -- Actors --------------------------------------------------------------
-    from pytm import Actor as _Actor  # type: ignore[import]
 
     actors: list[dict] = []
     for el in TM._elements:
@@ -345,9 +361,15 @@ def _load_model(model_path: str, confdir: str) -> dict:
 
 _PREFIX_ORDER = {
     # ISO/IEC 27005 / EN 18031 taxonomy
-    "PA": 0, "SA": 1, "EA": 2,
+    "PA": 0,
+    "SA": 1,
+    "EA": 2,
     # EN 40000 five-category taxonomy
-    "DA": 0, "HW": 1, "FA": 2, "NI": 3, "OA": 4,
+    "DA": 0,
+    "HW": 1,
+    "FA": 2,
+    "NI": 3,
+    "OA": 4,
 }
 
 
@@ -381,7 +403,6 @@ def _cell(text: str) -> str:
         return "—"
     # Escape lone asterisks (glob patterns like *.yml confuse RST emphasis parser).
     # We only escape * that are NOT already doubled (**bold**).
-    import re as _re
 
     text = _re.sub(r"(?<!\*)\*(?!\*)", r"\\*", text)
     return text
@@ -413,10 +434,7 @@ def _render_assumptions(assumptions: list[dict]) -> str:
         )
     headers = ["Assumption", "Description"]
     widths = [28, 72]
-    rows = [
-        [a["name"], _cell(a["description"])]
-        for a in assumptions
-    ]
+    rows = [[a["name"], _cell(a["description"])] for a in assumptions]
     return _list_table(headers, rows, widths)
 
 
@@ -425,10 +443,7 @@ def _render_boundaries(boundaries: list[dict]) -> str:
         return ".. note::\n\n   No trust boundaries defined in model."
     headers = ["Boundary", "Description"]
     widths = [30, 70]
-    rows = [
-        [f"**{b['name']}**", _cell(b["description"])]
-        for b in boundaries
-    ]
+    rows = [[f"**{b['name']}**", _cell(b["description"])] for b in boundaries]
     return _list_table(headers, rows, widths)
 
 
@@ -438,8 +453,7 @@ def _render_actors(actors: list[dict]) -> str:
     headers = ["Actor", "Trust Boundary", "Description"]
     widths = [22, 28, 50]
     rows = [
-        [f"**{a['name']}**", a["boundary"], _cell(a["description"])]
-        for a in actors
+        [f"**{a['name']}**", a["boundary"], _cell(a["description"])] for a in actors
     ]
     return _list_table(headers, rows, widths)
 
@@ -595,7 +609,7 @@ def _on_builder_inited(app: Sphinx) -> None:
         return
     try:
         mtime = os.path.getmtime(model_path)
-        data = _load_model(model_path, app.confdir)
+        data = _load_model(model_path)
         app._pytm_cache = {(model_path, mtime): data}
         logger.info(
             f"pytm: loaded {len(data['assumptions'])} assumptions, "
@@ -618,6 +632,7 @@ def _on_builder_inited(app: Sphinx) -> None:
 
 
 def setup(app: Sphinx) -> dict:
+    """Sphinx extension entry point."""
     app.add_config_value("pytm_model", default=None, rebuild="env")
     app.add_directive("pytm", PytmDirective)
     app.connect("builder-inited", _on_builder_inited)

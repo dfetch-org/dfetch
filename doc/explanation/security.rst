@@ -58,7 +58,8 @@ prEN 40000-1-2 §6.2 (Step 0 of the security-by-design methodology).  It
 establishes the foundation on which all subsequent asset, threat, and control
 analysis is built.
 
-**1 — Product and manufacturer identification**
+Product and manufacturer identification
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table::
    :widths: 30 70
@@ -83,7 +84,8 @@ analysis is built.
        Elements* (PDE) under Article 3(1) of Regulation (EU) 2024/2847, the
        obligations under Articles 13–16 would apply in full.
 
-**2 — Intended purpose, foreseeable use, and reasonably foreseeable misuse (IPFRU)**
+Intended purpose, foreseeable use, and reasonably foreseeable misuse (IPFRU)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 *Intended purpose*: fetch and vendor external source-code dependencies (from
 Git repositories, SVN repositories, or plain archive URLs) as plain files into
@@ -109,7 +111,8 @@ etc.) to reproduce a known dependency state.
   with inadequate egress controls could allow exfiltration if a dependency
   source is compromised.
 
-**3 — User roles**
+User roles
+~~~~~~~~~~
 
 Actors are defined in ``security/threat_model.py`` and rendered below from
 the pytm model.
@@ -117,7 +120,12 @@ the pytm model.
 .. pytm::
    :actors:
 
-**4 — Operating environment**
+Operating environment
+~~~~~~~~~~~~~~~~~~~~~
+
+
+.. pytm::
+   :boundaries:
 
 - **Developer workstation**: Linux, macOS, or Windows; Python 3.10 +; ``git``
   and/or ``svn`` clients available on ``PATH``.  No network listener or
@@ -131,7 +139,8 @@ the pytm model.
 - **Network requirements**: outbound HTTPS or SSH to the VCS/archive hosts
   declared in the manifest.  No inbound connections.
 
-**5 — Architecture and connectivity**
+Architecture and connectivity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 dfetch is a single-process Python CLI application with no embedded network
 server, no plugin system, and no IPC interface.  Its communication surface is:
@@ -148,7 +157,8 @@ server, no plugin system, and no IPC interface.  Its communication surface is:
 No credentials are stored by dfetch.  VCS authentication is delegated to the
 OS/SSH agent, Git credential helper, or SVN auth cache.
 
-**6 — External dependencies**
+External dependencies
+~~~~~~~~~~~~~~~~~~~~~
 
 Runtime Python packages: ``PyYAML``, ``strictyaml``, ``rich``, ``tldextract``,
 ``sarif-om``, ``semver``, ``patch-ng``, ``cyclonedx-python-lib``,
@@ -158,7 +168,8 @@ None of these dependencies handle PII or secrets on behalf of dfetch.
 The CI/CD pipeline additionally depends on GitHub Actions marketplace actions
 (all SHA-pinned) and ``pip``/``build`` for packaging.
 
-**7 — Security assumptions and prerequisites**
+Security assumptions and prerequisites
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Assumptions are maintained in ``security/threat_model.py`` and rendered below
 from the pytm model.
@@ -166,7 +177,8 @@ from the pytm model.
 .. pytm::
    :assumptions:
 
-**8 — Support period and data handling**
+Support period and data handling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - *Support period*: the **latest released version** only.  No security patches
   are backported to older releases.  Users are responsible for upgrading.
@@ -178,33 +190,6 @@ from the pytm model.
 - *Vulnerability reporting*: see ``SECURITY.md`` and ``security.txt`` in the
   repository root for the coordinated vulnerability disclosure (CVD) policy.
 
-
-Scope and Assumptions
----------------------
-
-The threat model spans six trust boundaries (see below) and covers:
-
-- The dfetch manifest and runtime fetch operations (developer workstation and CI)
-- The GitHub repository and pull-request workflow
-- The GitHub Actions CI/CD pipelines (11 workflows)
-- PyPI distribution via OIDC trusted publishing
-- Consumer installation and build integration
-
-Modelling assumptions are maintained in ``security/threat_model.py`` and
-rendered below from the pytm model.
-
-.. pytm::
-   :assumptions:
-
-
-Trust Boundaries
-----------------
-
-Trust boundaries are defined in ``security/threat_model.py`` and rendered
-below from the pytm model.
-
-.. pytm::
-   :boundaries:
 
 
 Asset Register

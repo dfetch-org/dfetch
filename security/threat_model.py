@@ -796,7 +796,7 @@ CONTROLS: list[Control] = [
         assets=["PA-01"],
         threats=["DFT-04", "DFT-08"],
         description=(
-            "StrictYAML schema with ``SAFE_STR = Regex(r\"^[^\\x00-\\x1F\\x7F-\\x9F]*$\")`` "
+            'StrictYAML schema with ``SAFE_STR = Regex(r"^[^\\x00-\\x1F\\x7F-\\x9F]*$")`` '
             "rejects control characters in all string fields."
         ),
         reference="dfetch/manifest/schema.py",

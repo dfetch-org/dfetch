@@ -120,7 +120,7 @@ You can verify the model is syntactically valid by running:
 python -m security.threat_model --report
 ```
 
-(requires `pip install .[security]`; diagram commands additionally require PlantUML and Graphviz)
+(requires `pip install .[docs]`; diagram commands additionally require PlantUML and Graphviz)
 
 ## Documentation
 
