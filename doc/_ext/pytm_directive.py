@@ -78,6 +78,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 _load_lock = threading.Lock()
+_model_cache: dict[tuple[str, float], dict[str, Any]] = {}
 
 # ---------------------------------------------------------------------------
 # Directive
@@ -134,7 +135,7 @@ class PytmDirective(Directive):
         # rebuilds it whenever the model changes.
         env.note_dependency(model_path)
 
-        data = _get_model_data(app, model_path)
+        data = _get_model_data(model_path)
 
         sections: list[str] = []
         if "assumptions" in self.options:
@@ -175,45 +176,28 @@ class PytmDirective(Directive):
 # ---------------------------------------------------------------------------
 
 
-def _get_model_data(app: Any, model_path: str) -> dict:
+def _get_model_data(model_path: str) -> dict:
     """Return cached model data, loading on first access (thread-safe)."""
-    cache: dict = getattr(app, "_pytm_cache", {})
     mtime = os.path.getmtime(model_path)
     key = (model_path, mtime)
-    if key in cache:
-        return cache[key]
+    if key in _model_cache:
+        return _model_cache[key]
     with _load_lock:
         # Re-check after acquiring lock (another thread may have loaded it).
-        if key not in cache:
-            cache[key] = _load_model(model_path)
-            app._pytm_cache = cache
-    return cache[key]
+        if key not in _model_cache:
+            _model_cache[key] = _load_model(model_path)
+    return _model_cache[key]
 
 
-def _load_model(model_path: str) -> dict:
-    """Import the threat model file and extract all structured data."""
+_ID_PREFIXES = ("PA-", "SA-", "EA-", "DA-", "HW-", "FA-", "NI-", "OA-")
 
-    # The model calls TM.reset() at module level; executing it again resets
-    # the singleton cleanly.
-    TM.reset()
 
-    spec = importlib.util.spec_from_file_location("_pytm_model_tmp", model_path)
-    mod = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
-    spec.loader.exec_module(mod)  # type: ignore[union-attr]
-
-    # resolve() computes STRIDE findings without touching sys.argv or I/O.
-    mod.tm.resolve()
-
-    # -- Assets --------------------------------------------------------------
-    # pytm stores Data objects in TM._data, not TM._elements.
-
-    id_prefixes = ("PA-", "SA-", "EA-", "DA-", "HW-", "FA-", "NI-", "OA-")
-    candidate_elements = list(TM._elements) + list(getattr(TM, "_data", []))
+def _extract_assets(candidate_elements: list) -> list[dict]:
     assets: list[dict] = []
     for el in candidate_elements:
         if not isinstance(el, (Datastore, ExternalEntity, Data, Process)):
             continue
-        if not any(el.name.startswith(p) for p in id_prefixes):
+        if not any(el.name.startswith(p) for p in _ID_PREFIXES):
             continue
         asset_id, sep, asset_name = el.name.partition(":")
         assets.append(
@@ -228,10 +212,12 @@ def _load_model(model_path: str) -> dict:
             }
         )
     assets.sort(key=lambda a: _sort_key(a["id"]))
+    return assets
 
-    # -- Dataflows -----------------------------------------------------------
+
+def _extract_dataflows(elements: list) -> list[dict]:
     dataflows: list[dict] = []
-    for el in TM._elements:
+    for el in elements:
         if not isinstance(el, Dataflow):
             continue
         if not el.name.startswith("DF-"):
@@ -246,111 +232,127 @@ def _load_model(model_path: str) -> dict:
             }
         )
     dataflows.sort(key=lambda d: _sort_key(d["id"]))
+    return dataflows
 
-    # -- Threat register from custom threats.json ----------------------------
+
+def _extract_raw_threats() -> list[dict]:
     threats: list[dict] = []
-    for t in getattr(TM, "_threats", []):
+    for thr in getattr(TM, "_threats", []):
         threats.append(
             {
-                "id": getattr(t, "id", ""),
-                "description": getattr(t, "description", "") or "",
-                "details": getattr(t, "details", "") or "",
-                "likelihood": str(getattr(t, "likelihood", "") or ""),
-                "severity": str(getattr(t, "severity", "") or ""),
-                "mitigations": getattr(t, "mitigations", "") or "",
-                "prerequisites": getattr(t, "prerequisites", "") or "",
-                "example": getattr(t, "example", "") or "",
-                "references": getattr(t, "references", "") or "",
-                "controls": [],  # filled in after controls are loaded
+                "id": getattr(thr, "id", ""),
+                "description": getattr(thr, "description", "") or "",
+                "details": getattr(thr, "details", "") or "",
+                "likelihood": str(getattr(thr, "likelihood", "") or ""),
+                "severity": str(getattr(thr, "severity", "") or ""),
+                "mitigations": getattr(thr, "mitigations", "") or "",
+                "prerequisites": getattr(thr, "prerequisites", "") or "",
+                "example": getattr(thr, "example", "") or "",
+                "references": getattr(thr, "references", "") or "",
+                "controls": [],
             }
         )
     sev_order = {"Very High": 0, "High": 1, "Medium": 2, "Low": 3}
     threats.sort(key=lambda t: (sev_order.get(t["severity"], 9), t["id"]))
+    return threats
 
-    # -- Controls and gaps from unified CONTROLS list -------------------------
 
-    _all_controls = list(getattr(mod, "CONTROLS", []))
-    if _all_controls and _dc.is_dataclass(_all_controls[0]):
-        controls = [_dc.asdict(c) for c in _all_controls if c.status == "implemented"]
-        gaps = [_dc.asdict(c) for c in _all_controls if c.status != "implemented"]
+def _extract_controls_and_gaps(mod: Any) -> tuple[list[dict], list[dict]]:
+    all_controls = list(getattr(mod, "CONTROLS", []))
+    if all_controls and _dc.is_dataclass(all_controls[0]):
+        controls = [_dc.asdict(c) for c in all_controls if c.status == "implemented"]
+        gaps = [_dc.asdict(c) for c in all_controls if c.status != "implemented"]
     else:
-        # plain-dict fallback
         controls = [
-            c for c in _all_controls if c.get("status", "implemented") == "implemented"
+            c for c in all_controls if c.get("status", "implemented") == "implemented"
         ]
         gaps = list(getattr(mod, "GAPS", []))
+    return controls, gaps
 
-    # Cross-reference: threats → controls
+
+def _apply_threat_controls(
+    threats: list[dict], controls: list[dict], gaps: list[dict]
+) -> None:
     threat_controls_map: dict[str, list[str]] = {}
     for ctrl in controls + gaps:
         for sid in ctrl.get("threats", []):
             threat_controls_map.setdefault(sid, []).append(ctrl["id"])
-    for t in threats:
-        t["controls"] = threat_controls_map.get(t["id"], [])
+    for thr in threats:
+        thr["controls"] = threat_controls_map.get(thr["id"], [])
 
-    # -- Sequence diagram and DFD strings ------------------------------------
 
+def _generate_diagrams(mod: Any) -> tuple[str, str]:
     seq_str = ""
     dfd_str = ""
-    try:
-        buf = _io.StringIO()
-        with contextlib.redirect_stdout(buf):
-            result = mod.tm.seq()
+    buf = _io.StringIO()
+    with contextlib.suppress(Exception), contextlib.redirect_stdout(buf):
+        result = mod.tm.seq()
         seq_str = (
             result if isinstance(result, str) and result.strip() else buf.getvalue()
         )
-    except Exception:
-        seq_str = ""
-    try:
-        buf = _io.StringIO()
-        with contextlib.redirect_stdout(buf):
-            result = mod.tm.dfd()
+    buf = _io.StringIO()
+    with contextlib.suppress(Exception), contextlib.redirect_stdout(buf):
+        result = mod.tm.dfd()
         dfd_str = (
             result if isinstance(result, str) and result.strip() else buf.getvalue()
         )
-    except Exception:
-        dfd_str = ""
+    return seq_str, dfd_str
 
-    # -- Actors --------------------------------------------------------------
 
-    actors: list[dict] = []
-    for el in TM._elements:
-        if not isinstance(el, _Actor):
-            continue
-        actors.append(
-            {
-                "name": el.name,
-                "boundary": getattr(el.inBoundary, "name", ""),
-                "description": (getattr(el, "description", "") or "").strip(),
-            }
-        )
+def _extract_actors(elements: list) -> list[dict]:
+    return [
+        {
+            "name": el.name,
+            "boundary": getattr(el.inBoundary, "name", ""),
+            "description": (getattr(el, "description", "") or "").strip(),
+        }
+        for el in elements
+        if isinstance(el, _Actor)
+    ]
 
-    # -- Trust boundaries ----------------------------------------------------
-    boundaries: list[dict] = []
-    for b in getattr(TM, "_boundaries", []):
-        boundaries.append(
-            {
-                "name": b.name,
-                "description": (getattr(b, "description", "") or "").strip(),
-            }
-        )
 
-    # -- Modelling assumptions ------------------------------------------------
-    assumptions: list[dict] = []
-    for a in getattr(mod.tm, "assumptions", []):
-        assumptions.append(
-            {
-                "name": getattr(a, "name", str(a)),
-                "description": (getattr(a, "description", "") or "").strip(),
-            }
-        )
+def _extract_boundaries() -> list[dict]:
+    return [
+        {
+            "name": b.name,
+            "description": (getattr(b, "description", "") or "").strip(),
+        }
+        for b in getattr(TM, "_boundaries", [])
+    ]
+
+
+def _extract_assumptions(mod: Any) -> list[dict]:
+    return [
+        {
+            "name": getattr(a, "name", str(a)),
+            "description": (getattr(a, "description", "") or "").strip(),
+        }
+        for a in getattr(mod.tm, "assumptions", [])
+    ]
+
+
+def _load_model(model_path: str) -> dict:
+    """Import the threat model file and extract all structured data."""
+    TM.reset()
+
+    spec = importlib.util.spec_from_file_location("_pytm_model_tmp", model_path)
+    mod = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
+    spec.loader.exec_module(mod)  # type: ignore[union-attr]
+    mod.tm.resolve()
+
+    elements = list(getattr(TM, "_elements", []))
+    candidate_elements = elements + list(getattr(TM, "_data", []))
+    threats = _extract_raw_threats()
+    controls, gaps = _extract_controls_and_gaps(mod)
+    _apply_threat_controls(threats, controls, gaps)
+    seq_str, dfd_str = _generate_diagrams(mod)
 
     return {
-        "assumptions": assumptions,
-        "boundaries": boundaries,
-        "actors": actors,
-        "assets": assets,
-        "dataflows": dataflows,
+        "assumptions": _extract_assumptions(mod),
+        "boundaries": _extract_boundaries(),
+        "actors": _extract_actors(elements),
+        "assets": _extract_assets(candidate_elements),
+        "dataflows": _extract_dataflows(elements),
         "threats": threats,
         "controls": controls,
         "gaps": gaps,
@@ -610,7 +612,7 @@ def _on_builder_inited(app: Sphinx) -> None:
     try:
         mtime = os.path.getmtime(model_path)
         data = _load_model(model_path)
-        app._pytm_cache = {(model_path, mtime): data}
+        _model_cache[(model_path, mtime)] = data
         logger.info(
             f"pytm: loaded {len(data['assumptions'])} assumptions, "
             f"{len(data['boundaries'])} boundaries, "
@@ -622,7 +624,18 @@ def _on_builder_inited(app: Sphinx) -> None:
             f"{len(data['gaps'])} gaps "
             f"from {os.path.basename(model_path)}"
         )
-    except Exception as exc:
+    except (
+        AttributeError,
+        ImportError,
+        RuntimeError,
+        OSError,
+        TypeError,
+        ValueError,
+        NameError,
+        SyntaxError,
+        KeyError,
+        IndexError,
+    ) as exc:
         logger.warning(f"pytm: failed to preload model: {exc}", exc_info=True)
 
 

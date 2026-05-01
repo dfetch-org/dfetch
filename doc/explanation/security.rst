@@ -17,38 +17,9 @@ classification methodology.
 .. _`EN 18031`: https://www.cenelec.eu/
 
 The threat model is maintained as executable code in ``security/threat_model.py``
-using the `pytm`_ framework.  Regenerate analysis output with:
+using the `pytm`_ framework.
 
-.. code-block:: bash
-
-   python -m security.threat_model --seq    # PlantUML sequence diagram (stdout)
-   python -m security.threat_model --dfd    # Graphviz DFD (stdout)
-   python -m security.threat_model --report # STRIDE findings report
-
-.. note::
-
-   The ``security/`` package is intentionally excluded from built wheels and is
-   **not** installed by ``pip install dfetch[security]``.  These commands must
-   be run from a source checkout with the repository root on ``PYTHONPATH`` (or
-   simply from the repository root, where Python resolves the ``security``
-   package automatically).
-
-.. note::
-
-   The ``--seq`` and ``--dfd`` commands require **PlantUML** and **Graphviz**
-   to be installed on the system.  These are not Python packages and are not
-   installed by ``pip install .[security]``.  Install them separately (e.g.
-   ``apt install plantuml graphviz`` or via your platform package manager)
-   before running the diagram commands.
-
-.. _pytm: https://github.com/izar/pytm
-
-.. note::
-
-   This document covers **Phase 1: asset register and implemented controls**.
-   STRIDE threat enumeration, risk scoring, and controls-gap mapping will be
-   added in subsequent phases.
-
+.. _pytm: https://github.com/owasp/pytm
 
 Product Security Context
 ------------------------
@@ -122,7 +93,6 @@ the pytm model.
 
 Operating environment
 ~~~~~~~~~~~~~~~~~~~~~
-
 
 .. pytm::
    :boundaries:
