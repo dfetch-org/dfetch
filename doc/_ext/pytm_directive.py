@@ -84,6 +84,8 @@ class PytmDirective(Directive):
         "controls": directives.flag,
         "gaps": directives.flag,
         "threats": directives.flag,
+        "seq": directives.flag,
+        "dfd": directives.flag,
     }
 
     def run(self) -> list[nodes.Node]:
@@ -135,6 +137,10 @@ class PytmDirective(Directive):
             sections.append(_render_gaps(data["gaps"]))
         if "threats" in self.options:
             sections.append(_render_threats(data["threats"]))
+        if "seq" in self.options:
+            sections.append(_render_seq(data.get("seq", "")))
+        if "dfd" in self.options:
+            sections.append(_render_dfd(data.get("dfd", "")))
 
         rst = "\n\n".join(sections)
         return _parse_rst(rst, self.state, self.content_offset, model_path)
@@ -227,18 +233,25 @@ def _load_model(model_path: str, confdir: str) -> dict:
         )
     dataflows.sort(key=lambda d: _sort_key(d["id"]))
 
-    # -- STRIDE findings -----------------------------------------------------
+    # -- Threat register from custom threats.json ----------------------------
     threats: list[dict] = []
-    for finding in mod.tm.findings:
+    for t in getattr(TM, "_threats", []):
         threats.append(
             {
-                "id": finding.threat_id,
-                "element": finding.element.name,
-                "description": finding.description,
-                "severity": str(finding.severity),
-                "mitigations": (finding.mitigations or "").strip(),
+                "id": getattr(t, "id", ""),
+                "description": getattr(t, "description", "") or "",
+                "details": getattr(t, "details", "") or "",
+                "likelihood": str(getattr(t, "likelihood", "") or ""),
+                "severity": str(getattr(t, "severity", "") or ""),
+                "mitigations": getattr(t, "mitigations", "") or "",
+                "prerequisites": getattr(t, "prerequisites", "") or "",
+                "example": getattr(t, "example", "") or "",
+                "references": getattr(t, "references", "") or "",
+                "controls": [],  # filled in after controls are loaded
             }
         )
+    sev_order = {"Very High": 0, "High": 1, "Medium": 2, "Low": 3}
+    threats.sort(key=lambda t: (sev_order.get(t["severity"], 9), t["id"]))
 
     # -- Controls and gaps from unified CONTROLS list -------------------------
     import dataclasses as _dc
@@ -251,6 +264,35 @@ def _load_model(model_path: str, confdir: str) -> dict:
         # plain-dict fallback
         controls = [c for c in _all_controls if c.get("status", "implemented") == "implemented"]
         gaps = list(getattr(mod, "GAPS", []))
+
+    # Cross-reference: threats → controls
+    threat_controls_map: dict[str, list[str]] = {}
+    for ctrl in controls + gaps:
+        for sid in ctrl.get("threats", []):
+            threat_controls_map.setdefault(sid, []).append(ctrl["id"])
+    for t in threats:
+        t["controls"] = threat_controls_map.get(t["id"], [])
+
+    # -- Sequence diagram and DFD strings ------------------------------------
+    import contextlib
+    import io as _io
+
+    seq_str = ""
+    dfd_str = ""
+    try:
+        buf = _io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            result = mod.tm.seq()
+        seq_str = result if isinstance(result, str) and result.strip() else buf.getvalue()
+    except Exception:
+        seq_str = ""
+    try:
+        buf = _io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            result = mod.tm.dfd()
+        dfd_str = result if isinstance(result, str) and result.strip() else buf.getvalue()
+    except Exception:
+        dfd_str = ""
 
     # -- Actors --------------------------------------------------------------
     from pytm import Actor as _Actor  # type: ignore[import]
@@ -296,6 +338,8 @@ def _load_model(model_path: str, confdir: str) -> dict:
         "threats": threats,
         "controls": controls,
         "gaps": gaps,
+        "seq": seq_str,
+        "dfd": dfd_str,
     }
 
 
@@ -436,8 +480,8 @@ def _render_controls(controls: list[dict]) -> str:
             "Add ``Control`` objects with ``status='implemented'`` "
             "to the ``CONTROLS`` list in the threat model."
         )
-    headers = ["ID", "Control", "Asset(s) protected", "Description"]
-    widths = [8, 22, 14, 56]
+    headers = ["ID", "Control", "Asset(s)", "Threat(s)", "Description"]
+    widths = [6, 20, 12, 12, 50]
     rows = []
     for c in controls:
         desc = _cell(c.get("description", ""))
@@ -449,6 +493,7 @@ def _render_controls(controls: list[dict]) -> str:
                 c.get("id", "—"),
                 c.get("name", "—"),
                 ", ".join(c.get("assets", [])),
+                ", ".join(c.get("threats", [])),
                 desc,
             ]
         )
@@ -462,13 +507,14 @@ def _render_gaps(gaps: list[dict]) -> str:
             "Add ``Control`` objects with ``status='gap'`` "
             "to the ``CONTROLS`` list in the threat model."
         )
-    headers = ["ID", "Gap", "Asset(s) affected", "Description"]
-    widths = [8, 24, 14, 54]
+    headers = ["ID", "Gap", "Asset(s)", "Threat(s)", "Description"]
+    widths = [6, 22, 12, 12, 48]
     rows = [
         [
             g.get("id", "—"),
             g.get("name", "—"),
             ", ".join(g.get("assets", [])),
+            ", ".join(g.get("threats", [])),
             _cell(g.get("description", "")),
         ]
         for g in gaps
@@ -478,27 +524,39 @@ def _render_gaps(gaps: list[dict]) -> str:
 
 def _render_threats(threats: list[dict]) -> str:
     if not threats:
-        return (
-            ".. note::\n\n   No STRIDE findings "
-            "(all threats mitigated or no elements in scope)."
-        )
-    # Group by severity for readability: Very High > High > Medium > Low
-    sev_order = {"Very High": 0, "High": 1, "Medium": 2, "Low": 3}
-    sorted_threats = sorted(
-        threats, key=lambda t: (sev_order.get(t["severity"], 9), t["id"])
-    )
-    headers = ["Threat ID", "Severity", "Element", "Description"]
-    widths = [10, 10, 25, 55]
+        return ".. note::\n\n   No threats defined in model."
+    # Already sorted by severity then ID in _load_model
+    headers = ["ID", "Severity", "Likelihood", "Description", "Controls"]
+    widths = [8, 10, 10, 42, 30]
     rows = [
         [
             t["id"],
             t["severity"],
-            t["element"],
+            t["likelihood"],
             _cell(t["description"]),
+            ", ".join(t.get("controls", [])) or "—",
         ]
-        for t in sorted_threats
+        for t in threats
     ]
     return _list_table(headers, rows, widths)
+
+
+def _render_seq(seq_str: str) -> str:
+    if not seq_str or not seq_str.strip():
+        return ".. note::\n\n   No sequence diagram generated by the threat model."
+    lines = [".. uml::", ""]
+    for line in seq_str.splitlines():
+        lines.append("   " + line if line.strip() else "")
+    return "\n".join(lines)
+
+
+def _render_dfd(dfd_str: str) -> str:
+    if not dfd_str or not dfd_str.strip():
+        return ".. note::\n\n   No data-flow diagram generated by the threat model."
+    lines = [".. graphviz::", ""]
+    for line in dfd_str.splitlines():
+        lines.append("   " + line if line.strip() else "")
+    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
@@ -539,7 +597,9 @@ def _on_builder_inited(app: Sphinx) -> None:
             f"{len(data['actors'])} actors, "
             f"{len(data['assets'])} assets, "
             f"{len(data['dataflows'])} flows, "
-            f"{len(data['threats'])} STRIDE findings "
+            f"{len(data['threats'])} threats, "
+            f"{len(data['controls'])} controls, "
+            f"{len(data['gaps'])} gaps "
             f"from {os.path.basename(model_path)}"
         )
     except Exception as exc:

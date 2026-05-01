@@ -9,6 +9,7 @@ Run:
     python -m security.threat_model --report     # STRIDE findings report
 """
 
+import os
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -40,6 +41,7 @@ tm = TM(
     ),
     isOrdered=True,
     mergeResponses=True,
+    threatsFile=os.path.join(os.path.dirname(__file__), "threats.json"),
 )
 
 tm.assumptions = [
@@ -683,6 +685,7 @@ class Control:
     name: str
     description: str
     assets: list[str] = field(default_factory=list)
+    threats: list[str] = field(default_factory=list)
     status: Literal["implemented", "planned", "gap"] = "implemented"
     reference: str = ""
 
@@ -710,6 +713,7 @@ CONTROLS: list[Control] = [
         id="C-001",
         name="Path-traversal prevention",
         assets=["PA-02", "SA-05"],
+        threats=["DFT-03"],
         description=(
             "``check_no_path_traversal()`` resolves both the candidate path and the "
             "destination root via ``os.path.realpath`` (symlink-aware, not "
@@ -723,6 +727,7 @@ CONTROLS: list[Control] = [
         id="C-002",
         name="Decompression-bomb protection",
         assets=["SA-05", "PA-02"],
+        threats=["DFT-09"],
         description=(
             "Archives are rejected if the uncompressed size exceeds 500 MB or the "
             "member count exceeds 10 000."
@@ -733,6 +738,7 @@ CONTROLS: list[Control] = [
         id="C-003",
         name="Archive symlink validation",
         assets=["PA-02"],
+        threats=["DFT-03"],
         description=(
             "Absolute and escaping (``..``) symlink targets are rejected for both "
             "TAR and ZIP.  A post-extraction walk validates all symlinks against the "
@@ -744,6 +750,7 @@ CONTROLS: list[Control] = [
         id="C-004",
         name="Archive member type checks",
         assets=["PA-02", "SA-05"],
+        threats=["DFT-03"],
         description=(
             "TAR and ZIP members of type device file or FIFO are rejected outright."
         ),
@@ -753,6 +760,7 @@ CONTROLS: list[Control] = [
         id="C-005",
         name="Integrity hash verification",
         assets=["PA-02", "PA-03"],
+        threats=["DFT-01", "DFT-02", "DFT-05"],
         description=(
             "SHA-256, SHA-384, and SHA-512 verified via ``hmac.compare_digest`` "
             "(constant-time comparison, resistant to timing attacks)."
@@ -763,6 +771,7 @@ CONTROLS: list[Control] = [
         id="C-006",
         name="Non-interactive VCS",
         assets=["SA-02", "EA-01"],
+        threats=["DFT-06"],
         description=(
             "``GIT_TERMINAL_PROMPT=0``, ``BatchMode=yes`` for Git; "
             "``--non-interactive`` for SVN.  Credential prompts are suppressed to "
@@ -774,6 +783,7 @@ CONTROLS: list[Control] = [
         id="C-007",
         name="Subprocess safety",
         assets=["SA-01"],
+        threats=["DFT-06"],
         description=(
             "All external commands invoked with ``shell=False`` and list-form "
             "arguments — no shell-injection vector."
@@ -784,6 +794,7 @@ CONTROLS: list[Control] = [
         id="C-008",
         name="Manifest input validation",
         assets=["PA-01"],
+        threats=["DFT-04", "DFT-08"],
         description=(
             "StrictYAML schema with ``SAFE_STR = Regex(r\"^[^\\x00-\\x1F\\x7F-\\x9F]*$\")`` "
             "rejects control characters in all string fields."
@@ -794,6 +805,7 @@ CONTROLS: list[Control] = [
         id="C-009",
         name="Actions commit-SHA pinning",
         assets=["SA-06", "EA-04"],
+        threats=["DFT-07"],
         description=(
             "Every third-party GitHub Action is pinned to a full commit SHA, "
             "preventing tag-mutable supply-chain substitution."
@@ -804,6 +816,7 @@ CONTROLS: list[Control] = [
         id="C-010",
         name="OIDC trusted publishing",
         assets=["SA-07", "PA-04"],
+        threats=["DFT-07"],
         description=(
             "PyPI publishes via ``pypa/gh-action-pypi-publish`` with "
             "``id-token: write`` and no stored long-lived API token."
@@ -814,6 +827,7 @@ CONTROLS: list[Control] = [
         id="C-011",
         name="Minimal workflow permissions",
         assets=["SA-06"],
+        threats=["DFT-07"],
         description=(
             "Each workflow declares only the permissions it requires "
             "(default ``contents: read``)."
@@ -824,6 +838,7 @@ CONTROLS: list[Control] = [
         id="C-012",
         name="persist-credentials: false",
         assets=["SA-02", "EA-03"],
+        threats=["DFT-07"],
         description=(
             "All ``actions/checkout`` steps drop the GitHub token from the working "
             "tree after checkout."
@@ -834,6 +849,7 @@ CONTROLS: list[Control] = [
         id="C-013",
         name="Harden-runner (egress audit)",
         assets=["SA-02", "EA-04"],
+        threats=["DFT-07"],
         description=(
             "``step-security/harden-runner`` is used in every workflow to audit "
             "outbound network connections.  Policy is ``audit``, not ``block``."
@@ -844,6 +860,7 @@ CONTROLS: list[Control] = [
         id="C-014",
         name="OpenSSF Scorecard",
         assets=["EA-03", "SA-10"],
+        threats=["DFT-07", "DFT-10"],
         description=(
             "Weekly OSSF Scorecard analysis uploaded to GitHub Code Scanning "
             "covers the full set of OpenSSF Scorecard checks."
@@ -854,6 +871,7 @@ CONTROLS: list[Control] = [
         id="C-015",
         name="CodeQL static analysis",
         assets=["SA-01", "SA-06"],
+        threats=["DFT-03", "DFT-06"],
         description=(
             "CodeQL scans the Python codebase for security vulnerabilities on "
             "every push and pull request."
@@ -864,6 +882,7 @@ CONTROLS: list[Control] = [
         id="C-016",
         name="Dependency review",
         assets=["SA-09"],
+        threats=["DFT-10"],
         description=(
             "``actions/dependency-review-action`` checks for known vulnerabilities "
             "in newly added dependencies on every pull request."
@@ -874,6 +893,7 @@ CONTROLS: list[Control] = [
         id="C-017",
         name="bandit security linter",
         assets=["SA-01"],
+        threats=["DFT-03", "DFT-06"],
         description=(
             "``bandit -r dfetch`` runs in CI to detect common Python security issues."
         ),
@@ -884,6 +904,7 @@ CONTROLS: list[Control] = [
         id="C-018",
         name="Optional integrity hash",
         assets=["PA-02", "PA-03"],
+        threats=["DFT-01", "DFT-02"],
         status="gap",
         description=(
             "``integrity.hash`` in the manifest is optional.  Archive dependencies "
@@ -895,6 +916,7 @@ CONTROLS: list[Control] = [
         id="C-019",
         name="No integrity mechanism for Git/SVN",
         assets=["PA-02", "PA-03"],
+        threats=["DFT-02", "DFT-05"],
         status="gap",
         description=(
             "Git and SVN dependencies carry no equivalent to ``integrity.hash``.  "
@@ -907,6 +929,7 @@ CONTROLS: list[Control] = [
         id="C-020",
         name="No patch-file integrity",
         assets=["SA-04", "PA-02"],
+        threats=["DFT-08"],
         status="gap",
         description=(
             "Patch files referenced in the manifest carry no integrity hash.  A "
@@ -917,6 +940,7 @@ CONTROLS: list[Control] = [
         id="C-021",
         name="No SLSA provenance",
         assets=["PA-04"],
+        threats=["DFT-05"],
         status="gap",
         description=(
             "The release pipeline does not generate SLSA provenance attestations or "
@@ -928,6 +952,7 @@ CONTROLS: list[Control] = [
         id="C-022",
         name="No dfetch-self SBOM on PyPI",
         assets=["PA-04", "PA-05"],
+        threats=["DFT-02"],
         status="gap",
         description=(
             "The CycloneDX SBOM generated by ``dfetch report`` covers vendored "
@@ -939,6 +964,7 @@ CONTROLS: list[Control] = [
         id="C-023",
         name="Build deps without hash pinning",
         assets=["SA-09"],
+        threats=["DFT-10"],
         status="gap",
         description=(
             "``pip install .`` and ``pip install --upgrade pip build`` in CI do not "
@@ -950,6 +976,7 @@ CONTROLS: list[Control] = [
         id="C-024",
         name="``secrets: inherit`` scope",
         assets=["SA-06", "SA-02"],
+        threats=["DFT-07"],
         status="gap",
         description=(
             "``ci.yml`` passes all repository secrets to the test and docs workflows "
@@ -961,6 +988,7 @@ CONTROLS: list[Control] = [
         id="C-025",
         name="Harden-runner in audit mode",
         assets=["EA-04", "SA-06"],
+        threats=["DFT-07"],
         status="gap",
         description=(
             "``step-security/harden-runner`` is configured with "

@@ -230,6 +230,41 @@ table is generated at build time from the pytm model.
    :dataflows:
 
 
+Data Flow Diagram
+-----------------
+
+The diagram below is generated at build time from the pytm model using
+Graphviz.  It shows all trust boundaries, processes, data stores, and
+data flows.
+
+.. pytm::
+   :dfd:
+
+
+Sequence Diagram
+----------------
+
+The diagram below is generated at build time from the pytm model using
+PlantUML.  It shows the temporal ordering of key interactions across
+trust boundaries.
+
+.. pytm::
+   :seq:
+
+
+Identified Threats
+------------------
+
+The following threats were identified against the dfetch system model.
+They are defined in ``security/threats.json`` and evaluated against
+pytm elements at build time.  The *Controls* column lists implemented
+controls (``Cx-xxx``) that directly address each threat; a dash (``—``)
+indicates a gap with no current control.
+
+.. pytm::
+   :threats:
+
+
 Implemented Security Controls
 -------------------------------
 

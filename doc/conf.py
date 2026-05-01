@@ -62,6 +62,7 @@ extensions = [
     "colordot",
     "designguide",
     "pytm_directive",
+    "sphinx.ext.graphviz",
 ]
 
 # Path to the pytm threat model; used by the ``.. pytm::`` directive.
