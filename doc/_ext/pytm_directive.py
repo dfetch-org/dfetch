@@ -447,7 +447,20 @@ def _cell(text: str) -> str:
     return text
 
 
-def _list_table(headers: list[str], rows: list[list[str]], widths: list[int]) -> str:
+def _ref_list(ids: list[str]) -> str:
+    """Return comma-separated :ref: links to the given IDs, or em-dash if empty."""
+    filtered = [i for i in ids if i]
+    if not filtered:
+        return "—"
+    return ", ".join(f":ref:`{i} <{i.lower()}>`" for i in filtered)
+
+
+def _list_table(
+    headers: list[str],
+    rows: list[list[str]],
+    widths: list[int],
+    anchor_first_col: bool = False,
+) -> str:
     """Build a ``.. list-table::`` RST block with longtable support for LaTeX."""
     total = sum(widths) or 1
     scale = 0.92
@@ -466,7 +479,13 @@ def _list_table(headers: list[str], rows: list[list[str]], widths: list[int]) ->
     for h in headers[1:]:
         lines.append("     - " + h)
     for row in rows:
-        lines.append("   * - " + row[0])
+        if anchor_first_col:
+            label = row[0].lower().replace(" ", "-")
+            lines.append(f"   * - .. _{label}:")
+            lines.append("")
+            lines.append(f"       {row[0]}")
+        else:
+            lines.append("   * - " + row[0])
         for cell in row[1:]:
             lines.append("     - " + cell)
     return "\n".join(lines)
@@ -513,7 +532,7 @@ def _render_assets(assets: list[dict]) -> str:
         [a["id"], a["name"], a["classification"], _cell(a["description"])]
         for a in assets
     ]
-    return _list_table(headers, rows, widths)
+    return _list_table(headers, rows, widths, anchor_first_col=True)
 
 
 def _render_dataflows(dataflows: list[dict]) -> str:
@@ -530,7 +549,7 @@ def _render_dataflows(dataflows: list[dict]) -> str:
         ]
         for d in dataflows
     ]
-    return _list_table(headers, rows, widths)
+    return _list_table(headers, rows, widths, anchor_first_col=True)
 
 
 def _render_controls(controls: list[dict]) -> str:
@@ -552,12 +571,12 @@ def _render_controls(controls: list[dict]) -> str:
             [
                 c.get("id", "—"),
                 c.get("name", "—"),
-                ", ".join(c.get("assets", [])),
-                ", ".join(c.get("threats", [])),
+                _ref_list(c.get("assets", [])),
+                _ref_list(c.get("threats", [])),
                 desc,
             ]
         )
-    return _list_table(headers, rows, widths)
+    return _list_table(headers, rows, widths, anchor_first_col=True)
 
 
 def _render_gaps(gaps: list[dict]) -> str:
@@ -573,13 +592,13 @@ def _render_gaps(gaps: list[dict]) -> str:
         [
             g.get("id", "—"),
             g.get("name", "—"),
-            ", ".join(g.get("assets", [])),
-            ", ".join(g.get("threats", [])),
+            _ref_list(g.get("assets", [])),
+            _ref_list(g.get("threats", [])),
             _cell(g.get("description", "")),
         ]
         for g in gaps
     ]
-    return _list_table(headers, rows, widths)
+    return _list_table(headers, rows, widths, anchor_first_col=True)
 
 
 def _render_threats(threats: list[dict]) -> str:
@@ -594,11 +613,11 @@ def _render_threats(threats: list[dict]) -> str:
             t["severity"],
             t["likelihood"],
             _cell(t["description"]),
-            ", ".join(t.get("controls", [])) or "—",
+            _ref_list(t.get("controls", [])),
         ]
         for t in threats
     ]
-    return _list_table(headers, rows, widths)
+    return _list_table(headers, rows, widths, anchor_first_col=True)
 
 
 def _render_seq(seq_str: str, seq_img_path: str = "") -> str:
