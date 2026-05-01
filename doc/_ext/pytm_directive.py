@@ -76,6 +76,8 @@ class PytmDirective(Directive):
     optional_arguments = 1
     has_content = False
     option_spec = {
+        "assumptions": directives.flag,
+        "boundaries": directives.flag,
         "assets": directives.flag,
         "dataflows": directives.flag,
         "controls": directives.flag,
@@ -116,6 +118,10 @@ class PytmDirective(Directive):
         data = _get_model_data(app, model_path)
 
         sections: list[str] = []
+        if "assumptions" in self.options:
+            sections.append(_render_assumptions(data["assumptions"]))
+        if "boundaries" in self.options:
+            sections.append(_render_boundaries(data["boundaries"]))
         if "assets" in self.options:
             sections.append(_render_assets(data["assets"]))
         if "dataflows" in self.options:
@@ -235,7 +241,29 @@ def _load_model(model_path: str, confdir: str) -> dict:
     controls: list[dict] = list(getattr(mod, "CONTROLS", []))
     gaps: list[dict] = list(getattr(mod, "GAPS", []))
 
+    # -- Trust boundaries ----------------------------------------------------
+    boundaries: list[dict] = []
+    for b in getattr(TM, "_boundaries", []):
+        boundaries.append(
+            {
+                "name": b.name,
+                "description": (getattr(b, "description", "") or "").strip(),
+            }
+        )
+
+    # -- Modelling assumptions ------------------------------------------------
+    assumptions: list[dict] = []
+    for a in getattr(mod.tm, "assumptions", []):
+        assumptions.append(
+            {
+                "name": getattr(a, "name", str(a)),
+                "description": (getattr(a, "description", "") or "").strip(),
+            }
+        )
+
     return {
+        "assumptions": assumptions,
+        "boundaries": boundaries,
         "assets": assets,
         "dataflows": dataflows,
         "threats": threats,
@@ -304,6 +332,33 @@ def _list_table(headers: list[str], rows: list[list[str]], widths: list[int]) ->
         for cell in row[1:]:
             lines.append("     - " + cell)
     return "\n".join(lines)
+
+
+def _render_assumptions(assumptions: list[dict]) -> str:
+    if not assumptions:
+        return (
+            ".. note::\n\n   No assumptions defined.  "
+            "Add an ``assumptions`` list to the threat model."
+        )
+    headers = ["Assumption", "Description"]
+    widths = [28, 72]
+    rows = [
+        [a["name"], _cell(a["description"])]
+        for a in assumptions
+    ]
+    return _list_table(headers, rows, widths)
+
+
+def _render_boundaries(boundaries: list[dict]) -> str:
+    if not boundaries:
+        return ".. note::\n\n   No trust boundaries defined in model."
+    headers = ["Boundary", "Description"]
+    widths = [30, 70]
+    rows = [
+        [f"**{b['name']}**", _cell(b["description"])]
+        for b in boundaries
+    ]
+    return _list_table(headers, rows, widths)
 
 
 def _render_assets(assets: list[dict]) -> str:
@@ -432,7 +487,9 @@ def _on_builder_inited(app: Sphinx) -> None:
         data = _load_model(model_path, app.confdir)
         app._pytm_cache = {(model_path, mtime): data}
         logger.info(
-            f"pytm: loaded {len(data['assets'])} assets, "
+            f"pytm: loaded {len(data['assumptions'])} assumptions, "
+            f"{len(data['boundaries'])} boundaries, "
+            f"{len(data['assets'])} assets, "
             f"{len(data['dataflows'])} flows, "
             f"{len(data['threats'])} STRIDE findings "
             f"from {os.path.basename(model_path)}"

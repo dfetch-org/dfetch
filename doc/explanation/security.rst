@@ -220,52 +220,21 @@ The threat model spans six trust boundaries (see below) and covers:
 - PyPI distribution via OIDC trusted publishing
 - Consumer installation and build integration
 
-Modelling assumptions:
+Modelling assumptions are maintained in ``security/threat_model.py`` and
+rendered below from the pytm model.
 
-#. Developer workstations are trusted at dfetch invocation time.
-#. TLS certificate validation is delegated to the OS, git, or SVN client.
-#. No runtime secrets are persisted to disk by dfetch itself.
-#. GitHub Actions environments inherit the security posture of the GitHub-hosted runner.
-#. The ``integrity.hash`` field in the manifest is **optional** — archive
-   dependencies without it have no content-authenticity guarantee beyond TLS
-   transport (which is itself absent for plain ``http://`` URLs).
-#. Branch- and tag-pinned Git dependencies are **mutable references** — upstream
-   force-pushes silently change fetched content without triggering a manifest diff.
-#. The ``harden-runner`` egress policy is set to ``audit``, not ``block`` —
-   outbound network connections from CI runners are logged but not prevented.
-#. dfetch's own build and development dependencies are **not** installed with
-   ``--require-hashes``, so a compromised PyPI mirror can substitute build tooling.
+.. pytm::
+   :assumptions:
 
 
 Trust Boundaries
 ----------------
 
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
+Trust boundaries are defined in ``security/threat_model.py`` and rendered
+below from the pytm model.
 
-   * - Boundary
-     - Description
-   * - **Local Developer Environment**
-     - Developer workstation or local CI runner.  Assumed trusted at invocation
-       time.  Hosts the manifest, vendor directory, metadata, and patch files.
-   * - **GitHub Actions Infrastructure**
-     - Microsoft-operated ephemeral runners executing the 11 CI/CD workflows.
-       Semi-trusted: egress is audited but not blocked; secrets are inherited
-       across workflows via ``secrets: inherit``.
-   * - **Internet**
-     - All traffic crossing the local/remote boundary.  TLS enforcement is the
-       responsibility of the OS and VCS clients; dfetch does not enforce HTTPS
-       on manifest URLs.
-   * - **Remote VCS Infrastructure**
-     - Upstream Git and SVN servers (GitHub, GitLab, Gitea, self-hosted).  Not
-       controlled by the dfetch project; content is untrusted until verified.
-   * - **PyPI / TestPyPI**
-     - Python Package Index.  dfetch publishes via OIDC trusted publishing —
-       no long-lived API token stored.
-   * - **Archive Content Space**
-     - Downloaded archive bytes before extraction validation.  Decompression-bomb
-       and path-traversal checks enforce this boundary during extraction.
+.. pytm::
+   :boundaries:
 
 
 Asset Register

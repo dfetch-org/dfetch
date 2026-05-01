@@ -12,6 +12,7 @@ Run:
 from pytm import (
     TM,
     Actor,
+    Assumption,
     Boundary,
     Classification,
     Data,
@@ -39,29 +40,107 @@ tm = TM(
 )
 
 tm.assumptions = [
-    "Developer workstations are trusted at dfetch invocation time.",
-    "TLS certificate validation is delegated to the OS / git / SVN client.",
-    "No runtime secrets are persisted to disk by dfetch itself.",
-    "GitHub Actions environments inherit the security posture of the GitHub-hosted runner.",
-    "The integrity.hash field in the manifest is OPTIONAL — archive deps without it have "
-    "no content-authenticity guarantee beyond TLS transport (which itself is absent for "
-    "http:// URLs).",
-    "Branch/tag-pinned Git deps are mutable references — upstream history rewrites or "
-    "force-pushes silently change what is fetched without triggering a manifest diff.",
-    "harden-runner egress policy is set to 'audit', not 'block' — outbound network "
-    "connections from CI runners are logged but not prevented.",
-    "dfetch's own build/dev dependencies (pip install .) are not installed with "
-    "--require-hashes, so a compromised PyPI mirror can substitute packages.",
+    Assumption(
+        "Trusted workstation",
+        description=(
+            "Developer workstations are trusted at dfetch invocation time.  "
+            "A compromised workstation is outside the scope of this threat model."
+        ),
+    ),
+    Assumption(
+        "TLS delegated to client",
+        description=(
+            "TLS certificate validation is delegated to the OS trust store and the "
+            "git / svn / urllib clients.  dfetch does not independently validate certificates."
+        ),
+    ),
+    Assumption(
+        "No persisted secrets",
+        description=(
+            "No runtime secrets are persisted to disk by dfetch itself.  "
+            "VCS credentials are managed by the OS keychain, SSH agent, or CI secret store."
+        ),
+    ),
+    Assumption(
+        "CI runner posture",
+        description=(
+            "GitHub Actions environments inherit the security posture of the "
+            "GitHub-hosted runner.  Ephemeral runner isolation is provided by GitHub."
+        ),
+    ),
+    Assumption(
+        "Optional integrity hash",
+        description=(
+            "The ``integrity.hash`` field in the manifest is optional.  "
+            "Archive dependencies without it have no content-authenticity guarantee "
+            "beyond TLS transport, which is itself absent for plain ``http://`` URLs."
+        ),
+    ),
+    Assumption(
+        "Mutable VCS references",
+        description=(
+            "Branch- and tag-pinned Git dependencies are mutable references.  "
+            "Upstream force-pushes silently change what is fetched without "
+            "triggering a manifest diff."
+        ),
+    ),
+    Assumption(
+        "Harden-runner in audit mode",
+        description=(
+            "The ``harden-runner`` egress policy is set to ``audit``, not ``block``.  "
+            "Outbound network connections from CI runners are logged but not prevented."
+        ),
+    ),
+    Assumption(
+        "Build deps without hash pinning",
+        description=(
+            "dfetch's own build and dev dependencies are installed without "
+            "``--require-hashes``, so a compromised PyPI mirror can substitute packages."
+        ),
+    ),
 ]
 
 # ── Trust boundaries ─────────────────────────────────────────────────────────
 
 boundary_dev_env = Boundary("Local Developer Environment")
+boundary_dev_env.description = (
+    "Developer workstation or local CI runner.  Assumed trusted at invocation time.  "
+    "Hosts the manifest (``dfetch.yaml``), vendor directory, dependency metadata "
+    "(``.dfetch_data.yaml``), and patch files."
+)
+
 boundary_github = Boundary("GitHub Actions Infrastructure")
+boundary_github.description = (
+    "Microsoft-operated ephemeral runners executing the 11 CI/CD workflows.  "
+    "Semi-trusted: egress is audited (``harden-runner``) but not blocked; "
+    "secrets are propagated via ``secrets: inherit`` in ``ci.yml``."
+)
+
 boundary_network = Boundary("Internet")
+boundary_network.description = (
+    "All traffic crossing the local/remote boundary.  TLS enforcement is the "
+    "responsibility of the OS and VCS clients; dfetch does not enforce HTTPS "
+    "on manifest URLs."
+)
+
 boundary_remote_vcs = Boundary("Remote VCS Infrastructure")
+boundary_remote_vcs.description = (
+    "Upstream Git and SVN servers (GitHub, GitLab, Gitea, self-hosted).  "
+    "Not controlled by the dfetch project; content is untrusted until verified."
+)
+
 boundary_pypi = Boundary("PyPI / TestPyPI")
+boundary_pypi.description = (
+    "Python Package Index and its staging registry.  dfetch publishes via "
+    "OIDC trusted publishing — no long-lived API token stored."
+)
+
 boundary_archive = Boundary("Archive Content Space")
+boundary_archive.description = (
+    "Downloaded archive bytes before extraction and validation.  "
+    "Decompression-bomb and path-traversal checks enforce this boundary "
+    "during extraction."
+)
 
 # ── Actors ───────────────────────────────────────────────────────────────────
 
