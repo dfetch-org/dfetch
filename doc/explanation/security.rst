@@ -111,28 +111,11 @@ etc.) to reproduce a known dependency state.
 
 **3 — User roles**
 
-.. list-table::
-   :header-rows: 1
-   :widths: 20 25 55
+Actors are defined in ``security/threat_model.py`` and rendered below from
+the pytm model.
 
-   * - Role
-     - Typical actor
-     - Responsibilities and trust level
-   * - **Manifest author** (Developer)
-     - Human software developer
-     - Writes and reviews ``dfetch.yaml``; responsible for choosing upstream
-       sources, pinning revisions, and enabling ``integrity.hash`` for archive
-       dependencies.  Trusted at workstation invocation time.
-   * - **CI runner** (Automated)
-     - GitHub Actions workflow, GitLab CI job, Jenkins agent
-     - Invokes ``dfetch update`` non-interactively to reproduce the declared
-       dependency set.  Runs in an ephemeral, semi-trusted environment;
-       credential access is governed by the CI platform's secret store.
-   * - **Security / compliance operator**
-     - Security engineer, auditor, legal/compliance team
-     - Reviews ``dfetch check`` and ``dfetch report --sbom`` output for
-       outdated dependencies, known-vulnerable components, or licence compliance.
-       Read-only interaction with dfetch artifacts.
+.. pytm::
+   :actors:
 
 **4 — Operating environment**
 

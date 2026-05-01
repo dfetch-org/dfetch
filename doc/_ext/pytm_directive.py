@@ -78,6 +78,7 @@ class PytmDirective(Directive):
     option_spec = {
         "assumptions": directives.flag,
         "boundaries": directives.flag,
+        "actors": directives.flag,
         "assets": directives.flag,
         "dataflows": directives.flag,
         "controls": directives.flag,
@@ -122,6 +123,8 @@ class PytmDirective(Directive):
             sections.append(_render_assumptions(data["assumptions"]))
         if "boundaries" in self.options:
             sections.append(_render_boundaries(data["boundaries"]))
+        if "actors" in self.options:
+            sections.append(_render_actors(data["actors"]))
         if "assets" in self.options:
             sections.append(_render_assets(data["assets"]))
         if "dataflows" in self.options:
@@ -249,6 +252,21 @@ def _load_model(model_path: str, confdir: str) -> dict:
         controls = [c for c in _all_controls if c.get("status", "implemented") == "implemented"]
         gaps = list(getattr(mod, "GAPS", []))
 
+    # -- Actors --------------------------------------------------------------
+    from pytm import Actor as _Actor  # type: ignore[import]
+
+    actors: list[dict] = []
+    for el in TM._elements:
+        if not isinstance(el, _Actor):
+            continue
+        actors.append(
+            {
+                "name": el.name,
+                "boundary": getattr(el.inBoundary, "name", ""),
+                "description": (getattr(el, "description", "") or "").strip(),
+            }
+        )
+
     # -- Trust boundaries ----------------------------------------------------
     boundaries: list[dict] = []
     for b in getattr(TM, "_boundaries", []):
@@ -272,6 +290,7 @@ def _load_model(model_path: str, confdir: str) -> dict:
     return {
         "assumptions": assumptions,
         "boundaries": boundaries,
+        "actors": actors,
         "assets": assets,
         "dataflows": dataflows,
         "threats": threats,
@@ -365,6 +384,18 @@ def _render_boundaries(boundaries: list[dict]) -> str:
     rows = [
         [f"**{b['name']}**", _cell(b["description"])]
         for b in boundaries
+    ]
+    return _list_table(headers, rows, widths)
+
+
+def _render_actors(actors: list[dict]) -> str:
+    if not actors:
+        return ".. note::\n\n   No actors defined in model."
+    headers = ["Actor", "Trust Boundary", "Description"]
+    widths = [22, 28, 50]
+    rows = [
+        [f"**{a['name']}**", a["boundary"], _cell(a["description"])]
+        for a in actors
     ]
     return _list_table(headers, rows, widths)
 
@@ -505,6 +536,7 @@ def _on_builder_inited(app: Sphinx) -> None:
         logger.info(
             f"pytm: loaded {len(data['assumptions'])} assumptions, "
             f"{len(data['boundaries'])} boundaries, "
+            f"{len(data['actors'])} actors, "
             f"{len(data['assets'])} assets, "
             f"{len(data['dataflows'])} flows, "
             f"{len(data['threats'])} STRIDE findings "

@@ -149,12 +149,30 @@ boundary_archive.description = (
 
 developer = Actor("Developer")
 developer.inBoundary = boundary_dev_env
+developer.description = (
+    "Writes and reviews ``dfetch.yaml``; selects upstream sources, pins revisions, "
+    "and optionally enables ``integrity.hash`` for archive dependencies.  "
+    "Trusted at workstation invocation time.  "
+    "Responsible for choosing trustworthy upstream sources and keeping pins current."
+)
 
 contributor = Actor("Contributor / Attacker")
 contributor.inBoundary = boundary_network
+contributor.description = (
+    "External contributor submitting pull requests, or an adversary attempting "
+    "supply-chain manipulation (malicious PR, upstream repository compromise, "
+    "or MITM on a non-TLS data flow).  Untrusted — code review, branch protection, "
+    "and SHA-pinned Actions are the primary controls at this boundary."
+)
 
 consumer = Actor("Consumer / End User")
 consumer.inBoundary = boundary_dev_env
+consumer.description = (
+    "Installs dfetch from PyPI (``pip install dfetch``) and invokes it on a "
+    "developer workstation or in a CI pipeline to reproduce a declared dependency "
+    "set.  Trusts PyPI package integrity and build provenance; currently has no "
+    "mechanism to verify SLSA attestation or Sigstore signature for dfetch itself."
+)
 
 # ── External entities ────────────────────────────────────────────────────────
 
