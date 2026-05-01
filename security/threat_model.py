@@ -78,6 +78,7 @@ consumer.inBoundary = boundary_dev_env
 
 remote_git_svn = ExternalEntity("EA-01: Remote VCS Server")
 remote_git_svn.inBoundary = boundary_remote_vcs
+remote_git_svn.classification = Classification.PUBLIC
 remote_git_svn.description = (
     "Upstream Git or SVN host: GitHub, GitLab, Gitea, self-hosted Git/SVN. "
     "Not controlled by the dfetch project; content is untrusted until verified."
@@ -85,6 +86,7 @@ remote_git_svn.description = (
 
 archive_server = ExternalEntity("EA-02: Archive HTTP Server")
 archive_server.inBoundary = boundary_remote_vcs
+archive_server.classification = Classification.PUBLIC
 archive_server.description = (
     "HTTP/HTTPS server serving .tar.gz, .tgz, .tar.bz2, .tar.xz, or .zip files. "
     "CRITICAL: http:// (non-TLS) URLs are accepted without enforcement of integrity "
@@ -93,6 +95,7 @@ archive_server.description = (
 
 gh_repository = ExternalEntity("EA-03: GitHub Repository")
 gh_repository.inBoundary = boundary_github
+gh_repository.classification = Classification.RESTRICTED
 gh_repository.description = (
     "Source code, PRs, releases, and workflow definitions. "
     "GitHub Actions workflows (.github/workflows/) with contents:write permission "
@@ -101,6 +104,7 @@ gh_repository.description = (
 
 gh_actions_runner = ExternalEntity("EA-04: GitHub Actions Infrastructure")
 gh_actions_runner.inBoundary = boundary_github
+gh_actions_runner.classification = Classification.RESTRICTED
 gh_actions_runner.description = (
     "Microsoft-operated ephemeral runner executing CI/CD workflows. "
     "Egress policy is 'audit' (not 'block') — exfiltration of secrets is possible "
@@ -109,6 +113,7 @@ gh_actions_runner.description = (
 
 pypi = ExternalEntity("EA-05: PyPI / TestPyPI")
 pypi.inBoundary = boundary_pypi
+pypi.classification = Classification.PUBLIC
 pypi.description = (
     "Python Package Index. dfetch is published via OIDC trusted publishing "
     "(no long-lived API token). Account takeover or registry compromise "
@@ -117,6 +122,7 @@ pypi.description = (
 
 consumer_build = ExternalEntity("EA-07: Consumer Build System")
 consumer_build.inBoundary = boundary_dev_env
+consumer_build.classification = Classification.RESTRICTED
 consumer_build.description = (
     "Build system that compiles fetched source code (PA-02). "
     "Not controlled by dfetch — it receives untrusted third-party source."
@@ -126,6 +132,7 @@ consumer_build.description = (
 
 dfetch_cli = Process("SA-01: dfetch Process")
 dfetch_cli.inBoundary = boundary_dev_env
+dfetch_cli.classification = Classification.RESTRICTED
 dfetch_cli.description = (
     "Python CLI entry point dispatching to: update, check, diff, add, remove, "
     "patch, format-patch, freeze, import, report, validate, environment. "
@@ -535,6 +542,241 @@ df15.description = (
     "Installed dfetch wheel executed in consumer environment. "
     "Consumer cannot verify build provenance without SLSA attestation."
 )
+
+# ── IMPLEMENTED SECURITY CONTROLS ────────────────────────────────────────────
+#
+# Each entry is rendered by the ``.. pytm:: :controls:`` Sphinx directive.
+# RST markup (``double backticks``) is supported in "implementation" strings.
+
+CONTROLS: list[dict] = [
+    {
+        "name": "Path-traversal prevention",
+        "assets": ["PA-02", "SA-05"],
+        "implementation": (
+            "``check_no_path_traversal()`` resolves both the candidate path and the "
+            "destination root via ``os.path.realpath`` (symlink-aware, not "
+            "``pathlib.Path.resolve``), then rejects any path whose resolved prefix "
+            "does not start with the resolved root.  Applied to every file copy and "
+            "post-extraction symlink."
+        ),
+        "reference": "dfetch/util/util.py",
+    },
+    {
+        "name": "Decompression-bomb protection",
+        "assets": ["SA-05", "PA-02"],
+        "implementation": (
+            "Archives are rejected if the uncompressed size exceeds 500 MB or the "
+            "member count exceeds 10 000."
+        ),
+        "reference": "dfetch/vcs/archive.py",
+    },
+    {
+        "name": "Archive symlink validation",
+        "assets": ["PA-02"],
+        "implementation": (
+            "Absolute and escaping (``..``) symlink targets are rejected for both "
+            "TAR and ZIP.  A post-extraction walk validates all symlinks against the "
+            "manifest root."
+        ),
+        "reference": "dfetch/vcs/archive.py",
+    },
+    {
+        "name": "Archive member type checks",
+        "assets": ["PA-02", "SA-05"],
+        "implementation": (
+            "TAR and ZIP members of type device file or FIFO are rejected outright."
+        ),
+        "reference": "dfetch/vcs/archive.py",
+    },
+    {
+        "name": "Integrity hash verification",
+        "assets": ["PA-02", "PA-03"],
+        "implementation": (
+            "SHA-256, SHA-384, and SHA-512 verified via ``hmac.compare_digest`` "
+            "(constant-time comparison, resistant to timing attacks)."
+        ),
+        "reference": "dfetch/vcs/integrity_hash.py",
+    },
+    {
+        "name": "Non-interactive VCS",
+        "assets": ["SA-02", "EA-01"],
+        "implementation": (
+            "``GIT_TERMINAL_PROMPT=0``, ``BatchMode=yes`` for Git; "
+            "``--non-interactive`` for SVN.  Credential prompts are suppressed to "
+            "prevent interactive hijacking in CI."
+        ),
+        "reference": "dfetch/vcs/git.py, dfetch/vcs/svn.py",
+    },
+    {
+        "name": "Subprocess safety",
+        "assets": ["SA-01"],
+        "implementation": (
+            "All external commands invoked with ``shell=False`` and list-form "
+            "arguments — no shell-injection vector."
+        ),
+        "reference": "dfetch/util/cmdline.py",
+    },
+    {
+        "name": "Manifest input validation",
+        "assets": ["PA-01"],
+        "implementation": (
+            "StrictYAML schema with ``SAFE_STR = Regex(r\"^[^\\x00-\\x1F\\x7F-\\x9F]*$\")`` "
+            "rejects control characters in all string fields."
+        ),
+        "reference": "dfetch/manifest/schema.py",
+    },
+    {
+        "name": "Actions commit-SHA pinning",
+        "assets": ["SA-06", "EA-04"],
+        "implementation": (
+            "Every third-party GitHub Action is pinned to a full commit SHA, "
+            "preventing tag-mutable supply-chain substitution."
+        ),
+        "reference": ".github/workflows/*.yml",
+    },
+    {
+        "name": "OIDC trusted publishing",
+        "assets": ["SA-07", "PA-04"],
+        "implementation": (
+            "PyPI publishes via ``pypa/gh-action-pypi-publish`` with "
+            "``id-token: write`` and no stored long-lived API token."
+        ),
+        "reference": ".github/workflows/python-publish.yml",
+    },
+    {
+        "name": "Minimal workflow permissions",
+        "assets": ["SA-06"],
+        "implementation": (
+            "Each workflow declares only the permissions it requires "
+            "(default ``contents: read``)."
+        ),
+        "reference": ".github/workflows/*.yml",
+    },
+    {
+        "name": "persist-credentials: false",
+        "assets": ["SA-02", "EA-03"],
+        "implementation": (
+            "All ``actions/checkout`` steps drop the GitHub token from the working "
+            "tree after checkout."
+        ),
+        "reference": ".github/workflows/*.yml",
+    },
+    {
+        "name": "Harden-runner (egress audit)",
+        "assets": ["SA-02", "EA-04"],
+        "implementation": (
+            "``step-security/harden-runner`` is used in every workflow to audit "
+            "outbound network connections.  Note: policy is ``audit``, not ``block``."
+        ),
+        "reference": ".github/workflows/*.yml",
+    },
+    {
+        "name": "OpenSSF Scorecard",
+        "assets": ["EA-03", "SA-10"],
+        "implementation": (
+            "Weekly OSSF Scorecard analysis uploaded to GitHub Code Scanning "
+            "covers the full set of OpenSSF Scorecard checks."
+        ),
+        "reference": ".github/workflows/scorecard.yml",
+    },
+    {
+        "name": "CodeQL static analysis",
+        "assets": ["SA-01", "SA-06"],
+        "implementation": (
+            "CodeQL scans the Python codebase for security vulnerabilities on "
+            "every push and pull request."
+        ),
+        "reference": ".github/workflows/codeql-analysis.yml",
+    },
+    {
+        "name": "Dependency review",
+        "assets": ["SA-09"],
+        "implementation": (
+            "``actions/dependency-review-action`` checks for known vulnerabilities "
+            "in newly added dependencies on every pull request."
+        ),
+        "reference": ".github/workflows/dependency-review.yml",
+    },
+    {
+        "name": "bandit security linter",
+        "assets": ["SA-01"],
+        "implementation": (
+            "``bandit -r dfetch`` runs in CI to detect common Python security issues."
+        ),
+        "reference": "pyproject.toml",
+    },
+]
+
+# ── KNOWN GAPS AND RESIDUAL RISKS ─────────────────────────────────────────────
+#
+# Each entry is rendered by the ``.. pytm:: :gaps:`` Sphinx directive.
+
+GAPS: list[dict] = [
+    {
+        "name": "Optional integrity hash",
+        "description": (
+            "``integrity.hash`` in the manifest is optional.  Archive dependencies "
+            "without it have no content-authenticity guarantee.  Plain ``http://`` "
+            "URLs receive no protection at all."
+        ),
+    },
+    {
+        "name": "No integrity mechanism for Git/SVN",
+        "description": (
+            "Git and SVN dependencies carry no equivalent to ``integrity.hash``.  "
+            "Authenticity relies entirely on transport security (TLS or SSH).  "
+            "Mutable references (branch, tag) can silently fetch different content "
+            "after an upstream force-push."
+        ),
+    },
+    {
+        "name": "No patch-file integrity",
+        "description": (
+            "Patch files referenced in the manifest carry no integrity hash.  A "
+            "tampered patch can write to arbitrary paths through ``patch-ng``."
+        ),
+    },
+    {
+        "name": "No SLSA provenance",
+        "description": (
+            "The release pipeline does not generate SLSA provenance attestations or "
+            "Sigstore/cosign signatures for the published wheel.  Consumers cannot "
+            "verify build provenance."
+        ),
+    },
+    {
+        "name": "No dfetch-self SBOM on PyPI",
+        "description": (
+            "The CycloneDX SBOM generated by ``dfetch report`` covers vendored "
+            "dependencies only.  dfetch itself has no machine-readable SBOM published "
+            "alongside its PyPI release, as CRA Article 13 requires."
+        ),
+    },
+    {
+        "name": "Build deps without hash pinning",
+        "description": (
+            "``pip install .`` and ``pip install --upgrade pip build`` in CI do not "
+            "use ``--require-hashes``.  A compromised PyPI mirror can substitute "
+            "malicious build tooling."
+        ),
+    },
+    {
+        "name": "``secrets: inherit`` scope",
+        "description": (
+            "``ci.yml`` passes all repository secrets to the test and docs workflows "
+            "via ``secrets: inherit``.  A malicious pull request step in either "
+            "workflow could exfiltrate secrets."
+        ),
+    },
+    {
+        "name": "Harden-runner in audit mode",
+        "description": (
+            "``step-security/harden-runner`` is configured with "
+            "``egress-policy: audit``.  Outbound connections are logged but not "
+            "blocked — secret exfiltration via a compromised CI step is possible."
+        ),
+    },
+]
 
 if __name__ == "__main__":
     tm.process()

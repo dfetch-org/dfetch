@@ -61,7 +61,13 @@ extensions = [
     "sphinx_copybutton",
     "colordot",
     "designguide",
+    "pytm_directive",
 ]
+
+# Path to the pytm threat model; used by the ``.. pytm::`` directive.
+pytm_model = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "security", "threat_model.py")
+)
 
 # Strip shell prompts and Python REPL prompts from copied text
 copybutton_prompt_text = r"\$ |>>> |\.\.\. "
