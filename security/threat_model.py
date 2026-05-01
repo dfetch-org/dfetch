@@ -101,6 +101,31 @@ tm.assumptions = [
             "``--require-hashes``, so a compromised PyPI mirror can substitute packages."
         ),
     ),
+    Assumption(
+        "Manifest under code review",
+        description=(
+            "The manifest (``dfetch.yaml``) is under version control and subject to "
+            "code review.  An adversary with write access to the manifest can redirect "
+            "fetches to attacker-controlled sources; this threat is addressed at the "
+            "code-review boundary, not within dfetch itself."
+        ),
+    ),
+    Assumption(
+        "dfetch scope boundary",
+        description=(
+            "dfetch is responsible only for its own security posture.  The security "
+            "of fetched third-party source code is the responsibility of the manifest "
+            "author who selects and pins each dependency."
+        ),
+    ),
+    Assumption(
+        "No HTTPS enforcement",
+        description=(
+            "HTTPS enforcement is the responsibility of the manifest author.  dfetch "
+            "accepts ``http://``, ``svn://``, and other non-TLS scheme URLs as written "
+            "— it does not upgrade or reject them."
+        ),
+    ),
 ]
 
 # ── Trust boundaries ─────────────────────────────────────────────────────────

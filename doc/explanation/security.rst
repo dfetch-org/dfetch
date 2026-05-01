@@ -160,24 +160,11 @@ The CI/CD pipeline additionally depends on GitHub Actions marketplace actions
 
 **7 — Security assumptions and prerequisites**
 
-#. The developer workstation is trusted at the time dfetch is invoked.  A
-   compromised workstation is outside the scope of the dfetch threat model.
-#. TLS certificate validation is performed by the OS trust store and the
-   ``git`` / ``svn`` / ``urllib`` clients.  dfetch does not independently
-   validate certificates.
-#. The manifest (``dfetch.yaml``) is under version control and subject to code
-   review.  An adversary with write access to the manifest can redirect fetches
-   to attacker-controlled sources; this threat is addressed at the code-review
-   boundary, not within dfetch itself.
-#. dfetch is responsible only for *its own* security posture.  The security of
-   fetched third-party source code is the responsibility of the manifest author
-   who selects and pins each dependency.
-#. HTTPS enforcement is the responsibility of the manifest author.  dfetch
-   accepts ``http://``, ``svn://``, and other non-TLS scheme URLs as written —
-   it does not upgrade or reject them.
-#. No secrets are stored by dfetch.  Any secrets present in the CI environment
-   are the responsibility of the CI platform's secret store and the workflow
-   author.
+Assumptions are maintained in ``security/threat_model.py`` and rendered below
+from the pytm model.
+
+.. pytm::
+   :assumptions:
 
 **8 — Support period and data handling**
 
