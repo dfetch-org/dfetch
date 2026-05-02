@@ -374,6 +374,10 @@ table.docutils tbody tr th.stub {
   border-bottom: 1px solid var(--border) !important;
 }
 
+table.docutils thead tr th.stub {
+  border-right: 1px solid var(--border) !important;
+}
+
 table.docutils tbody tr td {
   border-left: none !important;
   border-right: none !important;
