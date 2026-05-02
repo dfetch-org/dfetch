@@ -59,11 +59,12 @@ from typing import TYPE_CHECKING, Any
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from docutils.statemachine import StringList
-from pytm import (
+from plantweb.render import render as _pw_render
+from pytm import (  # noqa: pylint: disable=import-error
     TM,
 )
 from pytm import Actor as _Actor
-from pytm import (
+from pytm import (  # noqa: pylint: disable=import-error
     Data,
     Dataflow,
     Datastore,
@@ -305,14 +306,12 @@ def _generate_diagrams(mod: Any, confdir: str = "") -> tuple[str, str, str, str]
     dfd_img_path = ""
     if confdir:
         with contextlib.suppress(Exception):
-            from plantweb.render import render as _pw_render
-
             pytm_static = os.path.join(confdir, "_static", "pytm")
             os.makedirs(pytm_static, exist_ok=True)
             if seq_str:
                 out = os.path.join(pytm_static, "threat_model_seq.png")
-                _fmt, data = _pw_render(
-                    seq_str.encode(), engine="plantuml", format="png"
+                data, _fmt, _, _ = _pw_render(
+                    seq_str.encode(), engine="graphviz", format="png"
                 )
                 with open(out, "wb") as fh:
                     fh.write(data)
@@ -320,8 +319,8 @@ def _generate_diagrams(mod: Any, confdir: str = "") -> tuple[str, str, str, str]
             if dfd_str:
                 dfd_puml = f"@startdot\n{dfd_str.strip()}\n@enddot"
                 out = os.path.join(pytm_static, "threat_model_dfd.png")
-                _fmt, data = _pw_render(
-                    dfd_puml.encode(), engine="plantuml", format="png"
+                data, _fmt, _, _ = _pw_render(
+                    dfd_puml.encode(), engine="graphviz", format="png"
                 )
                 with open(out, "wb") as fh:
                     fh.write(data)
@@ -460,15 +459,13 @@ def _list_table(
     """Build a ``.. list-table::`` RST block with longtable support for LaTeX."""
     total = sum(widths) or 1
     scale = 0.92
-    col_spec = "".join(
-        f"p{{{w / total * scale:.2f}\\linewidth}}" for w in widths
-    )
+    col_spec = "".join(f"p{{{w / total * scale:.2f}\\linewidth}}" for w in widths)
     lines = [
         f".. tabularcolumns:: {col_spec}",
         "",
         ".. list-table::",
         "   :header-rows: 1",
-        f'   :widths: {" ".join(str(w) for w in widths)}',
+        f"   :widths: {' '.join(str(w) for w in widths)}",
         "",
         "   * - " + headers[0],
     ]

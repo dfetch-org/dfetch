@@ -16,10 +16,21 @@ classification methodology.
 .. _`Cyber Resilience Act (CRA)`: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847
 .. _`EN 18031`: https://www.cenelec.eu/
 
-The threat model is maintained as executable code in ``security/threat_model.py``
-using the `pytm`_ framework.
+The threat model is split into two focused modules:
+
+- **Supply-chain model** (``security/tm_supply_chain.py``) — covers source
+  contribution, CI/CD, build, PyPI distribution, and consumer installation.
+- **Runtime-usage model** (``security/tm_usage.py``) — covers post-install
+  invocation: manifest reading, VCS/archive fetching, patching, vendoring,
+  and reporting.
+
+Shared building blocks (trust-boundary factories, the ``Control`` dataclass,
+assumption lists) live in ``security/tm_common.py``.
+
+Both models use the `pytm`_ framework.
 
 .. _pytm: https://github.com/owasp/pytm
+
 
 Product Security Context
 ------------------------
@@ -86,16 +97,28 @@ etc.) to reproduce a known dependency state.
 User roles
 ~~~~~~~~~~
 
-Actors are defined in ``security/threat_model.py`` and rendered below from
-the pytm model.
+**Supply-chain actors** (contributors, CI operators, and consumers of the
+dfetch package itself):
 
-.. pytm::
+.. pytm:: ../security/tm_supply_chain.py
+   :actors:
+
+**Runtime-usage actors** (developers and CI systems invoking dfetch):
+
+.. pytm:: ../security/tm_usage.py
    :actors:
 
 Operating environment
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. pytm::
+**Supply-chain trust boundaries:**
+
+.. pytm:: ../security/tm_supply_chain.py
+   :boundaries:
+
+**Runtime-usage trust boundaries:**
+
+.. pytm:: ../security/tm_usage.py
    :boundaries:
 
 - **Developer workstation**: Linux, macOS, or Windows; Python 3.10 +; ``git``
@@ -142,10 +165,14 @@ The CI/CD pipeline additionally depends on GitHub Actions marketplace actions
 Security assumptions and prerequisites
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assumptions are maintained in ``security/threat_model.py`` and rendered below
-from the pytm model.
+**Supply-chain assumptions:**
 
-.. pytm::
+.. pytm:: ../security/tm_supply_chain.py
+   :assumptions:
+
+**Runtime-usage assumptions:**
+
+.. pytm:: ../security/tm_usage.py
    :assumptions:
 
 Support period and data handling
@@ -162,82 +189,95 @@ Support period and data handling
   repository root for the coordinated vulnerability disclosure (CVD) policy.
 
 
+Supply Chain Security
+---------------------
 
-Asset Register
---------------
+Covers the pre-install lifecycle: code contribution → CI/CD → build
+(wheel / sdist) → PyPI distribution → consumer installation.
 
-Assets follow the ISO/IEC 27005 taxonomy used by EN 18031: **Primary** (PA)
-assets have direct business value; **Supporting** (SA) assets enable them;
-**Environmental** (EA) assets are infrastructure dependencies.  The table
-below is generated at build time from ``security/threat_model.py``.
+.. rubric:: Asset Register
 
-.. pytm::
+.. pytm:: ../security/tm_supply_chain.py
    :assets:
 
+.. rubric:: Data Flows
 
-Data Flows
-----------
-
-The following data flows are defined in ``security/threat_model.py`` and
-annotated with the security controls that are currently implemented.  The
-table is generated at build time from the pytm model.
-
-.. pytm::
+.. pytm:: ../security/tm_supply_chain.py
    :dataflows:
 
+.. rubric:: Data Flow Diagram
 
-Data Flow Diagram
------------------
-
-The diagram below is generated at build time from the pytm model using
-Graphviz.  It shows all trust boundaries, processes, data stores, and
-data flows.
-
-.. pytm::
+.. pytm:: ../security/tm_supply_chain.py
    :dfd:
 
+.. rubric:: Sequence Diagram
 
-Sequence Diagram
-----------------
-
-The diagram below is generated at build time from the pytm model using
-PlantUML.  It shows the temporal ordering of key interactions across
-trust boundaries.
-
-.. pytm::
+.. pytm:: ../security/tm_supply_chain.py
    :seq:
 
+.. rubric:: Identified Threats
 
-Identified Threats
-------------------
+The following threats were identified against the supply-chain model.  They
+are defined in ``security/threats.json`` and evaluated against pytm elements
+at build time.  The *Controls* column lists implemented controls (``C-xxx``)
+that directly address each threat; a dash (``—``) indicates a gap with no
+current control.
 
-The following threats were identified against the dfetch system model.
-They are defined in ``security/threats.json`` and evaluated against
-pytm elements at build time.  The *Controls* column lists implemented
-controls (``Cx-xxx``) that directly address each threat; a dash (``—``)
-indicates a gap with no current control.
-
-.. pytm::
+.. pytm:: ../security/tm_supply_chain.py
    :threats:
 
+.. rubric:: Implemented Security Controls
 
-Implemented Security Controls
--------------------------------
-
-The following controls are already in place and are reflected in the
-``controls.*`` annotations on each pytm element.  The table is generated
-at build time from ``CONTROLS`` in ``security/threat_model.py``.
-
-.. pytm::
+.. pytm:: ../security/tm_supply_chain.py
    :controls:
 
+.. rubric:: Known Gaps and Residual Risks
 
-Known Gaps and Residual Risks
-------------------------------
+.. pytm:: ../security/tm_supply_chain.py
+   :gaps:
 
-The following gaps were identified during asset analysis.  They represent
-areas where existing controls are absent or incomplete.  The table is
-generated at build time from ``GAPS`` in ``security/threat_model.py``.
 
-.. pytm::
+Runtime Usage Security
+----------------------
+
+Covers the post-install lifecycle: manifest reading → VCS/archive fetching
+→ patch application → vendored-file writing → report generation.
+
+.. rubric:: Asset Register
+
+.. pytm:: ../security/tm_usage.py
+   :assets:
+
+.. rubric:: Data Flows
+
+.. pytm:: ../security/tm_usage.py
+   :dataflows:
+
+.. rubric:: Data Flow Diagram
+
+.. pytm:: ../security/tm_usage.py
+   :dfd:
+
+.. rubric:: Sequence Diagram
+
+.. pytm:: ../security/tm_usage.py
+   :seq:
+
+.. rubric:: Identified Threats
+
+The following threats were identified against the runtime-usage model.
+They are defined in ``security/threats.json`` and evaluated against pytm
+elements at build time.
+
+.. pytm:: ../security/tm_usage.py
+   :threats:
+
+.. rubric:: Implemented Security Controls
+
+.. pytm:: ../security/tm_usage.py
+   :controls:
+
+.. rubric:: Known Gaps and Residual Risks
+
+.. pytm:: ../security/tm_usage.py
    :gaps:
