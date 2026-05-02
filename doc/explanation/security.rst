@@ -52,7 +52,7 @@ Product and manufacturer identification
    * - Current series
      - 0.x (pre-1.0, API not frozen)
    * - Maintainer
-     - Ben Spoor — dfetch@spoor.cc
+     - Ben Spoor
    * - Distribution channel
      - PyPI (``pip install dfetch``); GitHub Releases (stand-alone binary)
    * - Source repository
