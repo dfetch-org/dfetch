@@ -55,10 +55,10 @@ Product and manufacturer identification
      - dfetch is developed and distributed as a non-commercial open-source project.
        Under the Cyber Resilience Act, applicability depends on whether software
        is placed on the market in the context of a commercial activity.
-       At the time of writing, dfetch is not monetized and is not offered as part
+       As of 2026-05-02, dfetch is not monetized and is not offered as part
        of a commercial service. However, CRA obligations may become applicable
        in downstream contexts where third parties integrate dfetch into commercial
-       products, in which case those manufacturers retain due diligence
+       products, in which case those manufacturers may retain due diligence
        responsibilities under Article 13(5).
 
 Intended purpose, foreseeable use, and reasonably foreseeable misuse (IPFRU)
