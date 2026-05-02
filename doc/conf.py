@@ -44,6 +44,7 @@ os.environ["NO_COLOR"] = "1"
 extensions = [
     "sphinx_sitemap",
     "sphinx_design",
+    "sphinx.ext.graphviz",
     "plantweb.directive",
     "scenario_directive",
     "latex_tabs",
@@ -61,7 +62,26 @@ extensions = [
     "sphinx_copybutton",
     "colordot",
     "designguide",
+    "pytm_directive",
 ]
+
+plantweb_defaults = {
+    "engine": "graphviz",
+}
+
+# The pytm threat model is now modular. See security/ for:
+#   - tm_supply_chain.py  (pre-install lifecycle)
+#   - tm_usage.py         (post-install lifecycle)
+#   - tm_common.py        (reusable building blocks)
+#
+# Directives in doc/explanation/security.rst use explicit model paths:
+#   .. pytm:: ../security/tm_supply_chain.py :assets:
+#   .. pytm:: ../security/tm_usage.py :seq:
+#
+# To render a single model for testing, set pytm_model below:
+# pytm_model = os.path.abspath(
+#     os.path.join(os.path.dirname(__file__), "..", "security", "tm_supply_chain.py")
+# )
 
 # Strip shell prompts and Python REPL prompts from copied text
 copybutton_prompt_text = r"\$ |>>> |\.\.\. "

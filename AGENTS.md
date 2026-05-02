@@ -98,6 +98,30 @@ Implement the abstract interfaces in `dfetch/project/subproject.py` and `dfetch/
 - **Cyclomatic complexity** must stay below 8 per function. If a function grows beyond this, refactor it — extract helpers, simplify conditionals, or split responsibilities.
 - **No lint suppressions without fixing the root cause.** Avoid `# noqa`, `# type: ignore`, `# pylint: disable`, `# pyright: ignore`, and similar inline suppressions. If a tool flags something, fix it properly rather than silencing it. The one accepted exception is module-level tool headers at the top of test files (e.g. `# mypy: ignore-errors` or `# flake8: noqa` on line 1–5 of a test module); these are permitted where the test file structure genuinely prevents a clean fix.
 
+## Security model
+
+`security/threat_model.py` is an executable pytm model that must stay aligned with `doc/explanation/security.rst`.
+
+After any change that could affect the security posture — including but not limited to:
+
+- Adding, removing, or renaming a CLI command, VCS backend, or data flow
+- Changing how manifests, credentials, archives, or patches are handled
+- Modifying GitHub Actions workflows or the PyPI publish pipeline
+- Adding or removing external dependencies or subprocess calls
+
+— review both files and update them as needed:
+
+1. **`security/threat_model.py`** — add, remove, or update the relevant `Process`, `ExternalEntity`, `Datastore`, `Data`, or `Dataflow` objects and their `controls.*` annotations.
+2. **`doc/explanation/security.rst`** — keep the asset register (PA/SA/EA tables), data-flow table, controls table, and known-gaps section consistent with the model.
+
+You can verify the model is syntactically valid by running:
+
+```bash
+python -m security.threat_model --report
+```
+
+(requires `pip install .[docs]`; diagram commands additionally require PlantUML and Graphviz)
+
 ## Documentation
 
 Every change must be reflected in the documentation. Depending on the nature of the change:

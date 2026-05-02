@@ -91,7 +91,7 @@
 \AtBeginEnvironment{tabulary}{\small\renewcommand{\vline}{}}
 \AtBeginEnvironment{longtable}{\small\renewcommand{\vline}{}}
 \providecommand{\sphinxstyletheadfamily}{\sffamily}
-\renewcommand{\sphinxstyletheadfamily}{\small\bfseries}
+\renewcommand{\sphinxstyletheadfamily}{\cellcolor{dfbgtint}\small\bfseries}
 
 % ---- Inline code: amber text on tinted background matching website ----------
 % website: color: --primary-dark; background: --bg-tint; border: --border; border-radius: 4px
