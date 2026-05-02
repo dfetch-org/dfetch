@@ -4,6 +4,14 @@
 Security Model
 ==============
 
+.. note::
+
+  This document is a living artifact of the *dfetch* project, subject to ongoing updates as the project evolves.
+  It is intended to provide transparency into the security considerations and design decisions of *dfetch*, and
+  to serve as a reference for users, contributors, and downstream integrators. It is created to the best of the maintainers'
+  knowledge and abilities, but is not a formal security audit or guarantee. Users are encouraged to review the document, its claims
+  and dfetch itself critically, and provide feedback or contributions to enhance its accuracy and completeness.
+
 This page documents the security design of *dfetch* across its full software
 development lifecycle (SDLC): from source contribution through CI/CD,
 PyPI distribution, and runtime execution in developer and build
