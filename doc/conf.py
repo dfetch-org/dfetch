@@ -65,6 +65,10 @@ extensions = [
     "pytm_directive",
 ]
 
+plantweb_defaults = {
+    "engine": "graphviz",
+}
+
 # The pytm threat model is now modular. See security/ for:
 #   - tm_supply_chain.py  (pre-install lifecycle)
 #   - tm_usage.py         (post-install lifecycle)

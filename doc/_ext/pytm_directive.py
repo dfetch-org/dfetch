@@ -136,7 +136,7 @@ class PytmDirective(Directive):
         # rebuilds it whenever the model changes.
         env.note_dependency(model_path)
 
-        data = _get_model_data(model_path)
+        data = _get_model_data(model_path, app.confdir)
 
         sections: list[str] = []
         if "assumptions" in self.options:
@@ -181,16 +181,15 @@ class PytmDirective(Directive):
 # ---------------------------------------------------------------------------
 
 
-def _get_model_data(model_path: str) -> dict:
+def _get_model_data(model_path: str, confdir: str = "") -> dict:
     """Return cached model data, loading on first access (thread-safe)."""
     mtime = os.path.getmtime(model_path)
     key = (model_path, mtime)
     if key in _model_cache:
         return _model_cache[key]
     with _load_lock:
-        # Re-check after acquiring lock (another thread may have loaded it).
         if key not in _model_cache:
-            _model_cache[key] = _load_model(model_path)
+            _model_cache[key] = _load_model(model_path, confdir)
     return _model_cache[key]
 
 
@@ -310,18 +309,14 @@ def _generate_diagrams(mod: Any, confdir: str = "") -> tuple[str, str, str, str]
             os.makedirs(pytm_static, exist_ok=True)
             if seq_str:
                 out = os.path.join(pytm_static, "threat_model_seq.png")
-                data, _fmt, _, _ = _pw_render(
-                    seq_str.encode(), engine="graphviz", format="png"
-                )
+                data, _fmt, _, _ = _pw_render(seq_str, engine="graphviz", format="png")
                 with open(out, "wb") as fh:
                     fh.write(data)
                 seq_img_path = "/_static/pytm/threat_model_seq.png"
             if dfd_str:
                 dfd_puml = f"@startdot\n{dfd_str.strip()}\n@enddot"
                 out = os.path.join(pytm_static, "threat_model_dfd.png")
-                data, _fmt, _, _ = _pw_render(
-                    dfd_puml.encode(), engine="graphviz", format="png"
-                )
+                data, _fmt, _, _ = _pw_render(dfd_puml, engine="graphviz", format="png")
                 with open(out, "wb") as fh:
                     fh.write(data)
                 dfd_img_path = "/_static/pytm/threat_model_dfd.png"
@@ -686,7 +681,7 @@ def _on_builder_inited(app: Sphinx) -> None:
         return
     try:
         mtime = os.path.getmtime(model_path)
-        data = _load_model(model_path, confdir=app.confdir)
+        data = _load_model(model_path, confdir=str(app.confdir))
         _model_cache[(model_path, mtime)] = data
         logger.info(
             f"pytm: loaded {len(data['assumptions'])} assumptions, "
