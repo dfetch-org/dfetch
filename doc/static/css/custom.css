@@ -356,13 +356,22 @@ table.docutils {
   box-shadow: var(--shad-sm);
 }
 
-table.docutils thead tr th {
+table.docutils thead tr th,
+table.docutils tbody tr th.stub {
   background: var(--bg-tint);
   padding: 0.55rem 0.875rem;
   border: none !important;
-  border-bottom: 2px solid var(--border) !important;
   text-align: left;
   vertical-align: middle;
+}
+
+table.docutils thead tr th {
+  border-bottom: 2px solid var(--border) !important;
+}
+
+table.docutils tbody tr th.stub {
+  border-right: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
 }
 
 table.docutils tbody tr td {
@@ -372,7 +381,9 @@ table.docutils tbody tr td {
 }
 
 table.docutils thead tr th,
-table.docutils thead tr th p {
+table.docutils thead tr th p,
+table.docutils tbody tr th.stub,
+table.docutils tbody tr th.stub p {
   font-family: Inter, sans-serif;
   font-size: 0.7rem !important;
   font-weight: 700 !important;
@@ -402,12 +413,14 @@ table.docutils tbody tr td p {
   line-height: inherit;
 }
 
-table.docutils tbody tr:last-child td {
+table.docutils tbody tr:last-child td,
+table.docutils tbody tr:last-child th.stub {
   border-bottom: none !important;
 }
 
 table.docutils tbody tr td code,
-table.docutils thead tr th code {
+table.docutils thead tr th code,
+table.docutils tbody tr th.stub code {
   font-family: "JetBrains Mono", monospace !important;
   font-size: 0.75rem !important;
   background: var(--bg-tint) !important;

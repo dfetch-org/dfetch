@@ -33,6 +33,7 @@ Product and manufacturer identification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. list-table::
+   :stub-columns: 1
    :widths: 30 70
 
    * - Product name
@@ -53,7 +54,7 @@ Product and manufacturer identification
        matter of good practice and transparency.  If the project is ever
        redistributed commercially or classified as a *Product with Digital
        Elements* (PDE) under Article 3(1) of Regulation (EU) 2024/2847, the
-       obligations under Articles 13–16 would apply in full.
+       obligations under Articles 13-16 would apply in full.
 
 Intended purpose, foreseeable use, and reasonably foreseeable misuse (IPFRU)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -113,7 +114,7 @@ Architecture and connectivity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 dfetch is a single-process Python CLI application with no embedded network
-server, no plugin system, and no IPC interface.  Its communication surface is:
+server, no plugin system, and no IPC interface. Its communication surface is:
 
 - *stdin / argv*: command-line arguments and interactive prompts (only during
   ``dfetch add``).
@@ -124,7 +125,7 @@ server, no plugin system, and no IPC interface.  Its communication surface is:
 - *Outbound network*: ``git fetch`` / ``svn export`` / ``urllib``-based HTTP GET
   to hosts declared in the manifest.  All connections are outbound only.
 
-No credentials are stored by dfetch.  VCS authentication is delegated to the
+No credentials are stored by dfetch. VCS authentication is delegated to the
 OS/SSH agent, Git credential helper, or SVN auth cache.
 
 External dependencies
