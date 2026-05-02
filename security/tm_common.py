@@ -106,10 +106,11 @@ def make_supply_chain_assumptions() -> list[Assumption]:
             ),
         ),
         Assumption(
-            "Harden-runner in audit mode",
+            "Harden-runner in block mode",
             description=(
-                "The ``harden-runner`` egress policy is set to ``audit``, not ``block``.  "
-                "Outbound network connections from CI runners are logged but not prevented."
+                "The ``harden-runner`` egress policy is set to ``block`` with an "
+                "allowlist of permitted endpoints.  Outbound network connections from "
+                "CI runners are blocked unless explicitly permitted."
             ),
         ),
         Assumption(

@@ -211,9 +211,8 @@ vcs_credentials = Data(
     description=(
         "SSH private keys, HTTPS Personal Access Tokens, SVN passwords.  "
         "Used to authenticate to private upstream repositories.  "
-        "dfetch never persists these — managed by OS keychain or CI secret store.  "
-        "Exfiltration via a compromised CI workflow step is the primary risk "
-        "(harden-runner is in audit mode, not block mode)."
+        "dfetch never persists these — managed by OS keychain, SSH agent, "
+        "or CI secret store."
     ),
     classification=Classification.SECRET,
     isCredentials=True,
