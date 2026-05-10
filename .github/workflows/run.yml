@@ -30,6 +30,8 @@ jobs:
             packages.chocolatey.org:443
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - uses: cygwin/cygwin-install-action@4ef15ca7fd18a18f1000989fcfd968e06d146ce8 # master
 
@@ -153,6 +155,8 @@ jobs:
           allowed-endpoints: ${{ matrix.allowed-endpoints }}
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Setup Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
