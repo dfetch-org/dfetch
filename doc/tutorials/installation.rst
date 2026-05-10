@@ -91,15 +91,58 @@ Run the following command to verify the installation
 Verifying release integrity
 ---------------------------
 
-Every dfetch release artifact is published with a `cryptographic attestation`_ that ties
-it to the SBOM describing its dependencies. You can verify any downloaded artifact using
-the GitHub CLI:
+Every dfetch release is signed with SLSA provenance attestations. To verify an installed package, use the `GitHub CLI <https://cli.github.com/>`_:
 
-.. code-block:: console
+.. tabs::
 
-    $ gh attestation verify dfetch-<version>-nix.deb --repo dfetch-org/dfetch
+    .. tab:: Linux
 
-See `GitHub artifact attestations`_ for more information on how attestations work.
+        **For pip installations:**
 
-.. _`cryptographic attestation`: https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations/using-artifact-attestations-to-establish-provenance-for-builds
+        .. code-block:: bash
+
+            $ gh attestation verify --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/python-publish.yml@refs/tags/v<version> \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com \
+                ~/.local/lib/python3.x/site-packages/dfetch-<version>.dist-info/
+
+        **For binary installers:**
+
+        .. code-block:: bash
+
+            $ gh attestation verify dfetch-<version>-nix.deb --repo dfetch-org/dfetch
+
+    .. tab:: macOS
+
+        **For pip installations:**
+
+        .. code-block:: bash
+
+            $ gh attestation verify --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/python-publish.yml@refs/tags/v<version> \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com \
+                /usr/local/lib/python3.x/site-packages/dfetch-<version>.dist-info/
+
+        **For binary installers:**
+
+        .. code-block:: bash
+
+            $ gh attestation verify dfetch-<version>-osx.pkg --repo dfetch-org/dfetch
+
+    .. tab:: Windows
+
+        **For pip installations:**
+
+        .. code-block:: powershell
+
+            > gh attestation verify --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/python-publish.yml@refs/tags/v<version> `
+                --cert-oidc-issuer https://token.actions.githubusercontent.com `
+                $env:APPDATA\Python\Python3x\site-packages\dfetch-<version>.dist-info\
+
+        **For binary installers:**
+
+        .. code-block:: powershell
+
+            > gh attestation verify dfetch-<version>-win.msi --repo dfetch-org/dfetch
+
+See `GitHub artifact attestations`_ for details.
+
 .. _`GitHub artifact attestations`: https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations
