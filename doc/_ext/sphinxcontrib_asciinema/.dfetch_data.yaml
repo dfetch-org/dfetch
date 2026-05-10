@@ -3,7 +3,7 @@
 dfetch:
   branch: master
   hash: c0665300cd7962033a3caafa7fc302e7
-  last_fetch: 20/04/2026, 21:23:20
+  last_fetch: 10/05/2026, 20:00:50
   patch:
   - doc/_ext/patches/001-autoformat-sphinxcontrib.asciinema.patch
   - doc/_ext/patches/002-fix-options-sphinxcontrib.asciinema.patch
