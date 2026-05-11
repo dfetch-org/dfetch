@@ -91,63 +91,120 @@ Run the following command to verify the installation
 Verifying release integrity
 ---------------------------
 
-Every dfetch release is signed with SLSA provenance attestations. To verify an installed package, use the `GitHub CLI <https://cli.github.com/>`_:
+Every dfetch release carries cryptographic attestations signed by GitHub Actions
+and anchored in `Sigstore <https://www.sigstore.dev/>`_. There are two
+complementary kinds:
+
+- **SLSA build provenance** — answers *"where did this come from?"*: proves the
+  artifact was produced from the official source commit by the official CI
+  workflow, and records the exact inputs used at build time.
+- **SBOM attestation** (CycloneDX) — answers *"what is inside it?"*: lists every
+  dependency bundled in the package so you can audit its composition.
+
+Binary installers carry **both** kinds of attestation (signed by ``build.yml``).
+Python packages installed from PyPI carry an **SBOM attestation only** (signed by
+``python-publish.yml``).
+
+To verify, use the `GitHub CLI <https://cli.github.com/>`_. Pass
+``--predicate-type`` to target one kind specifically; omit it to accept either.
 
 .. tabs::
 
     .. tab:: Linux
 
-        **For pip installations:**
+        **Binary installer — verify build provenance:**
 
         .. code-block:: bash
 
-            $ gh attestation verify --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/python-publish.yml@refs/tags/v<version> \
-                --cert-oidc-issuer https://token.actions.githubusercontent.com \
-                ~/.local/lib/python3.x/site-packages/dfetch-<version>.dist-info/
+            $ gh attestation verify dfetch-<version>-nix.deb \
+                --repo dfetch-org/dfetch \
+                --predicate-type https://slsa.dev/provenance/v1 \
+                --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com
 
-        **For binary installers:**
+        **Binary installer — verify SBOM attestation:**
 
         .. code-block:: bash
 
-            $ gh attestation verify --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> \
-                --cert-oidc-issuer https://token.actions.githubusercontent.com \
-                dfetch-<version>-nix.deb
+            $ gh attestation verify dfetch-<version>-nix.deb \
+                --repo dfetch-org/dfetch \
+                --predicate-type https://cyclonedx.org/bom \
+                --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com
+
+        **pip / PyPI wheel — verify SBOM attestation:**
+
+        .. code-block:: bash
+
+            $ gh attestation verify ~/.local/lib/python3.x/site-packages/dfetch-<version>.dist-info/ \
+                --repo dfetch-org/dfetch \
+                --predicate-type https://cyclonedx.org/bom \
+                --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/python-publish.yml@refs/tags/v<version> \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com
 
     .. tab:: macOS
 
-        **For pip installations:**
+        **Binary installer — verify build provenance:**
 
         .. code-block:: bash
 
-            $ gh attestation verify --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/python-publish.yml@refs/tags/v<version> \
-                --cert-oidc-issuer https://token.actions.githubusercontent.com \
-                /usr/local/lib/python3.x/site-packages/dfetch-<version>.dist-info/
+            $ gh attestation verify dfetch-<version>-osx.pkg \
+                --repo dfetch-org/dfetch \
+                --predicate-type https://slsa.dev/provenance/v1 \
+                --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com
 
-        **For binary installers:**
+        **Binary installer — verify SBOM attestation:**
 
         .. code-block:: bash
 
-            $ gh attestation verify --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> \
-                --cert-oidc-issuer https://token.actions.githubusercontent.com \
-                dfetch-<version>-osx.pkg
+            $ gh attestation verify dfetch-<version>-osx.pkg \
+                --repo dfetch-org/dfetch \
+                --predicate-type https://cyclonedx.org/bom \
+                --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com
+
+        **pip / PyPI wheel — verify SBOM attestation:**
+
+        .. code-block:: bash
+
+            $ gh attestation verify /usr/local/lib/python3.x/site-packages/dfetch-<version>.dist-info/ \
+                --repo dfetch-org/dfetch \
+                --predicate-type https://cyclonedx.org/bom \
+                --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/python-publish.yml@refs/tags/v<version> \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com
 
     .. tab:: Windows
 
-        **For pip installations:**
+        **Binary installer — verify build provenance:**
 
         .. code-block:: powershell
 
-            > gh attestation verify --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/python-publish.yml@refs/tags/v<version> `
-                --cert-oidc-issuer https://token.actions.githubusercontent.com `
-                $env:APPDATA\Python\Python3x\site-packages\dfetch-<version>.dist-info\
+            > gh attestation verify dfetch-<version>-win.msi `
+                --repo dfetch-org/dfetch `
+                --predicate-type https://slsa.dev/provenance/v1 `
+                --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> `
+                --cert-oidc-issuer https://token.actions.githubusercontent.com
 
-        **For binary installers:**
+        **Binary installer — verify SBOM attestation:**
 
         .. code-block:: powershell
 
-            > gh attestation verify --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> `
-                --cert-oidc-issuer https://token.actions.githubusercontent.com `
-                dfetch-<version>-win.msi
+            > gh attestation verify dfetch-<version>-win.msi `
+                --repo dfetch-org/dfetch `
+                --predicate-type https://cyclonedx.org/bom `
+                --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> `
+                --cert-oidc-issuer https://token.actions.githubusercontent.com
+
+        **pip / PyPI wheel — verify SBOM attestation:**
+
+        .. code-block:: powershell
+
+            > gh attestation verify $env:APPDATA\Python\Python3x\site-packages\dfetch-<version>.dist-info\ `
+                --repo dfetch-org/dfetch `
+                --predicate-type https://cyclonedx.org/bom `
+                --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/python-publish.yml@refs/tags/v<version> `
+                --cert-oidc-issuer https://token.actions.githubusercontent.com
 
 See `GitHub artifact attestations`_ for details.
 
