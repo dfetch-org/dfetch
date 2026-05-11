@@ -109,7 +109,9 @@ Every dfetch release is signed with SLSA provenance attestations. To verify an i
 
         .. code-block:: bash
 
-            $ gh attestation verify dfetch-<version>-nix.deb --repo dfetch-org/dfetch
+            $ gh attestation verify --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com \
+                dfetch-<version>-nix.deb
 
     .. tab:: macOS
 
@@ -125,7 +127,9 @@ Every dfetch release is signed with SLSA provenance attestations. To verify an i
 
         .. code-block:: bash
 
-            $ gh attestation verify dfetch-<version>-osx.pkg --repo dfetch-org/dfetch
+            $ gh attestation verify --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com \
+                dfetch-<version>-osx.pkg
 
     .. tab:: Windows
 
@@ -141,8 +145,20 @@ Every dfetch release is signed with SLSA provenance attestations. To verify an i
 
         .. code-block:: powershell
 
-            > gh attestation verify dfetch-<version>-win.msi --repo dfetch-org/dfetch
+            > gh attestation verify --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> `
+                --cert-oidc-issuer https://token.actions.githubusercontent.com `
+                dfetch-<version>-win.msi
 
 See `GitHub artifact attestations`_ for details.
+
+.. note::
+
+   ``--cert-oidc-issuer https://token.actions.githubusercontent.com`` pins
+   verification to GitHub Actions as the identity provider.  Without it, an
+   attacker could generate a valid attestation using a different OIDC issuer
+   (for example a self-hosted Sigstore instance) that also produces a
+   certificate matching the ``--cert-identity`` workflow path.  Supplying
+   both flags together ensures the certificate was issued specifically by
+   GitHub Actions for the declared workflow.
 
 .. _`GitHub artifact attestations`: https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations
