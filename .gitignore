@@ -1,5 +1,4 @@
 .mcp.json
-vendor/
 __pycache__
 .coverage
 .mypy_cache
