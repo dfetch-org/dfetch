@@ -141,7 +141,7 @@ jobs:
             build/dfetch-package/*.msi
           predicate-type: 'https://cyclonedx.org/bom'
           predicate-path: ${{ steps.find-sbom.outputs.path }}
-      - name: Verify attestation
+      - name: Verify SBOM attestation
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -151,6 +151,27 @@ jobs:
             gh attestation verify "$f" \
               --repo "${{ github.repository }}" \
               --predicate-type https://cyclonedx.org/bom \
+              --cert-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
+              --cert-oidc-issuer https://token.actions.githubusercontent.com
+          done
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: |
+            build/dfetch-package/*.deb
+            build/dfetch-package/*.rpm
+            build/dfetch-package/*.pkg
+            build/dfetch-package/*.msi
+      - name: Verify build provenance
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for f in build/dfetch-package/*.deb build/dfetch-package/*.rpm build/dfetch-package/*.pkg build/dfetch-package/*.msi; do
+            [ -f "$f" ] || continue
+            gh attestation verify "$f" \
+              --repo "${{ github.repository }}" \
+              --predicate-type https://slsa.dev/provenance/v1 \
               --cert-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
               --cert-oidc-issuer https://token.actions.githubusercontent.com
           done
@@ -258,6 +279,10 @@ jobs:
   build-whl:
     name: Build wheel 📦
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      attestations: write
+      id-token: write
 
     steps:
     - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
@@ -270,6 +295,10 @@ jobs:
           release-assets.githubusercontent.com:443
           pypi.org:443
           files.pythonhosted.org:443
+          fulcio.sigstore.dev:443
+          rekor.sigstore.dev:443
+          tuf-repo-cdn.sigstore.dev:443
+          *.blob.core.windows.net:443
 
 
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -287,6 +316,52 @@ jobs:
       run: python3 -m build
     - name: Generate SBOM for Python distribution
       run: python script/create_sbom.py --py
+    - name: Find Python SBOM path
+      id: find-sbom
+      shell: bash
+      run: |
+        SBOM=$(find dist -name '*.cdx.json' -maxdepth 1 | head -1)
+        echo "path=$SBOM" >> "$GITHUB_OUTPUT"
+    - name: Attest Python packages with SBOM
+      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+      with:
+        subject-path: |
+          dist/*.whl
+          dist/*.tar.gz
+        predicate-type: 'https://cyclonedx.org/bom'
+        predicate-path: ${{ steps.find-sbom.outputs.path }}
+    - name: Verify Python SBOM attestation
+      shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        for f in dist/*.whl dist/*.tar.gz; do
+          [ -f "$f" ] || continue
+          gh attestation verify "$f" \
+            --repo "${{ github.repository }}" \
+            --predicate-type https://cyclonedx.org/bom \
+            --cert-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
+            --cert-oidc-issuer https://token.actions.githubusercontent.com
+        done
+    - name: Attest Python build provenance
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+      with:
+        subject-path: |
+          dist/*.whl
+          dist/*.tar.gz
+    - name: Verify Python build provenance
+      shell: bash
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        for f in dist/*.whl dist/*.tar.gz; do
+          [ -f "$f" ] || continue
+          gh attestation verify "$f" \
+            --repo "${{ github.repository }}" \
+            --predicate-type https://slsa.dev/provenance/v1 \
+            --cert-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
+            --cert-oidc-issuer https://token.actions.githubusercontent.com
+        done
     - name: Store the distribution packages
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
