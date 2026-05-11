@@ -57,6 +57,7 @@ jobs:
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: '3.13'
+          cache: 'pip'
 
       - name: Install Zig (Windows)
         if: runner.os == 'Windows'
@@ -68,11 +69,21 @@ jobs:
         with:
           ruby-version: 3.3 # See also devcontainer
 
-      - name: Install fpm
+      - name: Cache fpm gem
+        id: fpm-cache
         if: ${{ matrix.platform != 'windows-latest' }}
-        run: |
-          gem install --no-document fpm --version 1.17.0
-          fpm --version
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: vendor/fpm-gems
+          key: fpm-1.17.0-${{ runner.os }}-${{ runner.arch }}
+
+      - name: Install fpm
+        if: ${{ matrix.platform != 'windows-latest' && steps.fpm-cache.outputs.cache-hit != 'true' }}
+        run: gem install --no-document --install-dir vendor/fpm-gems fpm --version 1.17.0
+
+      - name: Add fpm to PATH
+        if: ${{ matrix.platform != 'windows-latest' }}
+        run: echo "${{ github.workspace }}/vendor/fpm-gems/bin" >> $GITHUB_PATH
 
       - name: Add msbuild to PATH
         if: ${{ matrix.platform == 'windows-latest' }}
@@ -265,6 +276,7 @@ jobs:
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: '3.13'
+        cache: 'pip'
     - name: Install dependencies
       run: python -m pip install .[wheel]
     - name: Build a binary wheel and a source tarball
