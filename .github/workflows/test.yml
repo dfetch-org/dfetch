@@ -138,8 +138,8 @@ jobs:
       - name: Verify subject artifact exists
         if: steps.download-source.outcome == 'success'
         run: |
-          if [ ! -f source.tar.gz ]; then
-            echo "Error: source.tar.gz not found after artifact download" >&2
+          if [ ! -f dfetch-source.tar.gz ]; then
+            echo "Error: dfetch-source.tar.gz not found after artifact download" >&2
             exit 1
           fi
 
@@ -147,6 +147,6 @@ jobs:
         if: steps.download-source.outcome == 'success'
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
-          subject-path: source.tar.gz
+          subject-path: dfetch-source.tar.gz
           predicate-type: https://in-toto.io/attestation/test-result/v0.1
           predicate-path: test-result-predicate.json

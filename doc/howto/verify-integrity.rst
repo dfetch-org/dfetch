@@ -174,7 +174,7 @@ from the ``main`` branch.
 **Source archive — verify build provenance and test results:**
 
 The source archive has two attestations and is produced for every release and
-every ``main``-branch commit. Download ``source.tar.gz`` from the *Artifacts*
+every ``main``-branch commit. Download ``dfetch-source.tar.gz`` from the *Artifacts*
 section of the relevant CI run, then verify each in turn. Use
 ``@refs/tags/v<version>`` for a release or ``@refs/heads/main`` for a
 development build.
@@ -184,7 +184,7 @@ workflow from the tagged commit):
 
 .. code-block:: bash
 
-    $ gh attestation verify source.tar.gz \
+    $ gh attestation verify dfetch-source.tar.gz \
         --repo dfetch-org/dfetch \
         --predicate-type https://slsa.dev/provenance/v1 \
         --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/source-provenance.yml@refs/tags/v<version> \
@@ -195,7 +195,7 @@ any binary was produced):
 
 .. code-block:: bash
 
-    $ gh attestation verify source.tar.gz \
+    $ gh attestation verify dfetch-source.tar.gz \
         --repo dfetch-org/dfetch \
         --predicate-type https://in-toto.io/attestation/test-result/v0.1 \
         --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/test.yml@refs/tags/v<version> \
