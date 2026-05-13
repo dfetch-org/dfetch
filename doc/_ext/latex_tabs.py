@@ -1,4 +1,4 @@
-"""PDF/LaTeX styling for sphinx-tabs directives.
+"""PDF/LaTeX rendering for sphinx-tabs directives.
 
 sphinx-tabs only registers HTML visitors for its custom node types.  For all
 other builders it falls back to plain ``nodes.container`` nodes, so the tab
@@ -7,23 +7,22 @@ labels render as unstyled text with no visual separation between variants.
 This extension inserts a ``SphinxTransform`` (LaTeX/rinoh builds only) that
 rewrites the generic container tree produced by sphinx-tabs into custom
 ``LatexTabsGroup`` / ``LatexTabEntry`` nodes, and registers LaTeX visitors
-that emit a small coloured label box before each tab's content.
+that render each tab as an unnumbered subsection heading followed by its
+content.
 
 Expected result in PDF::
 
-    ┌──────────────────────────────┐
-    │  [Git]  ← coloured pill      │
-    │  content …                   │
-    │  ──────────────────────────  │
-    │  [SVN]                       │
-    │  content …                   │
-    │  ──────────────────────────  │
-    │  [Archive]                   │
-    │  content …                   │
-    └──────────────────────────────┘
+    Linux
+    ─────
+    content …
 
-The styling uses the ``dfaccent`` and ``dfnearblack`` colours already defined
-in conf.py's LaTeX preamble.
+    macOS
+    ─────
+    content …
+
+    Windows
+    ───────
+    content …
 """
 
 import re
@@ -106,34 +105,22 @@ class LatexTabsTransform(SphinxTransform):
 # ---------------------------------------------------------------------------
 
 
-def visit_latex_tabs_group(translator, _node) -> None:
-    """Emit an opening rule before the tabs group."""
-    translator.body.append(
-        "\n\\vspace{4pt}\\noindent{\\color{dfaccent!40}\\rule{\\linewidth}{0.6pt}}\\vspace{-2pt}\n"
-    )
+def visit_latex_tabs_group(_translator, _node) -> None:
+    """No-op: subsection headings on each entry provide all needed structure."""
 
 
-def depart_latex_tabs_group(translator, _node) -> None:
-    """Emit a closing rule after the tabs group."""
-    translator.body.append(
-        "\n{\\color{dfaccent!40}\\rule{\\linewidth}{0.6pt}}\\vspace{4pt}\n"
-    )
+def depart_latex_tabs_group(_translator, _node) -> None:
+    """No-op: nothing to emit after the last tab entry."""
 
 
 def visit_latex_tab_entry(translator, node) -> None:
-    """Emit a coloured pill label before the tab content."""
+    """Emit an unnumbered subsubsection heading before the tab content."""
     label = _escape_latex(node["label"])
-    translator.body.append(
-        f"\n\\noindent\\colorbox{{dfaccent!15}}{{\\strut\\textbf{{\\small\\textcolor{{dfaccent}}{{{label}}}}}}}"
-        f"\\par\\vspace{{2pt}}\n"
-    )
+    translator.body.append(f"\n\\subsubsection*{{{label}}}\n")
 
 
-def depart_latex_tab_entry(translator, _node) -> None:
-    """Emit a separator rule after the tab content."""
-    translator.body.append(
-        "\n\\vspace{2pt}\\noindent{\\color{dfaccent!25}\\rule{\\linewidth}{0.4pt}}\\vspace{-2pt}\n"
-    )
+def depart_latex_tab_entry(_translator, _node) -> None:
+    """No-op: the next subsubsection heading provides the visual separation."""
 
 
 def _html_skip(translator, node) -> None:
