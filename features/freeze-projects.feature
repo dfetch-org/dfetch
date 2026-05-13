@@ -62,3 +62,21 @@ Feature: Freeze dependencies
                 url: svn://svn.code.sf.net/p/cunit/code
 
             """
+
+    Scenario: Freeze with empty manifest does nothing
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+            """
+        When I run "dfetch freeze"
+        Then the output shows
+            """
+            Dfetch (0.13.0)
+            """
+        And the manifest 'dfetch.yaml' is replaced with
+            """
+            manifest:
+              version: '0.0'
+
+            """

@@ -251,3 +251,15 @@ Feature: Checking dependencies from a git repository
             Dfetch (0.13.0)
             >>>git ls-remote --heads --tags git@github.com:dfetch-org/test-repo-private.git<<< returned 128:
             """
+
+    Scenario: Check with empty manifest does nothing
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+            """
+        When I run "dfetch check"
+        Then the output shows
+            """
+            Dfetch (0.13.0)
+            """

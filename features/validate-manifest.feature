@@ -25,6 +25,19 @@ Feature: Validate a manifest
               dfetch.yaml         : valid
             """
 
+    Scenario: An empty manifest with no projects is valid
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+            """
+        When I run "dfetch validate"
+        Then the output shows
+            """
+            Dfetch (0.13.0)
+              dfetch.yaml         : valid
+            """
+
     Scenario: An invalid manifest is provided
         Given the manifest 'dfetch.yaml'
             """

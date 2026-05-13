@@ -267,3 +267,23 @@ Feature: Create an CycloneDX sbom
                 ]
             }
             """
+
+    Scenario: SBOM report on empty manifest produces a valid file with no components
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+            """
+        When I run "dfetch report -t sbom"
+        Then the output shows
+            """
+            Dfetch (0.13.0)
+            Generated SBoM report: report.cdx.json
+            """
+        And the 'report.cdx.json' json file includes
+            """
+            {
+                "bomFormat": "CycloneDX",
+                "specVersion": "1.6"
+            }
+            """

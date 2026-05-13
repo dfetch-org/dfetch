@@ -195,6 +195,33 @@ Feature: Add a project interactively via the CLI
             """
         And the manifest 'dfetch.yaml' does not contain 'src:'
 
+    Scenario: Interactive add works on an empty manifest
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+            """
+        When I run "dfetch add -i some-remote-server/MyLib.git" with inputs
+            | Question                  | Answer  |
+            | Project name              | my-lib  |
+            | Destination path          | my-lib  |
+            | Version                   | master  |
+            | Source path               |         |
+            | Ignore paths              |         |
+            | Add project to manifest?  | y       |
+            | Run update                | n       |
+        Then the manifest 'dfetch.yaml' is replaced with
+            """
+            manifest:
+              version: '0.0'
+              projects:
+
+              - name: my-lib
+                url: some-remote-server/MyLib.git
+                branch: master
+
+            """
+
     Scenario: Interactive add with pre-filled fields skips those prompts
         Given the manifest 'dfetch.yaml'
             """
