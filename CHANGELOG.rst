@@ -16,6 +16,7 @@ Release 0.14.0 (unreleased)
 * Fix unhelpful error message when a metadata file is malformed (#1145)
 * Fix arbitrary file write via malicious tar/zip symlink (#1152)
 * Prevent SSH command injection (#1152)
+* Allow manifests with no ``projects`` key so ``dfetch add`` can bootstrap empty manifest (#1197)
 
 Release 0.13.0 (released 2026-03-30)
 ====================================

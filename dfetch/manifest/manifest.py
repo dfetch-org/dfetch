@@ -29,7 +29,7 @@ from typing import IO, Any, cast
 
 import yaml
 from strictyaml import YAML, StrictYAMLError, YAMLValidationError, load
-from strictyaml.ruamel.comments import CommentedMap
+from strictyaml.ruamel.comments import CommentedMap, CommentedSeq
 from strictyaml.ruamel.error import CommentMark
 from strictyaml.ruamel.scalarstring import SingleQuotedScalarString
 from strictyaml.ruamel.tokens import CommentToken
@@ -150,8 +150,12 @@ class ManifestDict(TypedDict, total=True):  # pylint: disable=too-many-ancestors
 
     version: int | str
     remotes: NotRequired[Sequence[RemoteDict | Remote]]
-    projects: Sequence[
-        ProjectEntryDict | ProjectEntry | dict[str, str | list[str] | dict[str, str]]
+    projects: NotRequired[
+        Sequence[
+            ProjectEntryDict
+            | ProjectEntry
+            | dict[str, str | list[str] | dict[str, str]]
+        ]
     ]
 
 
@@ -179,7 +183,7 @@ class Manifest:
         """Create the manifest."""
         manifest_data = self._initialize_basic_attributes(doc, path)
         remotes_raw = manifest_data.get("remotes", [])
-        projects_raw = manifest_data["projects"]
+        projects_raw = manifest_data.get("projects", [])
         self._validate_manifest_data(remotes_raw, projects_raw)
         self._setup_default_remote(remotes_raw)
         # Re-apply quoting to scalars whose style was stripped by strictyaml.
@@ -355,8 +359,10 @@ class Manifest:
     @property
     def projects(self) -> Sequence[ProjectEntry]:
         """Get a list of Projects from the manifest."""
-        projects_mu = self._doc["manifest"]["projects"].as_marked_up()
-        return list(self._build_projects(projects_mu).values())
+        manifest_mu = self._doc["manifest"].as_marked_up()
+        if "projects" not in manifest_mu:
+            return []
+        return list(self._build_projects(manifest_mu["projects"]).values())
 
     @staticmethod
     def _filter_projects(
@@ -385,14 +391,18 @@ class Manifest:
 
     def _find_doc_project(self, name: str) -> Any | None:
         """Return the raw YAML mapping for the project with *name*, or None."""
-        for project in self._doc["manifest"]["projects"].as_marked_up():
+        manifest_mu = self._doc["manifest"].as_marked_up()
+        for project in manifest_mu.get("projects", []):
             if project["name"] == name:
                 return project
         return None
 
     def remove(self, project_name: str) -> None:
         """Remove a project from the manifest."""
-        doc_projects = self._doc["manifest"]["projects"].as_marked_up()
+        manifest_mu = self._doc["manifest"].as_marked_up()
+        doc_projects = manifest_mu.get("projects")
+        if doc_projects is None:
+            raise RequestedProjectNotFoundError([project_name], [])
         names = [p["name"] for p in doc_projects]
         try:
             del doc_projects[names.index(project_name)]
@@ -469,7 +479,10 @@ class Manifest:
         document (2-space indent under ``projects:``).  Call
         :meth:`dump` afterwards to persist the change to disk.
         """
-        projects_mu = self._doc["manifest"]["projects"].as_marked_up()
+        manifest_mu = self._doc["manifest"].as_marked_up()
+        if "projects" not in manifest_mu:
+            manifest_mu["projects"] = CommentedSeq()
+        projects_mu = manifest_mu["projects"]
         projects_mu.append(CommentedMap(project_entry.as_yaml()))
         idx = len(projects_mu) - 1
         projects_mu.ca.items[idx] = [
@@ -483,12 +496,10 @@ class Manifest:
         """Update a project's version in the manifest in-place, preserving layout, comments, and line endings."""
         p = self._find_doc_project(project.name)
         if p is None:
+            manifest_mu = self._doc["manifest"].as_marked_up()
             raise RequestedProjectNotFoundError(
                 [project.name],
-                [
-                    proj["name"]
-                    for proj in self._doc["manifest"]["projects"].as_marked_up()
-                ],
+                [proj["name"] for proj in manifest_mu.get("projects", [])],
             )
         mu = p
         insert_pos = 1  # right after 'name:' for any newly added key

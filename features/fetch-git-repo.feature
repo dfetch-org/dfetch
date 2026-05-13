@@ -89,3 +89,15 @@ Feature: Fetching dependencies from a git repository
               ext/test-repo-tag:
               > Fetched v1
             """
+
+    Scenario: Update with empty manifest does nothing
+        Given the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+            """
+        When I run "dfetch update"
+        Then the output shows
+            """
+            Dfetch (0.13.0)
+            """

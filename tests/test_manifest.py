@@ -66,10 +66,9 @@ def test_can_read_version() -> None:
 
 
 def test_no_projects() -> None:
-    """Test that manifest without projects cannot be read."""
-
-    with pytest.raises(RuntimeError):
-        given_manifest_from_text(MANIFEST_NO_PROJECTS)
+    """Test that manifest without projects key is valid and yields an empty list."""
+    manifest = given_manifest_from_text(MANIFEST_NO_PROJECTS)
+    assert list(manifest.projects) == []
 
 
 def test_no_remotes() -> None:
@@ -405,6 +404,94 @@ def test_remove_last_project_updates_manifest_with_empty_list() -> None:
 
     assert manifest.version == "0.0"
     assert not manifest.projects
+
+
+# ---------------------------------------------------------------------------
+# Empty manifest (no projects key)
+# ---------------------------------------------------------------------------
+
+_EMPTY_MANIFEST = "manifest:\n  version: '0.0'\n"
+_EMPTY_MANIFEST_WITH_REMOTE = (
+    "manifest:\n"
+    "  version: '0.0'\n"
+    "  remotes:\n"
+    "  - name: my-remote\n"
+    "    url-base: http://www.myremote.com/\n"
+)
+
+
+def test_append_to_empty_manifest_creates_projects_section() -> None:
+    """append_project_entry must create the projects key when it is absent."""
+    manifest = Manifest.from_yaml(_EMPTY_MANIFEST)
+    new_project = _make_project("mylib", url="https://example.com/mylib")
+
+    manifest.append_project_entry(new_project)
+
+    names = [p.name for p in manifest.projects]
+    assert names == ["mylib"]
+
+
+def test_append_to_empty_manifest_dump_contains_projects() -> None:
+    """dump() after append on an empty manifest must include the projects section."""
+    manifest = Manifest.from_yaml(_EMPTY_MANIFEST)
+    new_project = _make_project("mylib", url="https://example.com/mylib")
+    manifest.append_project_entry(new_project)
+
+    m = mock_open()
+    with patch("builtins.open", m):
+        manifest.dump("/tmp/test.yaml")
+    written = "".join(call.args[0] for call in m().write.call_args_list)
+
+    assert "projects:" in written
+    assert "name: mylib" in written
+    assert "url: https://example.com/mylib" in written
+
+
+def test_remove_from_empty_manifest_raises() -> None:
+    """remove() on a manifest with no projects key must raise RequestedProjectNotFoundError."""
+    manifest = Manifest.from_yaml(_EMPTY_MANIFEST)
+    with pytest.raises(RequestedProjectNotFoundError):
+        manifest.remove("anything")
+
+
+def test_selected_projects_empty_names_on_empty_manifest() -> None:
+    """selected_projects([]) on an empty manifest must return an empty list."""
+    manifest = Manifest.from_yaml(_EMPTY_MANIFEST)
+    assert list(manifest.selected_projects([])) == []
+
+
+def test_selected_projects_with_name_on_empty_manifest_raises() -> None:
+    """selected_projects with a name on an empty manifest must raise RequestedProjectNotFoundError."""
+    manifest = Manifest.from_yaml(_EMPTY_MANIFEST)
+    with pytest.raises(RequestedProjectNotFoundError):
+        manifest.selected_projects(["foo"])
+
+
+def test_check_name_uniqueness_on_empty_manifest_does_not_raise() -> None:
+    """check_name_uniqueness must not raise when the manifest has no projects at all."""
+    manifest = Manifest.from_yaml(_EMPTY_MANIFEST)
+    manifest.check_name_uniqueness("anything")  # must not raise
+
+
+def test_guess_destination_on_empty_manifest_returns_empty() -> None:
+    """guess_destination must return an empty string when there are no existing projects."""
+    manifest = Manifest.from_yaml(_EMPTY_MANIFEST)
+    assert manifest.guess_destination("newlib") == ""
+
+
+def test_update_project_version_on_empty_manifest_raises() -> None:
+    """update_project_version must raise cleanly (not KeyError) on an empty manifest."""
+    manifest = Manifest.from_yaml(_EMPTY_MANIFEST)
+    project = _make_project("ghost", branch="main")
+    with pytest.raises(RequestedProjectNotFoundError):
+        manifest.update_project_version(project)
+
+
+def test_empty_manifest_with_remote_has_no_projects() -> None:
+    """A manifest with remotes but no projects key is valid and returns empty project list."""
+    manifest = Manifest.from_yaml(_EMPTY_MANIFEST_WITH_REMOTE)
+    assert list(manifest.projects) == []
+    assert len(manifest.remotes) == 1
 
 
 # ---------------------------------------------------------------------------

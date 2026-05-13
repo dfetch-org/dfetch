@@ -8,6 +8,16 @@ There are three ways to add a new dependency to your manifest — edit it
 directly, use the ``dfetch add`` command, or use the interactive wizard
 ``dfetch add -i``.
 
+If you are starting from scratch, create a minimal manifest with just a
+version and no projects yet:
+
+.. code-block:: yaml
+
+    manifest:
+      version: '0.0'
+
+You can then use ``dfetch add`` or ``dfetch add -i`` to populate it.
+
 - :ref:`adding-manifest` — write the entry by hand for full control
 - :ref:`adding-add` — one command, no prompts
 - :ref:`adding-interactive` — guided wizard with branch/tag browsing

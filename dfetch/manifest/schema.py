@@ -57,7 +57,7 @@ MANIFEST_SCHEMA = Map(
             {
                 "version": VERSION,
                 Optional("remotes"): Seq(REMOTE_SCHEMA),
-                "projects": Seq(PROJECT_SCHEMA),
+                Optional("projects"): Seq(PROJECT_SCHEMA),
             }
         )
     }
