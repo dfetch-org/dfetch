@@ -67,6 +67,7 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    howto/patching
    howto/check-ci
    howto/sbom
+   howto/verify-integrity
    howto/troubleshooting
    howto/contributing
 
