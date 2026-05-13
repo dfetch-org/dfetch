@@ -108,8 +108,8 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
 
       \dfpartAppendix
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Appendix
+   .. toctree::
+      :maxdepth: 2
+      :caption: Appendix
 
-   appendix/scenarios
+      appendix/scenarios
