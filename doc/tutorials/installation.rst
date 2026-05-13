@@ -100,8 +100,13 @@ complementary kinds:
   workflow, and records the exact inputs used at build time.
 - **SBOM attestation** (CycloneDX) — answers *"what is inside it?"*: lists every
   dependency bundled in the package so you can audit its composition.
+- **Verification Summary Attestation (VSA)** — answers *"was the source
+  independently verified?"*: records that the source archive for this commit was
+  attested and verified before the binary was produced, linking source-level
+  trust to the binary package.
 
-Binary installers carry **both** kinds of attestation (signed by ``build.yml``).
+Binary installers carry **all three** kinds of attestation when source
+provenance verification passes (signed by ``build.yml``).
 Python packages installed from PyPI carry an **SBOM attestation only** (signed by
 ``python-publish.yml``).
 
@@ -129,6 +134,16 @@ To verify, use the `GitHub CLI <https://cli.github.com/>`_. Pass
             $ gh attestation verify dfetch-<version>-nix.deb \
                 --repo dfetch-org/dfetch \
                 --predicate-type https://cyclonedx.org/bom \
+                --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com
+
+        **Binary installer — verify source provenance summary (VSA):**
+
+        .. code-block:: bash
+
+            $ gh attestation verify dfetch-<version>-nix.deb \
+                --repo dfetch-org/dfetch \
+                --predicate-type https://slsa.dev/verification_summary/v1 \
                 --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> \
                 --cert-oidc-issuer https://token.actions.githubusercontent.com
 
@@ -164,6 +179,16 @@ To verify, use the `GitHub CLI <https://cli.github.com/>`_. Pass
                 --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> \
                 --cert-oidc-issuer https://token.actions.githubusercontent.com
 
+        **Binary installer — verify source provenance summary (VSA):**
+
+        .. code-block:: bash
+
+            $ gh attestation verify dfetch-<version>-osx.pkg \
+                --repo dfetch-org/dfetch \
+                --predicate-type https://slsa.dev/verification_summary/v1 \
+                --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com
+
         **pip / PyPI wheel — verify SBOM attestation:**
 
         .. code-block:: bash
@@ -196,6 +221,16 @@ To verify, use the `GitHub CLI <https://cli.github.com/>`_. Pass
                 --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> `
                 --cert-oidc-issuer https://token.actions.githubusercontent.com
 
+        **Binary installer — verify source provenance summary (VSA):**
+
+        .. code-block:: powershell
+
+            > gh attestation verify dfetch-<version>-win.msi `
+                --repo dfetch-org/dfetch `
+                --predicate-type https://slsa.dev/verification_summary/v1 `
+                --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/build.yml@refs/tags/v<version> `
+                --cert-oidc-issuer https://token.actions.githubusercontent.com
+
         **pip / PyPI wheel — verify SBOM attestation:**
 
         .. code-block:: powershell
@@ -207,6 +242,12 @@ To verify, use the `GitHub CLI <https://cli.github.com/>`_. Pass
                 --cert-oidc-issuer https://token.actions.githubusercontent.com
 
 See `GitHub artifact attestations`_ for details.
+
+.. note::
+
+   The VSA is present on releases built from a commit whose source provenance
+   was verified.  If the ``verification_summary`` attestation is absent for a
+   release, fall back to checking build provenance and SBOM independently.
 
 .. note::
 

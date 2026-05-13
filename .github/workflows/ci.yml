@@ -22,8 +22,17 @@ jobs:
       contents: write
       security-events: write
 
+  source-provenance:
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/source-provenance.yml
+    permissions:
+      contents: read
+      attestations: write
+      id-token: write
+
   build:
-    needs: prep-release
+    needs: [prep-release, source-provenance]
+    if: needs.prep-release.result != 'failure' && needs.source-provenance.result != 'failure'
     uses: ./.github/workflows/build.yml
     permissions:
       contents: write

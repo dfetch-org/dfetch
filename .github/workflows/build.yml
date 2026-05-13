@@ -105,6 +105,25 @@ jobs:
           restore-keys: |
             ${{ github.job }}-${{ matrix.platform }}-${{ github.ref_name }}-
 
+      - name: Download canonical source archive
+        id: download-source
+        if: github.event_name != 'pull_request'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v5
+        with:
+          name: source-archive
+      - name: Verify source provenance
+        id: verify-source
+        if: steps.download-source.outcome == 'success'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh attestation verify source.tar.gz \
+            --repo "${{ github.repository }}" \
+            --predicate-type https://slsa.dev/provenance/v1 \
+            --cert-identity-regex "^https://github\.com/${{ github.repository }}/\.github/workflows/source-provenance\.yml@refs/(heads/main|tags/[0-9]+\.[0-9]+\.[0-9]+)$" \
+            --cert-oidc-issuer https://token.actions.githubusercontent.com
+
       - name: Create sbom, binary & package
         env:
           CCACHE_BASEDIR: ${{ github.workspace }}
@@ -175,6 +194,35 @@ jobs:
               --cert-identity "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
               --cert-oidc-issuer https://token.actions.githubusercontent.com
           done
+      - name: Generate VSA predicate
+        if: steps.verify-source.outcome == 'success'
+        shell: bash
+        run: |
+          jq -n \
+            --arg verifier "https://github.com/${{ github.repository }}/.github/workflows/build.yml@${{ github.ref }}" \
+            --arg time "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg resource "pkg:github/${{ github.repository }}@${{ github.sha }}" \
+            --arg policy "https://github.com/${{ github.repository }}/.github/workflows/source-provenance.yml@refs/heads/main" \
+            '{
+              verifier: { id: $verifier },
+              timeVerified: $time,
+              resourceUri: $resource,
+              policy: { uri: $policy },
+              inputAttestations: [],
+              verificationResult: "PASSED",
+              verifiedLevels: ["SLSA_SOURCE_LEVEL_3"]
+            }' > vsa-predicate.json
+      - name: Attest build artifacts with VSA
+        if: steps.verify-source.outcome == 'success'
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: |
+            build/dfetch-package/*.deb
+            build/dfetch-package/*.rpm
+            build/dfetch-package/*.pkg
+            build/dfetch-package/*.msi
+          predicate-type: 'https://slsa.dev/verification_summary/v1'
+          predicate-path: vsa-predicate.json
       - name: Store the distribution packages
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
