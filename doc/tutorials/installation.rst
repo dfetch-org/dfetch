@@ -91,9 +91,10 @@ Run the following command to verify the installation
 Verifying release integrity
 ---------------------------
 
-Every dfetch release carries cryptographic attestations signed by GitHub Actions
-and anchored in `Sigstore <https://www.sigstore.dev/>`_. There are two
-complementary kinds:
+Every dfetch release has cryptographic attestations signed by GitHub Actions
+and anchored in `Sigstore <https://www.sigstore.dev/>`_, all published in the
+`attestation registry <https://github.com/dfetch-org/dfetch/attestations>`_.
+There are four complementary kinds:
 
 - **SLSA build provenance** — answers *"where did this come from?"*: proves the
   artifact was produced from the official source commit by the official CI
@@ -104,11 +105,15 @@ complementary kinds:
   independently verified?"*: records that the source archive for this commit was
   attested and verified before the binary was produced, linking source-level
   trust to the binary package.
+- **Test result attestation** (in-toto) — answers *"did the source pass its tests?"*:
+  records that the full CI test suite ran against this exact source archive and every
+  check passed, before any binary was produced.
 
-Binary installers carry **all three** kinds of attestation when source
+Binary installers have **build provenance, SBOM, and VSA** attestations when source
 provenance verification passes (signed by ``build.yml``).
-Python packages installed from PyPI carry an **SBOM attestation only** (signed by
+Python packages installed from PyPI have an **SBOM attestation only** (signed by
 ``python-publish.yml``).
+The source archive has a **test result attestation** (signed by ``test.yml``).
 
 To verify, use the `GitHub CLI <https://cli.github.com/>`_. Pass
 ``--predicate-type`` to target one kind specifically; omit it to accept either.
@@ -240,6 +245,21 @@ To verify, use the `GitHub CLI <https://cli.github.com/>`_. Pass
                 --predicate-type https://cyclonedx.org/bom `
                 --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/python-publish.yml@refs/tags/v<version> `
                 --cert-oidc-issuer https://token.actions.githubusercontent.com
+
+**Source archive — verify test results:**
+
+The test result attestation proves the full CI suite passed on that exact source
+before any binary was produced.
+To verify locally, download ``source.tar.gz`` from the *Artifacts* section of the
+release CI run, then run:
+
+.. code-block:: bash
+
+    $ gh attestation verify source.tar.gz \
+        --repo dfetch-org/dfetch \
+        --predicate-type https://in-toto.io/attestation/test-result/v0.1 \
+        --cert-identity https://github.com/dfetch-org/dfetch/.github/workflows/test.yml@refs/tags/v<version> \
+        --cert-oidc-issuer https://token.actions.githubusercontent.com
 
 See `GitHub artifact attestations`_ for details.
 

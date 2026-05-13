@@ -49,9 +49,13 @@ jobs:
       security-events: write
 
   test:
+    needs: source-provenance
+    if: always() && (needs.source-provenance.result == 'success' || needs.source-provenance.result == 'skipped')
     uses: ./.github/workflows/test.yml
     permissions:
       contents: read
+      attestations: write
+      id-token: write
     secrets:
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
