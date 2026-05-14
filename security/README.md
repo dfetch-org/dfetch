@@ -13,11 +13,11 @@ the SHA above.
 After this you can generate various reports using:
 
 ```bash
-python -m security.tm_supply_chain --report security/report_template.md > report.md
+python -m security.tm_supply_chain --report security/report_template.rst > doc/explanation/threat_model_supply_chain.rst
 python -m security.tm_supply_chain --dfd
 python -m security.tm_supply_chain --seq
 
-python -m security.tm_usage --report security/report_template.md > report_usage.md
+python -m security.tm_usage --report security/report_template.rst > doc/explanation/threat_model_usage.rst
 python -m security.tm_usage --dfd
 python -m security.tm_usage --seq
 ```

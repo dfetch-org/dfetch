@@ -117,11 +117,14 @@ todo_include_todos = False
 # -- Options for autosectionlabel extension -------------------------------
 autosectionlabel_maxdepth = 3
 
-# Suppress warnings about duplicate labels from argparse directive
+# Suppress warnings about duplicate labels from argparse directive and
+# from the generated threat-model pages (which share section names).
 suppress_warnings = [
     "autosectionlabel.reference/commands",
     "autosectionlabel.reference/manifest",
     "autosectionlabel.howto/updating-projects",
+    "autosectionlabel.explanation/threat_model_supply_chain",
+    "autosectionlabel.explanation/threat_model_usage",
 ]
 
 # Options for sphinx-autoissues

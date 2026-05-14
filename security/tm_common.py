@@ -4,7 +4,6 @@ Both supply-chain and usage models import from here.  No pytm objects at
 module level, so it is safe to import before ``TM.reset()``.
 """
 
-import html
 import os
 import sys
 from collections.abc import Callable
@@ -202,62 +201,71 @@ def make_usage_assumptions() -> list[Assumption]:
 
 
 def render_controls_section(controls: list[Control]) -> str:
-    """Render controls and gaps as a markdown section appended to the report."""
+    """Render controls and gaps as RST list-table sections appended to the report."""
     implemented = [c for c in controls if c.status == "implemented"]
     gaps = [c for c in controls if c.status == "gap"]
 
-    parts: list[str] = []
-
-    def _render_control(c: Control, *, is_gap: bool) -> str:
-        meta: list[str] = [f"**Risk:** {c.assessment.risk}"]
-        if c.assessment.stride:
-            meta.append(f"**STRIDE:** {', '.join(c.assessment.stride)}")
-        label = "**Affects threats:**" if is_gap else "**Mitigates:**"
-        if c.threats:
-            meta.append(f"{label} {', '.join(c.threats)}")
-        lines = [f"### {c.id}: {c.name}", "  \n".join(meta)]
+    def _row(c: Control, *, is_gap: bool) -> str:
+        stride = ", ".join(c.assessment.stride) if c.assessment.stride else "—"
+        threats = ", ".join(c.threats) if c.threats else "—"
+        desc = c.description
         if c.reference:
-            lines.append(f"**Reference:** `{c.reference}`")
-        lines.append(f"\n{c.description}")
-        return "\n".join(lines)
+            desc += f"  ``{c.reference}``"
+        label = "Affects" if is_gap else "Mitigates"
+        return (
+            f"   * - {c.id}\n"
+            f"     - {c.name}\n"
+            f"     - {c.assessment.risk}\n"
+            f"     - {stride}\n"
+            f"     - {threats}\n"
+            f"     - {label}: {desc}\n"
+        )
 
+    def _table(items: list[Control], *, is_gap: bool, heading: str) -> str:
+        rows = "".join(_row(c, is_gap=is_gap) for c in items)
+        return (
+            f"{heading}\n{'-' * len(heading)}\n\n"
+            ".. list-table::\n"
+            "   :header-rows: 1\n"
+            "   :widths: 8 20 8 14 15 35\n\n"
+            "   * - ID\n"
+            "     - Name\n"
+            "     - Risk\n"
+            "     - STRIDE\n"
+            "     - Threats\n"
+            "     - Description\n" + rows
+        )
+
+    parts: list[str] = []
     if implemented:
-        parts.append("## Controls\n")
-        parts.extend(_render_control(c, is_gap=False) for c in implemented)
-
+        parts.append(_table(implemented, is_gap=False, heading="Controls"))
     if gaps:
-        parts.append("## Gaps\n")
-        parts.extend(_render_control(c, is_gap=True) for c in gaps)
+        parts.append(_table(gaps, is_gap=True, heading="Gaps"))
 
     return "\n\n".join(parts)
 
 
 def _render_finding(f: Any) -> str:
-    """Render one pytm Finding to an HTML ``<details>`` block string."""
+    """Render one pytm Finding as an RST definition list entry."""
 
-    def _esc(attr: str) -> str:
-        return html.escape(str(getattr(f, attr, "")))
+    def _val(attr: str) -> str:
+        return str(getattr(f, attr, "")).strip()
 
-    def _esc_ml(attr: str) -> str:
-        return html.escape(str(getattr(f, attr, ""))).replace("\n", "<br>")
-
-    return (
-        "<details>\n  <summary>\n    "
-        + _esc("threat_id")
-        + " - "
-        + _esc("description")
-        + "\n  </summary>\n  <h6>Targeted Element</h6>\n  <p>"
-        + _esc("target")
-        + "</p>\n  <h6>Severity</h6>\n  <p>"
-        + _esc("severity")
-        + "</p>\n  <h6>Example Instances</h6>\n  <p>"
-        + _esc_ml("example")
-        + "</p>\n  <h6>Mitigations</h6>\n  <p>"
-        + _esc_ml("mitigations")
-        + "</p>\n  <h6>References</h6>\n  <p>"
-        + _esc_ml("references")
-        + "</p>\n</details>\n"
-    )
+    threat_id = _val("threat_id")
+    description = _val("description")
+    lines = [f"{threat_id} — {description}"]
+    for label, attr in (
+        ("Targeted Element", "target"),
+        ("Severity", "severity"),
+        ("Example", "example"),
+        ("Mitigations", "mitigations"),
+        ("References", "references"),
+    ):
+        value = _val(attr)
+        if value:
+            lines.append(f"   **{label}:** {value}")
+    lines.append("")
+    return "\n".join(lines)
 
 
 def apply_report_utils_patch() -> None:
@@ -274,7 +282,7 @@ def apply_report_utils_patch() -> None:
        strings that get baked into the spec before getInScopeFindings can loop.
 
     Fix: replace getInScopeFindings with one that renders each in-scope finding
-    to an HTML string directly, so no sub-template is needed in the report.
+    to an RST string directly, so no sub-template is needed in the report.
     element.findings is already scoped to that element, so no target lookup
     is required - the in-scope check on the element itself is sufficient.
     """
