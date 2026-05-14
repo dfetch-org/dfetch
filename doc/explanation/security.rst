@@ -95,3 +95,16 @@ to reproduce a deterministic dependency state.
 - Execution in CI environments with insufficient network or secret isolation may
   allow exfiltration risks if upstream sources are compromised or intentionally
   malicious.
+
+Threat Models
+-------------
+
+The following pages document the two threat models in detail. Each page is
+generated from the corresponding Python module in ``security/`` — see
+``security/README.md`` for instructions on regenerating them.
+
+.. toctree::
+   :maxdepth: 1
+
+   threat_model_supply_chain
+   threat_model_usage
