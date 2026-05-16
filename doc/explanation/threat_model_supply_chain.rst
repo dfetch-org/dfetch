@@ -1,3 +1,6 @@
+dfetch Supply Chain
+===================
+
 .. ============================================================
 .. Auto-generated file — do not edit manually.
 .. Regenerate with (see security/README.md for exact commands):
@@ -28,27 +31,384 @@ Assumptions
    * - CI runner posture
      - GitHub Actions environments inherit the security posture of the GitHub-hosted runner.  Ephemeral runner isolation is provided by GitHub.
 
-   * - Harden-runner in block mode
-     - The ``harden-runner`` egress policy is set to ``block`` with an allowlist of permitted endpoints.  Outbound network connections from CI runners are blocked unless explicitly permitted.
 
-   * - Build deps without hash pinning
-     - dfetch's own build and dev dependencies are installed without ``--require-hashes``, so a compromised PyPI mirror can substitute malicious build tools.
+.. raw:: html
 
-   * - Attacker: Network-adjacent
-     - Positioned on the same network segment as a CI runner or developer workstation - shared cloud tenant, BGP hijack, compromised DNS resolver, or corporate proxy.  Can intercept and modify unencrypted traffic (http://, svn://) and inject HTTP redirects.  Cannot break correctly implemented TLS or SSH.
+   <div class="tm-diagram" title="Click to view fullscreen">
 
-   * - Attacker: Compromised upstream
-     - A dependency maintainer account taken over via phishing, credential stuffing, or MFA bypass - or a maintainer acting maliciously.  Delivers attacker-controlled content over an authenticated channel; transport security provides no protection.  Mitigated only by commit-SHA pinning and human review before accepting any update.
+Data Flow Diagram
+-----------------
 
-   * - Attacker: Compromised registry or CDN
-     - Holds write access to a public package registry (PyPI) or an archive CDN node, or is BGP-adjacent to one.  Serves malicious content under a valid TLS certificate - transport integrity does not detect server-side substitution.  Only cryptographic content hashes or signed attestations provide a defence.
+.. uml::
 
-   * - Attacker: Local filesystem
-     - Holds write access to the developer workstation or CI runner working tree - gained via a compromised dev dependency, malicious post-install hook, or lateral movement.  Can tamper with ``.dfetch_data.yaml``, patch files, and vendored source after dfetch writes them to disk.
+   @startdot
+   digraph tm {
+       graph [
+           fontname = Arial;
+           fontsize = 14;
+       ]
+       node [
+           fontname = Arial;
+           fontsize = 14;
+           rankdir = lr;
+       ]
+       edge [
+           shape = none;
+           arrowtail = onormal;
+           fontname = Arial;
+           fontsize = 12;
+       ]
+       labelloc = "t";
+       fontsize = 20;
+       nodesep = 1;
 
-   * - Attacker: Malicious manifest contributor
-     - A repository contributor who introduces a malicious ``dfetch.yaml`` change: redirecting a dep to an attacker-controlled URL, pointing ``dst:`` at a sensitive path, or embedding a credential-bearing URL.  dfetch is not the control point for this threat; code review is the intended mitigating boundary.
+       subgraph cluster_boundary_ConsumerEnvironment_88f2d9c06f {
+           graph [
+               fontsize = 10;
+               fontcolor = black;
+               style = dashed;
+               color = firebrick2;
+               label = <<i>Consumer\nEnvironment</i>>;
+           ]
 
+           actor_ConsumerEndUser_f8af758679 [
+               shape = square;
+               color = black;
+               fontcolor = black;
+               label = "Consumer / End\nUser";
+               margin = 0.02;
+           ]
+
+       }
+
+       subgraph cluster_boundary_GitHubPlatform_579e9aae81 {
+           graph [
+               fontsize = 10;
+               fontcolor = black;
+               style = dashed;
+               color = firebrick2;
+               label = <<i>GitHub Platform</i>>;
+           ]
+
+           externalentity_AGitHubRepositorymainprotected_2c440ebe53 [
+               shape = square;
+               color = black;
+               fontcolor = black;
+               label = "A-01: GitHub\nRepository (main /\nprotected)";
+               margin = 0.02;
+           ]
+
+           externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72 [
+               shape = square;
+               color = black;
+               fontcolor = black;
+               label = "A-01b: GitHub\nRepository\n(feature branches\n/ PRs)";
+               margin = 0.02;
+           ]
+
+           externalentity_AGitHubActionsInfrastructure_c76a0a7067 [
+               shape = square;
+               color = black;
+               fontcolor = black;
+               label = "A-02: GitHub\nActions\nInfrastructure";
+               margin = 0.02;
+           ]
+
+           process_ReleaseGateCodeReview_9345ab4c19 [
+               shape = circle;
+               color = black;
+               fontcolor = black;
+               label = "Release Gate /\nCode Review";
+               margin = 0.02;
+           ]
+
+           process_GitHubActionsWorkflow_86e4604564 [
+               shape = circle;
+               color = black;
+               fontcolor = black;
+               label = "GitHub Actions\nWorkflow";
+               margin = 0.02;
+           ]
+
+           process_PythonBuildwheelsdist_b2e5892d06 [
+               shape = circle;
+               color = black;
+               fontcolor = black;
+               label = "Python Build\n(wheel / sdist)";
+               margin = 0.02;
+           ]
+
+           datastore_AdfetchBuildDevDependencies_990b886585 [
+               shape = cylinder;
+               color = black;
+               fontcolor = black;
+               label = "A-07: dfetch Build\n/ Dev Dependencies";
+           ]
+
+           datastore_AbGitHubActionsBuildCache_9df04f8dae [
+               shape = cylinder;
+               color = black;
+               fontcolor = black;
+               label = "A-08b: GitHub\nActions Build\nCache";
+           ]
+
+       }
+
+       subgraph cluster_boundary_LocalDeveloperEnvironment_acf3059e70 {
+           graph [
+               fontsize = 10;
+               fontcolor = black;
+               style = dashed;
+               color = firebrick2;
+               label = <<i>Local Developer\nEnvironment</i>>;
+           ]
+
+           actor_DeveloperContributor_d2006ce1bb [
+               shape = square;
+               color = black;
+               fontcolor = black;
+               label = "Developer /\nContributor";
+               margin = 0.02;
+           ]
+
+       }
+
+       subgraph cluster_boundary_PyPITestPyPI_f2eb7a3ff7 {
+           graph [
+               fontsize = 10;
+               fontcolor = black;
+               style = dashed;
+               color = firebrick2;
+               label = <<i>PyPI / TestPyPI</i>>;
+           ]
+
+           externalentity_APyPITestPyPI_c6f87088c2 [
+               shape = square;
+               color = black;
+               fontcolor = black;
+               label = "A-03: PyPI /\nTestPyPI";
+               margin = 0.02;
+           ]
+
+       }
+
+       actor_DeveloperContributor_d2006ce1bb -> externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-11: Push\ncommits / open PR";
+       ]
+
+       externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72 -> process_ReleaseGateCodeReview_9345ab4c19 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-22: PR enters\ncode review";
+       ]
+
+       externalentity_AGitHubRepositorymainprotected_2c440ebe53 -> process_GitHubActionsWorkflow_86e4604564 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-12: Main branch\nworkflows drive CI\nexecution";
+       ]
+
+       externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72 -> externalentity_AGitHubActionsInfrastructure_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-13a: PR CI\ncheckout";
+       ]
+
+       externalentity_AGitHubRepositorymainprotected_2c440ebe53 -> externalentity_AGitHubActionsInfrastructure_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-13b: Release CI\ncheckout";
+       ]
+
+       datastore_AbGitHubActionsBuildCache_9df04f8dae -> externalentity_AGitHubActionsInfrastructure_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-14: CI cache\nrestore";
+       ]
+
+       process_GitHubActionsWorkflow_86e4604564 -> process_PythonBuildwheelsdist_b2e5892d06 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-15: Workflow\ntriggers build\nstep";
+       ]
+
+       process_PythonBuildwheelsdist_b2e5892d06 -> externalentity_AGitHubActionsInfrastructure_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-15b: Built\nwheel/sdist\nartifacts";
+       ]
+
+       externalentity_APyPITestPyPI_c6f87088c2 -> datastore_AdfetchBuildDevDependencies_990b886585 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-16: CI fetches\nbuild/dev deps\nfrom PyPI";
+       ]
+
+       datastore_AdfetchBuildDevDependencies_990b886585 -> process_PythonBuildwheelsdist_b2e5892d06 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-17: Build tools\nconsumed by build\nstep";
+       ]
+
+       externalentity_AGitHubActionsInfrastructure_c76a0a7067 -> datastore_AbGitHubActionsBuildCache_9df04f8dae [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-18: CI cache\nwrite";
+       ]
+
+       externalentity_AGitHubActionsInfrastructure_c76a0a7067 -> externalentity_AGitHubRepositorymainprotected_2c440ebe53 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-19: CI write-\nback (SARIF /\nartifacts)";
+       ]
+
+       process_ReleaseGateCodeReview_9345ab4c19 -> externalentity_AGitHubRepositorymainprotected_2c440ebe53 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-23: Approved\nmerge to main";
+       ]
+
+       externalentity_AGitHubActionsInfrastructure_c76a0a7067 -> externalentity_APyPITestPyPI_c6f87088c2 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-24: Publish\nwheel to PyPI\n(OIDC)";
+       ]
+
+       actor_ConsumerEndUser_f8af758679 -> externalentity_APyPITestPyPI_c6f87088c2 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-25: pip install\ndfetch";
+       ]
+
+       externalentity_APyPITestPyPI_c6f87088c2 -> actor_ConsumerEndUser_f8af758679 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-26: Consumer\ndownloads dfetch\nfrom PyPI";
+       ]
+
+   }
+   @enddot
+
+.. raw:: html
+
+   </div>
+   <style>
+   .tm-diagram{cursor:zoom-in;}
+   .tm-diagram:fullscreen,
+   .tm-diagram:-webkit-full-screen{
+     background:#fff;display:flex;
+     align-items:center;justify-content:center;
+   }
+   .tm-diagram:fullscreen img,
+   .tm-diagram:-webkit-full-screen img{
+     max-width:100vw;max-height:100vh;
+     width:auto;height:auto;cursor:zoom-out;
+   }
+   </style>
+   <script>
+   (function(){
+     document.querySelectorAll('.tm-diagram:not([data-fs])').forEach(function(d){
+       d.dataset.fs='1';
+       d.addEventListener('click',function(){
+         if(!document.fullscreenElement){
+           (d.requestFullscreen||d.webkitRequestFullscreen).call(d);
+         }else{
+           (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+         }
+       });
+     });
+   })();
+   </script>
+
+.. raw:: html
+
+   <div class="tm-diagram" title="Click to view fullscreen">
+
+Sequence Diagram
+----------------
+
+.. uml::
+
+   @startuml
+   skinparam defaultFontSize 16
+   actor actor_DeveloperContributor_d2006ce1bb as "Developer /\nContributor"
+   actor actor_ConsumerEndUser_f8af758679 as "Consumer /\nEnd User"
+   entity externalentity_AGitHubRepositorymainprotected_2c440ebe53 as "A-01: GitHub\nRepository\n(main /\nprotected)"
+   entity externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72 as "A-01b:\nGitHub\nRepository\n(feature\nbranches /\nPRs)"
+   entity externalentity_AGitHubActionsInfrastructure_c76a0a7067 as "A-02: GitHub\nActions\nInfrastructure"
+   entity externalentity_APyPITestPyPI_c6f87088c2 as "A-03: PyPI /\nTestPyPI"
+   entity process_ReleaseGateCodeReview_9345ab4c19 as "Release Gate\n/ Code\nReview"
+   entity process_GitHubActionsWorkflow_86e4604564 as "GitHub\nActions\nWorkflow"
+   entity process_PythonBuildwheelsdist_b2e5892d06 as "Python Build\n(wheel /\nsdist)"
+   database datastore_AdfetchBuildDevDependencies_990b886585 as "A-07: dfetch\nBuild / Dev\nDependencies"
+   database datastore_AbGitHubActionsBuildCache_9df04f8dae as "A-08b:\nGitHub\nActions\nBuild Cache"
+
+   actor_DeveloperContributor_d2006ce1bb -> externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72: DF-11: Push commits / open PR
+   externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72 -> process_ReleaseGateCodeReview_9345ab4c19: DF-22: PR enters code review
+   externalentity_AGitHubRepositorymainprotected_2c440ebe53 -> process_GitHubActionsWorkflow_86e4604564: DF-12: Main branch workflows drive CI execution
+   externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72 -> externalentity_AGitHubActionsInfrastructure_c76a0a7067: DF-13a: PR CI checkout
+   externalentity_AGitHubRepositorymainprotected_2c440ebe53 -> externalentity_AGitHubActionsInfrastructure_c76a0a7067: DF-13b: Release CI checkout
+   datastore_AbGitHubActionsBuildCache_9df04f8dae -> externalentity_AGitHubActionsInfrastructure_c76a0a7067: DF-14: CI cache restore
+   process_GitHubActionsWorkflow_86e4604564 -> process_PythonBuildwheelsdist_b2e5892d06: DF-15: Workflow triggers build step
+   process_PythonBuildwheelsdist_b2e5892d06 -> externalentity_AGitHubActionsInfrastructure_c76a0a7067: DF-15b: Built wheel/sdist artifacts
+   externalentity_APyPITestPyPI_c6f87088c2 -> datastore_AdfetchBuildDevDependencies_990b886585: DF-16: CI fetches build/dev deps from PyPI
+   datastore_AdfetchBuildDevDependencies_990b886585 -> process_PythonBuildwheelsdist_b2e5892d06: DF-17: Build tools consumed by build step
+   externalentity_AGitHubActionsInfrastructure_c76a0a7067 -> datastore_AbGitHubActionsBuildCache_9df04f8dae: DF-18: CI cache write
+   externalentity_AGitHubActionsInfrastructure_c76a0a7067 -> externalentity_AGitHubRepositorymainprotected_2c440ebe53: DF-19: CI write-back (SARIF / artifacts)
+   process_ReleaseGateCodeReview_9345ab4c19 -> externalentity_AGitHubRepositorymainprotected_2c440ebe53: DF-23: Approved merge to main
+   externalentity_AGitHubActionsInfrastructure_c76a0a7067 -> externalentity_APyPITestPyPI_c6f87088c2: DF-24: Publish wheel to PyPI (OIDC)
+   actor_ConsumerEndUser_f8af758679 -> externalentity_APyPITestPyPI_c6f87088c2: DF-25: pip install dfetch
+   externalentity_APyPITestPyPI_c6f87088c2 -> actor_ConsumerEndUser_f8af758679: DF-26: Consumer downloads dfetch from PyPI
+   @enduml
+
+.. raw:: html
+
+   </div>
+   <style>
+   .tm-diagram{cursor:zoom-in;}
+   .tm-diagram:fullscreen,
+   .tm-diagram:-webkit-full-screen{
+     background:#fff;display:flex;
+     align-items:center;justify-content:center;
+   }
+   .tm-diagram:fullscreen img,
+   .tm-diagram:-webkit-full-screen img{
+     max-width:100vw;max-height:100vh;
+     width:auto;height:auto;cursor:zoom-out;
+   }
+   </style>
+   <script>
+   (function(){
+     document.querySelectorAll('.tm-diagram:not([data-fs])').forEach(function(d){
+       d.dataset.fs='1';
+       d.addEventListener('click',function(){
+         if(!document.fullscreenElement){
+           (d.requestFullscreen||d.webkitRequestFullscreen).call(d);
+         }else{
+           (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+         }
+       });
+     });
+   })();
+   </script>
 
 Dataflows
 ---------
@@ -62,39 +422,84 @@ Dataflows
      - To
      - Protocol
 
-   * - DF-11: Submit pull request
-     - Contributor / Attacker
-     - A-01: GitHub Repository
+   * - DF-11: Push commits / open PR
+     - Developer / Contributor
+     - A-01b: GitHub Repository (feature branches / PRs)
      - HTTPS
 
-   * - DF-14: pip install dfetch
-     - Consumer / End User
-     - A-03: PyPI / TestPyPI
-     - HTTPS
+   * - DF-22: PR enters code review
+     - A-01b: GitHub Repository (feature branches / PRs)
+     - Release Gate / Code Review
+     - 
 
-   * - DF-12: CI checkout and build
-     - A-01: GitHub Repository
+   * - DF-12: Main branch workflows drive CI execution
+     - A-01: GitHub Repository (main / protected)
+     - GitHub Actions Workflow
+     - 
+
+   * - DF-13a: PR CI checkout
+     - A-01b: GitHub Repository (feature branches / PRs)
      - A-02: GitHub Actions Infrastructure
-     -
+     - 
 
-   * - DF-13: Publish to PyPI (OIDC)
+   * - DF-13b: Release CI checkout
+     - A-01: GitHub Repository (main / protected)
      - A-02: GitHub Actions Infrastructure
-     - A-03: PyPI / TestPyPI
+     - 
+
+   * - DF-14: CI cache restore
+     - A-08b: GitHub Actions Build Cache
+     - A-02: GitHub Actions Infrastructure
      - HTTPS
+
+   * - DF-15: Workflow triggers build step
+     - GitHub Actions Workflow
+     - Python Build (wheel / sdist)
+     - 
+
+   * - DF-15b: Built wheel/sdist artifacts
+     - Python Build (wheel / sdist)
+     - A-02: GitHub Actions Infrastructure
+     - 
+
+   * - DF-16: CI fetches build/dev deps from PyPI
+     - A-03: PyPI / TestPyPI
+     - A-07: dfetch Build / Dev Dependencies
+     - HTTPS
+
+   * - DF-17: Build tools consumed by build step
+     - A-07: dfetch Build / Dev Dependencies
+     - Python Build (wheel / sdist)
+     - 
 
    * - DF-18: CI cache write
      - A-02: GitHub Actions Infrastructure
      - A-08b: GitHub Actions Build Cache
      - HTTPS
 
-   * - DF-19: CI cache restore
-     - A-08b: GitHub Actions Build Cache
+   * - DF-19: CI write-back (SARIF / artifacts)
      - A-02: GitHub Actions Infrastructure
+     - A-01: GitHub Repository (main / protected)
      - HTTPS
 
-   * - DF-17: CI write-back (SARIF / artifacts / cache)
+   * - DF-23: Approved merge to main
+     - Release Gate / Code Review
+     - A-01: GitHub Repository (main / protected)
+     - 
+
+   * - DF-24: Publish wheel to PyPI (OIDC)
      - A-02: GitHub Actions Infrastructure
-     - A-01: GitHub Repository
+     - A-03: PyPI / TestPyPI
+     - HTTPS
+
+   * - DF-25: pip install dfetch
+     - Consumer / End User
+     - A-03: PyPI / TestPyPI
+     - HTTPS
+
+   * - DF-26: Consumer downloads dfetch from PyPI
+     - A-03: PyPI / TestPyPI
+     - Consumer / End User
      - HTTPS
 
 
@@ -124,11 +529,8 @@ Actors
    * - Name
      - Description
 
-   * - Developer
-     - dfetch project contributor: writes code, reviews PRs, cuts releases.  Trusted at workstation time; responsible for correct branch-protection and release workflow configuration.
-
-   * - Contributor / Attacker
-     - External contributor submitting pull requests, or an adversary attempting supply-chain manipulation (malicious PR, action-poisoning, or MITM on CI network traffic).  Code review, branch protection, and SHA-pinned Actions are the primary controls at this boundary.
+   * - Developer / Contributor
+     - Anyone who writes code for dfetch: core maintainers who push directly and cut releases, and external contributors who submit pull requests.  Maintainers are trusted at workstation time and are responsible for correct branch-protection and release workflow configuration.  External contributors are untrusted until their PR passes code review and CI.
 
    * - Consumer / End User
      - Installs dfetch from PyPI (``pip install dfetch``) or from binary installer, then invokes it on a developer workstation or in a CI pipeline.  Can verify five complementary attestation types using ``gh attestation verify`` as documented in the release-integrity guide (see C-026, C-037, C-039, C-040): SBOM attestation on the PyPI wheel; SBOM, SLSA build provenance, and VSA on binary installers; SLSA build provenance, in-toto test result attestation, and SLSA Source Provenance Attestation on the source archive and main-branch commits.
@@ -147,14 +549,14 @@ Boundaries
    * - Local Developer Environment
      - Developer workstation or local CI runner.  Assumed trusted at invocation time.  Hosts the manifest (``dfetch.yaml``), vendor directory, dependency metadata (``.dfetch_data.yaml``), and patch files.
 
-   * - GitHub Actions Infrastructure
-     - Microsoft-operated ephemeral runners executing the CI/CD workflows.  Egress traffic is blocked (``harden-runner`` with ``egress-policy: block``) with an allowlist of permitted endpoints; ``ci.yml`` forwards only explicitly named secrets to child workflows (``CODACY_PROJECT_TOKEN`` to ``test.yml``, ``GH_DFETCH_ORG_DEPLOY`` to ``docs.yml``).
+   * - Consumer Environment
+     - End-user workstation or downstream CI pipeline where dfetch is installed and invoked.  Distinct from the developer environment: no source checkout, no signing keys, no deploy access.  The consumer is trusted at invocation time but has no special relationship with the dfetch release infrastructure.
+
+   * - GitHub Platform
+     - GitHub-hosted infrastructure: repository, CI/CD runners, Actions workflows, build cache, and code-scanning results.  Egress traffic on runners is blocked (``harden-runner`` with ``egress-policy: block``) with an allowlist of permitted endpoints; ``ci.yml`` forwards only explicitly named secrets to child workflows (``CODACY_PROJECT_TOKEN`` to ``test.yml``, ``GH_DFETCH_ORG_DEPLOY`` to ``docs.yml``).
 
    * - PyPI / TestPyPI
      - Python Package Index and its staging registry.  dfetch publishes via OIDC trusted publishing - no long-lived API token stored.
-
-   * - Internet
-     - Public internet - upstream package registries, PyPI, GitHub, CDN nodes, and other external endpoints reachable by the CI/CD infrastructure.
 
 
 Assets
@@ -168,8 +570,12 @@ Assets
      - Description
      - Type
 
-   * - A-01: GitHub Repository
-     - Source code, PRs, releases, and workflow definitions.  GitHub Actions workflows (``.github/workflows/``) with ``contents:write`` permission can modify repository state and trigger releases.
+   * - A-01: GitHub Repository (main / protected)
+     - The protected ``main`` branch: force-push disabled, merges require passing CI and at least one approving review.  Contains the authoritative workflow definitions (``.github/workflows/``), release tags, and published release assets.  Workflow files on main are what GitHub Actions actually executes — a PR cannot override them for its own CI run.  ``contents:write`` permission allows CI to upload SARIF results and release assets.
+     - ExternalEntity
+
+   * - A-01b: GitHub Repository (feature branches / PRs)
+     - Unprotected feature branches and fork PRs: no mandatory review, no CI-gate requirement to push.  Any authenticated GitHub user can open a PR modifying ``.github/workflows/`` files; those changes are reviewed before merging to main but execute with restricted permissions during CI (no access to production secrets).  A malicious PR modifying workflow files could attempt to exfiltrate secrets during the PR CI run, mitigated by ``ci.yml`` secret scoping (C-024) and harden-runner egress block (C-013).
      - ExternalEntity
 
    * - A-02: GitHub Actions Infrastructure
@@ -177,7 +583,7 @@ Assets
      - ExternalEntity
 
    * - A-03: PyPI / TestPyPI
-     - Python Package Index.  dfetch is published via OIDC trusted publishing (no long-lived API token).  Account takeover or registry compromise would affect every consumer installing dfetch.
+     - Python Package Index - both the registry service and the published dfetch wheel/sdist (https://pypi.org/project/dfetch/).  Published via OIDC trusted publishing; no long-lived API token stored.  A machine-readable CycloneDX SBOM is generated during the build and published alongside the release.  Account takeover, registry compromise, or namespace-squatting would affect every consumer installing dfetch.
      - ExternalEntity
 
    * - Release Gate / Code Review
@@ -192,20 +598,8 @@ Assets
      - Runs ``python -m build`` to produce wheel and sdist.  Build deps (setuptools, build, fpm, gem) fetched from PyPI/RubyGems without hash pinning.  SLSA provenance attestations are generated by the release workflow.
      - Process
 
-   * - A-04: dfetch PyPI Package
-     - Published wheel and sdist on PyPI (https://pypi.org/project/dfetch/).  Published via OIDC trusted publishing - no long-lived API token stored.  A machine-readable CycloneDX SBOM is generated during the build and published alongside the release.  Compromise of the PyPI account or registry affects every consumer.
-     - Datastore
-
-   * - A-06: OpenSSF Scorecard Results
-     - Weekly OSSF Scorecard SARIF results uploaded to GitHub Code Scanning.  Covers: branch-protection, CI-tests, code-review, maintained, packaging, pinned-dependencies, SAST, signed-releases, token-permissions, vulnerabilities, dangerous-workflow, binary-artifacts, fuzzing, license, CII-best-practices, security-policy, webhooks.  Suppression or forgery hides supply-chain regressions.
-     - Datastore
-
    * - A-07: dfetch Build / Dev Dependencies
      - Python packages installed during CI: setuptools, build, pylint, bandit, mypy, pytest, etc.  Ruby gem ``fpm`` for platform builds.  Installed via ``pip install .`` and ``pip install --upgrade pip build`` without ``--require-hashes`` - a compromised PyPI mirror or BGP hijack can substitute malicious build tools.  ``gem install fpm`` and ``choco install svn/zig`` are also not hash-verified.
-     - Datastore
-
-   * - A-08: GitHub Actions Workflows
-     - ``.github/workflows/*.yml`` - CI/CD configuration checked into the repository.  11 workflows: ci, build, run, test, docs, release, python-publish, dependency-review, codeql-analysis, scorecard, devcontainer.  A malicious PR that modifies workflows can exfiltrate secrets or publish a backdoored release.  Mitigated by: SHA-pinned actions, persist-credentials:false, minimal permissions.
      - Datastore
 
    * - A-08b: GitHub Actions Build Cache
@@ -259,12 +653,6 @@ Controls
      - Information Disclosure, Tampering
      - DFT-07, DFT-29
      - Mitigates: ``step-security/harden-runner`` is used in every workflow with ``egress-policy: block`` and an allowlist of permitted endpoints.  All non-allowlisted outbound connections are blocked.  ``.github/workflows/*.yml``
-   * - C-014
-     - OpenSSF Scorecard
-     - Low
-     - Tampering
-     - DFT-07, DFT-10
-     - Mitigates: Weekly OSSF Scorecard analysis uploaded to GitHub Code Scanning covers the full set of OpenSSF Scorecard checks.  ``.github/workflows/scorecard.yml``
    * - C-015
      - CodeQL static analysis
      - Medium
@@ -370,3 +758,4 @@ Gaps
      - Spoofing, Elevation of Privilege
      - DFT-11
      - Affects: No hardware-token (FIDO2/WebAuthn) MFA or mandatory second-approver sign-off is required for accounts with merge or release-trigger rights.  A compromised maintainer account - via phishing, credential stuffing, or SMS-TOTP bypass - can merge a backdoored PR and trigger the release workflow without any automated block.  Enforce FIDO2 MFA on all accounts with merge rights and add a required reviewer to the ``pypi`` deployment environment.
+

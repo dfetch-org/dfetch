@@ -1,3 +1,6 @@
+dfetch Runtime Usage
+====================
+
 .. ============================================================
 .. Auto-generated file — do not edit manually.
 .. Regenerate with (see security/README.md for exact commands):
@@ -184,6 +187,36 @@ Dataflows
      - A-21: Audit / Check Reports
      -
 
+   * - DF-22: Copy extracted content to vendor directory
+     - A-20: Local VCS Cache (temp)
+     - A-22: dfetch Process
+     -
+
+   * - DF-18: Read integrity hash for archive verification
+     - A-14: Integrity Hash Record
+     - A-22: dfetch Process
+     -
+
+   * - DF-18b: Write computed hash to manifest (dfetch freeze)
+     - A-22: dfetch Process
+     - A-14: Integrity Hash Record
+     -
+
+   * - DF-20: Author / maintain dfetch.yaml
+     - Developer
+     - A-12: dfetch Manifest
+     -
+
+   * - DF-19: VCS server publishes source attestation (not consumed by dfetch)
+     - A-09: Remote VCS Server
+     - A-23: Upstream Source Attestation (VSA)
+     -
+
+   * - DF-21: Create / maintain patch files
+     - Developer
+     - A-19: Patch Files
+     -
+
 
 Data Dictionary
 ---------------
@@ -320,6 +353,457 @@ Assets
 
 
 
+
+Data Flow Diagram
+-----------------
+
+.. uml::
+
+   @startdot
+   digraph tm {
+       graph [
+           fontname = Arial;
+           fontsize = 14;
+       ]
+       node [
+           fontname = Arial;
+           fontsize = 14;
+           rankdir = lr;
+       ]
+       edge [
+           shape = none;
+           arrowtail = onormal;
+           fontname = Arial;
+           fontsize = 12;
+       ]
+       labelloc = "t";
+       fontsize = 20;
+       nodesep = 1;
+
+       subgraph cluster_boundary_ArchiveContentSpace_b8773cb4e7 {
+           graph [
+               fontsize = 10;
+               fontcolor = black;
+               style = dashed;
+               color = firebrick2;
+               label = <<i>Archive Content\nSpace</i>>;
+           ]
+
+           process_ArchiveExtractiontarfilezipfile_da43120000 [
+               shape = circle;
+               color = black;
+               fontcolor = black;
+               label = "Archive Extraction\n(tarfile /\nzipfile)";
+               margin = 0.02;
+           ]
+
+       }
+
+       subgraph cluster_boundary_Internet_88f2d9c06f {
+           graph [
+               fontsize = 10;
+               fontcolor = black;
+               style = dashed;
+               color = firebrick2;
+               label = <<i>Internet</i>>;
+           ]
+
+
+       }
+
+       subgraph cluster_boundary_LocalDeveloperEnvironment_acf3059e70 {
+           graph [
+               fontsize = 10;
+               fontcolor = black;
+               style = dashed;
+               color = firebrick2;
+               label = <<i>Local Developer\nEnvironment</i>>;
+           ]
+
+           actor_Developer_f2eb7a3ff7 [
+               shape = square;
+               color = black;
+               fontcolor = black;
+               label = "Developer";
+               margin = 0.02;
+           ]
+
+           externalentity_AConsumerBuildSystem_0291419f72 [
+               shape = square;
+               color = black;
+               fontcolor = black;
+               label = "A-11: Consumer\nBuild System";
+               margin = 0.02;
+           ]
+
+           process_AdfetchProcess_c76a0a7067 [
+               shape = circle;
+               color = black;
+               fontcolor = black;
+               label = "A-22: dfetch\nProcess";
+               margin = 0.02;
+           ]
+
+           process_PatchApplicationpatchng_c6f87088c2 [
+               shape = circle;
+               color = black;
+               fontcolor = black;
+               label = "Patch Application\n(patch-ng)";
+               margin = 0.02;
+           ]
+
+           datastore_AdfetchManifest_9345ab4c19 [
+               shape = cylinder;
+               color = black;
+               fontcolor = black;
+               label = "A-12: dfetch\nManifest";
+           ]
+
+           datastore_AFetchedSourceCode_86e4604564 [
+               shape = cylinder;
+               color = black;
+               fontcolor = black;
+               label = "A-13: Fetched\nSource Code";
+           ]
+
+           datastore_AIntegrityHashRecord_b2e5892d06 [
+               shape = cylinder;
+               color = black;
+               fontcolor = black;
+               label = "A-14: Integrity\nHash Record";
+           ]
+
+           datastore_ASBOMOutputCycloneDX_990b886585 [
+               shape = cylinder;
+               color = black;
+               fontcolor = black;
+               label = "A-15: SBOM Output\n(CycloneDX)";
+           ]
+
+           datastore_ADependencyMetadata_9df04f8dae [
+               shape = cylinder;
+               color = black;
+               fontcolor = black;
+               label = "A-18: Dependency\nMetadata";
+           ]
+
+           datastore_APatchFiles_65d0d57a00 [
+               shape = cylinder;
+               color = black;
+               fontcolor = black;
+               label = "A-19: Patch Files";
+           ]
+
+           process_SVNExportsvnexport_7eb89910ee [
+               shape = circle;
+               color = black;
+               fontcolor = black;
+               label = "SVN Export (svn\nexport)";
+               margin = 0.02;
+           ]
+
+           datastore_ALocalVCSCachetemp_ae6e32d09a [
+               shape = cylinder;
+               color = black;
+               fontcolor = black;
+               label = "A-20: Local VCS\nCache (temp)";
+           ]
+
+           datastore_AAuditCheckReports_d0c0ca0a3b [
+               shape = cylinder;
+               color = black;
+               fontcolor = black;
+               label = "A-21: Audit /\nCheck Reports";
+           ]
+
+       }
+
+       subgraph cluster_boundary_RemoteVCSInfrastructure_579e9aae81 {
+           graph [
+               fontsize = 10;
+               fontcolor = black;
+               style = dashed;
+               color = firebrick2;
+               label = <<i>Remote VCS\nInfrastructure</i>>;
+           ]
+
+           externalentity_ARemoteVCSServer_d2006ce1bb [
+               shape = square;
+               color = black;
+               fontcolor = black;
+               label = "A-09: Remote VCS\nServer";
+               margin = 0.02;
+           ]
+
+           externalentity_AArchiveHTTPServer_f8af758679 [
+               shape = square;
+               color = black;
+               fontcolor = black;
+               label = "A-10: Archive HTTP\nServer";
+               margin = 0.02;
+           ]
+
+           datastore_AUpstreamSourceAttestationVSA_2c440ebe53 [
+               shape = cylinder;
+               color = black;
+               fontcolor = black;
+               label = "A-23: Upstream\nSource Attestation\n(VSA)";
+           ]
+
+       }
+
+       actor_Developer_f2eb7a3ff7 -> process_AdfetchProcess_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-01: Invoke\ndfetch command";
+       ]
+
+       datastore_AdfetchManifest_9345ab4c19 -> process_AdfetchProcess_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-02: Read\nmanifest";
+       ]
+
+       process_AdfetchProcess_c76a0a7067 -> externalentity_ARemoteVCSServer_d2006ce1bb [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-03a: Fetch VCS\ncontent -\nHTTPS/SSH";
+       ]
+
+       process_AdfetchProcess_c76a0a7067 -> externalentity_ARemoteVCSServer_d2006ce1bb [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-03b: Fetch VCS\ncontent - svn:// /\nhttp://";
+       ]
+
+       externalentity_ARemoteVCSServer_d2006ce1bb -> process_AdfetchProcess_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-04a: VCS\ncontent inbound -\nHTTPS/SSH";
+       ]
+
+       externalentity_ARemoteVCSServer_d2006ce1bb -> process_AdfetchProcess_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-04b: VCS\ncontent inbound -\nsvn:// / http://";
+       ]
+
+       process_AdfetchProcess_c76a0a7067 -> externalentity_AArchiveHTTPServer_f8af758679 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-05a: Archive\ndownload request -\nHTTPS";
+       ]
+
+       process_AdfetchProcess_c76a0a7067 -> externalentity_AArchiveHTTPServer_f8af758679 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-05b: Archive\ndownload request -\nHTTP";
+       ]
+
+       externalentity_AArchiveHTTPServer_f8af758679 -> process_AdfetchProcess_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-06a: Archive\nbytes - HTTPS";
+       ]
+
+       externalentity_AArchiveHTTPServer_f8af758679 -> process_AdfetchProcess_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-06b: Archive\nbytes - HTTP\n(plaintext risk)";
+       ]
+
+       process_AdfetchProcess_c76a0a7067 -> datastore_AFetchedSourceCode_86e4604564 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-07: Write\nvendored files";
+       ]
+
+       process_AdfetchProcess_c76a0a7067 -> datastore_ADependencyMetadata_9df04f8dae [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-08: Write\ndependency\nmetadata";
+       ]
+
+       process_AdfetchProcess_c76a0a7067 -> datastore_ASBOMOutputCycloneDX_990b886585 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-09: Write SBOM";
+       ]
+
+       datastore_ADependencyMetadata_9df04f8dae -> process_AdfetchProcess_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-16: Read\ndependency\nmetadata";
+       ]
+
+       datastore_APatchFiles_65d0d57a00 -> process_PatchApplicationpatchng_c6f87088c2 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-10: Read patch\nfor application";
+       ]
+
+       process_PatchApplicationpatchng_c6f87088c2 -> datastore_AFetchedSourceCode_86e4604564 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-10b: Write\npatched files to\nvendor directory";
+       ]
+
+       datastore_AFetchedSourceCode_86e4604564 -> externalentity_AConsumerBuildSystem_0291419f72 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-15: Vendored\nsource to build";
+       ]
+
+       process_AdfetchProcess_c76a0a7067 -> process_ArchiveExtractiontarfilezipfile_da43120000 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-11: Dispatch\narchive bytes to\nextraction";
+       ]
+
+       process_ArchiveExtractiontarfilezipfile_da43120000 -> datastore_ALocalVCSCachetemp_ae6e32d09a [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-12: Write\nextracted archive\nto temp dir";
+       ]
+
+       process_AdfetchProcess_c76a0a7067 -> process_SVNExportsvnexport_7eb89910ee [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-13: Dispatch\nSVN export\nsubprocess";
+       ]
+
+       process_SVNExportsvnexport_7eb89910ee -> datastore_ALocalVCSCachetemp_ae6e32d09a [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-14: Write SVN\nexport to temp dir";
+       ]
+
+       process_AdfetchProcess_c76a0a7067 -> datastore_AAuditCheckReports_d0c0ca0a3b [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-17: Write audit\n/ check reports";
+       ]
+
+       datastore_ALocalVCSCachetemp_ae6e32d09a -> process_AdfetchProcess_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-22: Copy\nextracted content\nto vendor\ndirectory";
+       ]
+
+       datastore_AIntegrityHashRecord_b2e5892d06 -> process_AdfetchProcess_c76a0a7067 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-18: Read\nintegrity hash for\narchive\nverification";
+       ]
+
+       process_AdfetchProcess_c76a0a7067 -> datastore_AIntegrityHashRecord_b2e5892d06 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-18b: Write\ncomputed hash to\nmanifest (dfetch\nfreeze)";
+       ]
+
+       actor_Developer_f2eb7a3ff7 -> datastore_AdfetchManifest_9345ab4c19 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-20: Author /\nmaintain\ndfetch.yaml";
+       ]
+
+       externalentity_ARemoteVCSServer_d2006ce1bb -> datastore_AUpstreamSourceAttestationVSA_2c440ebe53 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-19: VCS server\npublishes source\nattestation (not\nconsumed by\ndfetch)";
+       ]
+
+       actor_Developer_f2eb7a3ff7 -> datastore_APatchFiles_65d0d57a00 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-21: Create /\nmaintain patch\nfiles";
+       ]
+
+   }
+   @enddot
+
+Sequence Diagram
+----------------
+
+.. uml::
+
+   @startuml
+   actor actor_Developer_f2eb7a3ff7 as "Developer"
+   entity externalentity_ARemoteVCSServer_d2006ce1bb as "A-09: Remote VCS Server"
+   entity externalentity_AArchiveHTTPServer_f8af758679 as "A-10: Archive HTTP Server"
+   database datastore_AUpstreamSourceAttestationVSA_2c440ebe53 as "A-23: Upstream Source Attestation (VSA)"
+   entity externalentity_AConsumerBuildSystem_0291419f72 as "A-11: Consumer Build System"
+   entity process_AdfetchProcess_c76a0a7067 as "A-22: dfetch Process"
+   entity process_PatchApplicationpatchng_c6f87088c2 as "Patch Application (patch-ng)"
+   database datastore_AdfetchManifest_9345ab4c19 as "A-12: dfetch Manifest"
+   database datastore_AFetchedSourceCode_86e4604564 as "A-13: Fetched Source Code"
+   database datastore_AIntegrityHashRecord_b2e5892d06 as "A-14: Integrity Hash Record"
+   database datastore_ASBOMOutputCycloneDX_990b886585 as "A-15: SBOM Output (CycloneDX)"
+   database datastore_ADependencyMetadata_9df04f8dae as "A-18: Dependency Metadata"
+   database datastore_APatchFiles_65d0d57a00 as "A-19: Patch Files"
+   entity process_ArchiveExtractiontarfilezipfile_da43120000 as "Archive Extraction (tarfile / zipfile)"
+   entity process_SVNExportsvnexport_7eb89910ee as "SVN Export (svn export)"
+   database datastore_ALocalVCSCachetemp_ae6e32d09a as "A-20: Local VCS Cache (temp)"
+   database datastore_AAuditCheckReports_d0c0ca0a3b as "A-21: Audit / Check Reports"
+
+   actor_Developer_f2eb7a3ff7 -> process_AdfetchProcess_c76a0a7067: DF-01: Invoke dfetch command
+   datastore_AdfetchManifest_9345ab4c19 -> process_AdfetchProcess_c76a0a7067: DF-02: Read manifest
+   process_AdfetchProcess_c76a0a7067 -> externalentity_ARemoteVCSServer_d2006ce1bb: DF-03a: Fetch VCS content - HTTPS/SSH
+   process_AdfetchProcess_c76a0a7067 -> externalentity_ARemoteVCSServer_d2006ce1bb: DF-03b: Fetch VCS content - svn:// / http://
+   externalentity_ARemoteVCSServer_d2006ce1bb -> process_AdfetchProcess_c76a0a7067: DF-04a: VCS content inbound - HTTPS/SSH
+   externalentity_ARemoteVCSServer_d2006ce1bb -> process_AdfetchProcess_c76a0a7067: DF-04b: VCS content inbound - svn:// / http://
+   process_AdfetchProcess_c76a0a7067 -> externalentity_AArchiveHTTPServer_f8af758679: DF-05a: Archive download request - HTTPS
+   process_AdfetchProcess_c76a0a7067 -> externalentity_AArchiveHTTPServer_f8af758679: DF-05b: Archive download request - HTTP
+   externalentity_AArchiveHTTPServer_f8af758679 -> process_AdfetchProcess_c76a0a7067: DF-06a: Archive bytes - HTTPS
+   externalentity_AArchiveHTTPServer_f8af758679 -> process_AdfetchProcess_c76a0a7067: DF-06b: Archive bytes - HTTP (plaintext risk)
+   process_AdfetchProcess_c76a0a7067 -> datastore_AFetchedSourceCode_86e4604564: DF-07: Write vendored files
+   process_AdfetchProcess_c76a0a7067 -> datastore_ADependencyMetadata_9df04f8dae: DF-08: Write dependency metadata
+   process_AdfetchProcess_c76a0a7067 -> datastore_ASBOMOutputCycloneDX_990b886585: DF-09: Write SBOM
+   datastore_ADependencyMetadata_9df04f8dae -> process_AdfetchProcess_c76a0a7067: DF-16: Read dependency metadata
+   datastore_APatchFiles_65d0d57a00 -> process_PatchApplicationpatchng_c6f87088c2: DF-10: Read patch for application
+   process_PatchApplicationpatchng_c6f87088c2 -> datastore_AFetchedSourceCode_86e4604564: DF-10b: Write patched files to vendor directory
+   datastore_AFetchedSourceCode_86e4604564 -> externalentity_AConsumerBuildSystem_0291419f72: DF-15: Vendored source to build
+   process_AdfetchProcess_c76a0a7067 -> process_ArchiveExtractiontarfilezipfile_da43120000: DF-11: Dispatch archive bytes to extraction
+   process_ArchiveExtractiontarfilezipfile_da43120000 -> datastore_ALocalVCSCachetemp_ae6e32d09a: DF-12: Write extracted archive to temp dir
+   process_AdfetchProcess_c76a0a7067 -> process_SVNExportsvnexport_7eb89910ee: DF-13: Dispatch SVN export subprocess
+   process_SVNExportsvnexport_7eb89910ee -> datastore_ALocalVCSCachetemp_ae6e32d09a: DF-14: Write SVN export to temp dir
+   process_AdfetchProcess_c76a0a7067 -> datastore_AAuditCheckReports_d0c0ca0a3b: DF-17: Write audit / check reports
+   datastore_ALocalVCSCachetemp_ae6e32d09a -> process_AdfetchProcess_c76a0a7067: DF-22: Copy extracted content to vendor directory
+   datastore_AIntegrityHashRecord_b2e5892d06 -> process_AdfetchProcess_c76a0a7067: DF-18: Read integrity hash for archive verification
+   process_AdfetchProcess_c76a0a7067 -> datastore_AIntegrityHashRecord_b2e5892d06: DF-18b: Write computed hash to manifest (dfetch freeze)
+   actor_Developer_f2eb7a3ff7 -> datastore_AdfetchManifest_9345ab4c19: DF-20: Author / maintain dfetch.yaml
+   externalentity_ARemoteVCSServer_d2006ce1bb -> datastore_AUpstreamSourceAttestationVSA_2c440ebe53: DF-19: VCS server publishes source attestation (not consumed by dfetch)
+   actor_Developer_f2eb7a3ff7 -> datastore_APatchFiles_65d0d57a00: DF-21: Create / maintain patch files
+   @enduml
 
 Controls
 --------

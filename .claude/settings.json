@@ -25,7 +25,9 @@
       "Bash(make -C doc latexpdf)",
       "Bash(make -C doc clean)",
       "Bash(dfetch add:*)",
-      "Bash(dfetch update:*)"
+      "Bash(dfetch update:*)",
+      "Bash(python -m security.tm_supply_chain:*)",
+      "Bash(python -m security.tm_usage:*)"
     ],
     "additionalDirectories": [
       "/workspaces/dfetch/.claude"
