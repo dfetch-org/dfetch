@@ -29,6 +29,7 @@ jobs:
             api.github.com:443
             release-assets.githubusercontent.com:443
             uploads.github.com:443
+            timestamp.githubapp.com:443
             fulcio.sigstore.dev:443
             rekor.sigstore.dev:443
             tuf-repo-cdn.sigstore.dev:443
@@ -61,6 +62,7 @@ jobs:
             github.com:443
             api.github.com:443
             uploads.github.com:443
+            timestamp.githubapp.com:443
             fulcio.sigstore.dev:443
             rekor.sigstore.dev:443
             tuf-repo-cdn.sigstore.dev:443
