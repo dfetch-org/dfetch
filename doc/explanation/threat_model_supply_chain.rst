@@ -324,7 +324,7 @@ Controls
      - Low
      - Repudiation, Spoofing
      - DFT-31
-     - Mitigates: Source Provenance Attestations are published via ``slsa-framework/slsa-source-corroborator`` on every push to ``main``.  These attestations prove the specific source-level governance controls applied on each commit: branch protection, mandatory code review, and ancestry enforcement (C-038).  Predicate type ``https://slsa.dev/source_provenance/v1`` is signed by GitHub Actions via Sigstore and stored in the GitHub Attestation registry.  Consumers can verify using ``gh attestation verify`` with ``--predicate-type https://slsa.dev/source_provenance/v1`` and ``--cert-identity`` pinned to ``source-provenance.yml@refs/heads/main``.  ``.github/workflows/source-provenance.yml``
+     - Mitigates: Source Provenance Attestations are published via ``slsa-framework/source-actions/slsa_with_provenance`` on every push to ``main``.  These attestations prove the specific source-level governance controls applied on each commit: branch protection, mandatory code review, and ancestry enforcement (C-038).  Predicate type ``https://slsa.dev/source_provenance/v1`` is signed by GitHub Actions via Sigstore and stored in the GitHub Attestation registry.  Consumers can verify using ``gh attestation verify`` with ``--predicate-type https://slsa.dev/source_provenance/v1`` and ``--cert-identity`` pinned to ``source-provenance.yml@refs/heads/main``.  ``.github/workflows/source-provenance.yml``
    * - C-038
      - Ancestry enforcement on dfetch main branch
      - Low

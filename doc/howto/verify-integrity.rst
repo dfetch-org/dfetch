@@ -211,7 +211,7 @@ any binary was produced):
 Every commit merged to ``main`` has a Source Provenance Attestation proving that
 branch protection, mandatory code review, and ancestry enforcement were in place
 when the commit landed.  These attestations are published by
-``slsa-framework/slsa-source-corroborator`` and stored in the
+``slsa-framework/source-actions/slsa_with_provenance`` and stored in the
 `attestation registry <https://github.com/dfetch-org/dfetch/attestations>`_.
 Replace ``<sha>`` with the 40-character commit SHA you want to verify:
 
