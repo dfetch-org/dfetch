@@ -131,7 +131,7 @@ Actors
      - External contributor submitting pull requests, or an adversary attempting supply-chain manipulation (malicious PR, action-poisoning, or MITM on CI network traffic).  Code review, branch protection, and SHA-pinned Actions are the primary controls at this boundary.
 
    * - Consumer / End User
-     - Installs dfetch from PyPI (``pip install dfetch``) or from binary installer, then invokes it on a developer workstation or in a CI pipeline.  Can verify four complementary attestation types using ``gh attestation verify`` as documented in the release-integrity guide (see C-026, C-039, C-040): SBOM attestation on the PyPI wheel; SBOM, SLSA build provenance, and VSA on binary installers; SLSA build provenance and in-toto test result attestation on the source archive.
+     - Installs dfetch from PyPI (``pip install dfetch``) or from binary installer, then invokes it on a developer workstation or in a CI pipeline.  Can verify five complementary attestation types using ``gh attestation verify`` as documented in the release-integrity guide (see C-026, C-037, C-039, C-040): SBOM attestation on the PyPI wheel; SBOM, SLSA build provenance, and VSA on binary installers; SLSA build provenance, in-toto test result attestation, and SLSA Source Provenance Attestation on the source archive and main-branch commits.
 
 
 Boundaries
@@ -319,6 +319,12 @@ Controls
      - Tampering
      - DFT-28
      - Mitigates: ccache and clcache keys in ``build.yml`` include ``${{ github.ref_name }}`` so cache entries written by a pull-request build are scoped to the PR's branch name and cannot be restored by a release-tag build.  A malicious fork PR step cannot pre-populate a cache slot that the release workflow will restore, because the release tag name is not reachable from the PR's branch ref.  ``.github/workflows/build.yml``
+   * - C-037
+     - SLSA Source Provenance Attestation of repository governance controls
+     - Low
+     - Repudiation, Spoofing
+     - DFT-31
+     - Mitigates: Source Provenance Attestations are published via ``slsa-framework/slsa-source-corroborator`` on every push to ``main``.  These attestations prove the specific source-level governance controls applied on each commit: branch protection, mandatory code review, and ancestry enforcement (C-038).  Predicate type ``https://slsa.dev/source_provenance/v1`` is signed by GitHub Actions via Sigstore and stored in the GitHub Attestation registry.  Consumers can verify using ``gh attestation verify`` with ``--predicate-type https://slsa.dev/source_provenance/v1`` and ``--cert-identity`` pinned to ``source-provenance.yml@refs/heads/main``.  ``.github/workflows/source-provenance.yml``
    * - C-038
      - Ancestry enforcement on dfetch main branch
      - Low
@@ -330,7 +336,7 @@ Controls
      - High
      - Spoofing, Tampering, Repudiation
      - DFT-31, DFT-25
-     - Mitigates: Every dfetch release ships two complementary Sigstore-signed attestations that together let consumers trace the full source → binary chain.  SLSA build provenance (``source-provenance.yml``) on the source archive proves the archive was produced from the official tagged commit by the official CI workflow, recording the exact inputs used at build time.  A Verification Summary Attestation (VSA, ``build.yml``) on binary installers records that the source archive was itself attested and verified before the binary was produced, linking source-level trust to the installed package.  Both are signed by GitHub Actions via Sigstore and can be verified using ``gh attestation verify`` with ``--predicate-type https://slsa.dev/provenance/v1`` or ``--predicate-type https://slsa.dev/verification_summary/v1`` respectively.  This substantially mitigates DFT-31 (consumers now have attestations to verify against) and DFT-25 (forged provenance would fail Sigstore verification).  The remaining gap (no formal SLSA Source Level attestation of governance controls) is tracked in C-037.  ``doc/howto/verify-integrity.rst``
+     - Mitigates: Every dfetch release ships two complementary Sigstore-signed attestations that together let consumers trace the full source → binary chain.  SLSA build provenance (``source-provenance.yml``) on the source archive proves the archive was produced from the official tagged commit by the official CI workflow, recording the exact inputs used at build time.  A Verification Summary Attestation (VSA, ``build.yml``) on binary installers records that the source archive was itself attested and verified before the binary was produced, linking source-level trust to the installed package.  Both are signed by GitHub Actions via Sigstore and can be verified using ``gh attestation verify`` with ``--predicate-type https://slsa.dev/provenance/v1`` or ``--predicate-type https://slsa.dev/verification_summary/v1`` respectively.  This substantially mitigates DFT-31 (consumers now have attestations to verify against) and DFT-25 (forged provenance would fail Sigstore verification).  The formal SLSA Source Level attestation of governance controls is addressed by C-037.  ``doc/howto/verify-integrity.rst``
    * - C-040
      - Test result attestation on source archive
      - Medium
@@ -358,12 +364,6 @@ Gaps
      - Tampering
      - DFT-10
      - Affects: ``pip install .`` and ``pip install --upgrade pip build`` in CI do not use ``--require-hashes``.  A compromised PyPI mirror can substitute malicious build tooling.
-   * - C-037
-     - No formal SLSA Source Level attestation of repository governance controls
-     - Low
-     - Repudiation, Spoofing
-     - DFT-31
-     - Affects: dfetch now publishes SLSA build provenance for source archives, VSAs for binary installers (C-039), and in-toto test result attestations (C-040).  These close the 'no attestation to verify against' concern: consumers can cryptographically verify the artifact chain.  The remaining, narrower gap is that dfetch does not publish formal SLSA Source Provenance Attestations generated by a SLSA Source Generator — attestations that would prove the specific source-level governance controls applied on each commit (branch protection, mandatory code review, ancestry enforcement).  C-038 establishes that ancestry enforcement is in place and C-026 documents what consumers can verify; the gap is in machine-readable, verifiable proof of those governance controls rather than the controls themselves.  Risk is Low: the missing piece is a formal SLSA Source Level certificate (per the SLSA Source Track spec) rather than the absence of any assurance.  Fix: publish Source Provenance Attestations via ``slsa-framework/slsa-source-corroborator`` or equivalent on each push to main.
    * - C-025
      - No hardware-token MFA for release operations
      - High
