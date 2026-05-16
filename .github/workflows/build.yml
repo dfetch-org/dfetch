@@ -33,6 +33,7 @@ jobs:
             api.github.com:443
             release-assets.githubusercontent.com:443
             uploads.github.com:443
+            timestamp.githubapp.com:443
             pypi.org:443
             files.pythonhosted.org:443
             packages.microsoft.com:443
@@ -341,6 +342,8 @@ jobs:
           github.com:443
           api.github.com:443
           release-assets.githubusercontent.com:443
+          uploads.github.com:443
+          timestamp.githubapp.com:443
           pypi.org:443
           files.pythonhosted.org:443
           fulcio.sigstore.dev:443
