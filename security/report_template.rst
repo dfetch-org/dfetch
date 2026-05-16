@@ -5,10 +5,15 @@
 ..   python -m security.tm_<supply_chain|usage> \
 ..       --report security/report_template.rst \
 ..       > doc/explanation/threat_model_<name>.rst
+..
 .. ============================================================
 
-System Description
-------------------
+Risk Context
+------------
+
+This report follows the risk-based approach of `BSI TR-03183-1
+<https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-1.pdf>`_
+Chapter 5.
 
 {tm.description}
 
@@ -18,6 +23,7 @@ Assumptions
 .. list-table::
    :header-rows: 1
    :widths: 30 70
+   :width: 100%
 
    * - Name
      - Description
@@ -26,46 +32,13 @@ Assumptions
      - {{item.description}}
 }
 
-Dataflows
----------
-
-.. list-table::
-   :header-rows: 1
-   :widths: 35 20 20 25
-
-   * - Name
-     - From
-     - To
-     - Protocol
-{dataflows:repeat:
-   * - {{item.display_name:call:}}
-     - {{item.source.name}}
-     - {{item.sink.name}}
-     - {{item.protocol}}
-}
-
-Data Dictionary
----------------
-
-.. list-table::
-   :header-rows: 1
-   :widths: 25 55 20
-
-   * - Name
-     - Description
-     - Classification
-{data:repeat:
-   * - {{item.name}}
-     - {{item.description}}
-     - {{item.classification.name}}
-}
-
 Actors
 ------
 
 .. list-table::
    :header-rows: 1
    :widths: 25 75
+   :width: 100%
 
    * - Name
      - Description
@@ -80,6 +53,7 @@ Boundaries
 .. list-table::
    :header-rows: 1
    :widths: 25 75
+   :width: 100%
 
    * - Name
      - Description
@@ -88,29 +62,41 @@ Boundaries
      - {{item.description}}
 }
 
-Assets
-------
+Data Flow Diagram
+-----------------
+
+{{dfd_content}}
+
+Sequence Diagram
+----------------
+
+{{seq_content}}
+
+Asset Identification
+--------------------
 
 .. list-table::
    :header-rows: 1
-   :widths: 25 55 20
+   :widths: 20 40 13 17
+   :width: 100%
 
    * - Name
      - Description
      - Type
-{assets:repeat:
-   * - {{item.name}}
-     - {{item.description}}
-     - {{item:call:getElementType}}
-}
+     - C / I / A
+{{assets_rows}}
 
 {tm.excluded_findings:if:
-Excluded Threats
-----------------
+Excluded / Accepted Risks
+-------------------------
+
+The following threats are excluded from active treatment, each linked to
+the assumption under which the risk is considered acceptable.
 
 .. list-table::
    :header-rows: 1
    :widths: 12 28 20 20 8 12
+   :width: 100%
 
    * - ID
      - Description
@@ -127,3 +113,51 @@ Excluded Threats
      - {{item:call:getFindingSeverity}}
      - {{item:call:getFindingReferences}}
 }
+
+Dataflows
+---------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 20 20 25
+   :width: 100%
+
+   * - Name
+     - From
+     - To
+     - Protocol
+{dataflows:repeat:
+   * - {{item.display_name:call:}}
+     - {{item.source.name}}
+     - {{item.sink.name}}
+     - {{item.protocol}}
+}
+
+Threats
+-------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 10 22 18 15 34
+   :width: 100%
+
+   * - ID
+     - Description
+     - Target
+     - Analysis
+     - Controls / Notes
+{{threats_rows}}
+
+Controls
+--------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 8 25 15 52
+   :width: 100%
+
+   * - ID
+     - Name
+     - Threats
+     - Description
+{{controls_rows}}

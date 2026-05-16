@@ -44,16 +44,17 @@ from pytm import (  # noqa: E402  # pylint: disable=wrong-import-position
     Process,
 )
 
-from security.tm_common import (  # noqa: E402  # pylint: disable=wrong-import-position
+from security.tm_elements import (  # noqa: E402  # pylint: disable=wrong-import-position
     THREATS_FILE,
     Control,
-    ControlAssessment,
-    apply_report_utils_patch,
+    ThreatResponse,
     build_asset_controls_index,
-    make_attacker_profiles,
     make_dev_env_boundary,
     make_network_boundary,
     make_usage_assumptions,
+)
+from security.tm_render import (  # noqa: E402  # pylint: disable=wrong-import-position
+    apply_report_utils_patch,
     run_model,
 )
 
@@ -73,8 +74,8 @@ def _make_usage_boundaries() -> tuple[Boundary, Boundary]:
 def _make_usage_actors_and_external_entities(
     b_dev: Boundary,
     b_remote_vcs: Boundary,
-) -> tuple[Actor, ExternalEntity, ExternalEntity, ExternalEntity]:
-    """Create actors and external entities; return those referenced by dataflows."""
+) -> tuple[Actor, ExternalEntity, ExternalEntity, ExternalEntity, Datastore]:
+    """Create actors and external entities; return all for use in dataflows."""
     developer = Actor("Developer")
     developer.inBoundary = b_dev
     developer.description = (
@@ -92,7 +93,14 @@ def _make_usage_actors_and_external_entities(
         "Not controlled by the dfetch project; content is untrusted until verified.  "
         "The SLSA source level of any upstream is unknown and unverified - dfetch does "
         "not check whether the upstream enforces branch protection, mandatory review, or "
-        "ancestry enforcement, and no VSA is fetched alongside repository content (A-23)."
+        "ancestry enforcement, and no VSA is fetched alongside repository content (A-23).  "
+        "Threat postures: a compromised upstream maintainer account (phishing, credential "
+        "stuffing, or MFA bypass) delivers attacker-controlled commits over an authenticated "
+        "channel where transport security gives no protection — mitigated only by commit-SHA "
+        "pinning and review before accepting any update.  "
+        "A network-adjacent attacker (BGP hijack, compromised DNS resolver) can intercept "
+        "unencrypted traffic (svn://, http://) and inject redirects, but cannot break "
+        "correctly implemented TLS or SSH."
     )
     archive_server = ExternalEntity("A-10: Archive HTTP Server")
     archive_server.inBoundary = b_remote_vcs
@@ -100,7 +108,13 @@ def _make_usage_actors_and_external_entities(
     archive_server.description = (
         "HTTP/HTTPS server serving ``.tar.gz``, ``.tgz``, ``.tar.bz2``, ``.tar.xz``, "
         "or ``.zip`` files.  CRITICAL: ``http://`` (non-TLS) URLs are accepted without "
-        "enforcement of integrity hashes - the ``integrity.hash`` field is optional."
+        "enforcement of integrity hashes - the ``integrity.hash`` field is optional.  "
+        "Threat postures: a network-adjacent attacker (BGP hijack, compromised DNS resolver, "
+        "or corporate proxy) can intercept ``http://`` traffic and serve a malicious archive "
+        "transparently — ``integrity.hash`` is the only defence for plain-HTTP URLs.  "
+        "A compromised CDN node or registry can serve malicious content under a valid TLS "
+        "certificate; transport integrity gives no protection — only a verified content hash "
+        "or signed attestation detects server-side substitution."
     )
     upstream_source_attestation = Datastore("A-23: Upstream Source Attestation (VSA)")
     upstream_source_attestation.inBoundary = b_remote_vcs
@@ -131,7 +145,13 @@ def _make_usage_actors_and_external_entities(
         "Build system that compiles fetched source code (A-13).  "
         "Not controlled by dfetch - it receives untrusted third-party source."
     )
-    return developer, remote_git_svn, archive_server, consumer_build
+    return (
+        developer,
+        remote_git_svn,
+        archive_server,
+        consumer_build,
+        upstream_source_attestation,
+    )
 
 
 def _make_usage_processes(b_dev: Boundary) -> tuple[Process, Process]:
@@ -161,13 +181,15 @@ def _make_usage_processes(b_dev: Boundary) -> tuple[Process, Process]:
     dfetch_cli.controls.invokesSubprocess = (
         True  # git/svn invoked as list-arg subprocesses
     )
-    patch_apply = Process("Patch Application (patch-ng)")
+    patch_apply = Process("A-25: Patch Application (patch-ng)")
     patch_apply.inBoundary = b_dev
     patch_apply.description = (
         "Invokes ``patch-ng`` to apply unified-diff files from ``patch:`` references "
-        "in the manifest.  Path safety is delegated entirely to ``patch-ng``'s internal "
-        "implementation - dfetch does not independently sanitise patch-file destination "
-        "paths before handing off to the library."
+        "in the manifest.  dfetch validates that each patch file resides within the "
+        "project directory (``subproject.py``), but does not independently sanitise "
+        "the destination paths *inside* the patch file before handing off to the library.  "
+        "Path safety for patch application targets is delegated to ``patch-ng``'s "
+        "internal implementation."
     )
     patch_apply.controls.sanitizesInput = (
         False  # path safety delegated to patch-ng; not independently verified
@@ -182,7 +204,7 @@ def _make_usage_processes(b_dev: Boundary) -> tuple[Process, Process]:
 def _make_usage_datastores_a(
     b_dev: Boundary,
 ) -> tuple[Datastore, Datastore, Datastore]:
-    """Create primary data stores; return those referenced by dataflows."""
+    """Create primary data stores; return all for use in dataflows."""
     manifest_store = Datastore("A-12: dfetch Manifest")
     manifest_store.inBoundary = b_dev
     manifest_store.description = (
@@ -191,7 +213,15 @@ def _make_usage_datastores_a(
         "integrity hashes.  "
         "Tampering redirects fetches to attacker-controlled sources.  "
         "RISK: ``integrity.hash`` is Optional in schema - archive deps can be declared "
-        "without any content-authenticity guarantee."
+        "without any content-authenticity guarantee.  "
+        "Threat postures: a malicious manifest contributor introduces a ``dfetch.yaml`` "
+        "change that redirects a dep to an attacker-controlled URL, points ``dst:`` at a "
+        "sensitive path, or embeds a credential-bearing URL — dfetch is not the control "
+        "point; code review at the PR boundary is the intended mitigating control.  "
+        "A local-filesystem attacker with write access to the working tree (gained via a "
+        "compromised dev dependency, malicious post-install hook, or lateral movement) can "
+        "tamper with ``.dfetch_data.yaml``, patch files, and vendored source after dfetch "
+        "writes them to disk."
     )
     manifest_store.storesSensitiveData = (
         False  # config only (URLs, pins, hashes), not credentials/PII
@@ -217,20 +247,6 @@ def _make_usage_datastores_a(
     fetched_source.isSQL = False
     fetched_source.classification = Classification.SENSITIVE
     fetched_source.controls.isEncryptedAtRest = False
-    integrity_hash_record = Datastore("A-14: Integrity Hash Record")
-    integrity_hash_record.inBoundary = b_dev
-    integrity_hash_record.description = (
-        "``integrity.hash:`` field in ``dfetch.yaml`` (sha256/sha384/sha512:<hex>).  "
-        "Primary trust anchor for archive-type dependencies when present.  "
-        "Verified via ``hmac.compare_digest`` (constant-time).  "
-        "Field is optional - absence disables content verification for archives (C-018).  "
-        "Git and SVN have no equivalent; they rely entirely on transport security (C-019)."
-    )
-    integrity_hash_record.storesSensitiveData = False
-    integrity_hash_record.hasWriteAccess = True
-    integrity_hash_record.isSQL = False
-    integrity_hash_record.classification = Classification.SENSITIVE
-    integrity_hash_record.controls.providesIntegrity = True
     sbom_output = Datastore("A-15: SBOM Output (CycloneDX)")
     sbom_output.inBoundary = b_dev
     sbom_output.description = (
@@ -302,9 +318,10 @@ def _make_usage_datastores_b(b_dev: Boundary) -> tuple[Data, Datastore, Datastor
     patch_store.description = (
         "Unified-diff ``.patch`` files referenced by ``patch:`` in ``dfetch.yaml``.  "
         "Applied by ``patch-ng`` after fetch.  "
-        "A malicious patch can write to arbitrary destination paths - "
-        "dfetch's path-traversal guards apply to archive extraction but ``patch-ng``'s "
-        "own path safety depends on its internal implementation.  "
+        "dfetch validates that each patch file path resides within the project directory "
+        "(``subproject.py``), but does not check where the patch contents will write — "
+        "a malicious patch can still write to arbitrary destination paths within reach "
+        "of ``patch-ng``.  "
         "Patch files are not integrity-verified (no hash in manifest schema)."
     )
     patch_store.storesSensitiveData = False
@@ -355,7 +372,7 @@ def _make_usage_vcs_dataflows(
         "schema.  Traffic is unencrypted; MITM can substitute repository content.  "
         "RECOMMENDATION: restrict manifest URLs to HTTPS / svn+https:// / SSH."
     )
-    df03_plain.protocol = "http / svn"
+    df03_plain.protocol = "HTTP / SVN"
     df03_plain.controls.isEncrypted = False
     df03_plain.controls.isHardened = False
     df03_plain.controls.isNetworkFlow = True
@@ -388,7 +405,7 @@ def _make_usage_vcs_dataflows(
         "A network-positioned attacker can substitute arbitrary content without "
         "detection - no transport encryption and no content hash."
     )
-    df04_plain.protocol = "http / svn"
+    df04_plain.protocol = "HTTP / SVN"
     df04_plain.controls.isEncrypted = False
     df04_plain.controls.providesIntegrity = False
     df04_plain.controls.isNetworkFlow = True
@@ -527,16 +544,92 @@ def _make_usage_patch_and_build_flows(
     )
 
 
+def _make_vcs_subprocess_flows(
+    b_dev: Boundary, dfetch_cli: Process, local_vcs_cache: Datastore
+) -> None:
+    """Create git and SVN subprocess processes and their dispatch/write dataflows."""
+    git_clone_proc = Process("A-27: Git Clone (git init / fetch / checkout)")
+    git_clone_proc.inBoundary = b_dev
+    git_clone_proc.description = (
+        "Sequence of ``git init``, ``git remote add origin``, ``git fetch``, and "
+        "``git reset --hard FETCH_HEAD`` (or ``git checkout``) invoked as list-arg "
+        "subprocesses to check out Git dependencies.  "
+        "Sparse-checkout (``core.sparsecheckout``) is applied when a ``src:`` path "
+        "is specified.  ``GIT_TERMINAL_PROMPT=0`` and ``BatchMode=yes`` suppress "
+        "interactive credential prompts.  "
+        "No commit-signature or tag-signature verification is performed; "
+        "authenticity relies entirely on transport security (TLS / SSH)."
+    )
+    git_clone_proc.controls.usesParameterizedInput = True  # shell=False, list-form args
+    git_clone_proc.controls.providesIntegrity = (
+        False  # no signature verification; relies on transport
+    )
+    git_clone_proc.controls.isHardened = False  # no commit/tag signature check
+    git_clone_proc.controls.invokesSubprocess = True  # git invoked as a subprocess
+    svn_export_proc = Process("A-26: SVN Export (svn export)")
+    svn_export_proc.inBoundary = b_dev
+    svn_export_proc.description = (
+        "Runs ``svn export --non-interactive --force`` to check out SVN dependencies.  "
+        "The ``--ignore-externals`` flag is NOT passed.  SVN repositories with "
+        "``svn:externals`` properties will trigger additional fetches from third-party "
+        "SVN servers not declared in ``dfetch.yaml``.  "
+        "After export, ``SvnSubProject._fetch_externals()`` queries the externals list "
+        "and records each one as a ``Dependency`` with ``source_type='svn-external'`` — "
+        "mirroring the metadata tracking that git submodules receive.  "
+        "These fetches bypass dfetch's manifest controls: no integrity hash and no code "
+        "review of the external URL (the URL comes from the upstream repository, not "
+        "from ``dfetch.yaml``)."
+    )
+    svn_export_proc.controls.usesParameterizedInput = (
+        True  # shell=False, list-form args
+    )
+    svn_export_proc.controls.providesIntegrity = (
+        False  # svn:externals outside manifest scope
+    )
+    svn_export_proc.controls.isHardened = False  # no --ignore-externals flag
+    svn_export_proc.controls.invokesSubprocess = True  # svn invoked as a subprocess
+    df13 = Dataflow(
+        dfetch_cli, svn_export_proc, "DF-13: Dispatch SVN export subprocess"
+    )
+    df13.description = (
+        "dfetch invokes svn export as a list-arg subprocess; "
+        "svn:externals can trigger undeclared fetches outside manifest control."
+    )
+    df13.controls.usesParameterizedInput = True
+    df13.controls.isHardened = False
+    df14 = Dataflow(
+        svn_export_proc, local_vcs_cache, "DF-14: Write SVN export to temp dir"
+    )
+    df14.description = (
+        "svn export writes checked-out content to a temporary directory "
+        "before dfetch copies it to the vendor dst path."
+    )
+    df23 = Dataflow(dfetch_cli, git_clone_proc, "DF-23: Dispatch git clone subprocess")
+    df23.description = (
+        "dfetch invokes the git init / fetch / checkout sequence as list-arg "
+        "subprocesses; no commit or tag signature verification is performed."
+    )
+    df23.controls.usesParameterizedInput = True
+    df23.controls.isHardened = False
+    df24 = Dataflow(
+        git_clone_proc, local_vcs_cache, "DF-24: Write git checkout to temp dir"
+    )
+    df24.description = (
+        "git writes checked-out content to a temporary directory "
+        "before dfetch copies it to the vendor dst path."
+    )
+
+
 def _make_usage_extraction_elements_and_flows(
     b_dev: Boundary, dfetch_cli: Process
 ) -> None:
-    """Create archive/SVN extraction elements and their dataflows; all auto-register with TM."""
+    """Create archive/VCS extraction elements, their dataflows, and the cache-copy flow."""
     b_archive = Boundary("Archive Content Space")
     b_archive.description = (
         "Downloaded archive bytes before extraction and validation.  "
         "Decompression-bomb and path-traversal checks enforce this boundary during extraction."
     )
-    archive_extract = Process("Archive Extraction (tarfile / zipfile)")
+    archive_extract = Process("A-24: Archive Extraction (tarfile / zipfile)")
     archive_extract.inBoundary = b_archive
     archive_extract.description = (
         "Decompresses and extracts TAR (.tar.gz/.tgz/.tar.bz2/.tar.xz) and ZIP archives "
@@ -559,24 +652,6 @@ def _make_usage_extraction_elements_and_flows(
     archive_extract.controls.usesParameterizedInput = (
         True  # Python library call, no shell
     )
-    svn_export_proc = Process("SVN Export (svn export)")
-    svn_export_proc.inBoundary = b_dev
-    svn_export_proc.description = (
-        "Runs ``svn export --non-interactive --force`` to check out SVN dependencies.  "
-        "The ``--ignore-externals`` flag is NOT passed.  SVN repositories with "
-        "``svn:externals`` properties will trigger additional fetches from third-party "
-        "SVN servers not declared in ``dfetch.yaml``.  These undeclared fetches bypass "
-        "dfetch's manifest controls: no integrity hash, no metadata record, and no code "
-        "review of the external URL."
-    )
-    svn_export_proc.controls.usesParameterizedInput = (
-        True  # shell=False, list-form args
-    )
-    svn_export_proc.controls.providesIntegrity = (
-        False  # svn:externals outside manifest scope
-    )
-    svn_export_proc.controls.isHardened = False  # no --ignore-externals flag
-    svn_export_proc.controls.invokesSubprocess = True  # svn invoked as a subprocess
     local_vcs_cache = Datastore("A-20: Local VCS Cache (temp)")
     local_vcs_cache.inBoundary = b_dev
     local_vcs_cache.description = (
@@ -615,26 +690,151 @@ def _make_usage_extraction_elements_and_flows(
         "path-traversal and symlink checks applied before each write."
     )
     df12.controls.sanitizesInput = True
-    df13 = Dataflow(
-        dfetch_cli, svn_export_proc, "DF-13: Dispatch SVN export subprocess"
-    )
-    df13.description = (
-        "dfetch invokes svn export as a list-arg subprocess; "
-        "svn:externals can trigger undeclared fetches outside manifest control."
-    )
-    df13.controls.usesParameterizedInput = True
-    df13.controls.isHardened = False
-    df14 = Dataflow(
-        svn_export_proc, local_vcs_cache, "DF-14: Write SVN export to temp dir"
-    )
-    df14.description = (
-        "svn export writes checked-out content to a temporary directory "
-        "before dfetch copies it to the vendor dst path."
-    )
+    _make_vcs_subprocess_flows(b_dev, dfetch_cli, local_vcs_cache)
     df17 = Dataflow(dfetch_cli, audit_reports, "DF-17: Write audit / check reports")
     df17.description = (
         "dfetch check writes SARIF, Jenkins warnings-ng, or Code Climate JSON; "
         "falsification hides vulnerabilities from downstream dashboards."
+    )
+    df22 = Dataflow(
+        local_vcs_cache,
+        dfetch_cli,
+        "DF-22: Read validated content from local VCS cache",
+    )
+    df22.description = (
+        "dfetch reads extracted content from the temporary directory (A-20) into the "
+        "process (A-22) prior to writing it to the ``dst:`` path (DF-07).  "
+        "Post-extraction symlink walks are applied at this stage (C-003)."
+    )
+    df22.controls.sanitizesInput = True
+    df22.controls.isHardened = True
+
+
+def _make_usage_integrity_flows(
+    dfetch_cli: Process,
+    manifest_store: Datastore,
+    developer: Actor,
+) -> None:
+    """Wire integrity-hash read/write and manifest-authorship flows."""
+    df18 = Dataflow(
+        manifest_store,
+        dfetch_cli,
+        "DF-18: Read integrity hash for archive verification",
+    )
+    df18.description = (
+        "dfetch reads the ``integrity.hash`` field (A-12) from the manifest when "
+        "verifying a downloaded archive.  The hash is compared with the content "
+        "digest via ``hmac.compare_digest`` (constant-time).  "
+        "When the field is absent no verification occurs (gap C-018)."
+    )
+    df18.controls.providesIntegrity = True
+    df18.controls.validatesInput = True
+
+    df18b = Dataflow(
+        dfetch_cli,
+        manifest_store,
+        "DF-18b: Write computed hash to manifest (dfetch freeze)",
+    )
+    df18b.description = (
+        "``dfetch freeze`` computes the SHA-256/384/512 digest of a downloaded archive "
+        "and writes the ``integrity.hash`` value back into ``dfetch.yaml`` (A-12).  "
+        "This is the recommended mechanism for bootstrapping a hash-pinned manifest "
+        "entry; without it the field remains absent and no content verification occurs."
+    )
+    df18b.controls.providesIntegrity = True
+
+    df20 = Dataflow(developer, manifest_store, "DF-20: Author / maintain dfetch.yaml")
+    df20.description = (
+        "Developer writes and updates ``dfetch.yaml`` (A-12): selecting upstream "
+        "sources, pinning revisions, setting ``dst:`` paths, adding ``integrity.hash`` "
+        "fields, and listing patch references.  "
+        "The manifest is subject to code review; a malicious change can redirect "
+        "any dependency fetch to an attacker-controlled URL (assumption: Manifest under "
+        "code review)."
+    )
+    df20.controls.hasAccessControl = True
+
+
+def _make_usage_gap_doc_flows(
+    developer: Actor,
+    patch_store: Datastore,
+    remote_git_svn: ExternalEntity,
+    upstream_source_attestation: Datastore,
+) -> None:
+    """Wire patch-file authorship and VSA gap-documentation flows."""
+    df19 = Dataflow(
+        remote_git_svn,
+        upstream_source_attestation,
+        "DF-19: VCS server publishes source attestation (not consumed by dfetch)",
+    )
+    df19.description = (
+        "An upstream VCS host with SLSA Source Level support may publish a "
+        "Source Provenance Attestation or Verification Summary Attestation (VSA) "
+        "alongside repository content.  "
+        "CRITICAL: dfetch has no mechanism to request or verify these attestations "
+        "(gap C-035).  The flow is modelled to document the gap — dfetch does not "
+        "fetch or validate A-23 at any point in its current implementation."
+    )
+    df19.controls.providesIntegrity = False
+
+    df21 = Dataflow(developer, patch_store, "DF-21: Create / maintain patch files")
+    df21.description = (
+        "Developer authors unified-diff ``.patch`` files referenced by ``patch:`` "
+        "entries in the manifest (A-19).  "
+        "Patch files carry no integrity hash and are applied directly by patch-ng; "
+        "a tampered or attacker-supplied patch can write to arbitrary paths (gap C-020)."
+    )
+
+
+def _make_usage_stores_and_flows(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    b_dev: Boundary,
+    developer: Actor,
+    remote_git_svn: ExternalEntity,
+    archive_server: ExternalEntity,
+    consumer_build: ExternalEntity,
+    upstream_source_attestation: Datastore,
+    dfetch_cli: Process,
+    patch_apply: Process,
+) -> None:
+    """Create datastores and wire all usage-model dataflows."""
+    manifest_store, fetched_source, sbom_output = _make_usage_datastores_a(b_dev)
+    embedded_url_credential, metadata_store, patch_store = _make_usage_datastores_b(
+        b_dev
+    )
+    _make_usage_vcs_dataflows(developer, dfetch_cli, manifest_store, remote_git_svn)
+    _make_usage_archive_dataflows(dfetch_cli, archive_server)
+    _make_usage_output_flows(
+        dfetch_cli, fetched_source, metadata_store, sbom_output, embedded_url_credential
+    )
+    _make_usage_patch_and_build_flows(
+        patch_apply, patch_store, fetched_source, consumer_build
+    )
+    _make_usage_extraction_elements_and_flows(b_dev, dfetch_cli)
+    _make_usage_integrity_flows(dfetch_cli, manifest_store, developer)
+    _make_usage_gap_doc_flows(
+        developer, patch_store, remote_git_svn, upstream_source_attestation
+    )
+
+
+def _make_usage_elements_and_flows(b_dev: Boundary, b_remote_vcs: Boundary) -> None:
+    """Create all usage-model elements and wire their dataflows."""
+    (
+        developer,
+        remote_git_svn,
+        archive_server,
+        consumer_build,
+        upstream_source_attestation,
+    ) = _make_usage_actors_and_external_entities(b_dev, b_remote_vcs)
+    dfetch_cli, patch_apply = _make_usage_processes(b_dev)
+    _make_usage_stores_and_flows(
+        b_dev,
+        developer,
+        remote_git_svn,
+        archive_server,
+        consumer_build,
+        upstream_source_attestation,
+        dfetch_cli,
+        patch_apply,
     )
 
 
@@ -656,41 +856,21 @@ def build_model() -> TM:
         mergeResponses=True,
         threatsFile=THREATS_FILE,
     )
-    model.assumptions = make_usage_assumptions() + make_attacker_profiles()
+    model.assumptions = make_usage_assumptions()
     b_dev, b_remote_vcs = _make_usage_boundaries()
-    developer, remote_git_svn, archive_server, consumer_build = (
-        _make_usage_actors_and_external_entities(b_dev, b_remote_vcs)
-    )
-    dfetch_cli, patch_apply = _make_usage_processes(b_dev)
-    manifest_store, fetched_source, sbom_output = _make_usage_datastores_a(b_dev)
-    embedded_url_credential, metadata_store, patch_store = _make_usage_datastores_b(
-        b_dev
-    )
-    _make_usage_vcs_dataflows(developer, dfetch_cli, manifest_store, remote_git_svn)
-    _make_usage_archive_dataflows(dfetch_cli, archive_server)
-    _make_usage_output_flows(
-        dfetch_cli, fetched_source, metadata_store, sbom_output, embedded_url_credential
-    )
-    _make_usage_patch_and_build_flows(
-        patch_apply, patch_store, fetched_source, consumer_build
-    )
-    _make_usage_extraction_elements_and_flows(b_dev, dfetch_cli)
+    _make_usage_elements_and_flows(b_dev, b_remote_vcs)
     return model
 
 
 # ── CONTROLS AND GAPS ────────────────────────────────────────────────────────
 
 CONTROLS: list[Control] = [
-    # ── Implemented controls ─────────────────────────────────────────────────
     Control(
         id="C-001",
         name="Path-traversal prevention",
         assets=["A-13", "A-20"],
         threats=["DFT-03"],
         reference="dfetch/util/util.py",
-        assessment=ControlAssessment(
-            risk="High", stride=["Tampering", "Elevation of Privilege"]
-        ),
         description=(
             "``check_no_path_traversal()`` resolves both the candidate path and the "
             "destination root via ``os.path.realpath`` (symlink-aware), then rejects "
@@ -704,7 +884,6 @@ CONTROLS: list[Control] = [
         assets=["A-20", "A-13"],
         threats=["DFT-09"],
         reference="dfetch/vcs/archive.py",
-        assessment=ControlAssessment(risk="Medium", stride=["Denial of Service"]),
         description=(
             "Archives are rejected if the uncompressed size exceeds 500 MB or the "
             "member count exceeds 10 000."
@@ -716,9 +895,6 @@ CONTROLS: list[Control] = [
         assets=["A-13"],
         threats=["DFT-03"],
         reference="dfetch/vcs/archive.py",
-        assessment=ControlAssessment(
-            risk="High", stride=["Tampering", "Elevation of Privilege"]
-        ),
         description=(
             "Absolute and escaping (``..``) symlink targets are rejected for both "
             "TAR and ZIP.  A post-extraction walk validates all symlinks against "
@@ -731,9 +907,6 @@ CONTROLS: list[Control] = [
         assets=["A-13", "A-20"],
         threats=["DFT-03"],
         reference="dfetch/vcs/archive.py",
-        assessment=ControlAssessment(
-            risk="Medium", stride=["Tampering", "Elevation of Privilege"]
-        ),
         description=(
             "TAR and ZIP members of type device file or FIFO are rejected outright."
         ),
@@ -741,15 +914,14 @@ CONTROLS: list[Control] = [
     Control(
         id="C-005",
         name="Integrity hash verification",
-        assets=["A-13", "A-14"],
+        assets=["A-12", "A-13"],
         threats=["DFT-01", "DFT-02", "DFT-05", "DFT-30"],
         reference="dfetch/vcs/integrity_hash.py",
-        assessment=ControlAssessment(risk="Critical", stride=["Tampering", "Spoofing"]),
         description=(
             "SHA-256, SHA-384, and SHA-512 verified via ``hmac.compare_digest`` "
             "(constant-time comparison, resistant to timing attacks).  "
             "Primary defence against content substitution for archive dependencies.  "
-            "Effectiveness is conditional on the hash field being present - see C-018."
+            "Effectiveness is conditional on the hash field being present."
         ),
     ),
     Control(
@@ -758,7 +930,6 @@ CONTROLS: list[Control] = [
         assets=["A-16", "A-09"],
         threats=["DFT-06"],
         reference="dfetch/vcs/git.py, dfetch/vcs/svn.py",
-        assessment=ControlAssessment(risk="Low", stride=["Spoofing"]),
         description=(
             "``GIT_TERMINAL_PROMPT=0``, ``BatchMode=yes`` for Git; "
             "``--non-interactive`` for SVN.  Credential prompts are suppressed to "
@@ -771,9 +942,6 @@ CONTROLS: list[Control] = [
         assets=["A-22"],
         threats=["DFT-06"],
         reference="dfetch/util/cmdline.py",
-        assessment=ControlAssessment(
-            risk="High", stride=["Tampering", "Elevation of Privilege"]
-        ),
         description=(
             "All external commands invoked with ``shell=False`` and list-form "
             "arguments - no shell-injection vector."
@@ -785,7 +953,6 @@ CONTROLS: list[Control] = [
         assets=["A-12"],
         threats=["DFT-04", "DFT-08"],
         reference="dfetch/manifest/schema.py",
-        assessment=ControlAssessment(risk="High", stride=["Tampering"]),
         description=(
             r'StrictYAML schema with ``SAFE_STR = Regex(r"^[^\x00-\x1F\x7F-\x9F]*$")`` '
             "rejects control characters in all string fields."
@@ -794,12 +961,9 @@ CONTROLS: list[Control] = [
     Control(
         id="C-034",
         name="Hash algorithm allowlist (SHA-256/384/512 only)",
-        assets=["A-14"],
+        assets=["A-12"],
         threats=["DFT-30"],
         reference="dfetch/vcs/integrity_hash.py",
-        assessment=ControlAssessment(
-            status="implemented", risk="High", stride=["Tampering", "Spoofing"]
-        ),
         description=(
             "``integrity_hash.py`` accepts only ``sha256:``, ``sha384:``, and "
             "``sha512:`` prefixes; any other algorithm prefix is rejected at parse "
@@ -809,225 +973,310 @@ CONTROLS: list[Control] = [
             "algorithms with no known practical collision attacks."
         ),
     ),
-    # ── Gaps ─────────────────────────────────────────────────────────────────
-    Control(
-        id="C-018",
-        name="Optional integrity hash",
-        assets=["A-13", "A-14"],
-        threats=["DFT-01", "DFT-02"],
-        assessment=ControlAssessment(
-            status="gap", risk="Critical", stride=["Tampering", "Spoofing"]
-        ),
-        description=(
-            "``integrity.hash`` in the manifest is optional.  Archive dependencies "
-            "without it have no content-authenticity guarantee.  Plain ``http://`` "
-            "URLs receive no protection at all - neither transport nor content "
-            "integrity is enforced."
+]
+
+RESPONSES: list[ThreatResponse] = [
+    ThreatResponse(
+        "DFT-01",
+        "mitigate",
+        risk="Critical",
+        stride=["Tampering", "Spoofing"],
+        note=(
+            "C-005 mitigates only when ``integrity.hash`` is present; "
+            "plain HTTP without a hash has no transport or content protection."
         ),
     ),
-    Control(
-        id="C-019",
-        name="No integrity mechanism for Git/SVN",
-        assets=["A-13", "A-14"],
-        threats=["DFT-02", "DFT-05"],
-        assessment=ControlAssessment(
-            status="gap", risk="High", stride=["Tampering", "Spoofing"]
-        ),
-        description=(
-            "Git and SVN dependencies carry no equivalent to ``integrity.hash``.  "
-            "Transport security (TLS or SSH) authenticates the server and channel "
-            "but cannot detect content legitimately served by a compromised upstream.  "
-            "Mutable references (branch, tag) can silently fetch different content "
-            "after a force-push.  Pinning to an immutable commit SHA is the "
-            "strongest available mitigation but is not currently enforced by dfetch."
+    ThreatResponse(
+        "DFT-02",
+        "mitigate",
+        risk="High",
+        stride=["Tampering", "Spoofing"],
+        note=(
+            "Archives: C-005 mitigates when hash is present. "
+            "Git/SVN refs have no equivalent integrity mechanism; "
+            "pinning to a commit SHA is the strongest available mitigation."
         ),
     ),
-    Control(
-        id="C-020",
-        name="No patch-file integrity",
-        assets=["A-19", "A-13"],
-        threats=["DFT-08", "DFT-03"],
-        assessment=ControlAssessment(
-            status="gap",
-            risk="Critical",
-            stride=["Tampering", "Elevation of Privilege"],
-        ),
-        description=(
-            "Patch files referenced in the manifest carry no integrity hash.  A "
-            "tampered or attacker-controlled patch file can write to arbitrary paths; "
-            "path-safety is delegated entirely to ``patch-ng``'s internal implementation "
-            "and is not independently verified by dfetch before application."
+    ThreatResponse(
+        "DFT-03",
+        "mitigate",
+        risk="High",
+        stride=["Tampering", "Elevation of Privilege"],
+        note=(
+            "Archive and VCS extraction mitigated by C-001, C-003, C-004. "
+            "Patch files carry no integrity hash and are not independently verified."
         ),
     ),
-    Control(
-        id="C-027",
-        name="No redirect destination validation on archive downloads",
-        assets=["A-13"],
-        threats=["DFT-12"],
-        assessment=ControlAssessment(
-            status="gap", risk="High", stride=["Information Disclosure"]
-        ),
-        description=(
-            "Archive downloads follow up to 10 HTTP 3xx redirects without "
-            "validating the destination host against an allowlist.  "
-            "A compromised or malicious archive server can redirect to an "
-            "internal metadata endpoint (e.g. ``http://169.254.169.254/``) "
-            "and dfetch will follow the redirect, potentially retrieving and "
-            "writing internal credentials to disk.  Plain ``http://`` URLs "
-            "amplify the risk - both the original request and the redirect "
-            "are unencrypted.  "
-            "Fix: reject redirects resolving to RFC-1918, loopback, or "
-            "link-local ranges before following."
+    ThreatResponse("DFT-04", "mitigate", risk="High", stride=["Tampering"]),
+    ThreatResponse(
+        "DFT-05",
+        "mitigate",
+        risk="High",
+        stride=["Tampering", "Spoofing"],
+        note=(
+            "C-005 mitigates archive deps when hash present. "
+            "Git/SVN: no integrity mechanism; pinning to an immutable commit SHA "
+            "is recommended but not enforced by dfetch."
         ),
     ),
-    Control(
-        id="C-028",
-        name="No denylist for security-sensitive destination paths",
-        assets=["A-12", "A-13"],
-        threats=["DFT-16"],
-        assessment=ControlAssessment(
-            status="gap", risk="High", stride=["Tampering", "Elevation of Privilege"]
-        ),
-        description=(
-            "dfetch's path-traversal check (C-001) prevents writes outside "
-            "the project root but does not maintain a denylist of "
-            "security-sensitive within-root paths.  "
-            "A manifest entry with ``dst: .github/workflows/`` would pass "
-            "all current validation and silently overwrite CI pipeline "
-            "definitions on the next ``dfetch update``.  "
-            "Should warn or error when ``dst:`` resolves under known-sensitive "
-            "prefixes (``.github/``, ``.circleci/``, ``Makefile``, etc.), "
-            "or require all destinations to fall under an explicit vendor root."
+    ThreatResponse(
+        "DFT-06",
+        "mitigate",
+        risk="High",
+        stride=["Tampering", "Elevation of Privilege"],
+        note=(
+            "C-006 suppresses interactive credential prompts for Git and SVN; "
+            "C-007 invokes all external commands with ``shell=False`` and list-form arguments, "
+            "eliminating the shell-injection vector for non-interactive VCS operations."
         ),
     ),
-    Control(
-        id="C-029",
-        name="Nested dependency references in vendored source are out of dfetch scope",
-        assets=["A-13"],
-        threats=["DFT-22"],
-        assessment=ControlAssessment(
-            status="implemented", risk="Low", stride=["Tampering"]
-        ),
-        description=(
-            "DFT-22 (vendored content containing submodule or nested external "
-            "references) describes threats that arise when the consuming build "
-            "system processes build manifests embedded in vendored source "
-            "(CMakeLists.txt, package.json, Cargo.toml, etc.).  "
-            "Per the 'dfetch scope boundary' assumption, dfetch exports source "
-            "files - it does not execute or resolve build-system instructions "
-            "within them.  The responsibility for nested dependency resolution "
-            "belongs to the manifest author and the consuming build system.  "
-            "Consumers should audit vendored repositories for nested package "
-            "manifests and treat all fetched source as untrusted."
+    ThreatResponse(
+        "DFT-07",
+        "accept",
+        risk="High",
+        stride=["Information Disclosure"],
+        note=(
+            "dfetch uses ``shell=False`` throughout (C-007); "
+            "residual supply-chain compromise of dfetch itself is the supply-chain model's scope."
         ),
     ),
-    Control(
-        id="C-030",
-        name="No timeout or resource cap on VCS operations",
-        assets=["A-20", "A-13"],
-        threats=["DFT-09"],
-        assessment=ControlAssessment(
-            status="gap", risk="Low", stride=["Denial of Service"]
-        ),
-        description=(
-            "Git clone and SVN export operations have no configurable timeout or "
-            "maximum-transfer-size limit.  A pathological or compromised upstream "
-            "can deliver arbitrarily large packfiles or working trees, causing "
-            "disk exhaustion or prolonged CI runner occupation.  "
-            "The 500 MB / 10k-member archive limits (C-002) do not apply to raw "
-            "VCS checkouts.  Shallow clones (``--depth=1``) mitigate history "
-            "size but do not bound working-tree size."
+    ThreatResponse(
+        "DFT-08",
+        "mitigate",
+        risk="High",
+        stride=["Tampering"],
+        note=(
+            "Manifest schema (C-008) validates all string fields; "
+            "patch files carry no integrity hash and are not verified before application."
         ),
     ),
-    Control(
-        id="C-031",
-        name="No verification of signed Git tags or Sigstore attestations",
-        assets=["A-13", "A-14"],
-        threats=["DFT-05", "DFT-21"],
-        assessment=ControlAssessment(
-            status="gap", risk="Medium", stride=["Spoofing", "Tampering"]
-        ),
-        description=(
-            "dfetch does not verify GPG-signed Git tags or Sigstore tag attestations "
-            "when resolving VCS dependencies.  Upstreams that publish signed releases "
-            "offer a stronger authenticity guarantee than transport security alone, "
-            "but dfetch cannot take advantage of it.  "
-            "This is distinct from C-019: signing would authenticate which commit a "
-            "tag names, not the content of the working tree.  "
-            "For repositories that do publish signed releases, users should pin to "
-            "the commit SHA recorded after manually running ``git tag -v``."
+    ThreatResponse("DFT-09", "mitigate", risk="Medium", stride=["Denial of Service"]),
+    ThreatResponse(
+        "DFT-10",
+        "accept",
+        risk="High",
+        stride=["Tampering"],
+        note=(
+            "dfetch's runtime dependency supply-chain is the supply-chain model's scope; "
+            "use a verified dfetch installation."
         ),
     ),
-    Control(
-        id="C-035",
-        name="No upstream SLSA source level verification",
-        assets=["A-09", "A-23"],
-        threats=["DFT-31", "DFT-32"],
-        assessment=ControlAssessment(
-            status="gap", risk="Medium", stride=["Spoofing", "Tampering"]
-        ),
-        description=(
-            "dfetch has no mechanism to check whether an upstream VCS source publishes "
-            "or meets any SLSA source level.  The manifest schema has no field for "
-            "declaring the expected SLSA source level of a dependency, and no tooling "
-            "exists to fetch or verify Source Provenance Attestations or VSAs (A-23).  "
-            "Consumers must manually assess the upstream's review, branch-protection, "
-            "and ancestry-enforcement posture before trusting a dependency pin - this "
-            "is undocumented and unenforced by dfetch.  "
-            "DFT-31 (no VSA) and DFT-32 (no two-party review) both stem from this gap.  "
-            "Fix: add an optional ``slsa_source_level:`` field to the manifest schema "
-            "and implement VSA fetch-and-verify during ``dfetch update``."
+    ThreatResponse(
+        "DFT-12",
+        "accept",
+        risk="High",
+        stride=["Information Disclosure"],
+        note=(
+            "Archive downloads follow up to 10 HTTP redirects without validating the "
+            "destination against RFC-1918, loopback, or link-local ranges; "
+            "SSRF to internal metadata endpoints is possible."
         ),
     ),
-    Control(
-        id="C-036",
-        name="No ancestry reachability check after VCS fetch",
-        assets=["A-09", "A-13"],
-        threats=["DFT-33"],
-        assessment=ControlAssessment(status="gap", risk="Low", stride=["Tampering"]),
-        description=(
-            "dfetch does not verify whether a pinned commit SHA remains reachable "
-            "from the upstream's current default branch after fetching.  An upstream "
-            "that rewrites its history - interactive rebase, filter-branch, or "
-            "force-push to main - can orphan a previously-audited SHA without "
-            "triggering any alert.  SLSA Source Level 2 requires ancestry enforcement: "
-            "the upstream must prevent such rewrites.  dfetch cannot enforce this on "
-            "the upstream, but could detect lineage breaks post-fetch.  "
-            "Fix: after fetching a commit SHA, run ``git merge-base --is-ancestor "
-            "<sha> <remote>/<default-branch>`` and warn when the SHA is unreachable."
+    ThreatResponse(
+        "DFT-13",
+        "accept",
+        risk="Medium",
+        stride=["Information Disclosure"],
+        note=(
+            "dfetch persists the configured URL to ``.dfetch_data.yaml``; "
+            "credentials embedded in URLs appear in that file in plaintext."
         ),
     ),
-    Control(
-        id="C-041",
-        name="SVN externals not suppressed (--ignore-externals flag unused)",
-        assets=["A-13", "A-09"],
-        threats=["DFT-15"],
-        assessment=ControlAssessment(status="gap", risk="High", stride=["Tampering"]),
-        reference="dfetch/vcs/svn.py",
-        description=(
-            "``svn export`` is invoked without the ``--ignore-externals`` flag.  "
-            "SVN repositories with ``svn:externals`` properties trigger undeclared "
-            "fetches from third-party servers that bypass dfetch's manifest controls, "
-            "integrity checks, and code-review audit trail.  Each external fetch is "
-            "unverified and unavailable for inspection before vendoring."
+    ThreatResponse(
+        "DFT-14",
+        "accept",
+        risk="Medium",
+        stride=["Tampering"],
+        note=(
+            "dfetch does not strip executable or setuid/setgid bits from extracted "
+            "archive members; on Python < 3.11.4, TAR extraction preserves such bits.  "
+            "dfetch supports Python ≥ 3.10 (``requires-python = '>=3.10'`` in "
+            "``pyproject.toml``), so this is a live concern for users on Python 3.10.x "
+            "or Python 3.11.0–3.11.3.  "
+            "Mitigation: pin dfetch to archives from trusted, reviewed sources only, "
+            "or run on Python ≥ 3.11.4 where the TAR extraction filter strips these bits."
         ),
     ),
-    Control(
-        id="C-042",
-        name="setuid/setgid bits preserved during TAR extraction on Python < 3.11.4",
-        assets=["A-13", "A-20"],
-        threats=["DFT-14"],
-        assessment=ControlAssessment(
-            status="gap", risk="High", stride=["Tampering", "Elevation of Privilege"]
+    ThreatResponse(
+        "DFT-15",
+        "accept",
+        risk="High",
+        stride=["Tampering"],
+        note=(
+            "Git submodules are followed: ``git submodule update --init --recursive`` "
+            "is called unconditionally during every Git fetch (``dfetch/vcs/git.py``), and "
+            "each submodule is recorded as a ``Dependency`` with ``source_type='git-submodule'`` "
+            "(``gitsubproject.py``).  "
+            "SVN ``export`` is invoked without ``--ignore-externals``; each "
+            "``svn:externals`` entry triggers an additional fetch, and "
+            "``SvnSubProject._fetch_externals()`` records it as a ``Dependency`` with "
+            "``source_type='svn-external'`` (``svnsubproject.py``).  "
+            "Both behaviours are intentional — dfetch vendors submodule and external trees "
+            "and surfaces them in metadata — but the fetched URLs come from the upstream "
+            "repository (``.gitmodules`` / ``svn:externals``), not from ``dfetch.yaml``, "
+            "and therefore bypass manifest code review and carry no integrity hash.  "
+            "Suppressing these fetches (e.g. passing ``--no-recurse-submodules`` or "
+            "``--ignore-externals``) would be a design change that removes intentional "
+            "vendoring behaviour."
         ),
-        reference="dfetch/vcs/archive.py",
-        description=(
-            "On Python versions prior to 3.11.4, ``tarfile.extractall()`` does not "
-            "apply the ``filter='tar'`` parameter and preserves setuid, setgid, and "
-            "sticky bits encoded in TAR member headers.  A malicious archive can "
-            "introduce setuid-root binaries into the vendor directory; a later build "
-            "step that invokes the extracted binary executes with elevated privileges.  "
-            "This affects all dfetch users on Python < 3.11.4."
+    ),
+    ThreatResponse(
+        "DFT-16",
+        "accept",
+        risk="High",
+        stride=["Tampering", "Elevation of Privilege"],
+        note=(
+            "C-001 prevents writes outside the project root; "
+            "no denylist blocks writes to sensitive within-root paths "
+            "such as ``.github/workflows/``.  "
+            "Defense-in-depth: CI pipelines should run ``dfetch update`` in a step "
+            "that does not have write access to ``.github/workflows/`` "
+            "(e.g. by restricting permissions or running in a directory sandbox)."
+        ),
+    ),
+    ThreatResponse(
+        "DFT-17",
+        "accept",
+        risk="Medium",
+        stride=["Spoofing"],
+        note=(
+            "Manifest author responsibility; "
+            "the manifest is under code review (assumption: manifest under code review)."
+        ),
+    ),
+    ThreatResponse(
+        "DFT-18",
+        "accept",
+        risk="High",
+        stride=["Tampering", "Spoofing"],
+        note=(
+            "Not applicable to dfetch's fetch-by-explicit-URL model; "
+            "relevant only if using package-registry shorthand."
+        ),
+    ),
+    ThreatResponse(
+        "DFT-19",
+        "accept",
+        risk="High",
+        stride=["Tampering"],
+        note=(
+            "Upstream maintainer trust; pinning to an immutable commit SHA is the "
+            "strongest available mitigation but is not enforced by dfetch."
+        ),
+    ),
+    ThreatResponse(
+        "DFT-20",
+        "accept",
+        risk="Medium",
+        stride=["Spoofing", "Tampering"],
+        note=(
+            "Not applicable to direct-URL fetches; "
+            "relevant only if using Git-hosting shorthand with inferred registry lookup."
+        ),
+    ),
+    ThreatResponse(
+        "DFT-21",
+        "accept",
+        risk="Medium",
+        stride=["Spoofing", "Tampering"],
+        note="dfetch does not verify VCS tag signatures; pinning to an immutable commit SHA is recommended.",
+    ),
+    ThreatResponse(
+        "DFT-22",
+        "accept",
+        risk="Medium",
+        stride=["Tampering"],
+        note=(
+            "dfetch does not parse or execute embedded build manifests "
+            "(CMakeLists.txt, package.json, etc.); undeclared fetches via build-system "
+            "externals cannot occur.  "
+            "However, Git dependencies with submodules and SVN dependencies with "
+            "``svn:externals`` do trigger undeclared fetches — see DFT-15 for "
+            "details and mitigations."
+        ),
+    ),
+    ThreatResponse(
+        "DFT-23",
+        "accept",
+        risk="Medium",
+        stride=["Tampering"],
+        note=(
+            "No freshness check; ``dfetch check`` detects version drift "
+            "but does not enforce a minimum version or reject stale content."
+        ),
+    ),
+    ThreatResponse(
+        "DFT-24",
+        "accept",
+        risk="Medium",
+        stride=["Tampering"],
+        note=(
+            "``.dfetch_data.yaml`` metadata is not integrity-protected; "
+            "tampering could suppress update notifications from ``dfetch check``."
+        ),
+    ),
+    ThreatResponse(
+        "DFT-25",
+        "accept",
+        risk="High",
+        stride=["Spoofing", "Tampering", "Repudiation"],
+        note=(
+            "dfetch does not verify upstream SLSA provenance of fetched sources; "
+            "provenance verification is the consumer's responsibility."
+        ),
+    ),
+    ThreatResponse(
+        "DFT-26",
+        "accept",
+        risk="High",
+        stride=["Tampering", "Information Disclosure"],
+        note=(
+            "dfetch accepts ``http://``, ``svn://``, and other non-TLS scheme URLs; "
+            "HTTPS enforcement is the manifest author's responsibility."
+        ),
+    ),
+    ThreatResponse(
+        "DFT-28",
+        "accept",
+        risk="High",
+        stride=["Tampering"],
+        note=(
+            "Build-cache poisoning (SLSA E6) is a CI/CD supply-chain concern that applies "
+            "to the dfetch build pipeline, not to runtime usage.  "
+            "dfetch does not maintain a persistent compiled artifact cache; "
+            "fetched source files are written directly to the vendor directory.  "
+            "See the supply-chain threat model for the mitigating control (C-033)."
+        ),
+    ),
+    ThreatResponse("DFT-30", "mitigate", risk="High", stride=["Tampering", "Spoofing"]),
+    ThreatResponse(
+        "DFT-31",
+        "accept",
+        risk="Low",
+        stride=["Repudiation"],
+        note=(
+            "Upstream repositories are outside dfetch's control; "
+            "no mechanism exists to require or verify upstream SLSA source level."
+        ),
+    ),
+    ThreatResponse(
+        "DFT-32",
+        "accept",
+        risk="Low",
+        stride=["Tampering"],
+        note=(
+            "Upstream repositories are outside dfetch's control; "
+            "no mechanism exists to require mandatory two-party review on upstream changes."
+        ),
+    ),
+    ThreatResponse(
+        "DFT-33",
+        "accept",
+        risk="Low",
+        stride=["Tampering"],
+        note=(
+            "Upstream repositories are outside dfetch's control; "
+            "dfetch cannot prevent or detect upstream force-pushes."
         ),
     ),
 ]
@@ -1038,7 +1287,6 @@ _USAGE_ASSET_IDS = {
     "A-11",
     "A-12",
     "A-13",
-    "A-14",
     "A-15",
     "A-16",
     "A-17",
@@ -1048,10 +1296,14 @@ _USAGE_ASSET_IDS = {
     "A-21",
     "A-22",
     "A-23",
+    "A-24",
+    "A-25",
+    "A-26",
+    "A-27",
 }
 ASSET_CONTROLS: dict[str, list[Control]] = build_asset_controls_index(
     CONTROLS, _USAGE_ASSET_IDS
 )
 
 if __name__ == "__main__":
-    run_model(build_model, CONTROLS)
+    run_model(build_model, CONTROLS, RESPONSES)
