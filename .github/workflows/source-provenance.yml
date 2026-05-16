@@ -39,7 +39,9 @@ jobs:
           persist-credentials: false
 
       - name: Attest source governance (SLSA Source Track)
-        uses: slsa-framework/slsa-source-corroborator@v0.1.0
+        uses: slsa-framework/source-actions/slsa_with_provenance@v0.1.0
+        with:
+          version: v0.6.3
 
   attest-source:
     name: Generate source provenance

@@ -670,7 +670,7 @@ CONTROLS: list[Control] = [
         ),
         description=(
             "Source Provenance Attestations are published via "
-            "``slsa-framework/slsa-source-corroborator`` on every push to ``main``.  "
+            "``slsa-framework/source-actions/slsa_with_provenance`` on every push to ``main``.  "
             "These attestations prove the specific source-level governance controls "
             "applied on each commit: branch protection, mandatory code review, and "
             "ancestry enforcement (C-038).  "
