@@ -5,6 +5,7 @@ module level, so it is safe to import before ``TM.reset()``.
 """
 
 import os
+import re
 import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -109,22 +110,6 @@ def make_supply_chain_assumptions() -> list[Assumption]:
             description=(
                 "GitHub Actions environments inherit the security posture of the "
                 "GitHub-hosted runner.  Ephemeral runner isolation is provided by GitHub."
-            ),
-        ),
-        Assumption(
-            "Harden-runner in block mode",
-            description=(
-                "The ``harden-runner`` egress policy is set to ``block`` with an "
-                "allowlist of permitted endpoints.  Outbound network connections from "
-                "CI runners are blocked unless explicitly permitted."
-            ),
-        ),
-        Assumption(
-            "Build deps without hash pinning",
-            description=(
-                "dfetch's own build and dev dependencies are installed without "
-                "``--require-hashes``, so a compromised PyPI mirror can substitute "
-                "malicious build tools."
             ),
         ),
     ]
@@ -309,6 +294,136 @@ def apply_report_utils_patch() -> None:
     ReportUtils.getInScopeFindings = staticmethod(_fixed)
 
 
+def _fix_pytm_dot_output(dot: str) -> str:
+    """Replace non-portable pytm image references with Graphviz-native shapes.
+
+    pytm emits absolute filesystem paths like
+    ``image = "/home/user/.../pytm/images/datastore_black.png"``
+    which break on any machine other than the one that generated the diagram.
+    Replace the four-attribute image block with a single portable cylinder shape,
+    then rename ``xlabel`` to ``label`` and drop the now-redundant ``label = ""``.
+    """
+    dot = re.sub(
+        r"([ \t]*)shape = none;\n[ \t]*fixedsize = shape;\n"
+        r'[ \t]*image = "[^"]*pytm/images/[^"]*";\n[ \t]*imagescale = true;',
+        r"\1shape = cylinder;",
+        dot,
+    )
+    dot = re.sub(r"\bxlabel\b", "label", dot)
+    dot = re.sub(r'[ \t]+label = "";\n', "", dot)
+    return dot
+
+
+_FULLSCREEN_HTML = """\
+.. raw:: html
+
+   <div class="tm-diagram" title="Click to view fullscreen">
+
+{uml_block}
+
+.. raw:: html
+
+   </div>
+   <style>
+   .tm-diagram{{cursor:zoom-in;}}
+   .tm-diagram:fullscreen,
+   .tm-diagram:-webkit-full-screen{{
+     background:#fff;display:flex;
+     align-items:center;justify-content:center;
+   }}
+   .tm-diagram:fullscreen img,
+   .tm-diagram:-webkit-full-screen img{{
+     max-width:100vw;max-height:100vh;
+     width:auto;height:auto;cursor:zoom-out;
+   }}
+   </style>
+   <script>
+   (function(){{
+     document.querySelectorAll('.tm-diagram:not([data-fs])').forEach(function(d){{
+       d.dataset.fs='1';
+       d.addEventListener('click',function(){{
+         if(!document.fullscreenElement){{
+           (d.requestFullscreen||d.webkitRequestFullscreen).call(d);
+         }}else{{
+           (document.exitFullscreen||document.webkitExitFullscreen).call(document);
+         }}
+       }});
+     }});
+   }})();
+   </script>
+"""
+
+
+def _fullscreen_wrap(uml_rst: str) -> str:
+    """Wrap a ``.. uml::`` RST block with click-to-fullscreen HTML (HTML output only)."""
+    return _FULLSCREEN_HTML.format(uml_block=uml_rst.rstrip("\n"))
+
+
+def _render_dfd_section(tm: Any) -> str:
+    """Render the DFD as an RST ``.. uml::`` block using PlantUML @startdot.
+
+    Returns an empty string when ``tm.dfd()`` produces no content.
+    """
+    dfd = tm.dfd()
+    if not dfd or not dfd.strip():
+        return ""
+    dfd = _fix_pytm_dot_output(dfd)
+    wrapped = "@startdot\n" + dfd + "\n@enddot"
+    indented = "\n".join("   " + line if line else "" for line in wrapped.splitlines())
+    uml_rst = (
+        "Data Flow Diagram\n" "-----------------\n\n" ".. uml::\n\n" f"{indented}\n"
+    )
+    return _fullscreen_wrap(uml_rst)
+
+
+def _wrap_seq_participant_labels(seq: str, max_chars: int = 12) -> str:
+    """Wrap long participant labels at word boundaries to narrow each column.
+
+    PlantUML uses a literal ``\\n`` inside quoted strings as a line break.
+    Narrower participant boxes shrink the natural diagram width, so when Sphinx
+    scales the image to page width the font displays proportionally larger.
+    """
+
+    def _wrap(label: str) -> str:
+        words = label.split()
+        lines: list[str] = []
+        current: list[str] = []
+        width = 0
+        for word in words:
+            gap = 1 if current else 0
+            if width + gap + len(word) > max_chars and current:
+                lines.append(" ".join(current))
+                current = [word]
+                width = len(word)
+            else:
+                current.append(word)
+                width += gap + len(word)
+        if current:
+            lines.append(" ".join(current))
+        return r"\n".join(lines)
+
+    return re.sub(r'as "([^"]+)"', lambda m: f'as "{_wrap(m.group(1))}"', seq)
+
+
+def _render_seq_section(tm: Any) -> str:
+    """Render the sequence diagram as an RST ``.. uml::`` block.
+
+    Returns an empty string when ``tm.seq()`` produces no content.
+    """
+    seq = tm.seq()
+    if not seq or not seq.strip():
+        return ""
+    seq = _wrap_seq_participant_labels(seq)
+    seq = seq.replace(
+        "@startuml\n",
+        "@startuml\nskinparam defaultFontSize 16\n",
+        1,
+    )
+    indented = "\n".join("   " + line if line else "" for line in seq.splitlines())
+    uml_rst = "Sequence Diagram\n" "----------------\n\n" ".. uml::\n\n" f"{indented}\n"
+    return _fullscreen_wrap(uml_rst)
+
+
 def run_model(build_model_fn: Callable[[], Any], controls: list[Control]) -> None:
     """Run a threat model from a ``__main__`` entry point.
 
@@ -323,62 +438,18 @@ def run_model(build_model_fn: Callable[[], Any], controls: list[Control]) -> Non
             print(f"Usage: python {script} --report <template_path>", file=sys.stderr)
             raise SystemExit(1)
         tm.resolve()
-        print(tm.report(sys.argv[_idx + 1]))
+        title = tm.name
+        print(title)
+        print("=" * len(title))
+        print()
+        rendered = tm.report(sys.argv[_idx + 1])
+        dfd = _render_dfd_section(tm)
+        seq = _render_seq_section(tm)
+        rendered = rendered.replace(
+            "\nDataflows\n---------",
+            f"\n{dfd}\n{seq}\nDataflows\n---------",
+        )
+        print(rendered)
         print(render_controls_section(controls))
     else:
         tm.process()
-
-
-def make_attacker_profiles() -> list[Assumption]:
-    """Return Assumption objects describing the in-scope adversary classes."""
-    return [
-        Assumption(
-            "Attacker: Network-adjacent",
-            description=(
-                "Positioned on the same network segment as a CI runner or developer "
-                "workstation - shared cloud tenant, BGP hijack, compromised DNS resolver, "
-                "or corporate proxy.  Can intercept and modify unencrypted traffic "
-                "(http://, svn://) and inject HTTP redirects.  Cannot break correctly "
-                "implemented TLS or SSH."
-            ),
-        ),
-        Assumption(
-            "Attacker: Compromised upstream",
-            description=(
-                "A dependency maintainer account taken over via phishing, credential "
-                "stuffing, or MFA bypass - or a maintainer acting maliciously.  "
-                "Delivers attacker-controlled content over an authenticated channel; "
-                "transport security provides no protection.  Mitigated only by "
-                "commit-SHA pinning and human review before accepting any update."
-            ),
-        ),
-        Assumption(
-            "Attacker: Compromised registry or CDN",
-            description=(
-                "Holds write access to a public package registry (PyPI) or an archive "
-                "CDN node, or is BGP-adjacent to one.  Serves malicious content under "
-                "a valid TLS certificate - transport integrity does not detect "
-                "server-side substitution.  Only cryptographic content hashes or "
-                "signed attestations provide a defence."
-            ),
-        ),
-        Assumption(
-            "Attacker: Local filesystem",
-            description=(
-                "Holds write access to the developer workstation or CI runner working "
-                "tree - gained via a compromised dev dependency, malicious post-install "
-                "hook, or lateral movement.  Can tamper with ``.dfetch_data.yaml``, "
-                "patch files, and vendored source after dfetch writes them to disk."
-            ),
-        ),
-        Assumption(
-            "Attacker: Malicious manifest contributor",
-            description=(
-                "A repository contributor who introduces a malicious ``dfetch.yaml`` "
-                "change: redirecting a dep to an attacker-controlled URL, pointing "
-                "``dst:`` at a sensitive path, or embedding a credential-bearing URL.  "
-                "dfetch is not the control point for this threat; code review is the "
-                "intended mitigating boundary."
-            ),
-        ),
-    ]

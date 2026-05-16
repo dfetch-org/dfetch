@@ -50,7 +50,6 @@ from security.tm_common import (  # noqa: E402  # pylint: disable=wrong-import-p
     ControlAssessment,
     apply_report_utils_patch,
     build_asset_controls_index,
-    make_attacker_profiles,
     make_dev_env_boundary,
     make_network_boundary,
     make_usage_assumptions,
@@ -73,8 +72,8 @@ def _make_usage_boundaries() -> tuple[Boundary, Boundary]:
 def _make_usage_actors_and_external_entities(
     b_dev: Boundary,
     b_remote_vcs: Boundary,
-) -> tuple[Actor, ExternalEntity, ExternalEntity, ExternalEntity]:
-    """Create actors and external entities; return those referenced by dataflows."""
+) -> tuple[Actor, ExternalEntity, ExternalEntity, ExternalEntity, Datastore]:
+    """Create actors and external entities; return all for use in dataflows."""
     developer = Actor("Developer")
     developer.inBoundary = b_dev
     developer.description = (
@@ -92,7 +91,14 @@ def _make_usage_actors_and_external_entities(
         "Not controlled by the dfetch project; content is untrusted until verified.  "
         "The SLSA source level of any upstream is unknown and unverified - dfetch does "
         "not check whether the upstream enforces branch protection, mandatory review, or "
-        "ancestry enforcement, and no VSA is fetched alongside repository content (A-23)."
+        "ancestry enforcement, and no VSA is fetched alongside repository content (A-23).  "
+        "Threat postures: a compromised upstream maintainer account (phishing, credential "
+        "stuffing, or MFA bypass) delivers attacker-controlled commits over an authenticated "
+        "channel where transport security gives no protection — mitigated only by commit-SHA "
+        "pinning and review before accepting any update.  "
+        "A network-adjacent attacker (BGP hijack, compromised DNS resolver) can intercept "
+        "unencrypted traffic (svn://, http://) and inject redirects, but cannot break "
+        "correctly implemented TLS or SSH."
     )
     archive_server = ExternalEntity("A-10: Archive HTTP Server")
     archive_server.inBoundary = b_remote_vcs
@@ -100,7 +106,13 @@ def _make_usage_actors_and_external_entities(
     archive_server.description = (
         "HTTP/HTTPS server serving ``.tar.gz``, ``.tgz``, ``.tar.bz2``, ``.tar.xz``, "
         "or ``.zip`` files.  CRITICAL: ``http://`` (non-TLS) URLs are accepted without "
-        "enforcement of integrity hashes - the ``integrity.hash`` field is optional."
+        "enforcement of integrity hashes - the ``integrity.hash`` field is optional.  "
+        "Threat postures: a network-adjacent attacker (BGP hijack, compromised DNS resolver, "
+        "or corporate proxy) can intercept ``http://`` traffic and serve a malicious archive "
+        "transparently — ``integrity.hash`` is the only defence for plain-HTTP URLs.  "
+        "A compromised CDN node or registry can serve malicious content under a valid TLS "
+        "certificate; transport integrity gives no protection — only a verified content hash "
+        "or signed attestation detects server-side substitution."
     )
     upstream_source_attestation = Datastore("A-23: Upstream Source Attestation (VSA)")
     upstream_source_attestation.inBoundary = b_remote_vcs
@@ -131,7 +143,13 @@ def _make_usage_actors_and_external_entities(
         "Build system that compiles fetched source code (A-13).  "
         "Not controlled by dfetch - it receives untrusted third-party source."
     )
-    return developer, remote_git_svn, archive_server, consumer_build
+    return (
+        developer,
+        remote_git_svn,
+        archive_server,
+        consumer_build,
+        upstream_source_attestation,
+    )
 
 
 def _make_usage_processes(b_dev: Boundary) -> tuple[Process, Process]:
@@ -181,8 +199,8 @@ def _make_usage_processes(b_dev: Boundary) -> tuple[Process, Process]:
 
 def _make_usage_datastores_a(
     b_dev: Boundary,
-) -> tuple[Datastore, Datastore, Datastore]:
-    """Create primary data stores; return those referenced by dataflows."""
+) -> tuple[Datastore, Datastore, Datastore, Datastore]:
+    """Create primary data stores; return all for use in dataflows."""
     manifest_store = Datastore("A-12: dfetch Manifest")
     manifest_store.inBoundary = b_dev
     manifest_store.description = (
@@ -191,7 +209,15 @@ def _make_usage_datastores_a(
         "integrity hashes.  "
         "Tampering redirects fetches to attacker-controlled sources.  "
         "RISK: ``integrity.hash`` is Optional in schema - archive deps can be declared "
-        "without any content-authenticity guarantee."
+        "without any content-authenticity guarantee.  "
+        "Threat postures: a malicious manifest contributor introduces a ``dfetch.yaml`` "
+        "change that redirects a dep to an attacker-controlled URL, points ``dst:`` at a "
+        "sensitive path, or embeds a credential-bearing URL — dfetch is not the control "
+        "point; code review at the PR boundary is the intended mitigating control.  "
+        "A local-filesystem attacker with write access to the working tree (gained via a "
+        "compromised dev dependency, malicious post-install hook, or lateral movement) can "
+        "tamper with ``.dfetch_data.yaml``, patch files, and vendored source after dfetch "
+        "writes them to disk."
     )
     manifest_store.storesSensitiveData = (
         False  # config only (URLs, pins, hashes), not credentials/PII
@@ -244,7 +270,7 @@ def _make_usage_datastores_a(
     sbom_output.hasWriteAccess = True
     sbom_output.isSQL = False
     sbom_output.classification = Classification.RESTRICTED
-    return manifest_store, fetched_source, sbom_output
+    return manifest_store, fetched_source, sbom_output, integrity_hash_record
 
 
 def _make_usage_datastores_b(b_dev: Boundary) -> tuple[Data, Datastore, Datastore]:
@@ -530,7 +556,7 @@ def _make_usage_patch_and_build_flows(
 def _make_usage_extraction_elements_and_flows(
     b_dev: Boundary, dfetch_cli: Process
 ) -> None:
-    """Create archive/SVN extraction elements and their dataflows; all auto-register with TM."""
+    """Create archive/SVN extraction elements, their dataflows, and the cache-copy flow."""
     b_archive = Boundary("Archive Content Space")
     b_archive.description = (
         "Downloaded archive bytes before extraction and validation.  "
@@ -636,6 +662,150 @@ def _make_usage_extraction_elements_and_flows(
         "dfetch check writes SARIF, Jenkins warnings-ng, or Code Climate JSON; "
         "falsification hides vulnerabilities from downstream dashboards."
     )
+    df22 = Dataflow(
+        local_vcs_cache, dfetch_cli, "DF-22: Copy extracted content to vendor directory"
+    )
+    df22.description = (
+        "dfetch reads the validated content from the temporary directory (A-20) and "
+        "copies it to the ``dst:`` path declared in the manifest.  "
+        "``check_no_path_traversal()`` is applied before each file write (C-001); "
+        "symlinks are validated post-extraction."
+    )
+    df22.controls.sanitizesInput = True
+    df22.controls.isHardened = True
+
+
+def _make_usage_integrity_flows(
+    dfetch_cli: Process,
+    manifest_store: Datastore,
+    integrity_hash_record: Datastore,
+    developer: Actor,
+) -> None:
+    """Wire integrity-hash read/write and manifest-authorship flows."""
+    df18 = Dataflow(
+        integrity_hash_record,
+        dfetch_cli,
+        "DF-18: Read integrity hash for archive verification",
+    )
+    df18.description = (
+        "dfetch reads the ``integrity.hash`` field (A-14) from the manifest when "
+        "verifying a downloaded archive.  The hash is compared with the content "
+        "digest via ``hmac.compare_digest`` (constant-time).  "
+        "When the field is absent no verification occurs (gap C-018)."
+    )
+    df18.controls.providesIntegrity = True
+    df18.controls.validatesInput = True
+
+    df18b = Dataflow(
+        dfetch_cli,
+        integrity_hash_record,
+        "DF-18b: Write computed hash to manifest (dfetch freeze)",
+    )
+    df18b.description = (
+        "``dfetch freeze`` computes the SHA-256/384/512 digest of a downloaded archive "
+        "and writes the ``integrity.hash`` value back into ``dfetch.yaml`` (A-14).  "
+        "This is the recommended mechanism for bootstrapping a hash-pinned manifest "
+        "entry; without it the field remains absent and no content verification occurs."
+    )
+    df18b.controls.providesIntegrity = True
+
+    df20 = Dataflow(developer, manifest_store, "DF-20: Author / maintain dfetch.yaml")
+    df20.description = (
+        "Developer writes and updates ``dfetch.yaml`` (A-12): selecting upstream "
+        "sources, pinning revisions, setting ``dst:`` paths, adding ``integrity.hash`` "
+        "fields, and listing patch references.  "
+        "The manifest is subject to code review; a malicious change can redirect "
+        "any dependency fetch to an attacker-controlled URL (assumption: Manifest under "
+        "code review)."
+    )
+    df20.controls.hasAccessControl = True
+
+
+def _make_usage_gap_doc_flows(
+    developer: Actor,
+    patch_store: Datastore,
+    remote_git_svn: ExternalEntity,
+    upstream_source_attestation: Datastore,
+) -> None:
+    """Wire patch-file authorship and VSA gap-documentation flows."""
+    df19 = Dataflow(
+        remote_git_svn,
+        upstream_source_attestation,
+        "DF-19: VCS server publishes source attestation (not consumed by dfetch)",
+    )
+    df19.description = (
+        "An upstream VCS host with SLSA Source Level support may publish a "
+        "Source Provenance Attestation or Verification Summary Attestation (VSA) "
+        "alongside repository content.  "
+        "CRITICAL: dfetch has no mechanism to request or verify these attestations "
+        "(gap C-035).  The flow is modelled to document the gap — dfetch does not "
+        "fetch or validate A-23 at any point in its current implementation."
+    )
+    df19.controls.providesIntegrity = False
+
+    df21 = Dataflow(developer, patch_store, "DF-21: Create / maintain patch files")
+    df21.description = (
+        "Developer authors unified-diff ``.patch`` files referenced by ``patch:`` "
+        "entries in the manifest (A-19).  "
+        "Patch files carry no integrity hash and are applied directly by patch-ng; "
+        "a tampered or attacker-supplied patch can write to arbitrary paths (gap C-020)."
+    )
+
+
+def _make_usage_stores_and_flows(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    b_dev: Boundary,
+    developer: Actor,
+    remote_git_svn: ExternalEntity,
+    archive_server: ExternalEntity,
+    consumer_build: ExternalEntity,
+    upstream_source_attestation: Datastore,
+    dfetch_cli: Process,
+    patch_apply: Process,
+) -> None:
+    """Create datastores and wire all usage-model dataflows."""
+    manifest_store, fetched_source, sbom_output, integrity_hash_record = (
+        _make_usage_datastores_a(b_dev)
+    )
+    embedded_url_credential, metadata_store, patch_store = _make_usage_datastores_b(
+        b_dev
+    )
+    _make_usage_vcs_dataflows(developer, dfetch_cli, manifest_store, remote_git_svn)
+    _make_usage_archive_dataflows(dfetch_cli, archive_server)
+    _make_usage_output_flows(
+        dfetch_cli, fetched_source, metadata_store, sbom_output, embedded_url_credential
+    )
+    _make_usage_patch_and_build_flows(
+        patch_apply, patch_store, fetched_source, consumer_build
+    )
+    _make_usage_extraction_elements_and_flows(b_dev, dfetch_cli)
+    _make_usage_integrity_flows(
+        dfetch_cli, manifest_store, integrity_hash_record, developer
+    )
+    _make_usage_gap_doc_flows(
+        developer, patch_store, remote_git_svn, upstream_source_attestation
+    )
+
+
+def _make_usage_elements_and_flows(b_dev: Boundary, b_remote_vcs: Boundary) -> None:
+    """Create all usage-model elements and wire their dataflows."""
+    (
+        developer,
+        remote_git_svn,
+        archive_server,
+        consumer_build,
+        upstream_source_attestation,
+    ) = _make_usage_actors_and_external_entities(b_dev, b_remote_vcs)
+    dfetch_cli, patch_apply = _make_usage_processes(b_dev)
+    _make_usage_stores_and_flows(
+        b_dev,
+        developer,
+        remote_git_svn,
+        archive_server,
+        consumer_build,
+        upstream_source_attestation,
+        dfetch_cli,
+        patch_apply,
+    )
 
 
 def build_model() -> TM:
@@ -656,25 +826,9 @@ def build_model() -> TM:
         mergeResponses=True,
         threatsFile=THREATS_FILE,
     )
-    model.assumptions = make_usage_assumptions() + make_attacker_profiles()
+    model.assumptions = make_usage_assumptions()
     b_dev, b_remote_vcs = _make_usage_boundaries()
-    developer, remote_git_svn, archive_server, consumer_build = (
-        _make_usage_actors_and_external_entities(b_dev, b_remote_vcs)
-    )
-    dfetch_cli, patch_apply = _make_usage_processes(b_dev)
-    manifest_store, fetched_source, sbom_output = _make_usage_datastores_a(b_dev)
-    embedded_url_credential, metadata_store, patch_store = _make_usage_datastores_b(
-        b_dev
-    )
-    _make_usage_vcs_dataflows(developer, dfetch_cli, manifest_store, remote_git_svn)
-    _make_usage_archive_dataflows(dfetch_cli, archive_server)
-    _make_usage_output_flows(
-        dfetch_cli, fetched_source, metadata_store, sbom_output, embedded_url_credential
-    )
-    _make_usage_patch_and_build_flows(
-        patch_apply, patch_store, fetched_source, consumer_build
-    )
-    _make_usage_extraction_elements_and_flows(b_dev, dfetch_cli)
+    _make_usage_elements_and_flows(b_dev, b_remote_vcs)
     return model
 
 

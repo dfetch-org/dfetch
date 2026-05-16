@@ -38,9 +38,7 @@ from security.tm_common import (  # noqa: E402  # pylint: disable=wrong-import-p
     ControlAssessment,
     apply_report_utils_patch,
     build_asset_controls_index,
-    make_attacker_profiles,
     make_dev_env_boundary,
-    make_network_boundary,
     make_supply_chain_assumptions,
     run_model,
 )
@@ -49,52 +47,51 @@ from security.tm_common import (  # noqa: E402  # pylint: disable=wrong-import-p
 def _make_sc_boundaries() -> tuple[Boundary, Boundary, Boundary, Boundary]:
     """Create and return supply-chain trust boundaries."""
     b_dev = make_dev_env_boundary()
-    b_github = Boundary("GitHub Actions Infrastructure")
+    b_consumer = Boundary("Consumer Environment")
+    b_consumer.description = (
+        "End-user workstation or downstream CI pipeline where dfetch is installed "
+        "and invoked.  Distinct from the developer environment: no source checkout, "
+        "no signing keys, no deploy access.  The consumer is trusted at invocation "
+        "time but has no special relationship with the dfetch release infrastructure."
+    )
+    b_github = Boundary("GitHub Platform")
     b_github.description = (
-        "Microsoft-operated ephemeral runners executing the CI/CD workflows.  "
-        "Egress traffic is blocked (``harden-runner`` with ``egress-policy: block``) "
-        "with an allowlist of permitted endpoints; ``ci.yml`` forwards only "
-        "explicitly named secrets to child workflows (``CODACY_PROJECT_TOKEN`` "
-        "to ``test.yml``, ``GH_DFETCH_ORG_DEPLOY`` to ``docs.yml``)."
+        "GitHub-hosted infrastructure: repository, CI/CD runners, Actions workflows, "
+        "build cache, and code-scanning results.  "
+        "Egress traffic on runners is blocked (``harden-runner`` with "
+        "``egress-policy: block``) with an allowlist of permitted endpoints; "
+        "``ci.yml`` forwards only explicitly named secrets to child workflows "
+        "(``CODACY_PROJECT_TOKEN`` to ``test.yml``, ``GH_DFETCH_ORG_DEPLOY`` "
+        "to ``docs.yml``)."
     )
     b_pypi = Boundary("PyPI / TestPyPI")
     b_pypi.description = (
         "Python Package Index and its staging registry.  dfetch publishes via "
         "OIDC trusted publishing - no long-lived API token stored."
     )
-    b_net = make_network_boundary(
-        description=(
-            "Public internet - upstream package registries, PyPI, GitHub, CDN nodes, "
-            "and other external endpoints reachable by the CI/CD infrastructure."
-        )
-    )
-    return b_dev, b_github, b_pypi, b_net
+    return b_dev, b_consumer, b_github, b_pypi
 
 
 def _make_sc_actors_and_entities(
     b_dev: Boundary,
+    b_consumer: Boundary,
     b_github: Boundary,
     b_pypi: Boundary,
-    b_net: Boundary,
-) -> tuple[Actor, Actor, ExternalEntity, ExternalEntity, ExternalEntity]:
-    """Create actors and external entities; return those referenced by dataflows."""
-    developer = Actor("Developer")
+) -> tuple[
+    Actor, Actor, ExternalEntity, ExternalEntity, ExternalEntity, ExternalEntity
+]:
+    """Create actors and external entities; return all for use in dataflows."""
+    developer = Actor("Developer / Contributor")
     developer.inBoundary = b_dev
     developer.description = (
-        "dfetch project contributor: writes code, reviews PRs, cuts releases.  "
-        "Trusted at workstation time; responsible for correct branch-protection "
-        "and release workflow configuration."
-    )
-    contributor = Actor("Contributor / Attacker")
-    contributor.inBoundary = b_net
-    contributor.description = (
-        "External contributor submitting pull requests, or an adversary attempting "
-        "supply-chain manipulation (malicious PR, action-poisoning, or MITM on CI "
-        "network traffic).  Code review, branch protection, and SHA-pinned Actions "
-        "are the primary controls at this boundary."
+        "Anyone who writes code for dfetch: core maintainers who push directly and "
+        "cut releases, and external contributors who submit pull requests.  "
+        "Maintainers are trusted at workstation time and are responsible for correct "
+        "branch-protection and release workflow configuration.  "
+        "External contributors are untrusted until their PR passes code review and CI."
     )
     consumer = Actor("Consumer / End User")
-    consumer.inBoundary = b_dev
+    consumer.inBoundary = b_consumer
     consumer.description = (
         "Installs dfetch from PyPI (``pip install dfetch``) or from binary installer, "
         "then invokes it on a developer workstation or in a CI pipeline.  "
@@ -104,13 +101,32 @@ def _make_sc_actors_and_entities(
         "installers; SLSA build provenance, in-toto test result attestation, and SLSA Source "
         "Provenance Attestation on the source archive and main-branch commits."
     )
-    gh_repository = ExternalEntity("A-01: GitHub Repository")
+    gh_repository = ExternalEntity("A-01: GitHub Repository (main / protected)")
     gh_repository.inBoundary = b_github
     gh_repository.classification = Classification.RESTRICTED
     gh_repository.description = (
-        "Source code, PRs, releases, and workflow definitions.  "
-        "GitHub Actions workflows (``.github/workflows/``) with "
-        "``contents:write`` permission can modify repository state and trigger releases."
+        "The protected ``main`` branch: force-push disabled, merges require passing CI "
+        "and at least one approving review.  Contains the authoritative workflow "
+        "definitions (``.github/workflows/``), release tags, and published release assets.  "
+        "Workflow files on main are what GitHub Actions actually executes — a PR cannot "
+        "override them for its own CI run.  "
+        "``contents:write`` permission allows CI to upload SARIF results and release assets."
+    )
+    gh_repository.controls.hasAccessControl = True
+    gh_repository.controls.providesIntegrity = True
+    gh_repository_branches = ExternalEntity(
+        "A-01b: GitHub Repository (feature branches / PRs)"
+    )
+    gh_repository_branches.inBoundary = b_github
+    gh_repository_branches.classification = Classification.RESTRICTED
+    gh_repository_branches.description = (
+        "Unprotected feature branches and fork PRs: no mandatory review, no CI-gate "
+        "requirement to push.  Any authenticated GitHub user can open a PR modifying "
+        "``.github/workflows/`` files; those changes are reviewed before merging to main "
+        "but execute with restricted permissions during CI (no access to production secrets).  "
+        "A malicious PR modifying workflow files could attempt to exfiltrate secrets "
+        "during the PR CI run, mitigated by ``ci.yml`` secret scoping (C-024) and "
+        "harden-runner egress block (C-013)."
     )
     gh_actions_runner = ExternalEntity("A-02: GitHub Actions Infrastructure")
     gh_actions_runner.inBoundary = b_github
@@ -123,17 +139,34 @@ def _make_sc_actors_and_entities(
     )
     pypi = ExternalEntity("A-03: PyPI / TestPyPI")
     pypi.inBoundary = b_pypi
-    pypi.classification = Classification.PUBLIC
+    pypi.classification = Classification.SENSITIVE
     pypi.description = (
-        "Python Package Index.  dfetch is published via OIDC trusted publishing "
-        "(no long-lived API token).  Account takeover or registry compromise "
-        "would affect every consumer installing dfetch."
+        "Python Package Index - both the registry service and the published dfetch "
+        "wheel/sdist (https://pypi.org/project/dfetch/).  "
+        "Published via OIDC trusted publishing; no long-lived API token stored.  "
+        "A machine-readable CycloneDX SBOM is generated during the build and "
+        "published alongside the release.  "
+        "Account takeover, registry compromise, or namespace-squatting would affect "
+        "every consumer installing dfetch."
     )
-    return contributor, consumer, gh_repository, gh_actions_runner, pypi
+    pypi.controls.usesCodeSigning = (
+        True  # Sigstore SBOM attestation (actions/attest; predicate cyclonedx.org/bom)
+    )
+    pypi.controls.isHardened = (
+        True  # OIDC trusted publishing; no stored long-lived token
+    )
+    return (
+        developer,
+        consumer,
+        gh_repository,
+        gh_repository_branches,
+        gh_actions_runner,
+        pypi,
+    )
 
 
-def _make_sc_processes(b_github: Boundary) -> None:
-    """Create CI/CD process elements; all auto-register with TM."""
+def _make_sc_processes(b_github: Boundary) -> tuple[Process, Process, Process]:
+    """Create CI/CD process elements; return all for use in dataflows."""
     release_gate = Process("Release Gate / Code Review")
     release_gate.inBoundary = b_github
     release_gate.description = (
@@ -184,29 +217,11 @@ def _make_sc_processes(b_github: Boundary) -> None:
         False  # build deps installed without --require-hashes; see gap C-023
     )
     python_build.controls.isCiPipeline = True  # CI/release pipeline build step
+    return release_gate, gh_actions_workflow, python_build
 
 
-def _make_sc_datastores(b_github: Boundary, b_pypi: Boundary) -> Datastore:
-    """Create data assets; return gh_actions_cache (referenced by dataflows)."""
-    pypi_package = Datastore("A-04: dfetch PyPI Package")
-    pypi_package.inBoundary = b_pypi
-    pypi_package.description = (
-        "Published wheel and sdist on PyPI (https://pypi.org/project/dfetch/).  "
-        "Published via OIDC trusted publishing - no long-lived API token stored.  "
-        "A machine-readable CycloneDX SBOM is generated during the build and "
-        "published alongside the release.  "
-        "Compromise of the PyPI account or registry affects every consumer."
-    )
-    pypi_package.storesSensitiveData = False
-    pypi_package.hasWriteAccess = True  # publish pipeline writes new releases
-    pypi_package.isSQL = False
-    pypi_package.classification = Classification.SENSITIVE
-    pypi_package.controls.usesCodeSigning = (
-        True  # Sigstore SBOM attestation (actions/attest; predicate cyclonedx.org/bom)
-    )
-    pypi_package.controls.isHardened = (
-        True  # OIDC trusted publishing; no stored long-lived token
-    )
+def _make_sc_datastores(b_github: Boundary) -> tuple[Datastore, Datastore]:
+    """Create data assets; return all for use in dataflows."""
     Data(
         "A-05: PyPI OIDC Identity",
         description=(
@@ -223,25 +238,6 @@ def _make_sc_datastores(b_github: Boundary, b_pypi: Boundary) -> Datastore:
         isDestEncryptedAtRest=False,
         isSourceEncryptedAtRest=True,
     )
-    scorecard_results = Datastore("A-06: OpenSSF Scorecard Results")
-    scorecard_results.inBoundary = b_github
-    scorecard_results.description = (
-        "Weekly OSSF Scorecard SARIF results uploaded to GitHub Code Scanning.  "
-        "Covers: branch-protection, CI-tests, code-review, maintained, packaging, "
-        "pinned-dependencies, SAST, signed-releases, token-permissions, vulnerabilities, "
-        "dangerous-workflow, binary-artifacts, fuzzing, license, CII-best-practices, "
-        "security-policy, webhooks.  "
-        "Suppression or forgery hides supply-chain regressions."
-    )
-    scorecard_results.storesSensitiveData = False
-    scorecard_results.hasWriteAccess = (
-        True  # CI runner writes SARIF uploads here (DF-17)
-    )
-    scorecard_results.isSQL = False
-    scorecard_results.classification = Classification.RESTRICTED
-    scorecard_results.controls.providesIntegrity = (
-        True  # authenticated output from OSSF Scorecard action
-    )
     dfetch_dev_deps = Datastore("A-07: dfetch Build / Dev Dependencies")
     dfetch_dev_deps.inBoundary = b_github
     dfetch_dev_deps.description = (
@@ -256,24 +252,6 @@ def _make_sc_datastores(b_github: Boundary, b_pypi: Boundary) -> Datastore:
     dfetch_dev_deps.hasWriteAccess = False
     dfetch_dev_deps.isSQL = False
     dfetch_dev_deps.classification = Classification.RESTRICTED
-    gh_workflows = Datastore("A-08: GitHub Actions Workflows")
-    gh_workflows.inBoundary = b_github
-    gh_workflows.description = (
-        "``.github/workflows/*.yml`` - CI/CD configuration checked into the repository.  "
-        "11 workflows: ci, build, run, test, docs, release, python-publish, "
-        "dependency-review, codeql-analysis, scorecard, devcontainer.  "
-        "A malicious PR that modifies workflows can exfiltrate secrets or publish "
-        "a backdoored release.  "
-        "Mitigated by: SHA-pinned actions, persist-credentials:false, minimal permissions."
-    )
-    gh_workflows.storesSensitiveData = False
-    gh_workflows.hasWriteAccess = True  # PRs can modify .github/workflows/ definitions
-    gh_workflows.isSQL = False
-    gh_workflows.classification = Classification.RESTRICTED
-    gh_workflows.controls.isHardened = True
-    gh_workflows.controls.providesIntegrity = (
-        True  # branch protection + mandatory code review
-    )
     gh_actions_cache = Datastore("A-08b: GitHub Actions Build Cache")
     gh_actions_cache.inBoundary = b_github
     gh_actions_cache.description = (
@@ -291,75 +269,155 @@ def _make_sc_datastores(b_github: Boundary, b_pypi: Boundary) -> Datastore:
     )
     gh_actions_cache.isSQL = False
     gh_actions_cache.classification = Classification.RESTRICTED
-    return gh_actions_cache
+    return dfetch_dev_deps, gh_actions_cache
 
 
-def _make_sc_contrib_flows(
-    contributor: Actor,
-    consumer: Actor,
-    gh_repository: ExternalEntity,
-    pypi: ExternalEntity,
+def _make_sc_code_contribution_flows(
+    developer: Actor,
+    gh_repository_branches: ExternalEntity,
+    release_gate: Process,
 ) -> None:
-    """Create contributor- and consumer-facing dataflows; all auto-register with TM."""
-    df11 = Dataflow(contributor, gh_repository, "DF-11: Submit pull request")
+    """Create code-contribution and review dataflows (DF-11, DF-22); auto-register with TM."""
+    df11 = Dataflow(developer, gh_repository_branches, "DF-11: Push commits / open PR")
     df11.description = (
-        "External contributor opens a PR against the dfetch repository.  "
-        "Workflow files in ``.github/workflows/`` can be modified by PRs.  "
-        "``ci.yml`` only passes required repository secrets to the test and docs "
-        "workflows, preventing malicious PR steps from exfiltrating secrets."
+        "Developer or contributor pushes commits or opens a pull request targeting a "
+        "feature branch (A-01b).  The entry point for all code changes.  "
+        "Workflow files in ``.github/workflows/`` can be modified by PRs but are "
+        "reviewed before merging; ``ci.yml`` only passes required repository secrets "
+        "to child workflows, preventing PR CI steps from exfiltrating unrelated secrets."
     )
     df11.protocol = "HTTPS"
+    df11.controls.isEncrypted = True
     df11.controls.hasAccessControl = True
-    df11.controls.isHardened = (
-        True  # git commit SHAs provide content-addressable integrity
-    )
     df11.controls.providesIntegrity = True
-    df14 = Dataflow(consumer, pypi, "DF-14: pip install dfetch")
+
+    df22 = Dataflow(
+        gh_repository_branches, release_gate, "DF-22: PR enters code review"
+    )
+    df22.description = (
+        "Pull request from a feature branch (A-01b) flows into the Release Gate / "
+        "Code Review process.  Branch-protection rules require passing CI status "
+        "checks and at least one approving review before any merge to main is permitted."
+    )
+    df22.controls.hasAccessControl = True
+
+
+def _make_sc_workflow_checkout_flows(
+    gh_repository: ExternalEntity,
+    gh_actions_workflow: Process,
+    gh_repository_branches: ExternalEntity,
+    gh_actions_runner: ExternalEntity,
+) -> None:
+    """Create workflow-definition and CI-checkout dataflows (DF-12, DF-13a/b); auto-register with TM."""
+    df12 = Dataflow(
+        gh_repository,
+        gh_actions_workflow,
+        "DF-12: Main branch workflows drive CI execution",
+    )
+    df12.description = (
+        "The ``.github/workflows/*.yml`` YAML files on the protected main branch (A-01) "
+        "define what GitHub Actions executes.  GitHub enforces that PR CI runs use the "
+        "workflow files from the base branch (main), not from the PR branch — a malicious "
+        "PR cannot override the workflow for its own CI run.  "
+        "Mitigated by SHA-pinned actions, minimal permissions, and mandatory code review "
+        "before any workflow change reaches main (C-009, C-011)."
+    )
+    df12.controls.isHardened = True
+
+    df13a = Dataflow(
+        gh_repository_branches, gh_actions_runner, "DF-13a: PR CI checkout"
+    )
+    df13a.description = (
+        "GitHub Actions checks out source from the feature branch / PR (A-01b) for "
+        "CI runs triggered by pull requests.  ``persist-credentials:false`` on all "
+        "checkout steps.  Runs with restricted permissions — no access to production "
+        "secrets (see C-024)."
+    )
+    df13a.controls.isHardened = True
+
+    df13b = Dataflow(gh_repository, gh_actions_runner, "DF-13b: Release CI checkout")
+    df13b.description = (
+        "GitHub Actions checks out the tagged commit from main (A-01) for release "
+        "and build workflows.  ``persist-credentials:false`` on all checkout steps.  "
+        "All third-party actions pinned by commit SHA."
+    )
+    df13b.controls.isHardened = True
+    df13b.controls.providesIntegrity = True
+
+
+def _make_sc_cache_restore_flow(
+    gh_actions_cache: Datastore,
+    gh_actions_runner: ExternalEntity,
+) -> None:
+    """Create CI cache-restore dataflow (DF-14); auto-registers with TM."""
+    df14 = Dataflow(gh_actions_cache, gh_actions_runner, "DF-14: CI cache restore")
     df14.description = (
-        "Consumer installs dfetch from PyPI.  The installed wheel contains the dfetch "
-        "CLI; the handoff to the runtime-usage model occurs when the consumer invokes "
-        "dfetch with a manifest.  "
-        "The consumer can verify the SBOM (CycloneDX) attestation of the wheel using "
-        "``gh attestation verify`` with ``--predicate-type https://cyclonedx.org/bom`` "
-        "and cert-identity pinned to ``python-publish.yml`` (see C-026)."
+        "GitHub Actions runner restores a previously written cache entry before "
+        "running build steps.  Ref-scoped cache keys (C-033) ensure a release-tag build "
+        "restores only entries written under the same ref, not those written by a less-privileged "
+        "PR workflow.  Residual risk: if ref-scoped keys were removed or misconfigured, the release "
+        "build could consume attacker-controlled artifacts."
     )
     df14.protocol = "HTTPS"
     df14.controls.isEncrypted = True
-    df14.controls.isNetworkFlow = True
 
 
-def _make_sc_ci_flows(
-    gh_repository: ExternalEntity,
-    gh_actions_runner: ExternalEntity,
+def _make_sc_build_step_flows(
+    gh_actions_workflow: Process,
+    python_build: Process,
     pypi: ExternalEntity,
+    dfetch_dev_deps: Datastore,
+    gh_actions_runner: ExternalEntity,
+) -> None:
+    """Create build-trigger, dep-fetch, build-tool-consume, and artifact-output flows (DF-15 to DF-17b)."""
+    df15 = Dataflow(
+        gh_actions_workflow, python_build, "DF-15: Workflow triggers build step"
+    )
+    df15.description = (
+        "The executing workflow process invokes the Python Build step "
+        "(``python -m build``) to produce wheel and sdist artefacts.  "
+        "Build tools (setuptools, fpm, etc.) are installed without hash-pinning at this "
+        "point; a compromised package from PyPI could execute arbitrary code during the "
+        "build (gap C-023)."
+    )
+
+    df15b = Dataflow(
+        python_build, gh_actions_runner, "DF-15b: Built wheel/sdist artifacts"
+    )
+    df15b.description = (
+        "The Python Build step produces wheel and sdist artefacts, which are written to "
+        "the runner filesystem and later consumed by the publish step (DF-24).  "
+        "A compromised build tool (DF-17 gap) can tamper with the artefact content at "
+        "this point before attestations are generated."
+    )
+
+    df16 = Dataflow(pypi, dfetch_dev_deps, "DF-16: CI fetches build/dev deps from PyPI")
+    df16.description = (
+        "The CI runner installs build and dev dependencies from public PyPI: "
+        "setuptools, build, pylint, mypy, pytest, etc.  "
+        "No ``--require-hashes`` flag is used, so a compromised PyPI mirror or BGP "
+        "hijack can substitute malicious build tooling without triggering any checksum "
+        "failure (gap C-023)."
+    )
+    df16.protocol = "HTTPS"
+    df16.controls.isEncrypted = True
+    df16.controls.isNetworkFlow = True
+
+    df17 = Dataflow(
+        dfetch_dev_deps, python_build, "DF-17: Build tools consumed by build step"
+    )
+    df17.description = (
+        "Installed build/dev dependencies (A-07) are consumed by the Python Build "
+        "process.  If any dependency was substituted by an attacker (DF-16 gap), the "
+        "malicious code runs here with runner-level privileges."
+    )
+
+
+def _make_sc_cache_write_flow(
+    gh_actions_runner: ExternalEntity,
     gh_actions_cache: Datastore,
 ) -> None:
-    """Create CI infrastructure dataflows; all auto-register with TM."""
-    df12 = Dataflow(gh_repository, gh_actions_runner, "DF-12: CI checkout and build")
-    df12.description = (
-        "GitHub Actions checks out source, installs deps, runs tests, lints, builds.  "
-        "``persist-credentials:false`` on all checkout steps.  "
-        "All third-party actions pinned by commit SHA."
-    )
-    df12.controls.isHardened = True
-    df12.controls.providesIntegrity = True
-    df13 = Dataflow(gh_actions_runner, pypi, "DF-13: Publish to PyPI (OIDC)")
-    df13.description = (
-        "On release event, wheel/sdist uploaded to PyPI via "
-        "``pypa/gh-action-pypi-publish``.  OIDC trusted publishing: no stored API token.  "
-        "Four attestation types are generated by the release pipeline and anchored in Sigstore: "
-        "SLSA build provenance, SBOM (CycloneDX), VSA (Verification Summary Attestation) on "
-        "binary installers, and in-toto test result attestation on the source archive."
-    )
-    df13.protocol = "HTTPS"
-    df13.controls.isEncrypted = True
-    df13.controls.isHardened = (
-        True  # OIDC token exchange; no long-lived credential in transit
-    )
-    df13.controls.providesIntegrity = (
-        True  # Sigstore SBOM attestation covers published artifacts
-    )
-    df13.controls.usesCodeSigning = True  # SBOM attestation via actions/attest
+    """Create CI cache-write dataflow (DF-18); auto-registers with TM."""
     df18 = Dataflow(gh_actions_runner, gh_actions_cache, "DF-18: CI cache write")
     df18.description = (
         "GitHub Actions runner writes build cache entries (pip dependencies, gem packages, "
@@ -371,38 +429,132 @@ def _make_sc_ci_flows(
     )
     df18.protocol = "HTTPS"
     df18.controls.isEncrypted = True
-    df19 = Dataflow(gh_actions_cache, gh_actions_runner, "DF-19: CI cache restore")
-    df19.description = (
-        "GitHub Actions runner restores a previously written cache entry before "
-        "running build steps.  Ref-scoped cache keys (C-033) ensure a release-tag build "
-        "restores only entries written under the same ref, not those written by a less-privileged "
-        "PR workflow.  Residual risk: if ref-scoped keys were removed or misconfigured, the release "
-        "build could consume attacker-controlled artifacts."
-    )
-    df19.protocol = "HTTPS"
-    df19.controls.isEncrypted = True
-    df17 = Dataflow(
+
+
+def _make_sc_ci_reporting_flows(
+    gh_actions_runner: ExternalEntity,
+    gh_repository: ExternalEntity,
+) -> None:
+    """Create CI write-back dataflow (DF-19); auto-registers with TM."""
+    df19 = Dataflow(
         gh_actions_runner,
         gh_repository,
-        "DF-17: CI write-back (SARIF / artifacts / cache)",
+        "DF-19: CI write-back (SARIF / artifacts)",
     )
-    df17.description = (
+    df19.description = (
         "CI runner uploads artifacts back to the repository: SARIF results to GitHub "
-        "Code Scanning (CodeQL, Scorecard), release assets, and build cache.  "
-        "Suppression or falsification of SARIF uploads (A-06) would hide supply-chain "
-        "regressions from the security dashboard.  "
+        "Code Scanning (CodeQL, Scorecard) and release assets.  "
         "Mitigated by: authenticated GitHub API (GITHUB_TOKEN scoped to ``security-events: write``), "
         "SHA-pinned upload actions."
     )
-    df17.protocol = "HTTPS"
-    df17.controls.isEncrypted = True
-    df17.controls.isHardened = (
-        True  # GITHUB_TOKEN is scoped; harden-runner blocks exfiltration
+    df19.protocol = "HTTPS"
+    df19.controls.isEncrypted = True
+    df19.controls.isHardened = True
+    df19.controls.providesIntegrity = True
+    df19.controls.hasAccessControl = True
+
+
+def _make_sc_merge_flow(
+    release_gate: Process,
+    gh_repository: ExternalEntity,
+) -> None:
+    """Create approved-merge dataflow (DF-23); auto-registers with TM."""
+    df23 = Dataflow(release_gate, gh_repository, "DF-23: Approved merge to main")
+    df23.description = (
+        "After peer review approval and all required CI checks pass, the Release Gate "
+        "permits the merge.  The resulting commit on main may trigger downstream "
+        "CI workflows including the release pipeline."
     )
-    df17.controls.providesIntegrity = True
-    df17.controls.hasAccessControl = (
-        True  # GITHUB_TOKEN permission scoping per workflow
+    df23.controls.hasAccessControl = True
+    df23.controls.providesIntegrity = True
+
+
+def _make_sc_publish_flow(
+    gh_actions_runner: ExternalEntity,
+    pypi: ExternalEntity,
+) -> None:
+    """Create the PyPI publish dataflow (DF-24); auto-registers with TM."""
+    df24 = Dataflow(gh_actions_runner, pypi, "DF-24: Publish wheel to PyPI (OIDC)")
+    df24.description = (
+        "On release event, the GitHub Actions runner uses ``pypa/gh-action-pypi-publish`` "
+        "with OIDC trusted publishing to upload the wheel and sdist produced by the Python "
+        "Build step to PyPI (A-03).  No long-lived API token "
+        "is stored; the OIDC token is scoped to the ``pypi`` deployment environment.  "
+        "Four attestation types are generated and anchored in Sigstore: "
+        "SLSA build provenance, SBOM (CycloneDX), VSA on binary installers, and in-toto "
+        "test result attestation on the source archive (C-021, C-039, C-040)."
     )
+    df24.protocol = "HTTPS"
+    df24.controls.isEncrypted = True
+    df24.controls.isHardened = (
+        True  # OIDC token exchange; no long-lived credential in transit
+    )
+    df24.controls.providesIntegrity = True
+    df24.controls.usesCodeSigning = True  # Sigstore attestations via actions/attest
+
+
+def _make_sc_consumer_install_flows(
+    consumer: Actor,
+    pypi: ExternalEntity,
+) -> None:
+    """Create consumer pip-install and download dataflows (DF-25, DF-26); auto-register with TM."""
+    df25 = Dataflow(consumer, pypi, "DF-25: pip install dfetch")
+    df25.description = (
+        "Consumer installs dfetch from PyPI.  The installed wheel contains the dfetch "
+        "CLI; the handoff to the runtime-usage model occurs when the consumer invokes "
+        "dfetch with a manifest.  "
+        "The consumer can verify the SBOM (CycloneDX) attestation of the wheel using "
+        "``gh attestation verify`` with ``--predicate-type https://cyclonedx.org/bom`` "
+        "and cert-identity pinned to ``python-publish.yml`` (see C-026)."
+    )
+    df25.protocol = "HTTPS"
+    df25.controls.isEncrypted = True
+    df25.controls.isNetworkFlow = True
+
+    df26 = Dataflow(pypi, consumer, "DF-26: Consumer downloads dfetch from PyPI")
+    df26.description = (
+        "The published dfetch wheel (A-03) is downloaded to the consumer workstation "
+        "during ``pip install dfetch``.  The consumer can verify the SBOM (CycloneDX) "
+        "attestation using ``gh attestation verify`` as documented in C-026.  "
+        "Without verification, a compromised PyPI account or namespace-squatting "
+        "could serve a malicious package undetected (DFT-17)."
+    )
+    df26.protocol = "HTTPS"
+    df26.controls.isEncrypted = True
+    df26.controls.isNetworkFlow = True
+
+
+def _make_sc_elements_and_flows(
+    b_dev: Boundary,
+    b_consumer: Boundary,
+    b_github: Boundary,
+    b_pypi: Boundary,
+) -> None:
+    """Create all supply-chain model elements and wire dataflows DF-11 through DF-26."""
+    (
+        developer,
+        consumer,
+        gh_repository,
+        gh_repository_branches,
+        gh_actions_runner,
+        pypi,
+    ) = _make_sc_actors_and_entities(b_dev, b_consumer, b_github, b_pypi)
+    release_gate, gh_actions_workflow, python_build = _make_sc_processes(b_github)
+    dfetch_dev_deps, gh_actions_cache = _make_sc_datastores(b_github)
+    # Lifecycle: commit/PR → CI → review → merge → publish → consumer install
+    _make_sc_code_contribution_flows(developer, gh_repository_branches, release_gate)
+    _make_sc_workflow_checkout_flows(
+        gh_repository, gh_actions_workflow, gh_repository_branches, gh_actions_runner
+    )
+    _make_sc_cache_restore_flow(gh_actions_cache, gh_actions_runner)
+    _make_sc_build_step_flows(
+        gh_actions_workflow, python_build, pypi, dfetch_dev_deps, gh_actions_runner
+    )
+    _make_sc_cache_write_flow(gh_actions_runner, gh_actions_cache)
+    _make_sc_ci_reporting_flows(gh_actions_runner, gh_repository)
+    _make_sc_merge_flow(release_gate, gh_repository)
+    _make_sc_publish_flow(gh_actions_runner, pypi)
+    _make_sc_consumer_install_flows(consumer, pypi)
 
 
 def build_model() -> TM:
@@ -421,15 +573,9 @@ def build_model() -> TM:
         mergeResponses=True,
         threatsFile=THREATS_FILE,
     )
-    model.assumptions = make_supply_chain_assumptions() + make_attacker_profiles()
-    b_dev, b_github, b_pypi, b_net = _make_sc_boundaries()
-    contributor, consumer, gh_repository, gh_actions_runner, pypi = (
-        _make_sc_actors_and_entities(b_dev, b_github, b_pypi, b_net)
-    )
-    _make_sc_processes(b_github)
-    gh_actions_cache = _make_sc_datastores(b_github, b_pypi)
-    _make_sc_contrib_flows(contributor, consumer, gh_repository, pypi)
-    _make_sc_ci_flows(gh_repository, gh_actions_runner, pypi, gh_actions_cache)
+    model.assumptions = make_supply_chain_assumptions()
+    b_dev, b_consumer, b_github, b_pypi = _make_sc_boundaries()
+    _make_sc_elements_and_flows(b_dev, b_consumer, b_github, b_pypi)
     return model
 
 
@@ -440,7 +586,7 @@ CONTROLS: list[Control] = [
     Control(
         id="C-009",
         name="Actions commit-SHA pinning",
-        assets=["A-08", "A-02"],
+        assets=["A-01", "A-02"],
         threats=["DFT-07"],
         reference=".github/workflows/*.yml",
         assessment=ControlAssessment(risk="High", stride=["Tampering"]),
@@ -452,7 +598,7 @@ CONTROLS: list[Control] = [
     Control(
         id="C-010",
         name="OIDC trusted publishing",
-        assets=["A-05", "A-04"],
+        assets=["A-05", "A-03"],
         threats=["DFT-07"],
         reference=".github/workflows/python-publish.yml",
         assessment=ControlAssessment(
@@ -466,7 +612,7 @@ CONTROLS: list[Control] = [
     Control(
         id="C-011",
         name="Minimal workflow permissions",
-        assets=["A-08"],
+        assets=["A-01"],
         threats=["DFT-07"],
         reference=".github/workflows/*.yml",
         assessment=ControlAssessment(risk="Medium", stride=["Elevation of Privilege"]),
@@ -478,7 +624,7 @@ CONTROLS: list[Control] = [
     Control(
         id="C-012",
         name="persist-credentials: false",
-        assets=["A-08", "A-01"],
+        assets=["A-01"],
         threats=["DFT-07"],
         reference=".github/workflows/*.yml",
         assessment=ControlAssessment(
@@ -493,7 +639,7 @@ CONTROLS: list[Control] = [
     Control(
         id="C-013",
         name="Harden-runner (egress block)",
-        assets=["A-08", "A-02"],
+        assets=["A-01", "A-02"],
         threats=["DFT-07", "DFT-29"],
         reference=".github/workflows/*.yml",
         assessment=ControlAssessment(
@@ -506,21 +652,9 @@ CONTROLS: list[Control] = [
         ),
     ),
     Control(
-        id="C-014",
-        name="OpenSSF Scorecard",
-        assets=["A-01", "A-06"],
-        threats=["DFT-07", "DFT-10"],
-        reference=".github/workflows/scorecard.yml",
-        assessment=ControlAssessment(risk="Low", stride=["Tampering"]),
-        description=(
-            "Weekly OSSF Scorecard analysis uploaded to GitHub Code Scanning "
-            "covers the full set of OpenSSF Scorecard checks."
-        ),
-    ),
-    Control(
         id="C-015",
         name="CodeQL static analysis",
-        assets=["A-01", "A-08"],
+        assets=["A-01"],
         threats=["DFT-03", "DFT-06"],
         reference=".github/workflows/codeql-analysis.yml",
         assessment=ControlAssessment(
@@ -559,7 +693,7 @@ CONTROLS: list[Control] = [
     Control(
         id="C-021",
         name="Sigstore SBOM attestation",
-        assets=["A-04"],
+        assets=["A-03"],
         threats=["DFT-05"],
         assessment=ControlAssessment(risk="Medium", stride=["Spoofing", "Tampering"]),
         description=(
@@ -572,7 +706,7 @@ CONTROLS: list[Control] = [
     Control(
         id="C-022",
         name="CycloneDX SBOM on PyPI",
-        assets=["A-04", "A-07"],
+        assets=["A-03", "A-07"],
         threats=["DFT-02"],
         assessment=ControlAssessment(risk="Low", stride=["Repudiation"]),
         description=(
@@ -583,7 +717,7 @@ CONTROLS: list[Control] = [
     Control(
         id="C-024",
         name="``secrets: inherit`` scope",
-        assets=["A-08", "A-05"],
+        assets=["A-01", "A-05"],
         threats=["DFT-07"],
         assessment=ControlAssessment(risk="Medium", stride=["Information Disclosure"]),
         description=(
@@ -595,7 +729,7 @@ CONTROLS: list[Control] = [
     Control(
         id="C-026",
         name="Consumer-side package provenance verification",
-        assets=["A-04"],
+        assets=["A-03"],
         threats=["DFT-17", "DFT-25"],
         assessment=ControlAssessment(
             status="implemented", risk="Medium", stride=["Spoofing", "Tampering"]
@@ -623,7 +757,7 @@ CONTROLS: list[Control] = [
     Control(
         id="C-032",
         name="Consumer attestation verification pins to release tag ref",
-        assets=["A-08", "A-04"],
+        assets=["A-01", "A-03"],
         threats=["DFT-27"],
         reference="doc/tutorials/installation.rst",
         assessment=ControlAssessment(
@@ -702,7 +836,7 @@ CONTROLS: list[Control] = [
     Control(
         id="C-039",
         name="Source build provenance and VSA attestations",
-        assets=["A-01", "A-02", "A-04"],
+        assets=["A-01", "A-02", "A-03"],
         threats=["DFT-31", "DFT-25"],
         reference="doc/howto/verify-integrity.rst",
         assessment=ControlAssessment(
@@ -767,7 +901,7 @@ CONTROLS: list[Control] = [
     Control(
         id="C-025",
         name="No hardware-token MFA for release operations",
-        assets=["A-01", "A-04"],
+        assets=["A-01", "A-03"],
         threats=["DFT-11"],
         assessment=ControlAssessment(
             status="gap", risk="High", stride=["Spoofing", "Elevation of Privilege"]
@@ -786,13 +920,11 @@ CONTROLS: list[Control] = [
 
 _SUPPLY_CHAIN_ASSET_IDS = {
     "A-01",
+    "A-01b",
     "A-02",
     "A-03",
-    "A-04",
     "A-05",
-    "A-06",
     "A-07",
-    "A-08",
     "A-08b",
 }
 ASSET_CONTROLS: dict[str, list[Control]] = build_asset_controls_index(
