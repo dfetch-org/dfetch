@@ -1,22 +1,17 @@
-"""Archive (tar/zip) specific implementation.
+"""Archive (tar/zip) fetcher implementation.
 
-Archives are a third VCS type alongside ``git`` and ``svn``.  They represent
-versioned dependencies that are distributed as ``.tar.gz``, ``.tgz``,
-``.tar.bz2``, ``.tar.xz`` or ``.zip`` files reachable via ``http://``,
-``https://``, or ``file://`` URLs.
+Archives are a retrieval strategy alongside git and svn.  They represent
+dependencies distributed as ``.tar.gz``, ``.tgz``, ``.tar.bz2``,
+``.tar.xz``, or ``.zip`` files reachable via ``http://``, ``https://``,
+or ``file://`` URLs.
 
-Unlike git and SVN, archives have no inherent "branching" or "tagging"
-concept.  Version identity is expressed through:
+Unlike VCS sources, archives have no branching or tagging concept.  Version
+identity is expressed through:
 
-* **No hash** - the URL itself acts as the identity.  The archive is
-  considered up-to-date as long as the same URL is still reachable.
-* **``integrity.hash: <algorithm>:<hex>``** - the cryptographic hash of the
-  archive file acts as the version identifier.  The fetch step verifies the
-  downloaded archive against this hash and raises an error on mismatch.
+* **No hash** — the URL itself acts as the identity.
+* **``integrity.hash: <algorithm>:<hex>``** — the cryptographic hash of the
+  archive file acts as the version identifier.
 
-The ``integrity:`` block is designed for future extension: ``sig:`` and
-``sig-key:`` fields for detached signature / signing-key verification will
-slot in alongside ``hash:`` without breaking existing manifests.
 Supported hash algorithms: ``sha256``, ``sha384``, and ``sha512``.
 
 Example manifest entries::
@@ -42,12 +37,12 @@ Example manifest entries::
 from __future__ import annotations
 
 import pathlib
+from collections.abc import Sequence
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.project.metadata import Dependency
-from dfetch.project.subproject import SubProject
 from dfetch.util.util import temp_file
 from dfetch.vcs.archive import (
     ARCHIVE_EXTENSIONS,
@@ -69,167 +64,112 @@ def _suffix_for_url(url: str) -> str:
     return ".archive"
 
 
-class ArchiveSubProject(SubProject):
-    """A project fetched from a tar/zip archive URL.
+class ArchiveFetcher:
+    """Fetcher for tar/zip archive URLs.
 
-    Supports ``src:`` (sub-path extraction), ``ignore:`` (file exclusion) and
-    ``patch:`` (local patches applied after every fetch) in the same way as
-    the git and SVN implementations.
+    Archives are identified by URL or cryptographic hash — not by VCS concepts
+    such as branches or revisions.  This fetcher implements only the common
+    :class:`~dfetch.project.fetcher.Fetcher` protocol.
     """
 
-    NAME = "archive"
+    NAME: str = "archive"
 
-    def __init__(self, project: ProjectEntry) -> None:
-        """Create an ArchiveSubProject."""
-        super().__init__(project)
-        self._project_entry = project
-        self._remote_repo = ArchiveRemote(project.remote_url)
+    def __init__(self, remote: str) -> None:
+        """Create an ArchiveFetcher for *remote*."""
+        self._remote = remote
+        self._remote_repo = ArchiveRemote(remote)
 
-    def check(self) -> bool:
-        """Return *True* when the project URL looks like an archive."""
-        return is_archive_url(self.remote)
+    @classmethod
+    def handles(cls, remote: str) -> bool:
+        """Return True when *remote* looks like an archive URL."""
+        return is_archive_url(remote)
 
-    @staticmethod
-    def revision_is_enough() -> bool:
-        """Archives are uniquely identified by their hash (or URL), so yes."""
-        return True
+    def wanted_version(self, project_entry: ProjectEntry) -> Version:
+        """Version derived from ``integrity.hash`` or the archive URL.
 
-    @staticmethod
-    def list_tool_info() -> None:
-        """No external tool info to report; archive fetching uses Python stdlib only."""
-
-    def get_default_branch(self) -> str:
-        """Archives have no branches; return an empty string."""
-        return ""
-
-    def _latest_revision_on_branch(self, branch: str) -> str:
-        """For archives the 'latest revision' is always the URL (or hash)."""
-        del branch
-        return self.remote
-
-    def _download_and_compute_hash(
-        self, algorithm: str = "sha256", url: str | None = None
-    ) -> IntegrityHash:
-        """Download the archive to a temporary file and return its :class:`IntegrityHash`.
-
-        The hash is computed during the download stream — no extra file read.
-        The temporary file is always cleaned up, even on error.
-
-        Args:
-            algorithm: Hash algorithm to use (``sha256``, ``sha384``, ``sha512``).
-            url: If given, download from this URL instead of ``self._remote_repo``.
-                 Use this to pin to the exact URL stored in the on-disk revision.
-
-        Raises:
-            RuntimeError: On download failure or unsupported algorithm.
-        """
-        effective_url = url if url is not None else self.remote
-        remote = ArchiveRemote(effective_url) if url is not None else self._remote_repo
-        with temp_file(_suffix_for_url(effective_url)) as tmp_path:
-            hex_digest = remote.download(tmp_path, algorithm=algorithm)
-            return IntegrityHash(algorithm, hex_digest)
-
-    def _does_revision_exist(self, revision: str) -> bool:  # noqa: ARG002
-        """Check whether the archive URL is still reachable.
-
-        A lightweight HEAD (or partial-GET) reachability check is used for
-        all revision types, including hash-pinned ones.  Full content-integrity
-        verification is intentionally deferred to fetch time (``_fetch_impl``),
-        keeping ``dfetch check`` fast even for large archives over slow links.
-        """
-        return self._remote_repo.is_accessible()
-
-    def _list_of_tags(self) -> list[str]:
-        """Archives have no tags; returns an empty list."""
-        return []
-
-    @property
-    def wanted_version(self) -> Version:
-        """Version derived from the ``integrity.hash`` field or the archive URL.
-
-        * With ``integrity.hash: <alg>:<hex>`` → ``Version(revision='<alg>:<hex>')``
+        * With hash → ``Version(revision='<alg>:<hex>')``
         * Without hash → ``Version(revision=<url>)``
-
-        This makes the standard :class:`~dfetch.project.subproject.SubProject`
-        comparison machinery work transparently for archives.
         """
-        if self._project_entry.hash:
-            return Version(revision=self._project_entry.hash)
-        return Version(revision=self.remote)
+        if project_entry.hash:
+            return Version(revision=project_entry.hash)
+        return Version(revision=self._remote)
 
-    def _fetch_impl(self, version: Version) -> tuple[Version, list[Dependency]]:
-        """Download and extract the archive to the local destination.
+    def latest_available_version(self, wanted: Version) -> Version | None:
+        """Return *wanted* if the archive URL is still reachable, else None."""
+        return wanted if self._remote_repo.is_accessible() else None
 
-        1. Download the archive to a temporary file.
-        2. If ``integrity.hash`` is specified, verify the downloaded file.
-        3. Extract to :attr:`local_path`, respecting ``src:`` and ``ignore:``.
+    def fetch(
+        self,
+        version: Version,
+        local_path: str,
+        name: str,
+        source: str,
+        ignore: Sequence[str],
+    ) -> tuple[Version, list[Dependency]]:
+        """Download and extract the archive to *local_path*.
 
         Raises:
             RuntimeError: On download failure or hash mismatch.
-
-        Returns:
-            The version that was actually fetched (hash string or URL).
         """
-        revision = version.revision
+        pathlib.Path(local_path).mkdir(parents=True, exist_ok=True)
 
-        pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
-
-        with temp_file(_suffix_for_url(self.remote)) as tmp_path:
-            expected = IntegrityHash.parse(revision)
-            if expected:
-                actual_hex = self._remote_repo.download(
-                    tmp_path, algorithm=expected.algorithm
-                )
-                if not expected.matches(actual_hex):
-                    raise RuntimeError(
-                        f"Hash mismatch for {self._project_entry.name}! "
-                        f"{expected.algorithm} expected {expected.hex_digest}"
-                    )
-            else:
-                self._remote_repo.download(tmp_path)
-
+        with temp_file(_suffix_for_url(self._remote)) as tmp_path:
+            self._download_and_verify(version.revision, tmp_path, name)
             ArchiveLocalRepo.extract(
                 tmp_path,
-                self.local_path,
-                src=self.source,
-                ignore=self.ignore,
+                local_path,
+                src=source,
+                ignore=ignore,
             )
 
         return version, []
 
-    def freeze_project(self, project: ProjectEntry) -> str | None:
+    def _download_and_verify(self, revision: str, tmp_path: str, name: str) -> None:
+        expected = IntegrityHash.parse(revision)
+        if expected:
+            actual_hex = self._remote_repo.download(
+                tmp_path, algorithm=expected.algorithm
+            )
+            if not expected.matches(actual_hex):
+                raise RuntimeError(
+                    f"Hash mismatch for {name}! "
+                    f"{expected.algorithm} expected {expected.hex_digest}"
+                )
+        else:
+            self._remote_repo.download(tmp_path)
+
+    def freeze(
+        self, project: ProjectEntry, on_disk_version: Version | None
+    ) -> str | None:
         """Pin *project* to a cryptographic hash of the archive.
 
-        * If the archive was already fetched with a hash, the on-disk revision
-          (``sha256:<hex>``) is written to ``integrity.hash`` in the manifest.
-        * If the archive was fetched without a hash (URL-only), the archive is
-          downloaded again, its SHA-256 is computed, and the result is written
-          to ``integrity.hash``.  This ensures the manifest always ends up
-          pinned to a specific content fingerprint.  SHA-256 is used as the
-          default algorithm when no prior hash is present.
-
-        Returns:
-            The ``<algorithm>:<hex>`` string written to *project*, or *None* if
-            the manifest was already up-to-date.
+        If already hash-pinned, the on-disk hash is reused.  Otherwise the
+        archive is downloaded and its SHA-256 is computed.
 
         Raises:
-            RuntimeError: On download or hash-computation failure so the caller
-                can log a meaningful error rather than silently claiming the
-                project is already pinned.
+            RuntimeError: On download or hash-computation failure.
         """
-        on_disk = self.on_disk_version()
-        if not on_disk:
+        if not on_disk_version:
             return None
-
-        revision = on_disk.revision
-
-        # Already hash-pinned — use the on-disk revision directly.
-        # Otherwise download from the revision URL (not the possibly-updated manifest URL).
-        pinned = IntegrityHash.parse(revision) or self._download_and_compute_hash(
-            "sha256", url=revision
+        pinned = IntegrityHash.parse(on_disk_version.revision) or (
+            self._download_and_compute_hash("sha256", url=on_disk_version.revision)
         )
         new_hash = str(pinned)
         if project.hash == new_hash:
             return None
         project.hash = new_hash
         return new_hash
+
+    def _download_and_compute_hash(
+        self, algorithm: str = "sha256", url: str | None = None
+    ) -> IntegrityHash:
+        """Download the archive and return its :class:`IntegrityHash`."""
+        effective_url = url if url is not None else self._remote
+        remote = ArchiveRemote(effective_url) if url is not None else self._remote_repo
+        with temp_file(_suffix_for_url(effective_url)) as tmp_path:
+            hex_digest = remote.download(tmp_path, algorithm=algorithm)
+            return IntegrityHash(algorithm, hex_digest)
+
+    @staticmethod
+    def list_tool_info() -> None:
+        """No external tool required; archive fetching uses Python stdlib only."""
