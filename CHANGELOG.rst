@@ -1,6 +1,7 @@
 Release 0.14.0 (unreleased)
 ===========================
 
+* Documentation and threat-model clarifications for existing release attestation support (#1208)
 * Report SVN externals fetched during update (#1220)
 * Use ``.cdx.json`` as the default extension for CycloneDX SBOM reports (#1118)
 * Embed base64-encoded license text in SBOM ``licenses[].text`` when a license is successfully identified (#1112)
