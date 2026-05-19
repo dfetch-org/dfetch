@@ -152,7 +152,32 @@ class SvnSubProject(SubProject):
         if self.ignore:
             self._remove_ignored_files()
 
-        return Version(tag=version.tag, branch=branch, revision=revision), []
+        return (
+            Version(tag=version.tag, branch=branch, revision=revision),
+            self._fetch_externals(complete_path, revision),
+        )
+
+    def _fetch_externals(self, complete_path: str, revision: str) -> list[Dependency]:
+        """Detect and log SVN externals that were exported with the project."""
+        vcs_deps = []
+        for external in SvnRepo.externals_from_url(complete_path, revision):
+            path_display = "./" + external.path.lstrip("./")
+            display_branch = external.branch or SvnRepo.DEFAULT_BRANCH
+            self._log_project(
+                f'Found & fetched external "{path_display}" '
+                f"({external.url} @ {Version(tag=external.tag, branch=display_branch, revision=external.revision)})",
+            )
+            vcs_deps.append(
+                Dependency(
+                    remote_url=external.url,
+                    destination=external.path,
+                    branch=external.branch,
+                    tag=external.tag,
+                    revision=external.revision,
+                    source_type="svn-external",
+                )
+            )
+        return vcs_deps
 
     @staticmethod
     def _parse_file_pattern(complete_path: str) -> tuple[str, str]:
