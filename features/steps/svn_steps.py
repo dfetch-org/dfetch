@@ -143,3 +143,25 @@ def step_impl(_, pattern, directory):
     with in_directory(directory):
         subprocess.check_call(["svn", "propset", "svn:ignore", pattern, "."])
         commit_all(f"Ignore {pattern} files")
+
+
+@given(
+    'svn-server "{name}" has an external at "{ext_path}" from svn-server "{source_name}"'
+)
+def step_impl(context, name, ext_path, source_name):
+    source_url = (
+        pathlib.Path(context.remotes_dir_path).joinpath(source_name, "trunk").as_uri()
+    )
+    with in_directory(name):
+        with in_directory("trunk"):
+            add_externals([{"url": source_url, "path": ext_path, "revision": ""}])
+
+
+@given(
+    'svn-server "{name}" has an external at "{ext_path}" from non-standard svn-server "{source_name}"'
+)
+def step_impl(context, name, ext_path, source_name):
+    source_url = pathlib.Path(context.remotes_dir_path).joinpath(source_name).as_uri()
+    with in_directory(name):
+        with in_directory("trunk"):
+            add_externals([{"url": source_url, "path": ext_path, "revision": ""}])

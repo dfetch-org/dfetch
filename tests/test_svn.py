@@ -37,7 +37,7 @@ UNPINNED_NONSTD_EXPECTATION = [
     External(
         name="Database",
         toplevel=CWD,
-        path="./Database",
+        path="Database",
         revision="",
         url="http://svn.mycompany.eu/MYCOMPANY/SomeModule/Core/Modules/Database",
         branch=" ",
@@ -100,6 +100,84 @@ PINNED_MODULE_NO_SUBFOLDER_EXPECTATION = [
     )
 ]
 
+# -r REV URL NAME without a peg revision (@rev) in the URL.
+EXPLICIT_REV_NO_PEG = (
+    "lib - -r 500 http://svn.mycompany.eu/MYCOMPANY/SomeLib/trunk SomeLib"
+)
+EXPLICIT_REV_NO_PEG_EXPECTATION = [
+    External(
+        name="SomeLib",
+        toplevel=CWD,
+        path="lib/SomeLib",
+        revision="500",
+        url="http://svn.mycompany.eu/MYCOMPANY/SomeLib",
+        branch="",
+        tag="",
+        src="",
+    )
+]
+
+# Same -r form but with a subdirectory inside trunk, so src is also populated.
+EXPLICIT_REV_NO_PEG_SUBFOLDER = (
+    "vendor - -r 123 http://svn.mycompany.eu/MYCOMPANY/Framework/trunk/include Utils"
+)
+EXPLICIT_REV_NO_PEG_SUBFOLDER_EXPECTATION = [
+    External(
+        name="Utils",
+        toplevel=CWD,
+        path="vendor/Utils",
+        revision="123",
+        url="http://svn.mycompany.eu/MYCOMPANY/Framework",
+        branch="",
+        tag="",
+        src="include",
+    )
+]
+
+HYPHENATED_PATH = "libs/ui-kit - http://svn.mycompany.eu/MYCOMPANY/UIKit/trunk UIKit"
+HYPHENATED_PATH_EXPECTATION = [
+    External(
+        name="UIKit",
+        toplevel=CWD,
+        path="libs/ui-kit/UIKit",
+        revision="",
+        url="http://svn.mycompany.eu/MYCOMPANY/UIKit",
+        branch="",
+        tag="",
+        src="",
+    )
+]
+
+AUTHENTICATED_URL_WITH_REV = (
+    "lib - -r 100 svn+ssh://user@host/MYCOMPANY/SomeLib/trunk SomeLib"
+)
+AUTHENTICATED_URL_WITH_REV_EXPECTATION = [
+    External(
+        name="SomeLib",
+        toplevel=CWD,
+        path="lib/SomeLib",
+        revision="100",
+        url="svn+ssh://user@host/MYCOMPANY/SomeLib",
+        branch="",
+        tag="",
+        src="",
+    )
+]
+
+ROOT_LEVEL_EXTERNAL = ". - http://svn.mycompany.eu/MYCOMPANY/SomeLib/trunk SomeLib"
+ROOT_LEVEL_EXTERNAL_EXPECTATION = [
+    External(
+        name="SomeLib",
+        toplevel=CWD,
+        path="SomeLib",
+        revision="",
+        url="http://svn.mycompany.eu/MYCOMPANY/SomeLib",
+        branch="",
+        tag="",
+        src="",
+    )
+]
+
 
 @pytest.mark.parametrize(
     "name, externals, expectations",
@@ -113,6 +191,31 @@ PINNED_MODULE_NO_SUBFOLDER_EXPECTATION = [
             "pinned_module_no_subfolder",
             [PINNED_MODULE_NO_SUBFOLDER],
             PINNED_MODULE_NO_SUBFOLDER_EXPECTATION,
+        ),
+        (
+            "explicit_rev_no_peg",
+            [EXPLICIT_REV_NO_PEG],
+            EXPLICIT_REV_NO_PEG_EXPECTATION,
+        ),
+        (
+            "explicit_rev_no_peg_subfolder",
+            [EXPLICIT_REV_NO_PEG_SUBFOLDER],
+            EXPLICIT_REV_NO_PEG_SUBFOLDER_EXPECTATION,
+        ),
+        (
+            "hyphenated_path",
+            [HYPHENATED_PATH],
+            HYPHENATED_PATH_EXPECTATION,
+        ),
+        (
+            "authenticated_url_with_rev",
+            [AUTHENTICATED_URL_WITH_REV],
+            AUTHENTICATED_URL_WITH_REV_EXPECTATION,
+        ),
+        (
+            "root_level_external",
+            [ROOT_LEVEL_EXTERNAL],
+            ROOT_LEVEL_EXTERNAL_EXPECTATION,
         ),
         (
             "multiple",
@@ -271,3 +374,149 @@ def test_svn_repo_split_url(svn_repo):
     assert branch == ""
     assert tag == "v1.0"
     assert src == "src"
+
+
+# ---------------------------------------------------------------------------
+# _normalize_url_prefix
+# ---------------------------------------------------------------------------
+
+_BASE_URL = "http://svn.example.com/repos/myproject"
+_OTHER_LIB = "http://svn.other.com/repos/otherlib/trunk MyLib"
+
+
+@pytest.mark.parametrize(
+    "name, output, base_url, expected",
+    [
+        (
+            "subdirectory",
+            f"{_BASE_URL}/lib - {os.linesep}{_OTHER_LIB}",
+            _BASE_URL,
+            f"lib - {os.linesep}{_OTHER_LIB}",
+        ),
+        (
+            "root_level",
+            f"{_BASE_URL} - {os.linesep}{_OTHER_LIB}",
+            _BASE_URL,
+            f". - {os.linesep}{_OTHER_LIB}",
+        ),
+        (
+            "trailing_slash_on_base_url",
+            f"{_BASE_URL}/lib - {os.linesep}{_OTHER_LIB}",
+            _BASE_URL + "/",
+            f"lib - {os.linesep}{_OTHER_LIB}",
+        ),
+        (
+            "unrelated_url_unchanged",
+            f"http://other.com/repo - {os.linesep}{_OTHER_LIB}",
+            _BASE_URL,
+            f"http://other.com/repo - {os.linesep}{_OTHER_LIB}",
+        ),
+        (
+            "multiple_entries",
+            f"{_BASE_URL}/lib - {os.linesep}{_OTHER_LIB}"
+            + os.linesep * 2
+            + f"{_BASE_URL} - {os.linesep}http://svn.other.com/repos/framework/trunk Framework",
+            _BASE_URL,
+            f"lib - {os.linesep}{_OTHER_LIB}"
+            + os.linesep * 2
+            + f". - {os.linesep}http://svn.other.com/repos/framework/trunk Framework",
+        ),
+    ],
+)
+def test_normalize_url_prefix(name, output, base_url, expected):
+    assert SvnRepo._normalize_url_prefix(output, base_url) == expected
+
+
+# ---------------------------------------------------------------------------
+# externals_from_url
+# ---------------------------------------------------------------------------
+
+
+def test_externals_from_url_omits_revision_when_not_given():
+    with (
+        patch("dfetch.vcs.svn.run_on_cmdline") as mock_run,
+        patch("dfetch.vcs.svn.SvnRepo.get_info_from_target") as mock_info,
+    ):
+        mock_run.return_value.stdout = b""
+        mock_info.return_value = {"Repository Root": REPO_ROOT}
+
+        SvnRepo.externals_from_url(REPO_ROOT + "/trunk")
+
+        cmd = mock_run.call_args[0][1]
+        assert "--revision" not in cmd
+
+
+def test_externals_from_url_adds_revision_flag_when_given():
+    with (
+        patch("dfetch.vcs.svn.run_on_cmdline") as mock_run,
+        patch("dfetch.vcs.svn.SvnRepo.get_info_from_target") as mock_info,
+    ):
+        mock_run.return_value.stdout = b""
+        mock_info.return_value = {"Repository Root": REPO_ROOT}
+
+        SvnRepo.externals_from_url(REPO_ROOT + "/trunk", "42")
+
+        cmd = mock_run.call_args[0][1]
+        assert "--revision" in cmd
+        assert "42" in cmd
+
+
+@pytest.mark.parametrize(
+    "name, error",
+    [
+        ("subprocess_error", SubprocessCommandError([""], "", "", -1)),
+        ("runtime_error", RuntimeError("not an SVN repo")),
+    ],
+)
+def test_externals_from_url_propagates_error(name, error):
+    with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
+        mock_run.side_effect = error
+        with pytest.raises(type(error)):
+            SvnRepo.externals_from_url(REPO_ROOT + "/trunk")
+
+
+def test_externals_from_url_normalizes_url_prefix_and_parses():
+    base = "http://svn.example.com/repos/myproject/trunk"
+    raw = (
+        f"{base}/vendor - "
+        + os.linesep
+        + "http://svn.example.com/repos/libs/trunk@100 mylib"
+    )
+    with (
+        patch("dfetch.vcs.svn.run_on_cmdline") as mock_run,
+        patch("dfetch.vcs.svn.SvnRepo.get_info_from_target") as mock_info,
+    ):
+        mock_run.return_value.stdout = raw.encode()
+        mock_info.return_value = {"Repository Root": "http://svn.example.com/repos"}
+
+        result = SvnRepo.externals_from_url(base)
+
+        assert len(result) == 1
+        assert result[0].name == "mylib"
+        assert result[0].revision == "100"
+        assert result[0].path == "vendor/mylib"
+        assert result[0].url == "http://svn.example.com/repos/libs"
+
+
+def test_externals_from_url_nonstd_layout_branch_is_space():
+    # When the external URL has no /trunk/, /branches/, or /tags/ segment,
+    # _split_url returns branch=" " (non-standard layout sentinel).  Confirm
+    # this flows through the full externals_from_url pipeline.
+    base = "http://svn.example.com/repos/myproject/trunk"
+    nonstd_url = "http://svn.mycompany.eu/MYCOMPANY/SomeModule/Core/Modules/Database"
+    raw = f"{base} - {os.linesep}{nonstd_url} Database"
+    with (
+        patch("dfetch.vcs.svn.run_on_cmdline") as mock_run,
+        patch("dfetch.vcs.svn.SvnRepo.get_info_from_target") as mock_info,
+    ):
+        mock_run.return_value.stdout = raw.encode()
+        mock_info.return_value = {"Repository Root": "http://svn.example.com/repos"}
+
+        result = SvnRepo.externals_from_url(base)
+
+        assert len(result) == 1
+        assert result[0].name == "Database"
+        assert result[0].branch == " "
+        assert result[0].url == nonstd_url
+        assert result[0].revision == ""
+        assert result[0].path == "Database"

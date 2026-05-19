@@ -164,48 +164,97 @@ class SvnRepo:
                     "-R",
                 ],
             )
-
             repo_root = SvnRepo.get_info_from_target()["Repository Root"]
+            return SvnRepo._parse_externals(
+                result.stdout.decode(), repo_root, toplevel=self._path
+            )
 
-            externals: list[External] = []
-            # Pattern matches: "path - ..." where path is the local directory
-            path_pattern = r"([^\s^-]+)\s+-"
-            for entry in result.stdout.decode().split(os.linesep * 2):
-                match: re.Match[str] | None = None
-                local_path: str = ""
-                for match in re.finditer(path_pattern, entry):
-                    pass
-                if match:
-                    local_path = match.group(1)
-                    entry = re.sub(path_pattern, "", entry)
+    @staticmethod
+    def externals_from_url(url: str, revision: str = "") -> list[External]:
+        """Get list of externals from a remote SVN URL."""
+        cmd = ["svn", "--non-interactive", "propget", "svn:externals", "-R"]
+        if revision:
+            cmd += ["--revision", revision]
+        cmd += [url]
+        result = run_on_cmdline(logger, cmd)
+        repo_root = SvnRepo.get_info_from_target(url)["Repository Root"]
+        normalized = SvnRepo._normalize_url_prefix(result.stdout.decode(), url)
+        return SvnRepo._parse_externals(normalized, repo_root)
 
-                # Pattern matches either:
-                # - url@revision name (pinned)
-                # - url name (unpinned)
-                for match in re.finditer(
-                    r"([^-\s\d][^\s]+)(?:@)(\d+)\s+([^\s]+)|([^-\s\d][^\s]+)\s+([^\s]+)",
-                    entry,
-                ):
-                    url = match.group(1) or match.group(4)
-                    name = match.group(3) or match.group(5)
-                    rev = "" if not match.group(2) else match.group(2).strip()
+    @staticmethod
+    def _normalize_url_prefix(output: str, base_url: str) -> str:
+        """Convert URL-mode ``svn propget -R`` output to relative-path format.
 
-                    url, branch, tag, src = SvnRepo._split_url(url, repo_root)
+        When querying a remote URL, each entry is prefixed with the full SVN URL
+        of the directory that owns the property instead of a relative path.
+        Strip the base_url so the standard parser receives familiar relative paths.
+        """
+        base = base_url.rstrip("/")
+        entries = []
+        for entry in output.split(os.linesep * 2):
+            if entry.startswith(base + "/"):
+                after = entry[len(base) + 1 :]
+                sep = after.find(" -")
+                if sep >= 0:
+                    rel = after[:sep] or "."
+                    entry = rel + after[sep:]
+            elif entry.startswith(base + " -"):
+                entry = "." + entry[len(base) :]
+            entries.append(entry)
+        return (os.linesep * 2).join(entries)
 
-                    externals += [
-                        External(
-                            name=name,
-                            toplevel=self._path,
-                            path="/".join(os.path.join(local_path, name).split(os.sep)),
-                            revision=rev,
-                            url=url,
-                            branch=branch,
-                            tag=tag,
-                            src=src,
-                        )
-                    ]
+    @staticmethod
+    def _parse_externals(
+        output: str, repo_root: str, toplevel: str = ""
+    ) -> list[External]:
+        """Parse svn propget svn:externals output into External objects.
 
-            return externals
+        Args:
+            output: Raw stdout from ``svn propget svn:externals -R``.
+            repo_root: Repository root URL (used to resolve ``^/`` relative URLs).
+            toplevel: Local working-copy root to record in each External.
+        """
+        externals: list[External] = []
+        path_pattern = r"(.+?)\s+-"
+        for entry in output.split(os.linesep * 2):
+            match: re.Match[str] | None = None
+            local_path: str = ""
+            for match in re.finditer(path_pattern, entry):
+                pass
+            if match:
+                local_path = match.group(1)
+                entry = re.sub(path_pattern, "", entry)
+
+            for match in re.finditer(
+                r"-r\s+(\d+)\s+(\S+?)(?:@\d+)?\s+(\S+)|([^@\s-][^@\s]*)(?:@(\d+))?\s+([^\s]+)",
+                entry,
+            ):
+                if match.group(1):
+                    rev = match.group(1)
+                    url = match.group(2)
+                    name = match.group(3)
+                else:
+                    url = match.group(4)
+                    rev = match.group(5) or ""
+                    name = match.group(6)
+
+                url, branch, tag, src = SvnRepo._split_url(url, repo_root)
+
+                raw_path = "/".join(os.path.join(local_path, name).split(os.sep))
+                externals += [
+                    External(
+                        name=name,
+                        toplevel=toplevel,
+                        path=raw_path[2:] if raw_path.startswith("./") else raw_path,
+                        revision=rev,
+                        url=url,
+                        branch=branch,
+                        tag=tag,
+                        src=src,
+                    )
+                ]
+
+        return externals
 
     @staticmethod
     def _split_url(url: str, repo_root: str) -> tuple[str, str, str, str]:

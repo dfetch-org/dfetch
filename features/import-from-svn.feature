@@ -26,18 +26,15 @@ Feature: Importing externals from an existing svn repository
               - name: ext/cunit1
                 revision: '176'
                 src: Man
-                dst: ./ext/cunit1
                 repo-path: code
 
               - name: ext/cunit2
                 revision: '150'
                 src: Man
-                dst: ./ext/cunit2
                 branch: mingw64
                 repo-path: code
 
               - name: ext/cunit3
-                dst: ./ext/cunit3
                 branch: ' '
                 repo-path: code
 
