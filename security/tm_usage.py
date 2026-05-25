@@ -1037,7 +1037,10 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Information Disclosure"],
         note=(
             "dfetch uses ``shell=False`` throughout (C-007); "
-            "residual supply-chain compromise of dfetch itself is the supply-chain model's scope."
+            "residual supply-chain compromise of dfetch itself is the supply-chain model's scope.  "
+            "Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible "
+            "only for its own security posture; a compromised dfetch installation is addressed "
+            "by the supply-chain threat model, not the runtime-usage model."
         ),
     ),
     ThreatResponse(
@@ -1058,7 +1061,11 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Tampering"],
         note=(
             "dfetch's runtime dependency supply-chain is the supply-chain model's scope; "
-            "use a verified dfetch installation."
+            "use a verified dfetch installation.  "
+            "Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible "
+            "only for its own security posture; the integrity of dfetch's own runtime "
+            "dependencies is out of scope for this usage model and is addressed by the "
+            "supply-chain threat model."
         ),
     ),
     ThreatResponse(
@@ -1069,7 +1076,11 @@ RESPONSES: list[ThreatResponse] = [
         note=(
             "Archive downloads follow up to 10 HTTP redirects without validating the "
             "destination against RFC-1918, loopback, or link-local ranges; "
-            "SSRF to internal metadata endpoints is possible."
+            "SSRF to internal metadata endpoints is possible.  "
+            "Accepted based on the **No HTTPS enforcement** assumption: HTTPS enforcement "
+            "and safe URL selection are the manifest author's responsibility; the manifest "
+            "is under code review, and URLs that could expose internal services should be "
+            "rejected at the review boundary."
         ),
     ),
     ThreatResponse(
@@ -1079,7 +1090,11 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Information Disclosure"],
         note=(
             "dfetch persists the configured URL to ``.dfetch_data.yaml``; "
-            "credentials embedded in URLs appear in that file in plaintext."
+            "credentials embedded in URLs appear in that file in plaintext.  "
+            "Accepted based on the **No persisted secrets** assumption: no runtime secrets "
+            "are persisted to disk by dfetch itself — VCS credentials are expected to be "
+            "managed by the OS keychain, SSH agent, or CI secret store rather than embedded "
+            "in source URLs."
         ),
     ),
     ThreatResponse(
@@ -1094,7 +1109,11 @@ RESPONSES: list[ThreatResponse] = [
             "``pyproject.toml``), so this is a live concern for users on Python 3.10.x "
             "or Python 3.11.0–3.11.3.  "
             "Mitigation: pin dfetch to archives from trusted, reviewed sources only, "
-            "or run on Python ≥ 3.11.4 where the TAR extraction filter strips these bits."
+            "or run on Python ≥ 3.11.4 where the TAR extraction filter strips these bits.  "
+            "Accepted based on the **Trusted workstation** assumption: developer workstations "
+            "are trusted at dfetch invocation time; setuid bits on extracted files in the "
+            "vendor directory are a local concern within that trusted environment, and a "
+            "compromised workstation is outside the scope of this model."
         ),
     ),
     ThreatResponse(
@@ -1117,7 +1136,11 @@ RESPONSES: list[ThreatResponse] = [
             "and therefore bypass manifest code review and carry no integrity hash.  "
             "Suppressing these fetches (e.g. passing ``--no-recurse-submodules`` or "
             "``--ignore-externals``) would be a design change that removes intentional "
-            "vendoring behaviour."
+            "vendoring behaviour.  "
+            "Accepted based on the **Manifest under code review** assumption: the choice "
+            "to vendor an upstream that contains submodules or svn:externals is declared in "
+            "``dfetch.yaml`` and subject to code review; the decision to trust those "
+            "nested URLs is made at the manifest-review boundary."
         ),
     ),
     ThreatResponse(
@@ -1131,7 +1154,11 @@ RESPONSES: list[ThreatResponse] = [
             "such as ``.github/workflows/``.  "
             "Defense-in-depth: CI pipelines should run ``dfetch update`` in a step "
             "that does not have write access to ``.github/workflows/`` "
-            "(e.g. by restricting permissions or running in a directory sandbox)."
+            "(e.g. by restricting permissions or running in a directory sandbox).  "
+            "Accepted based on the **Manifest under code review** assumption: the ``dst:`` "
+            "path for every dependency is declared in ``dfetch.yaml`` and subject to code "
+            "review; any change pointing a destination at a sensitive directory would be "
+            "rejected at the review boundary."
         ),
     ),
     ThreatResponse(
@@ -1140,8 +1167,11 @@ RESPONSES: list[ThreatResponse] = [
         risk="Medium",
         stride=["Spoofing"],
         note=(
-            "Manifest author responsibility; "
-            "the manifest is under code review (assumption: manifest under code review)."
+            "Manifest author responsibility; the manifest is under code review.  "
+            "Accepted based on the **Manifest under code review** assumption: "
+            "``dfetch.yaml`` is under version control and subject to code review; "
+            "an adversary who introduces a typosquatted or unverified URL must do so "
+            "through a manifest change that passes the review boundary."
         ),
     ),
     ThreatResponse(
@@ -1151,7 +1181,11 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Tampering", "Spoofing"],
         note=(
             "Not applicable to dfetch's fetch-by-explicit-URL model; "
-            "relevant only if using package-registry shorthand."
+            "relevant only if using package-registry shorthand.  "
+            "Accepted based on the **dfetch scope boundary** assumption: dfetch fetches "
+            "by explicit URL declared in the manifest rather than by package name resolved "
+            "against a registry; dependency confusion via registry namespace shadowing "
+            "cannot occur within dfetch's fetch model."
         ),
     ),
     ThreatResponse(
@@ -1161,7 +1195,11 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Tampering"],
         note=(
             "Upstream maintainer trust; pinning to an immutable commit SHA is the "
-            "strongest available mitigation but is not enforced by dfetch."
+            "strongest available mitigation but is not enforced by dfetch.  "
+            "Accepted based on the **dfetch scope boundary** assumption: the security "
+            "of fetched third-party source code is the responsibility of the manifest "
+            "author who selects and pins each dependency; intentional maintainer sabotage "
+            "of an upstream is outside dfetch's control."
         ),
     ),
     ThreatResponse(
@@ -1171,7 +1209,11 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Spoofing", "Tampering"],
         note=(
             "Not applicable to direct-URL fetches; "
-            "relevant only if using Git-hosting shorthand with inferred registry lookup."
+            "relevant only if using Git-hosting shorthand with inferred registry lookup.  "
+            "Accepted based on the **dfetch scope boundary** assumption: dfetch fetches "
+            "by explicit URL declared in the manifest rather than resolving package names "
+            "against a registry; abandoned-namespace reclaim attacks require a registry "
+            "lookup step that does not exist in dfetch's fetch model."
         ),
     ),
     ThreatResponse(
@@ -1179,7 +1221,13 @@ RESPONSES: list[ThreatResponse] = [
         "accept",
         risk="Medium",
         stride=["Spoofing", "Tampering"],
-        note="dfetch does not verify VCS tag signatures; pinning to an immutable commit SHA is recommended.",
+        note=(
+            "dfetch does not verify VCS tag signatures; pinning to an immutable commit SHA is recommended.  "
+            "Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned "
+            "Git dependencies are mutable references; upstream force-pushes can silently change "
+            "the commit a tag resolves to without triggering a manifest diff, and tag-signature "
+            "verification is not enforced by dfetch."
+        ),
     ),
     ThreatResponse(
         "DFT-22",
@@ -1192,7 +1240,11 @@ RESPONSES: list[ThreatResponse] = [
             "externals cannot occur.  "
             "However, Git dependencies with submodules and SVN dependencies with "
             "``svn:externals`` do trigger undeclared fetches — see DFT-15 for "
-            "details and mitigations."
+            "details and mitigations.  "
+            "Accepted based on the **dfetch scope boundary** assumption: the security "
+            "of fetched third-party source code and any nested dependencies it carries "
+            "is the responsibility of the manifest author who selects and pins each "
+            "dependency."
         ),
     ),
     ThreatResponse(
@@ -1202,7 +1254,11 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Tampering"],
         note=(
             "No freshness check; ``dfetch check`` detects version drift "
-            "but does not enforce a minimum version or reject stale content."
+            "but does not enforce a minimum version or reject stale content.  "
+            "Accepted based on the **Mutable VCS references** assumption: branch- and "
+            "tag-pinned dependencies are mutable references whose content can be changed "
+            "by upstream force-pushes; stale-content delivery is an acknowledged "
+            "consequence of using mutable pins without a freshness enforcement mechanism."
         ),
     ),
     ThreatResponse(
@@ -1212,7 +1268,11 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Tampering"],
         note=(
             "``.dfetch_data.yaml`` metadata is not integrity-protected; "
-            "tampering could suppress update notifications from ``dfetch check``."
+            "tampering could suppress update notifications from ``dfetch check``.  "
+            "Accepted based on the **Trusted workstation** assumption: developer "
+            "workstations are trusted at dfetch invocation time; local filesystem "
+            "write access sufficient to tamper with ``.dfetch_data.yaml`` implies "
+            "a compromised workstation, which is outside the scope of this model."
         ),
     ),
     ThreatResponse(
@@ -1222,7 +1282,11 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Spoofing", "Tampering", "Repudiation"],
         note=(
             "dfetch does not verify upstream SLSA provenance of fetched sources; "
-            "provenance verification is the consumer's responsibility."
+            "provenance verification is the consumer's responsibility.  "
+            "Accepted based on the **dfetch scope boundary** assumption: the security "
+            "of fetched third-party source code is the responsibility of the manifest "
+            "author who selects and pins each dependency; upstream provenance attestation "
+            "is outside dfetch's own security posture."
         ),
     ),
     ThreatResponse(
@@ -1232,7 +1296,10 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Tampering", "Information Disclosure"],
         note=(
             "dfetch accepts ``http://``, ``svn://``, and other non-TLS scheme URLs; "
-            "HTTPS enforcement is the manifest author's responsibility."
+            "HTTPS enforcement is the manifest author's responsibility.  "
+            "Accepted based on the **No HTTPS enforcement** assumption: HTTPS enforcement "
+            "is the responsibility of the manifest author; dfetch accepts non-TLS scheme "
+            "URLs as written and does not upgrade or reject them."
         ),
     ),
     ThreatResponse(
@@ -1245,7 +1312,10 @@ RESPONSES: list[ThreatResponse] = [
             "to the dfetch build pipeline, not to runtime usage.  "
             "dfetch does not maintain a persistent compiled artifact cache; "
             "fetched source files are written directly to the vendor directory.  "
-            "See the supply-chain threat model for the mitigating control (C-033)."
+            "See the supply-chain threat model for the mitigating control (C-033).  "
+            "Accepted based on the **dfetch scope boundary** assumption: dfetch is "
+            "responsible only for its own security posture; the CI/CD build pipeline "
+            "for dfetch itself is outside the scope of the runtime-usage model."
         ),
     ),
     ThreatResponse("DFT-30", "mitigate", risk="High", stride=["Tampering", "Spoofing"]),
@@ -1256,7 +1326,11 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Repudiation"],
         note=(
             "Upstream repositories are outside dfetch's control; "
-            "no mechanism exists to require or verify upstream SLSA source level."
+            "no mechanism exists to require or verify upstream SLSA source level.  "
+            "Accepted based on the **dfetch scope boundary** assumption: the security "
+            "of fetched third-party source code is the responsibility of the manifest "
+            "author who selects and pins each dependency; verifying upstream governance "
+            "controls is outside dfetch's own security posture."
         ),
     ),
     ThreatResponse(
@@ -1266,7 +1340,11 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Tampering"],
         note=(
             "Upstream repositories are outside dfetch's control; "
-            "no mechanism exists to require mandatory two-party review on upstream changes."
+            "no mechanism exists to require mandatory two-party review on upstream changes.  "
+            "Accepted based on the **dfetch scope boundary** assumption: the security "
+            "of fetched third-party source code is the responsibility of the manifest "
+            "author who selects and pins each dependency; requiring upstream review policies "
+            "is outside dfetch's own security posture."
         ),
     ),
     ThreatResponse(
@@ -1276,7 +1354,12 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Tampering"],
         note=(
             "Upstream repositories are outside dfetch's control; "
-            "dfetch cannot prevent or detect upstream force-pushes."
+            "dfetch cannot prevent or detect upstream force-pushes.  "
+            "Accepted based on the **Mutable VCS references** assumption: branch- and "
+            "tag-pinned Git dependencies are mutable references; upstream force-pushes "
+            "silently change what is fetched without triggering a manifest diff, and "
+            "dfetch has no mechanism to verify that a pinned SHA remains reachable after "
+            "a history rewrite."
         ),
     ),
 ]
