@@ -546,22 +546,22 @@ Dataflows
    * - DF-22: PR enters code review
      - A-01b: GitHub Repository (feature branches / PRs)
      - A-04: Release Gate / Code Review
-     - 
+     -
 
    * - DF-12: Main branch workflows drive CI execution
      - A-01: GitHub Repository (main / protected)
      - A-06: GitHub Actions Workflow
-     - 
+     -
 
    * - DF-13a: PR CI checkout
      - A-01b: GitHub Repository (feature branches / PRs)
      - A-02: GitHub Actions Infrastructure
-     - 
+     -
 
    * - DF-13b: Release CI checkout
      - A-01: GitHub Repository (main / protected)
      - A-02: GitHub Actions Infrastructure
-     - 
+     -
 
    * - DF-14: CI cache restore
      - A-08b: GitHub Actions Build Cache
@@ -571,12 +571,12 @@ Dataflows
    * - DF-15: Workflow triggers build step
      - A-06: GitHub Actions Workflow
      - A-08: Python Build (wheel / sdist)
-     - 
+     -
 
    * - DF-15b: Built wheel/sdist artifacts
      - A-08: Python Build (wheel / sdist)
      - A-02: GitHub Actions Infrastructure
-     - 
+     -
 
    * - DF-16: CI fetches build/dev deps from PyPI
      - A-03: PyPI / TestPyPI
@@ -586,7 +586,7 @@ Dataflows
    * - DF-17: Build tools consumed by build step
      - A-07: dfetch Build / Dev Dependencies
      - A-08: Python Build (wheel / sdist)
-     - 
+     -
 
    * - DF-18: CI cache write
      - A-02: GitHub Actions Infrastructure
@@ -601,7 +601,7 @@ Dataflows
    * - DF-23: Approved merge to main
      - A-04: Release Gate / Code Review
      - A-01: GitHub Repository (main / protected)
-     - 
+     -
 
    * - DF-24: Publish wheel to PyPI (OIDC)
      - A-02: GitHub Actions Infrastructure
@@ -1022,5 +1022,3 @@ Controls
      - Test result attestation on source archive
      - DFT-31
      - The CI test workflow (``test.yml``) generates an in-toto test result attestation (predicate type ``https://in-toto.io/attestation/test-result/v0.1``) for every release and main-branch commit.  The attestation proves the full CI test suite ran against the exact source archive and every check passed, before any binary was produced from that source.  Consumers can verify it using ``gh attestation verify dfetch-source.tar.gz`` with ``--predicate-type https://in-toto.io/attestation/test-result/v0.1`` and ``--cert-identity`` pinned to ``test.yml`` at the release tag ref.  This provides an additional layer of assurance beyond build provenance: not only was the artifact produced from the official commit, but the test suite demonstrably passed on that exact source before any binary was built.  ``.github/workflows/test.yml``
-
-

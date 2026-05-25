@@ -1,6 +1,7 @@
 Release 0.14.0 (unreleased)
 ===========================
 
+* Warn when a project URL uses a plaintext transport scheme (#1229)
 * Documentation and threat-model clarifications for existing release attestation support (#1208)
 * Report SVN externals fetched during update (#1220)
 * Use ``.cdx.json`` as the default extension for CycloneDX SBOM reports (#1118)

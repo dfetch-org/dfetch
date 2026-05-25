@@ -321,12 +321,37 @@ a *relative* patch, relative to the fetched projects root.
 import copy
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from urllib.parse import urlsplit, urlunsplit
 
 from typing_extensions import Required, TypedDict
 
+from dfetch.log import get_logger
 from dfetch.manifest.remote import Remote
 from dfetch.manifest.version import Version
 from dfetch.util.util import always_str_list, str_if_possible
+
+logger = get_logger(__name__)
+
+_PLAINTEXT_SCHEMES = frozenset({"http", "git", "svn"})
+
+
+def plaintext_warning(url: str) -> str:
+    """Return a warning string if *url* uses a plaintext transport, else empty string."""
+    parsed = urlsplit(url)
+    scheme = parsed.scheme.lower()
+    if scheme not in _PLAINTEXT_SCHEMES:
+        return ""
+    host = parsed.hostname or ""
+    try:
+        port = parsed.port
+    except ValueError:
+        port = None
+    netloc = f"{host}:{port}" if isinstance(port, int) else host
+    redacted_url = urlunsplit((scheme, netloc, parsed.path, "", ""))
+    return (
+        f"Project URL '{redacted_url}' uses plaintext transport ({scheme}://). "
+        "Use https:// or SSH (e.g. svn+ssh://) to prevent interception."
+    )
 
 
 @dataclass

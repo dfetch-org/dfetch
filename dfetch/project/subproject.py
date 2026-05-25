@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence
 
 from dfetch.log import get_logger
-from dfetch.manifest.project import ProjectEntry
+from dfetch.manifest.project import ProjectEntry, plaintext_warning
 from dfetch.manifest.version import Version
 from dfetch.project.abstract_check_reporter import AbstractCheckReporter
 from dfetch.project.metadata import Dependency, InvalidMetadataError, Metadata
@@ -129,6 +129,8 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
             f"Fetching {to_fetch}",
             enabled=self._show_animations,
         ):
+            if warning := plaintext_warning(self.__project.remote_url):
+                logger.print_warning_line(self.__project.name, warning)
             actually_fetched, dependency = self._fetch_impl(to_fetch)
         self._log_project(f"Fetched {actually_fetched}")
 
@@ -213,6 +215,8 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
         with logger.status(
             self.__project.name, "Checking", enabled=self._show_animations
         ):
+            if warning := plaintext_warning(self.__project.remote_url):
+                logger.print_warning_line(self.__project.name, warning)
             latest_version = self._check_for_newer_version()
 
         if not latest_version:
