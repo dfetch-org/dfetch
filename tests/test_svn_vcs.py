@@ -14,8 +14,8 @@ def test_export_with_revision_passes_correct_args():
         mock_run.assert_called_once()
         assert mock_run.call_args[0][1] == [
             "svn",
-            "export",
             "--non-interactive",
+            "export",
             "--force",
             "--revision",
             "12345",
@@ -31,8 +31,8 @@ def test_export_without_revision_omits_revision_args():
         mock_run.assert_called_once()
         assert mock_run.call_args[0][1] == [
             "svn",
-            "export",
             "--non-interactive",
+            "export",
             "--force",
             "svn://example.com/repo",
             "/tmp/out",

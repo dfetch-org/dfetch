@@ -23,6 +23,7 @@ Release 0.14.0 (unreleased)
 * Allow manifests with no ``projects`` key so ``dfetch add`` can bootstrap empty manifest (#1197)
 * Fix ``ValueError`` when generating a PackageURL (e.g. for an SBOM) from an empty or path-only remote URL
 * Fix SSH shorthand URLs (``git@host:path``) being incorrectly joined with ``/`` when used as ``url-base`` with ``repo-path`` (#1247)
+* Run ``svn+ssh://`` connections in non-interactive mode to prevent hanging (#1230)
 
 Release 0.13.0 (released 2026-03-30)
 ====================================
