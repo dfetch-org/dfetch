@@ -906,7 +906,13 @@ RESPONSES: list[ThreatResponse] = [
         "accept",
         risk="High",
         stride=["Tampering"],
-        note="Secondary artifacts are not independently verified in the supply-chain pipeline.",
+        note=(
+            "Secondary artifacts are not independently verified in the supply-chain pipeline.  "
+            "Accepted based on the **CI runner posture** assumption: GitHub Actions environments "
+            "run on ephemeral, GitHub-hosted runners whose isolation is provided by GitHub, so "
+            "secondary artifacts written and consumed within a single job are considered "
+            "adequately protected by that isolation."
+        ),
     ),
     ThreatResponse(
         "DFT-09",
@@ -915,7 +921,10 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Denial of Service"],
         note=(
             "Decompression-bomb protection is a runtime concern (C-002 in usage model), "
-            "not a supply-chain pipeline control."
+            "not a supply-chain pipeline control.  "
+            "Accepted based on the **CI runner posture** assumption: GitHub Actions environments "
+            "run on ephemeral, isolated runners; any denial-of-service impact from a "
+            "decompression bomb is bounded to the affected job and does not persist beyond it."
         ),
     ),
     ThreatResponse(
@@ -932,7 +941,10 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Spoofing", "Elevation of Privilege"],
         note=(
             "No hardware-token MFA or mandatory second-approver enforced "
-            "for accounts with merge or release-trigger rights."
+            "for accounts with merge or release-trigger rights.  "
+            "Accepted based on the **Trusted workstation** assumption: developer "
+            "workstations and accounts are trusted at development and commit time; "
+            "a compromised maintainer account is outside the scope of this model."
         ),
     ),
     ThreatResponse("DFT-17", "mitigate", risk="Medium", stride=["Spoofing"]),
@@ -941,21 +953,39 @@ RESPONSES: list[ThreatResponse] = [
         "accept",
         risk="High",
         stride=["Tampering", "Spoofing"],
-        note="Namespace-squatting on PyPI is a registry-level concern outside dfetch's control.",
+        note=(
+            "Namespace-squatting on PyPI is a registry-level concern outside dfetch's control.  "
+            "Accepted based on the **CI runner posture** assumption: GitHub Actions environments "
+            "inherit the security posture of the GitHub-hosted runner, including its access to "
+            "the public PyPI registry; registry-level namespace integrity is outside the scope "
+            "of this model."
+        ),
     ),
     ThreatResponse(
         "DFT-20",
         "accept",
         risk="Medium",
         stride=["Spoofing", "Tampering"],
-        note="Abandoned namespace reclaim is a registry-level concern outside dfetch's control.",
+        note=(
+            "Abandoned namespace reclaim is a registry-level concern outside dfetch's control.  "
+            "Accepted based on the **CI runner posture** assumption: GitHub Actions environments "
+            "inherit the security posture of the GitHub-hosted runner, including its access to "
+            "the public PyPI registry; registry-level namespace integrity is outside the scope "
+            "of this model."
+        ),
     ),
     ThreatResponse(
         "DFT-23",
         "accept",
         risk="Medium",
         stride=["Tampering"],
-        note="No version-pinning or update-freshness check in the supply-chain pipeline.",
+        note=(
+            "No version-pinning or update-freshness check in the supply-chain pipeline.  "
+            "Accepted based on the **CI runner posture** assumption: GitHub Actions environments "
+            "inherit the security posture of the GitHub-hosted runner; freshness enforcement "
+            "for registry dependencies is a registry-level concern outside the scope of this "
+            "model."
+        ),
     ),
     ThreatResponse(
         "DFT-24",
@@ -964,7 +994,10 @@ RESPONSES: list[ThreatResponse] = [
         stride=["Tampering"],
         note=(
             "Build-artifact cache is ref-scoped (C-033); "
-            "pipeline metadata store is not independently integrity-protected."
+            "pipeline metadata store is not independently integrity-protected.  "
+            "Accepted based on the **CI runner posture** assumption: GitHub Actions environments "
+            "run on ephemeral, GitHub-hosted runners; the ref-scoped cache key isolation "
+            "provided by that environment is considered sufficient for the pipeline metadata."
         ),
     ),
     ThreatResponse(

@@ -546,22 +546,22 @@ Dataflows
    * - DF-22: PR enters code review
      - A-01b: GitHub Repository (feature branches / PRs)
      - A-04: Release Gate / Code Review
-     -
+     - 
 
    * - DF-12: Main branch workflows drive CI execution
      - A-01: GitHub Repository (main / protected)
      - A-06: GitHub Actions Workflow
-     -
+     - 
 
    * - DF-13a: PR CI checkout
      - A-01b: GitHub Repository (feature branches / PRs)
      - A-02: GitHub Actions Infrastructure
-     -
+     - 
 
    * - DF-13b: Release CI checkout
      - A-01: GitHub Repository (main / protected)
      - A-02: GitHub Actions Infrastructure
-     -
+     - 
 
    * - DF-14: CI cache restore
      - A-08b: GitHub Actions Build Cache
@@ -571,12 +571,12 @@ Dataflows
    * - DF-15: Workflow triggers build step
      - A-06: GitHub Actions Workflow
      - A-08: Python Build (wheel / sdist)
-     -
+     - 
 
    * - DF-15b: Built wheel/sdist artifacts
      - A-08: Python Build (wheel / sdist)
      - A-02: GitHub Actions Infrastructure
-     -
+     - 
 
    * - DF-16: CI fetches build/dev deps from PyPI
      - A-03: PyPI / TestPyPI
@@ -586,7 +586,7 @@ Dataflows
    * - DF-17: Build tools consumed by build step
      - A-07: dfetch Build / Dev Dependencies
      - A-08: Python Build (wheel / sdist)
-     -
+     - 
 
    * - DF-18: CI cache write
      - A-02: GitHub Actions Infrastructure
@@ -601,7 +601,7 @@ Dataflows
    * - DF-23: Approved merge to main
      - A-04: Release Gate / Code Review
      - A-01: GitHub Repository (main / protected)
-     -
+     - 
 
    * - DF-24: Publish wheel to PyPI (OIDC)
      - A-02: GitHub Actions Infrastructure
@@ -655,7 +655,7 @@ Threats
        | **Risk:** 🟡M
        | **STRIDE:** D
        | **Status:** Accept
-     - Decompression-bomb protection is a runtime concern (C-002 in usage model), not a supply-chain pipeline control.
+     - Decompression-bomb protection is a runtime concern (C-002 in usage model), not a supply-chain pipeline control.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments run on ephemeral, isolated runners; any denial-of-service impact from a decompression bomb is bounded to the affected job and does not persist beyond it.
    * - DFT-11
      - Privileged account compromise enables unauthorised merge or release
      - A-04: Release Gate / Code Review
@@ -663,7 +663,7 @@ Threats
        | **Risk:** 🟠H
        | **STRIDE:** S E
        | **Status:** Accept
-     - No hardware-token MFA or mandatory second-approver enforced for accounts with merge or release-trigger rights.
+     - No hardware-token MFA or mandatory second-approver enforced for accounts with merge or release-trigger rights.  Accepted based on the **Trusted workstation** assumption: developer workstations and accounts are trusted at development and commit time; a compromised maintainer account is outside the scope of this model.
    * - DFT-27
      - Build or release triggered from unofficial source fork or unprotected branch
      - A-04: Release Gate / Code Review
@@ -695,7 +695,7 @@ Threats
        | **Risk:** 🟡M
        | **STRIDE:** D
        | **Status:** Accept
-     - Decompression-bomb protection is a runtime concern (C-002 in usage model), not a supply-chain pipeline control.
+     - Decompression-bomb protection is a runtime concern (C-002 in usage model), not a supply-chain pipeline control.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments run on ephemeral, isolated runners; any denial-of-service impact from a decompression bomb is bounded to the affected job and does not persist beyond it.
    * - DFT-03
      - Path traversal in archive or patch extraction
      - A-08: Python Build (wheel / sdist)
@@ -719,7 +719,7 @@ Threats
        | **Risk:** 🟡M
        | **STRIDE:** D
        | **Status:** Accept
-     - Decompression-bomb protection is a runtime concern (C-002 in usage model), not a supply-chain pipeline control.
+     - Decompression-bomb protection is a runtime concern (C-002 in usage model), not a supply-chain pipeline control.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments run on ephemeral, isolated runners; any denial-of-service impact from a decompression bomb is bounded to the affected job and does not persist beyond it.
    * - DFT-27
      - Build or release triggered from unofficial source fork or unprotected branch
      - A-08: Python Build (wheel / sdist)
@@ -751,7 +751,7 @@ Threats
        | **Risk:** 🟠H
        | **STRIDE:** T S
        | **Status:** Accept
-     - Namespace-squatting on PyPI is a registry-level concern outside dfetch's control.
+     - Namespace-squatting on PyPI is a registry-level concern outside dfetch's control.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments inherit the security posture of the GitHub-hosted runner, including its access to the public PyPI registry; registry-level namespace integrity is outside the scope of this model.
    * - DFT-20
      - Abandoned package namespace reclaimed by malicious actor
      - A-07: dfetch Build / Dev Dependencies
@@ -759,7 +759,7 @@ Threats
        | **Risk:** 🟡M
        | **STRIDE:** S T
        | **Status:** Accept
-     - Abandoned namespace reclaim is a registry-level concern outside dfetch's control.
+     - Abandoned namespace reclaim is a registry-level concern outside dfetch's control.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments inherit the security posture of the GitHub-hosted runner, including its access to the public PyPI registry; registry-level namespace integrity is outside the scope of this model.
    * - DFT-08
      - Tampered secondary artifact suppresses or bypasses security checks
      - A-08b: GitHub Actions Build Cache
@@ -767,7 +767,7 @@ Threats
        | **Risk:** 🟠H
        | **STRIDE:** T
        | **Status:** Accept
-     - Secondary artifacts are not independently verified in the supply-chain pipeline.
+     - Secondary artifacts are not independently verified in the supply-chain pipeline.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments run on ephemeral, GitHub-hosted runners whose isolation is provided by GitHub, so secondary artifacts written and consumed within a single job are considered adequately protected by that isolation.
    * - DFT-24
      - Local dependency cache or metadata store poisoned to suppress integrity alerts
      - A-08b: GitHub Actions Build Cache
@@ -775,7 +775,7 @@ Threats
        | **Risk:** 🟠H
        | **STRIDE:** T
        | **Status:** Accept
-     - Build-artifact cache is ref-scoped (C-033); pipeline metadata store is not independently integrity-protected.
+     - Build-artifact cache is ref-scoped (C-033); pipeline metadata store is not independently integrity-protected.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments run on ephemeral, GitHub-hosted runners; the ref-scoped cache key isolation provided by that environment is considered sufficient for the pipeline metadata.
    * - DFT-25
      - Forged or unverifiable provenance attestation conceals malicious build output
      - A-08b: GitHub Actions Build Cache
@@ -823,7 +823,7 @@ Threats
        | **Risk:** 🟡M
        | **STRIDE:** T
        | **Status:** Accept
-     - No version-pinning or update-freshness check in the supply-chain pipeline.
+     - No version-pinning or update-freshness check in the supply-chain pipeline.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments inherit the security posture of the GitHub-hosted runner; freshness enforcement for registry dependencies is a registry-level concern outside the scope of this model.
    * - DFT-31
      - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
      - DF-16: CI fetches build/dev deps from PyPI
@@ -871,7 +871,7 @@ Threats
        | **Risk:** 🟡M
        | **STRIDE:** T
        | **Status:** Accept
-     - No version-pinning or update-freshness check in the supply-chain pipeline.
+     - No version-pinning or update-freshness check in the supply-chain pipeline.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments inherit the security posture of the GitHub-hosted runner; freshness enforcement for registry dependencies is a registry-level concern outside the scope of this model.
    * - DFT-31
      - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
      - DF-25: pip install dfetch
@@ -919,7 +919,7 @@ Threats
        | **Risk:** 🟡M
        | **STRIDE:** T
        | **Status:** Accept
-     - No version-pinning or update-freshness check in the supply-chain pipeline.
+     - No version-pinning or update-freshness check in the supply-chain pipeline.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments inherit the security posture of the GitHub-hosted runner; freshness enforcement for registry dependencies is a registry-level concern outside the scope of this model.
    * - DFT-31
      - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
      - DF-26: Consumer downloads dfetch from PyPI
@@ -1022,3 +1022,5 @@ Controls
      - Test result attestation on source archive
      - DFT-31
      - The CI test workflow (``test.yml``) generates an in-toto test result attestation (predicate type ``https://in-toto.io/attestation/test-result/v0.1``) for every release and main-branch commit.  The attestation proves the full CI test suite ran against the exact source archive and every check passed, before any binary was produced from that source.  Consumers can verify it using ``gh attestation verify dfetch-source.tar.gz`` with ``--predicate-type https://in-toto.io/attestation/test-result/v0.1`` and ``--cert-identity`` pinned to ``test.yml`` at the release tag ref.  This provides an additional layer of assurance beyond build provenance: not only was the artifact produced from the official commit, but the test suite demonstrably passed on that exact source before any binary was built.  ``.github/workflows/test.yml``
+
+
