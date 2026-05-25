@@ -138,7 +138,7 @@ Feature: Checking dependencies from a svn repository
         Then the output shows
             """
             Dfetch (0.13.0)
-            >>>svn info --non-interactive https://giiiiiidhub.com/i-do-not-exist/broken/trunk<<< failed!
+            >>>svn --non-interactive info https://giiiiiidhub.com/i-do-not-exist/broken/trunk<<< failed!
             'https://giiiiiidhub.com/i-do-not-exist/broken/trunk' is not a valid URL or unreachable:
             svn: E170013: Unable to connect to a repository at URL 'https://giiiiiidhub.com/i-do-not-exist/broken/trunk'
             svn: E670002: Name or service not known

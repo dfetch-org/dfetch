@@ -56,6 +56,42 @@ You can report issues via:
 .. _`Gitter`: https://gitter.im/dfetch-org/community
 
 
+Using remotes over SSH
+----------------------
+
+*Dfetch* runs all ``git`` and ``svn`` commands in non-interactive mode, so it works
+reliably in scripts and CI without hanging on a prompt. For SSH remotes (such as
+``git@github.com:...`` or ``svn+ssh://...``) this means SSH runs with
+``BatchMode=yes``: authentication happens without typing a password and the host key
+needs to be trusted beforehand. You can prepare your environment once:
+
+1. Trust the host key, for example:
+
+   .. code-block:: bash
+
+       $ ssh-keyscan svn.example.com >> ~/.ssh/known_hosts
+
+2. Use key-based authentication, for example by loading your key into the
+   ``ssh-agent``:
+
+   .. code-block:: bash
+
+       $ eval "$(ssh-agent)" && ssh-add ~/.ssh/my_key
+
+   or by configuring the key per host in ``~/.ssh/config``.
+
+If you need specific SSH options, you can set the ``GIT_SSH_COMMAND`` (git also honors
+``core.sshCommand``) or ``SVN_SSH`` environment variables; *Dfetch* respects them and
+only adds ``BatchMode=yes`` when you haven't configured ``BatchMode`` yourself:
+
+.. code-block:: bash
+
+    $ export GIT_SSH_COMMAND="ssh -i ~/.ssh/my_key"
+    $ export SVN_SSH="ssh -i ~/.ssh/my_key"
+
+After this, SSH projects fetch just like any other remote.
+
+
 Security issues
 ----------------
 

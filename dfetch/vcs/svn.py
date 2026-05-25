@@ -1,12 +1,15 @@
 """Svn repository."""
 
 import contextlib
+import functools
 import os
 import pathlib
 import re
-from collections.abc import Callable, Generator, Sequence
+from collections.abc import Callable, Generator, Mapping, Sequence
 from pathlib import Path
+from types import MappingProxyType
 from typing import NamedTuple
+from urllib.parse import urlparse
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -15,11 +18,77 @@ from dfetch.vcs.patch import Patch, PatchType
 
 logger = get_logger(__name__)
 
+_SSH_HOST_KEY_MSGS = ("host key verification failed", "authenticity of host")
+
+
+class SshHostKeyError(RuntimeError):
+    """Raised when SVN cannot connect due to an untrusted SSH host key."""
+
+
+# As a cli tool, we can safely assume this remains stable during the runtime, caching for speed is better
+@functools.lru_cache
+def _extend_env_for_non_interactive_mode() -> Mapping[str, str]:
+    """Extend the environment vars for svn running in non-interactive mode."""
+    env = os.environ.copy()
+    ssh_cmd = env.get("SVN_SSH", "ssh")
+    if "BatchMode=" not in ssh_cmd:
+        ssh_cmd += " -o BatchMode=yes"
+    else:
+        logger.debug('BatchMode already configured in SVN_SSH: "%s"', ssh_cmd)
+    env["SVN_SSH"] = ssh_cmd
+    return MappingProxyType(env)
+
+
+def _raise_if_ssh_host_key_error(url: str, exc: SubprocessCommandError) -> None:
+    """Raise a helpful SshHostKeyError if *exc* looks like an SSH host-key failure."""
+    stderr_lower = exc.stderr.lower()
+    if not any(msg in stderr_lower for msg in _SSH_HOST_KEY_MSGS):
+        return
+    parsed = urlparse(url)
+    if parsed.hostname:
+        host = parsed.hostname
+        target = f"{parsed.username}@{host}" if parsed.username else host
+        raise SshHostKeyError(
+            f"SSH host key verification failed while connecting to '{url}'.\n"
+            "Add the host to your known hosts file, for example by running:\n"
+            f"  ssh-keyscan {host} >> ~/.ssh/known_hosts\n"
+            "Or test the SSH connection manually:\n"
+            f"  ssh -T {target}"
+        ) from exc
+    raise SshHostKeyError(
+        "SSH host key verification failed while connecting to the repository.\n"
+        "Add the repository's host to your known hosts file, for example by running:\n"
+        "  ssh-keyscan <host> >> ~/.ssh/known_hosts"
+    ) from exc
+
+
+def _run_svn_raw(args: list[str], *, url: str = "") -> bytes:
+    """Run an svn subcommand and return raw stdout bytes.
+
+    Uses --non-interactive and the non-interactive SSH env on every call.
+    SSH host-key failures are converted to SshHostKeyError so callers don't
+    need to handle that case individually.
+    """
+    try:
+        result = run_on_cmdline(
+            logger,
+            ["svn", "--non-interactive"] + args,
+            env=_extend_env_for_non_interactive_mode(),
+        )
+        return bytes(result.stdout)
+    except SubprocessCommandError as exc:
+        _raise_if_ssh_host_key_error(url, exc)
+        raise
+
+
+def _run_svn(args: list[str], *, url: str = "") -> str:
+    """Run an svn subcommand and return decoded stdout (see _run_svn_raw)."""
+    return _run_svn_raw(args, url=url).decode()
+
 
 def get_svn_version() -> tuple[str, str]:
     """Get the name and version of svn."""
-    result = run_on_cmdline(logger, ["svn", "--version", "--non-interactive"])
-    first_line = result.stdout.decode().split("\n")[0]
+    first_line = _run_svn(["--version"]).split("\n", maxsplit=1)[0]
     if "version" not in first_line.lower():
         raise RuntimeError(f"Unexpected svn --version output format: {first_line}")
     tool, version = first_line.replace(",", "").split("version", maxsplit=1)
@@ -49,8 +118,10 @@ class SvnRemote:
     def is_svn(self) -> bool:
         """Check if is SVN."""
         try:
-            run_on_cmdline(logger, ["svn", "info", self._remote, "--non-interactive"])
+            _run_svn(["info", self._remote], url=self._remote)
             return True
+        except SshHostKeyError:
+            raise
         except SubprocessCommandError as exc:
             if exc.stderr.startswith("svn: E170013"):
                 raise RuntimeError(
@@ -64,26 +135,19 @@ class SvnRemote:
     def list_of_branches(self) -> list[str]:
         """List branch names from the ``branches/`` directory."""
         try:
-            result = run_on_cmdline(
-                logger,
-                ["svn", "ls", "--non-interactive", f"{self._remote}/branches"],
-            )
+            output = _run_svn(["ls", f"{self._remote}/branches"], url=self._remote)
             return [
-                line.strip("/\r")
-                for line in result.stdout.decode().splitlines()
-                if line.strip("/\r")
+                line.strip("/\r") for line in output.splitlines() if line.strip("/\r")
             ]
+        except SshHostKeyError:
+            raise
         except (SubprocessCommandError, RuntimeError):
             return []
 
     def list_of_tags(self) -> list[str]:
         """Get list of all available tags."""
-        result = run_on_cmdline(
-            logger, ["svn", "ls", "--non-interactive", f"{self._remote}/tags"]
-        )
-        return [
-            str(tag).strip("/\r") for tag in result.stdout.decode().split("\n") if tag
-        ]
+        output = _run_svn(["ls", f"{self._remote}/tags"], url=self._remote)
+        return [str(tag).strip("/\r") for tag in output.split("\n") if tag]
 
     @contextlib.contextmanager
     def browse_tree(
@@ -103,6 +167,8 @@ class SvnRemote:
             try:
                 SvnRepo.get_info_from_target(branches_url)
                 base_url = branches_url
+            except SshHostKeyError:
+                raise
             except RuntimeError:
                 base_url = f"{self._remote}/tags/{version}"
 
@@ -115,17 +181,17 @@ class SvnRemote:
     def ls_tree(self, url_path: str) -> list[tuple[str, bool]]:
         """List immediate children of *url_path* as ``(name, is_dir)`` pairs."""
         try:
-            result = run_on_cmdline(
-                logger, ["svn", "ls", "--non-interactive", url_path]
-            )
+            output = _run_svn(["ls", url_path], url=url_path)
             entries: list[tuple[str, bool]] = []
-            for line in result.stdout.decode().splitlines():
+            for line in output.splitlines():
                 line = line.strip("\r")
                 if not line:
                     continue
                 is_dir = line.endswith("/")
                 entries.append((line.rstrip("/"), is_dir))
             return entries
+        except SshHostKeyError:
+            raise
         except (SubprocessCommandError, RuntimeError):
             return []
 
@@ -146,7 +212,7 @@ class SvnRepo:
         """Check if is SVN."""
         try:
             with in_directory(self._path):
-                run_on_cmdline(logger, ["svn", "info", "--non-interactive"])
+                _run_svn(["info"])
             return True
         except (SubprocessCommandError, RuntimeError):
             return False
@@ -154,31 +220,17 @@ class SvnRepo:
     def externals(self) -> list[External]:
         """Get list of externals."""
         with in_directory(self._path):
-            result = run_on_cmdline(
-                logger,
-                [
-                    "svn",
-                    "--non-interactive",
-                    "propget",
-                    "svn:externals",
-                    "-R",
-                ],
-            )
+            output = _run_svn(["propget", "svn:externals", "-R"])
             repo_root = SvnRepo.get_info_from_target()["Repository Root"]
-            return SvnRepo._parse_externals(
-                result.stdout.decode(), repo_root, toplevel=self._path
-            )
+            return SvnRepo._parse_externals(output, repo_root, toplevel=self._path)
 
     @staticmethod
     def externals_from_url(url: str, revision: str = "") -> list[External]:
         """Get list of externals from a remote SVN URL."""
-        cmd = ["svn", "--non-interactive", "propget", "svn:externals", "-R"]
-        if revision:
-            cmd += ["--revision", revision]
-        cmd += [url]
-        result = run_on_cmdline(logger, cmd)
+        extra = ["--revision", revision] if revision else []
+        output = _run_svn(["propget", "svn:externals", "-R"] + extra + [url], url=url)
         repo_root = SvnRepo.get_info_from_target(url)["Repository Root"]
-        normalized = SvnRepo._normalize_url_prefix(result.stdout.decode(), url)
+        normalized = SvnRepo._normalize_url_prefix(output, url)
         return SvnRepo._parse_externals(normalized, repo_root)
 
     @staticmethod
@@ -291,9 +343,7 @@ class SvnRepo:
     def get_info_from_target(target: str = "") -> dict[str, str]:
         """Get the info of the given target."""
         try:
-            result = run_on_cmdline(
-                logger, ["svn", "info", "--non-interactive", target.strip()]
-            ).stdout.decode()
+            output = _run_svn(["info", target.strip()], url=target)
         except SubprocessCommandError as exc:
             if exc.stderr.startswith("svn: E170013"):
                 raise RuntimeError(
@@ -306,7 +356,7 @@ class SvnRepo:
             key.strip(): value.strip()
             for key, value in (
                 line.split(":", maxsplit=1)
-                for line in result.split(os.linesep)
+                for line in output.split(os.linesep)
                 if line and ":" in line
             )
         }
@@ -324,36 +374,16 @@ class SvnRepo:
                 return parsed_version.group("digits")
             raise RuntimeError(f"svnversion output was unexpected: {version}")
 
-        return str(
-            run_on_cmdline(
-                logger,
-                [
-                    "svn",
-                    "info",
-                    "--non-interactive",
-                    "--show-item",
-                    "last-changed-revision",
-                    target_str,
-                ],
-            )
-            .stdout.decode()
-            .strip()
-        )
+        return _run_svn(
+            ["info", "--show-item", "last-changed-revision", target_str],
+            url=target_str,
+        ).strip()
 
     @staticmethod
     def untracked_files(path: str, ignore: Sequence[str]) -> list[str]:
         """Get list of untracked files in the working copy."""
-        result = (
-            run_on_cmdline(
-                logger,
-                ["svn", "status", "--non-interactive", path],
-            )
-            .stdout.decode()
-            .splitlines()
-        )
-
         files = []
-        for line in result:
+        for line in _run_svn(["status", path]).splitlines():
             if line.startswith("?"):
                 file_path = line[1:].strip()
                 if not any(
@@ -377,24 +407,15 @@ class SvnRepo:
         """
         if rev and not rev.isdigit():
             raise ValueError(f"SVN revision must be digits only, got: {rev!r}")
-        run_on_cmdline(
-            logger,
-            ["svn", "export", "--non-interactive", "--force"]
-            + (["--revision", rev] if rev else [])
-            + [url, dst],
+        _run_svn(
+            ["export", "--force"] + (["--revision", rev] if rev else []) + [url, dst],
+            url=url,
         )
 
     @staticmethod
     def files_in_path(url_path: str) -> list[str]:
         """List all files in path at the given url."""
-        return [
-            str(line)
-            for line in run_on_cmdline(
-                logger, ["svn", "list", "--non-interactive", url_path]
-            )
-            .stdout.decode()
-            .splitlines()
-        ]
+        return _run_svn(["list", url_path], url=url_path).splitlines()
 
     @staticmethod
     def ignored_files(path: str) -> Sequence[str]:
@@ -403,16 +424,9 @@ class SvnRepo:
             return []
 
         with in_directory(path):
-            result = (
-                run_on_cmdline(
-                    logger,
-                    ["svn", "status", "--non-interactive", "--no-ignore", "."],
-                )
-                .stdout.decode()
-                .splitlines()
-            )
+            lines = _run_svn(["status", "--no-ignore", "."]).splitlines()
 
-        return [line[1:].strip() for line in result if line.startswith("I")]
+        return [line[1:].strip() for line in lines if line.startswith("I")]
 
     @staticmethod
     def any_changes_or_untracked(path: str) -> bool:
@@ -421,18 +435,7 @@ class SvnRepo:
             raise RuntimeError("Path does not exist.")
 
         with in_directory(path):
-            return bool(
-                run_on_cmdline(
-                    logger,
-                    [
-                        "svn",
-                        "status",
-                        ".",
-                    ],
-                )
-                .stdout.decode()
-                .splitlines()
-            )
+            return bool(_run_svn(["status", "."]).splitlines())
 
     def create_diff(
         self,
@@ -441,7 +444,7 @@ class SvnRepo:
         ignore: Sequence[str],
     ) -> Patch:
         """Generate a relative diff patch."""
-        cmd = ["svn", "diff", "--non-interactive", "--ignore-properties", "."]
+        cmd = ["diff", "--ignore-properties", "."]
 
         if old_revision:
             cmd.extend(
@@ -452,7 +455,7 @@ class SvnRepo:
             )
 
         with in_directory(self._path):
-            patch_text = run_on_cmdline(logger, cmd).stdout
+            patch_text = _run_svn_raw(cmd)
 
         if not patch_text.strip():
             return Patch.empty().convert_type(PatchType.SVN)
@@ -461,17 +464,6 @@ class SvnRepo:
     def get_username(self) -> str:
         """Get the username of the local svn repo."""
         try:
-            result = run_on_cmdline(
-                logger,
-                [
-                    "svn",
-                    "info",
-                    "--non-interactive",
-                    "--show-item",
-                    "author",
-                    self._path,
-                ],
-            )
-            return str(result.stdout.decode().strip())
+            return _run_svn(["info", "--show-item", "author", self._path]).strip()
         except SubprocessCommandError:
             return ""

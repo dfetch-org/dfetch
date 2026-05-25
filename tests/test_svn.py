@@ -4,14 +4,14 @@
 # flake8: noqa
 
 import os
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.util.cmdline import SubprocessCommandError
-from dfetch.vcs.svn import External, SvnRemote, SvnRepo
+from dfetch.vcs.svn import External, SshHostKeyError, SvnRemote, SvnRepo
 
 REPO_ROOT = "repo-root"
 CWD = "C:\\mydir"
@@ -251,7 +251,7 @@ def test_externals(name, externals, expectations):
 @pytest.mark.parametrize(
     "name, cmd_result, expectation",
     [
-        ("svn repo", ["Yep!"], True),
+        ("svn repo", [MagicMock(stdout=b"")], True),
         ("not a svn repo", [SubprocessCommandError([""], "", "", -1)], False),
         ("no svn", [RuntimeError()], False),
     ],
@@ -266,7 +266,7 @@ def test_check_path(name, cmd_result, expectation):
 @pytest.mark.parametrize(
     "name, cmd_result, expectation",
     [
-        ("Ok url", ["Yep!"], True),
+        ("Ok url", [MagicMock(stdout=b"")], True),
         (
             "Failed command",
             [SubprocessCommandError],
@@ -520,3 +520,163 @@ def test_externals_from_url_nonstd_layout_branch_is_space():
         assert result[0].url == nonstd_url
         assert result[0].revision == ""
         assert result[0].path == "Database"
+
+
+@pytest.mark.parametrize(
+    "method,url,call_args",
+    [
+        ("is_svn", "svn+ssh://svn.code.sf.net/project", ()),
+        ("list_of_tags", "svn+ssh://svn.code.sf.net/project", ()),
+        ("list_of_branches", "svn+ssh://svn.code.sf.net/project", ()),
+        (
+            "ls_tree",
+            "svn+ssh://svn.code.sf.net/project",
+            ("svn+ssh://svn.code.sf.net/project",),
+        ),
+    ],
+)
+def test_svn_remote_raises_hint_on_ssh_host_key_failure(method, url, call_args):
+    """Test that SvnRemote methods raise SshHostKeyError with a hint on host-key failure."""
+    stderr = "Host key verification failed."
+    with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
+        mock_run.side_effect = SubprocessCommandError(["svn"], "", stderr, 1)
+
+        with pytest.raises(SshHostKeyError, match="known hosts"):
+            getattr(SvnRemote(url), method)(*call_args)
+
+
+def test_get_info_from_target_raises_hint_on_ssh_host_key_failure():
+    """Test that get_info_from_target raises SshHostKeyError instead of a generic error."""
+    stderr = "Host key verification failed."
+    with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
+        mock_run.side_effect = SubprocessCommandError(["svn", "info"], "", stderr, 1)
+
+        with pytest.raises(SshHostKeyError, match="known hosts"):
+            SvnRepo.get_info_from_target("svn+ssh://svn.code.sf.net/project")
+
+
+@pytest.mark.parametrize(
+    "method,url",
+    [
+        ("externals_from_url", "svn+ssh://svn.code.sf.net/project"),
+        ("get_last_changed_revision", "svn+ssh://svn.code.sf.net/project"),
+        ("export", "svn+ssh://svn.code.sf.net/project"),
+        ("files_in_path", "svn+ssh://svn.code.sf.net/project"),
+    ],
+)
+def test_svn_repo_raises_hint_on_ssh_host_key_failure(method, url):
+    """Test that static SvnRepo methods raise SshHostKeyError on host-key failure."""
+    stderr = "Host key verification failed."
+    with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
+        mock_run.side_effect = SubprocessCommandError(["svn"], "", stderr, 1)
+
+        with pytest.raises(SshHostKeyError, match="known hosts"):
+            getattr(SvnRepo, method)(url)
+
+
+def test_ssh_hint_includes_hostname():
+    """Test that the host-key hint contains the hostname parsed from the URL."""
+    stderr = "Host key verification failed."
+    with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
+        mock_run.side_effect = SubprocessCommandError(["svn"], "", stderr, 1)
+
+        with pytest.raises(SshHostKeyError, match="svn.code.sf.net"):
+            SvnRemote("svn+ssh://svn.code.sf.net/project").is_svn()
+
+
+def test_ssh_hint_includes_user_when_present_in_url():
+    """Test that the host-key hint suggests ssh with the user from the URL."""
+    stderr = "Host key verification failed."
+    with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
+        mock_run.side_effect = SubprocessCommandError(["svn"], "", stderr, 1)
+
+        with pytest.raises(SshHostKeyError, match="myuser@svn.code.sf.net"):
+            SvnRemote("svn+ssh://myuser@svn.code.sf.net/project").is_svn()
+
+
+def test_svn_ssh_env_has_batch_mode():
+    """Test that the svn environment forces SSH BatchMode by default."""
+    from dfetch.vcs.svn import _extend_env_for_non_interactive_mode
+
+    _extend_env_for_non_interactive_mode.cache_clear()
+    env = _extend_env_for_non_interactive_mode()
+    assert "BatchMode=yes" in env["SVN_SSH"]
+
+
+def test_svn_ssh_env_preserves_existing_batch_mode(monkeypatch):
+    """Test that a user-configured BatchMode in SVN_SSH is left untouched."""
+    from dfetch.vcs.svn import _extend_env_for_non_interactive_mode
+
+    monkeypatch.setenv("SVN_SSH", "ssh -o BatchMode=yes -i /my/key")
+    _extend_env_for_non_interactive_mode.cache_clear()
+    env = _extend_env_for_non_interactive_mode()
+    assert env["SVN_SSH"].count("BatchMode=yes") == 1
+    assert "-i /my/key" in env["SVN_SSH"]
+
+
+def test_run_svn_passes_non_interactive_env_to_subprocess():
+    """Test that svn commands receive the non-interactive SSH environment."""
+    from dfetch.vcs.svn import _extend_env_for_non_interactive_mode
+
+    _extend_env_for_non_interactive_mode.cache_clear()
+    with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
+        mock_run.return_value = MagicMock(stdout=b"")
+
+        SvnRepo.files_in_path("svn+ssh://svn.code.sf.net/project")
+
+        env = mock_run.call_args.kwargs["env"]
+        assert "BatchMode=yes" in env["SVN_SSH"]
+
+
+def test_ssh_hint_on_authenticity_of_host_message():
+    """Test that the 'authenticity of host' stderr variant also triggers the hint."""
+    stderr = "The authenticity of host 'svn.code.sf.net' can't be established."
+    with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
+        mock_run.side_effect = SubprocessCommandError(["svn"], "", stderr, 1)
+
+        with pytest.raises(SshHostKeyError, match="known hosts"):
+            SvnRemote("svn+ssh://svn.code.sf.net/project").is_svn()
+
+
+def test_ssh_hint_without_url_omits_hostname_commands():
+    """Test that the hint uses a placeholder when no hostname can be parsed."""
+    stderr = "Host key verification failed."
+    with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
+        mock_run.side_effect = SubprocessCommandError(["svn"], "", stderr, 1)
+
+        with pytest.raises(SshHostKeyError, match="known hosts") as exc_info:
+            SvnRepo(".").create_diff("1", "2", [])
+
+        assert "ssh-keyscan <host>" in str(exc_info.value)
+
+
+def test_browse_tree_raises_hint_on_ssh_host_key_failure():
+    """Test that browse_tree surfaces SshHostKeyError instead of falling back to tags."""
+    stderr = "Host key verification failed."
+    with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
+        mock_run.side_effect = SubprocessCommandError(["svn"], "", stderr, 1)
+
+        with pytest.raises(SshHostKeyError, match="known hosts"):
+            with SvnRemote("svn+ssh://svn.code.sf.net/project").browse_tree(
+                "some-branch"
+            ):
+                pass
+
+
+def test_create_diff_handles_non_utf8_diff_output():
+    """Test that create_diff handles svn diff output that is not valid UTF-8."""
+    diff = (
+        b"Index: a.c\n"
+        b"===================================================================\n"
+        b"--- a.c\t(revision 1)\n"
+        b"+++ a.c\t(working copy)\n"
+        b"@@ -1 +1 @@\n"
+        b"-old text \xe9\n"
+        b"+new text \xe9\n"
+    )
+    with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
+        mock_run.return_value = MagicMock(stdout=diff)
+
+        patch_obj = SvnRepo(".").create_diff("1", "2", [])
+
+        assert not patch_obj.is_empty()
