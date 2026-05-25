@@ -98,7 +98,7 @@ to reproduce a deterministic dependency state.
 
 .. note::
 
-   dfetch warns at manifest-load time when a project URL uses a plaintext
+   dfetch warns during dependency update/check operations when a project URL uses a plaintext
    transport scheme (``http://``, ``git://``, or ``svn://``). Use ``https://``
    or SSH (e.g. ``svn+ssh://``) to protect dependency fetches against interception.
 
