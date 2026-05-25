@@ -749,12 +749,12 @@ Dataflows
    * - DF-01: Invoke dfetch command
      - Developer
      - A-22: dfetch Process
-     - 
+     -
 
    * - DF-02: Read manifest
      - A-12: dfetch Manifest
      - A-22: dfetch Process
-     - 
+     -
 
    * - DF-03a: Fetch VCS content - HTTPS/SSH
      - A-22: dfetch Process
@@ -799,102 +799,102 @@ Dataflows
    * - DF-07: Write vendored files
      - A-22: dfetch Process
      - A-13: Fetched Source Code
-     - 
+     -
 
    * - DF-08: Write dependency metadata
      - A-22: dfetch Process
      - A-18: Dependency Metadata
-     - 
+     -
 
    * - DF-09: Write SBOM
      - A-22: dfetch Process
      - A-15: SBOM Output (CycloneDX)
-     - 
+     -
 
    * - DF-16: Read dependency metadata
      - A-18: Dependency Metadata
      - A-22: dfetch Process
-     - 
+     -
 
    * - DF-10: Read patch for application
      - A-19: Patch Files
      - A-25: Patch Application (patch-ng)
-     - 
+     -
 
    * - DF-10b: Write patched files to vendor directory
      - A-25: Patch Application (patch-ng)
      - A-13: Fetched Source Code
-     - 
+     -
 
    * - DF-15: Vendored source to build
      - A-13: Fetched Source Code
      - A-11: Consumer Build System
-     - 
+     -
 
    * - DF-11: Dispatch archive bytes to extraction
      - A-22: dfetch Process
      - A-24: Archive Extraction (tarfile / zipfile)
-     - 
+     -
 
    * - DF-12: Write extracted archive to temp dir
      - A-24: Archive Extraction (tarfile / zipfile)
      - A-20: Local VCS Cache (temp)
-     - 
+     -
 
    * - DF-13: Dispatch SVN export subprocess
      - A-22: dfetch Process
      - A-26: SVN Export (svn export)
-     - 
+     -
 
    * - DF-14: Write SVN export to temp dir
      - A-26: SVN Export (svn export)
      - A-20: Local VCS Cache (temp)
-     - 
+     -
 
    * - DF-23: Dispatch git clone subprocess
      - A-22: dfetch Process
      - A-27: Git Clone (git init / fetch / checkout)
-     - 
+     -
 
    * - DF-24: Write git checkout to temp dir
      - A-27: Git Clone (git init / fetch / checkout)
      - A-20: Local VCS Cache (temp)
-     - 
+     -
 
    * - DF-17: Write audit / check reports
      - A-22: dfetch Process
      - A-21: Audit / Check Reports
-     - 
+     -
 
    * - DF-22: Read validated content from local VCS cache
      - A-20: Local VCS Cache (temp)
      - A-22: dfetch Process
-     - 
+     -
 
    * - DF-18: Read integrity hash for archive verification
      - A-12: dfetch Manifest
      - A-22: dfetch Process
-     - 
+     -
 
    * - DF-18b: Write computed hash to manifest (dfetch freeze)
      - A-22: dfetch Process
      - A-12: dfetch Manifest
-     - 
+     -
 
    * - DF-20: Author / maintain dfetch.yaml
      - Developer
      - A-12: dfetch Manifest
-     - 
+     -
 
    * - DF-19: VCS server publishes source attestation (not consumed by dfetch)
      - A-09: Remote VCS Server
      - A-23: Upstream Source Attestation (VSA)
-     - 
+     -
 
    * - DF-21: Create / maintain patch files
      - Developer
      - A-19: Patch Files
-     - 
+     -
 
 
 Threats
@@ -1712,5 +1712,3 @@ Controls
      - Hash algorithm allowlist (SHA-256/384/512 only)
      - DFT-30
      - ``integrity_hash.py`` accepts only ``sha256:``, ``sha384:``, and ``sha512:`` prefixes; any other algorithm prefix is rejected at parse time.  MD5 and SHA-1 are not accepted.  This directly mitigates DFT-30 (SLSA M2: exploit cryptographic hash collisions) by ensuring that integrity hashes, when present, use algorithms with no known practical collision attacks.  ``dfetch/vcs/integrity_hash.py``
-
-

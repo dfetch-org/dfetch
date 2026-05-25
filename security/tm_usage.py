@@ -370,7 +370,7 @@ def _make_usage_vcs_dataflows(
         "``git fetch`` over ``http://`` or SVN over ``svn://`` (plain, non-TLS).  "
         "dfetch accepts these protocols without enforcement - no TLS check in manifest "
         "schema.  Traffic is unencrypted; MITM can substitute repository content.  "
-        "RECOMMENDATION: restrict manifest URLs to HTTPS / svn+https:// / SSH."
+        "RECOMMENDATION: restrict manifest URLs to ``https://`` or ``svn+ssh://``."
     )
     df03_plain.protocol = "HTTP / SVN"
     df03_plain.controls.isEncrypted = False
@@ -959,6 +959,24 @@ CONTROLS: list[Control] = [
         ),
     ),
     Control(
+        id="C-009",
+        name="Plaintext transport detection",
+        assets=["A-09", "A-22"],
+        threats=["DFT-26"],
+        reference="dfetch/manifest/project.py, dfetch/project/subproject.py",
+        description=(
+            "``plaintext_warning()`` (``dfetch/manifest/project.py``) inspects the "
+            "resolved remote URL immediately before each VCS command is issued "
+            "(inside the ``check_for_update`` and ``update`` spinners in "
+            "``subproject.py``).  If the scheme is ``http://``, ``git://``, or "
+            "``svn://``, a visible warning is emitted naming the redacted URL "
+            "(credentials stripped from the userinfo component) and recommending "
+            "``https://`` or ``svn+ssh://``.  "
+            "Detection only — dfetch still proceeds with the plaintext connection; "
+            "the control raises user awareness but does not enforce scheme selection."
+        ),
+    ),
+    Control(
         id="C-034",
         name="Hash algorithm allowlist (SHA-256/384/512 only)",
         assets=["A-12"],
@@ -1291,15 +1309,15 @@ RESPONSES: list[ThreatResponse] = [
     ),
     ThreatResponse(
         "DFT-26",
-        "accept",
+        "mitigate",
         risk="High",
         stride=["Tampering", "Information Disclosure"],
         note=(
-            "dfetch accepts ``http://``, ``svn://``, and other non-TLS scheme URLs; "
-            "HTTPS enforcement is the manifest author's responsibility.  "
-            "Accepted based on the **No HTTPS enforcement** assumption: HTTPS enforcement "
-            "is the responsibility of the manifest author; dfetch accepts non-TLS scheme "
-            "URLs as written and does not upgrade or reject them."
+            "C-009 emits a visible warning immediately before the VCS command when a "
+            "plaintext scheme (``http://``, ``git://``, ``svn://``) is detected, "
+            "with credentials redacted and ``https://`` / ``svn+ssh://`` recommended.  "
+            "Detection only — dfetch does not reject or upgrade plaintext URLs; "
+            "scheme selection remains the manifest author's responsibility."
         ),
     ),
     ThreatResponse(

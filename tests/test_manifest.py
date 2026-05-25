@@ -18,7 +18,7 @@ from dfetch.manifest.manifest import (
     RequestedProjectNotFoundError,
 )
 from dfetch.manifest.parse import find_manifest, get_submanifests
-from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
+from dfetch.manifest.project import ProjectEntry, ProjectEntryDict, plaintext_warning
 from dfetch.manifest.remote import Remote
 
 BASIC_MANIFEST = """
@@ -404,6 +404,36 @@ def test_remove_last_project_updates_manifest_with_empty_list() -> None:
 
     assert manifest.version == "0.0"
     assert not manifest.projects
+
+
+# ---------------------------------------------------------------------------
+# Plaintext URL transport warnings (DFT-01)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "plaintext_url",
+    [
+        "http://git.example.com/org/repo",
+        "git://git.example.com/org/repo",
+        "svn://svn.example.com/repo/trunk",
+    ],
+)
+def test_plaintext_warning_for_plaintext_scheme(plaintext_url: str) -> None:
+    """plaintext_warning returns a non-empty message for plaintext schemes."""
+    assert "plaintext transport" in plaintext_warning(plaintext_url)
+
+
+def test_plaintext_warning_empty_for_https() -> None:
+    """plaintext_warning returns empty string for HTTPS URLs."""
+    assert plaintext_warning("https://git.example.com/org/repo") == ""
+
+
+def test_plaintext_warning_redacts_credentials() -> None:
+    """Credentials embedded in a plaintext URL are not exposed in the warning."""
+    warning = plaintext_warning("http://user:secret@git.example.com/repo")
+    assert "plaintext transport" in warning
+    assert "secret" not in warning
 
 
 # ---------------------------------------------------------------------------
