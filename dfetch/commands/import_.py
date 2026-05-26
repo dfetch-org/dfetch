@@ -126,7 +126,7 @@ def _determine_best_remotes(projects_urls: set[str]) -> tuple[str, ...]:
 
     # For each permutation of any length, calculate the solution score
     solutions: list[tuple[int, tuple[str, ...]]] = []
-    for i in range(min(len(potential_remotes), max_remotes)):
+    for i in range(min(len(potential_remotes), max_remotes) + 1):
         for solution in combinations(potential_remotes, i):
             score = _calculate_solution_score(solution, projects_urls)
             solutions += [(score, solution)]
