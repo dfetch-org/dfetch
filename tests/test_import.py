@@ -9,7 +9,7 @@ from unittest.mock import patch
 import pytest
 import yaml
 
-from dfetch.commands.import_ import Import
+from dfetch.commands.import_ import Import, _determine_best_remotes
 from dfetch.vcs.git import Submodule
 from dfetch.vcs.svn import External
 
@@ -79,6 +79,30 @@ def test_git_import(name, submodules):
 
                         # Manifest should have been dumped
                         mocked_manifest.from_yaml.return_value.dump.assert_called()
+
+
+def test_determine_best_remotes_covers_all_urls_at_max_remotes():
+    """Every project URL must be covered, even when each needs its own remote.
+
+    Reproduces the off-by-one in the combination-size loop: when the optimal
+    solution needs the maximum number of distinct remotes (one per host), the
+    largest combination was never evaluated, leaving one URL uncovered with its
+    full-length URL retained in the manifest.
+    """
+    urls = {
+        "https://github.com/a/x.git",
+        "https://gitlab.com/b/y.git",
+        "https://bitbucket.org/c/z.git",
+        "https://example.com/d/w.git",
+        "https://sourceforge.net/e/v.git",
+    }
+
+    remotes = _determine_best_remotes(urls)
+
+    uncovered = [
+        url for url in urls if not any(url.startswith(remote) for remote in remotes)
+    ]
+    assert not uncovered, f"URLs left without a matching remote: {uncovered}"
 
 
 FIRST_EXTERNAL = External(
