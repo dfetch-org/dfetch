@@ -17,11 +17,11 @@ Feature: Fetching dependencies from a svn repository
 
               remotes:
                 - name: cunit
-                  url-base: svn://svn.code.sf.net/p/cunit/code
+                  url-base: https://svn.code.sf.net/p/cunit/code
                   default: true
 
                 - name: cutter
-                  url-base: svn://svn.code.sf.net/p/cutter/svn/cutter
+                  url-base: https://svn.code.sf.net/p/cutter/svn/cutter
 
               projects:
                 - name: cunit-svn-rev-only

@@ -58,7 +58,7 @@ Feature: List dependencies
 
               projects:
                 - name: cutter-svn-tag
-                  url: svn://svn.code.sf.net/p/cutter/svn/cutter
+                  url: https://svn.code.sf.net/p/cutter/svn/cutter
                   tag: 1.1.7
                   vcs: svn
                   src: acmacros
@@ -71,7 +71,7 @@ Feature: List dependencies
             Dfetch (0.13.0)
               cutter-svn-tag:
               - remote            : <none>
-                remote url        : svn://svn.code.sf.net/p/cutter/svn/cutter
+                remote url        : https://svn.code.sf.net/p/cutter/svn/cutter
                 branch            : <none>
                 tag               : 1.1.7
                 last fetch        : 29/12/2024, 20:09:21

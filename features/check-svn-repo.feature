@@ -11,7 +11,7 @@ Feature: Checking dependencies from a svn repository
 
               remotes:
                 - name: cunit
-                  url-base: svn://svn.code.sf.net/p/cunit/code
+                  url-base: https://svn.code.sf.net/p/cunit/code
 
               projects:
                 - name: cunit-svn-rev-only
@@ -44,7 +44,7 @@ Feature: Checking dependencies from a svn repository
 
               remotes:
                 - name: cutter
-                  url-base: svn://svn.code.sf.net/p/cutter/svn/cutter
+                  url-base: https://svn.code.sf.net/p/cutter/svn/cutter
 
               projects:
                 - name: cutter-svn-tag
@@ -69,7 +69,7 @@ Feature: Checking dependencies from a svn repository
 
               remotes:
                 - name: cunit
-                  url-base: svn://svn.code.sf.net/p/cunit/code
+                  url-base: https://svn.code.sf.net/p/cunit/code
                   default: true
 
               projects:
@@ -152,7 +152,7 @@ Feature: Checking dependencies from a svn repository
 
               remotes:
                 - name: cutter
-                  url-base: svn://svn.code.sf.net/p/cutter/svn/cutter
+                  url-base: https://svn.code.sf.net/p/cutter/svn/cutter
 
               projects:
                 - name: cutter-svn-tag
