@@ -12,7 +12,7 @@ Feature: Patch after fetching from svn repo
 
                 remotes:
                 - name: cutter
-                  url-base: svn://svn.code.sf.net/p/cutter/svn/cutter
+                  url-base: https://svn.code.sf.net/p/cutter/svn/cutter
 
                 projects:
                 - name: cutter
@@ -46,7 +46,7 @@ Feature: Patch after fetching from svn repo
 
                 remotes:
                 - name: cutter
-                  url-base: svn://svn.code.sf.net/p/cutter/svn/cutter
+                  url-base: https://svn.code.sf.net/p/cutter/svn/cutter
 
                 projects:
                 - name: cutter
