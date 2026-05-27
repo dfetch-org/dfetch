@@ -1003,6 +1003,7 @@ RESPONSES: list[ThreatResponse] = [
             "C-005 mitigates only when ``integrity.hash`` is present; "
             "plain HTTP without a hash has no transport or content protection."
         ),
+        target="DF-06b: Archive bytes - HTTP (plaintext risk)",
     ),
     ThreatResponse(
         "DFT-02",
@@ -1014,6 +1015,7 @@ RESPONSES: list[ThreatResponse] = [
             "Git/SVN refs have no equivalent integrity mechanism; "
             "pinning to a commit SHA is the strongest available mitigation."
         ),
+        target="DF-04a: VCS content inbound - HTTPS/SSH",
     ),
     ThreatResponse(
         "DFT-03",
@@ -1024,6 +1026,7 @@ RESPONSES: list[ThreatResponse] = [
             "Archive and VCS extraction mitigated by C-001, C-003, C-004. "
             "Patch files carry no integrity hash and are not independently verified."
         ),
+        target="A-25: Patch Application (patch-ng)",
     ),
     ThreatResponse("DFT-04", "mitigate", risk="High", stride=["Tampering"]),
     ThreatResponse(
@@ -1036,6 +1039,7 @@ RESPONSES: list[ThreatResponse] = [
             "Git/SVN: no integrity mechanism; pinning to an immutable commit SHA "
             "is recommended but not enforced by dfetch."
         ),
+        target="DF-04a: VCS content inbound - HTTPS/SSH",
     ),
     ThreatResponse(
         "DFT-06",
@@ -1060,6 +1064,7 @@ RESPONSES: list[ThreatResponse] = [
             "only for its own security posture; a compromised dfetch installation is addressed "
             "by the supply-chain threat model, not the runtime-usage model."
         ),
+        target="A-25: Patch Application (patch-ng)",
     ),
     ThreatResponse(
         "DFT-08",
@@ -1070,8 +1075,15 @@ RESPONSES: list[ThreatResponse] = [
             "Manifest schema (C-008) validates all string fields; "
             "patch files carry no integrity hash and are not verified before application."
         ),
+        target="A-18: Dependency Metadata",
     ),
-    ThreatResponse("DFT-09", "mitigate", risk="Medium", stride=["Denial of Service"]),
+    ThreatResponse(
+        "DFT-09",
+        "mitigate",
+        risk="Medium",
+        stride=["Denial of Service"],
+        target="A-24: Archive Extraction (tarfile / zipfile)",
+    ),
     ThreatResponse(
         "DFT-10",
         "accept",
@@ -1085,6 +1097,7 @@ RESPONSES: list[ThreatResponse] = [
             "dependencies is out of scope for this usage model and is addressed by the "
             "supply-chain threat model."
         ),
+        target="A-22: dfetch Process",
     ),
     ThreatResponse(
         "DFT-12",
@@ -1100,6 +1113,7 @@ RESPONSES: list[ThreatResponse] = [
             "is under code review, and URLs that could expose internal services should be "
             "rejected at the review boundary."
         ),
+        target="DF-05a: Archive download request - HTTPS",
     ),
     ThreatResponse(
         "DFT-13",
@@ -1160,6 +1174,7 @@ RESPONSES: list[ThreatResponse] = [
             "``dfetch.yaml`` and subject to code review; the decision to trust those "
             "nested URLs is made at the manifest-review boundary."
         ),
+        target="A-27: Git Clone (git init / fetch / checkout)",
     ),
     ThreatResponse(
         "DFT-16",
@@ -1178,6 +1193,7 @@ RESPONSES: list[ThreatResponse] = [
             "review; any change pointing a destination at a sensitive directory would be "
             "rejected at the review boundary."
         ),
+        target="A-22: dfetch Process",
     ),
     ThreatResponse(
         "DFT-17",
@@ -1191,6 +1207,7 @@ RESPONSES: list[ThreatResponse] = [
             "an adversary who introduces a typosquatted or unverified URL must do so "
             "through a manifest change that passes the review boundary."
         ),
+        target="DF-06a: Archive bytes - HTTPS",
     ),
     ThreatResponse(
         "DFT-18",
@@ -1205,6 +1222,7 @@ RESPONSES: list[ThreatResponse] = [
             "against a registry; dependency confusion via registry namespace shadowing "
             "cannot occur within dfetch's fetch model."
         ),
+        target="A-12: dfetch Manifest",
     ),
     ThreatResponse(
         "DFT-19",
@@ -1233,6 +1251,7 @@ RESPONSES: list[ThreatResponse] = [
             "against a registry; abandoned-namespace reclaim attacks require a registry "
             "lookup step that does not exist in dfetch's fetch model."
         ),
+        target="A-12: dfetch Manifest",
     ),
     ThreatResponse(
         "DFT-21",
@@ -1278,6 +1297,7 @@ RESPONSES: list[ThreatResponse] = [
             "by upstream force-pushes; stale-content delivery is an acknowledged "
             "consequence of using mutable pins without a freshness enforcement mechanism."
         ),
+        target="DF-06a: Archive bytes - HTTPS",
     ),
     ThreatResponse(
         "DFT-24",
@@ -1292,6 +1312,7 @@ RESPONSES: list[ThreatResponse] = [
             "write access sufficient to tamper with ``.dfetch_data.yaml`` implies "
             "a compromised workstation, which is outside the scope of this model."
         ),
+        target="A-18: Dependency Metadata",
     ),
     ThreatResponse(
         "DFT-25",
@@ -1306,6 +1327,7 @@ RESPONSES: list[ThreatResponse] = [
             "author who selects and pins each dependency; upstream provenance attestation "
             "is outside dfetch's own security posture."
         ),
+        target="A-15: SBOM Output (CycloneDX)",
     ),
     ThreatResponse(
         "DFT-26",
@@ -1319,6 +1341,7 @@ RESPONSES: list[ThreatResponse] = [
             "Detection only — dfetch does not reject or upgrade plaintext URLs; "
             "scheme selection remains the manifest author's responsibility."
         ),
+        target="A-27: Git Clone (git init / fetch / checkout)",
     ),
     ThreatResponse(
         "DFT-28",
@@ -1335,6 +1358,7 @@ RESPONSES: list[ThreatResponse] = [
             "responsible only for its own security posture; the CI/CD build pipeline "
             "for dfetch itself is outside the scope of the runtime-usage model."
         ),
+        target="A-20: Local VCS Cache (temp)",
     ),
     ThreatResponse("DFT-30", "mitigate", risk="High", stride=["Tampering", "Spoofing"]),
     ThreatResponse(
@@ -1350,6 +1374,7 @@ RESPONSES: list[ThreatResponse] = [
             "author who selects and pins each dependency; verifying upstream governance "
             "controls is outside dfetch's own security posture."
         ),
+        target="DF-04a: VCS content inbound - HTTPS/SSH",
     ),
     ThreatResponse(
         "DFT-32",
@@ -1379,6 +1404,7 @@ RESPONSES: list[ThreatResponse] = [
             "dfetch has no mechanism to verify that a pinned SHA remains reachable after "
             "a history rewrite."
         ),
+        target="DF-04a: VCS content inbound - HTTPS/SSH",
     ),
 ]
 

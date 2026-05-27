@@ -123,12 +123,22 @@ def _render_asset_rows(
 def _render_threat_rows(
     tm: Any, controls: list[Control], responses: list[ThreatResponse]
 ) -> str:
-    """Return RST list-table rows for all active findings."""
+    """Return RST list-table rows, one curated row per threat, sorted by ID.
+
+    pytm emits a finding for every element a threat's condition matches, so a
+    threat that applies to many elements produces many byte-identical rows.
+    Collapse them to a single row documented against the threat's canonical
+    target (``ThreatResponse.target`` when set, otherwise the matched element).
+    """
     findings = tm.findings
     if not findings:
         return ""
 
     resp_map: dict[str, ThreatResponse] = {r.threat_id: r for r in responses}
+
+    representative: dict[str, Any] = {}
+    for f in findings:
+        representative.setdefault(f.threat_id, f)
 
     def _row(f: Any) -> str:
         resp = resp_map.get(f.threat_id)
@@ -150,10 +160,11 @@ def _render_threat_rows(
             detail = resp.note if resp.note else ctrl_ids
         else:
             detail = resp.note if resp and resp.note else "—"
+        target = resp.target if resp and resp.target else str(f.target)
         return (
             f"   * - {f.threat_id}\n"
             f"     - {f.description}\n"
-            f"     - {f.target}\n"
+            f"     - {target}\n"
             f"     - | **Sev:** {sev}\n"
             f"       | **Risk:** {risk}\n"
             f"       | **STRIDE:** {stride}\n"
@@ -161,7 +172,7 @@ def _render_threat_rows(
             f"     - {detail}\n"
         )
 
-    return "".join(_row(f) for f in findings)
+    return "".join(_row(representative[tid]) for tid in sorted(representative))
 
 
 def _render_control_rows(controls: list[Control]) -> str:

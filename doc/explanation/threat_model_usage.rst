@@ -910,46 +910,22 @@ Threats
      - Target
      - Analysis
      - Controls / Notes
-   * - DFT-10
-     - Build or development dependency substitution via compromised registry
-     - A-23: Upstream Source Attestation (VSA)
+   * - DFT-01
+     - Unencrypted transport interception (MITM)
+     - DF-06b: Archive bytes - HTTP (plaintext risk)
      - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T
-       | **Status:** Accept
-     - dfetch's runtime dependency supply-chain is the supply-chain model's scope; use a verified dfetch installation.  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; the integrity of dfetch's own runtime dependencies is out of scope for this usage model and is addressed by the supply-chain threat model.
-   * - DFT-18
-     - Dependency confusion - public registry package shadows private internal package
-     - A-23: Upstream Source Attestation (VSA)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
+       | **Risk:** 🔴C
        | **STRIDE:** T S
-       | **Status:** Accept
-     - Not applicable to dfetch's fetch-by-explicit-URL model; relevant only if using package-registry shorthand.  Accepted based on the **dfetch scope boundary** assumption: dfetch fetches by explicit URL declared in the manifest rather than by package name resolved against a registry; dependency confusion via registry namespace shadowing cannot occur within dfetch's fetch model.
-   * - DFT-20
-     - Abandoned package namespace reclaimed by malicious actor
-     - A-23: Upstream Source Attestation (VSA)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** S T
-       | **Status:** Accept
-     - Not applicable to direct-URL fetches; relevant only if using Git-hosting shorthand with inferred registry lookup.  Accepted based on the **dfetch scope boundary** assumption: dfetch fetches by explicit URL declared in the manifest rather than resolving package names against a registry; abandoned-namespace reclaim attacks require a registry lookup step that does not exist in dfetch's fetch model.
-   * - DFT-16
-     - Configured destination path allows writes to security-sensitive project directories
-     - A-22: dfetch Process
-     - | **Sev:** 🔴VH
-       | **Risk:** 🟠H
-       | **STRIDE:** T E
-       | **Status:** Accept
-     - C-001 prevents writes outside the project root; no denylist blocks writes to sensitive within-root paths such as ``.github/workflows/``.  Defense-in-depth: CI pipelines should run ``dfetch update`` in a step that does not have write access to ``.github/workflows/`` (e.g. by restricting permissions or running in a directory sandbox).  Accepted based on the **Manifest under code review** assumption: the ``dst:`` path for every dependency is declared in ``dfetch.yaml`` and subject to code review; any change pointing a destination at a sensitive directory would be rejected at the review boundary.
-   * - DFT-30
-     - Weak or deprecated hash algorithm allows collision-based integrity bypass
-     - A-22: dfetch Process
+       | **Status:** Mitigate
+     - C-005 mitigates only when ``integrity.hash`` is present; plain HTTP without a hash has no transport or content protection.
+   * - DFT-02
+     - Supply-chain content substitution via server-side compromise
+     - DF-04a: VCS content inbound - HTTPS/SSH
      - | **Sev:** 🟠H
        | **Risk:** 🟠H
        | **STRIDE:** T S
        | **Status:** Mitigate
-     - C-005, C-034
+     - Archives: C-005 mitigates when hash is present. Git/SVN refs have no equivalent integrity mechanism; pinning to a commit SHA is the strongest available mitigation.
    * - DFT-03
      - Path traversal in archive or patch extraction
      - A-25: Patch Application (patch-ng)
@@ -958,30 +934,6 @@ Threats
        | **STRIDE:** T E
        | **Status:** Mitigate
      - Archive and VCS extraction mitigated by C-001, C-003, C-004. Patch files carry no integrity hash and are not independently verified.
-   * - DFT-07
-     - CI/CD secret exfiltration via supply-chain attack on build environment
-     - A-25: Patch Application (patch-ng)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** I
-       | **Status:** Accept
-     - dfetch uses ``shell=False`` throughout (C-007); residual supply-chain compromise of dfetch itself is the supply-chain model's scope.  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; a compromised dfetch installation is addressed by the supply-chain threat model, not the runtime-usage model.
-   * - DFT-09
-     - Archive decompression bomb causes resource exhaustion
-     - A-25: Patch Application (patch-ng)
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** D
-       | **Status:** Mitigate
-     - C-002
-   * - DFT-28
-     - CI/CD build cache poisoned to silently substitute a malicious compiled artifact
-     - A-12: dfetch Manifest
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Build-cache poisoning (SLSA E6) is a CI/CD supply-chain concern that applies to the dfetch build pipeline, not to runtime usage.  dfetch does not maintain a persistent compiled artifact cache; fetched source files are written directly to the vendor directory.  See the supply-chain threat model for the mitigating control (C-033).  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; the CI/CD build pipeline for dfetch itself is outside the scope of the runtime-usage model.
    * - DFT-04
      - Sensitive datastore write without content integrity verification
      - A-13: Fetched Source Code
@@ -990,62 +942,22 @@ Threats
        | **STRIDE:** T
        | **Status:** Mitigate
      - C-008
-   * - DFT-19
-     - Malicious upstream update or intentional maintainer sabotage (protestware)
-     - A-13: Fetched Source Code
-     - | **Sev:** 🔴VH
-       | **Risk:** 🟠H
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Upstream maintainer trust; pinning to an immutable commit SHA is the strongest available mitigation but is not enforced by dfetch.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; intentional maintainer sabotage of an upstream is outside dfetch's control.
-   * - DFT-22
-     - Vendored content contains submodule or nested external reference triggering undeclared fetch
-     - A-13: Fetched Source Code
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - dfetch does not parse or execute embedded build manifests (CMakeLists.txt, package.json, etc.); undeclared fetches via build-system externals cannot occur.  However, Git dependencies with submodules and SVN dependencies with ``svn:externals`` do trigger undeclared fetches — see DFT-15 for details and mitigations.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code and any nested dependencies it carries is the responsibility of the manifest author who selects and pins each dependency.
-   * - DFT-32
-     - Upstream source enforces no mandatory two-party review — single contributor can introduce changes without independent verification
-     - A-13: Fetched Source Code
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; no mechanism exists to require mandatory two-party review on upstream changes.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; requiring upstream review policies is outside dfetch's own security posture.
-   * - DFT-08
-     - Tampered secondary artifact suppresses or bypasses security checks
-     - A-15: SBOM Output (CycloneDX)
+   * - DFT-05
+     - Mutable VCS reference enables silent content substitution
+     - DF-04a: VCS content inbound - HTTPS/SSH
      - | **Sev:** 🟡M
        | **Risk:** 🟠H
-       | **STRIDE:** T
+       | **STRIDE:** T S
        | **Status:** Mitigate
-     - Manifest schema (C-008) validates all string fields; patch files carry no integrity hash and are not verified before application.
-   * - DFT-24
-     - Local dependency cache or metadata store poisoned to suppress integrity alerts
-     - A-15: SBOM Output (CycloneDX)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - ``.dfetch_data.yaml`` metadata is not integrity-protected; tampering could suppress update notifications from ``dfetch check``.  Accepted based on the **Trusted workstation** assumption: developer workstations are trusted at dfetch invocation time; local filesystem write access sufficient to tamper with ``.dfetch_data.yaml`` implies a compromised workstation, which is outside the scope of this model.
-   * - DFT-25
-     - Forged or unverifiable provenance attestation conceals malicious build output
-     - A-15: SBOM Output (CycloneDX)
+     - C-005 mitigates archive deps when hash present. Git/SVN: no integrity mechanism; pinning to an immutable commit SHA is recommended but not enforced by dfetch.
+   * - DFT-07
+     - CI/CD secret exfiltration via supply-chain attack on build environment
+     - A-25: Patch Application (patch-ng)
      - | **Sev:** 🟠H
        | **Risk:** 🟠H
-       | **STRIDE:** S T R
+       | **STRIDE:** I
        | **Status:** Accept
-     - dfetch does not verify upstream SLSA provenance of fetched sources; provenance verification is the consumer's responsibility.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; upstream provenance attestation is outside dfetch's own security posture.
-   * - DFT-28
-     - CI/CD build cache poisoned to silently substitute a malicious compiled artifact
-     - A-15: SBOM Output (CycloneDX)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Build-cache poisoning (SLSA E6) is a CI/CD supply-chain concern that applies to the dfetch build pipeline, not to runtime usage.  dfetch does not maintain a persistent compiled artifact cache; fetched source files are written directly to the vendor directory.  See the supply-chain threat model for the mitigating control (C-033).  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; the CI/CD build pipeline for dfetch itself is outside the scope of the runtime-usage model.
+     - dfetch uses ``shell=False`` throughout (C-007); residual supply-chain compromise of dfetch itself is the supply-chain model's scope.  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; a compromised dfetch installation is addressed by the supply-chain threat model, not the runtime-usage model.
    * - DFT-08
      - Tampered secondary artifact suppresses or bypasses security checks
      - A-18: Dependency Metadata
@@ -1054,6 +966,30 @@ Threats
        | **STRIDE:** T
        | **Status:** Mitigate
      - Manifest schema (C-008) validates all string fields; patch files carry no integrity hash and are not verified before application.
+   * - DFT-09
+     - Archive decompression bomb causes resource exhaustion
+     - A-24: Archive Extraction (tarfile / zipfile)
+     - | **Sev:** 🟡M
+       | **Risk:** 🟡M
+       | **STRIDE:** D
+       | **Status:** Mitigate
+     - C-002
+   * - DFT-10
+     - Build or development dependency substitution via compromised registry
+     - A-22: dfetch Process
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** T
+       | **Status:** Accept
+     - dfetch's runtime dependency supply-chain is the supply-chain model's scope; use a verified dfetch installation.  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; the integrity of dfetch's own runtime dependencies is out of scope for this usage model and is addressed by the supply-chain threat model.
+   * - DFT-12
+     - SSRF via unvalidated HTTP redirect chain
+     - DF-05a: Archive download request - HTTPS
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** I
+       | **Status:** Accept
+     - Archive downloads follow up to 10 HTTP redirects without validating the destination against RFC-1918, loopback, or link-local ranges; SSRF to internal metadata endpoints is possible.  Accepted based on the **No HTTPS enforcement** assumption: HTTPS enforcement and safe URL selection are the manifest author's responsibility; the manifest is under code review, and URLs that could expose internal services should be rejected at the review boundary.
    * - DFT-13
      - Credential embedded in source URL persisted to unencrypted metadata
      - A-18: Dependency Metadata
@@ -1062,446 +998,6 @@ Threats
        | **STRIDE:** I
        | **Status:** Accept
      - dfetch persists the configured URL to ``.dfetch_data.yaml``; credentials embedded in URLs appear in that file in plaintext.  Accepted based on the **No persisted secrets** assumption: no runtime secrets are persisted to disk by dfetch itself — VCS credentials are expected to be managed by the OS keychain, SSH agent, or CI secret store rather than embedded in source URLs.
-   * - DFT-24
-     - Local dependency cache or metadata store poisoned to suppress integrity alerts
-     - A-18: Dependency Metadata
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - ``.dfetch_data.yaml`` metadata is not integrity-protected; tampering could suppress update notifications from ``dfetch check``.  Accepted based on the **Trusted workstation** assumption: developer workstations are trusted at dfetch invocation time; local filesystem write access sufficient to tamper with ``.dfetch_data.yaml`` implies a compromised workstation, which is outside the scope of this model.
-   * - DFT-25
-     - Forged or unverifiable provenance attestation conceals malicious build output
-     - A-18: Dependency Metadata
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** S T R
-       | **Status:** Accept
-     - dfetch does not verify upstream SLSA provenance of fetched sources; provenance verification is the consumer's responsibility.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; upstream provenance attestation is outside dfetch's own security posture.
-   * - DFT-28
-     - CI/CD build cache poisoned to silently substitute a malicious compiled artifact
-     - A-18: Dependency Metadata
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Build-cache poisoning (SLSA E6) is a CI/CD supply-chain concern that applies to the dfetch build pipeline, not to runtime usage.  dfetch does not maintain a persistent compiled artifact cache; fetched source files are written directly to the vendor directory.  See the supply-chain threat model for the mitigating control (C-033).  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; the CI/CD build pipeline for dfetch itself is outside the scope of the runtime-usage model.
-   * - DFT-08
-     - Tampered secondary artifact suppresses or bypasses security checks
-     - A-19: Patch Files
-     - | **Sev:** 🟡M
-       | **Risk:** 🟠H
-       | **STRIDE:** T
-       | **Status:** Mitigate
-     - Manifest schema (C-008) validates all string fields; patch files carry no integrity hash and are not verified before application.
-   * - DFT-24
-     - Local dependency cache or metadata store poisoned to suppress integrity alerts
-     - A-19: Patch Files
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - ``.dfetch_data.yaml`` metadata is not integrity-protected; tampering could suppress update notifications from ``dfetch check``.  Accepted based on the **Trusted workstation** assumption: developer workstations are trusted at dfetch invocation time; local filesystem write access sufficient to tamper with ``.dfetch_data.yaml`` implies a compromised workstation, which is outside the scope of this model.
-   * - DFT-25
-     - Forged or unverifiable provenance attestation conceals malicious build output
-     - A-19: Patch Files
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** S T R
-       | **Status:** Accept
-     - dfetch does not verify upstream SLSA provenance of fetched sources; provenance verification is the consumer's responsibility.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; upstream provenance attestation is outside dfetch's own security posture.
-   * - DFT-28
-     - CI/CD build cache poisoned to silently substitute a malicious compiled artifact
-     - A-19: Patch Files
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Build-cache poisoning (SLSA E6) is a CI/CD supply-chain concern that applies to the dfetch build pipeline, not to runtime usage.  dfetch does not maintain a persistent compiled artifact cache; fetched source files are written directly to the vendor directory.  See the supply-chain threat model for the mitigating control (C-033).  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; the CI/CD build pipeline for dfetch itself is outside the scope of the runtime-usage model.
-   * - DFT-01
-     - Unencrypted transport interception (MITM)
-     - DF-03b: Fetch VCS content - svn:// / http://
-     - | **Sev:** 🟠H
-       | **Risk:** 🔴C
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-005 mitigates only when ``integrity.hash`` is present; plain HTTP without a hash has no transport or content protection.
-   * - DFT-02
-     - Supply-chain content substitution via server-side compromise
-     - DF-03b: Fetch VCS content - svn:// / http://
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - Archives: C-005 mitigates when hash is present. Git/SVN refs have no equivalent integrity mechanism; pinning to a commit SHA is the strongest available mitigation.
-   * - DFT-05
-     - Mutable VCS reference enables silent content substitution
-     - DF-03b: Fetch VCS content - svn:// / http://
-     - | **Sev:** 🟡M
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-005 mitigates archive deps when hash present. Git/SVN: no integrity mechanism; pinning to an immutable commit SHA is recommended but not enforced by dfetch.
-   * - DFT-17
-     - Typosquatting or unverified source identity on an unauthenticated channel
-     - DF-03b: Fetch VCS content - svn:// / http://
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** S
-       | **Status:** Accept
-     - Manifest author responsibility; the manifest is under code review.  Accepted based on the **Manifest under code review** assumption: ``dfetch.yaml`` is under version control and subject to code review; an adversary who introduces a typosquatted or unverified URL must do so through a manifest change that passes the review boundary.
-   * - DFT-23
-     - Replay or freeze attack delivers stale content to suppress security updates
-     - DF-03b: Fetch VCS content - svn:// / http://
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - No freshness check; ``dfetch check`` detects version drift but does not enforce a minimum version or reject stale content.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned dependencies are mutable references whose content can be changed by upstream force-pushes; stale-content delivery is an acknowledged consequence of using mutable pins without a freshness enforcement mechanism.
-   * - DFT-31
-     - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
-     - DF-03b: Fetch VCS content - svn:// / http://
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** R
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; no mechanism exists to require or verify upstream SLSA source level.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; verifying upstream governance controls is outside dfetch's own security posture.
-   * - DFT-33
-     - Upstream default-branch history rewritten — ancestry broken, pinned SHA orphaned or made unreachable
-     - DF-03b: Fetch VCS content - svn:// / http://
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; dfetch cannot prevent or detect upstream force-pushes.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned Git dependencies are mutable references; upstream force-pushes silently change what is fetched without triggering a manifest diff, and dfetch has no mechanism to verify that a pinned SHA remains reachable after a history rewrite.
-   * - DFT-02
-     - Supply-chain content substitution via server-side compromise
-     - DF-04a: VCS content inbound - HTTPS/SSH
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - Archives: C-005 mitigates when hash is present. Git/SVN refs have no equivalent integrity mechanism; pinning to a commit SHA is the strongest available mitigation.
-   * - DFT-05
-     - Mutable VCS reference enables silent content substitution
-     - DF-04a: VCS content inbound - HTTPS/SSH
-     - | **Sev:** 🟡M
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-005 mitigates archive deps when hash present. Git/SVN: no integrity mechanism; pinning to an immutable commit SHA is recommended but not enforced by dfetch.
-   * - DFT-21
-     - Unsigned or forged VCS tag accepted as a trusted version pin
-     - DF-04a: VCS content inbound - HTTPS/SSH
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** S T
-       | **Status:** Accept
-     - dfetch does not verify VCS tag signatures; pinning to an immutable commit SHA is recommended.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned Git dependencies are mutable references; upstream force-pushes can silently change the commit a tag resolves to without triggering a manifest diff, and tag-signature verification is not enforced by dfetch.
-   * - DFT-31
-     - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
-     - DF-04a: VCS content inbound - HTTPS/SSH
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** R
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; no mechanism exists to require or verify upstream SLSA source level.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; verifying upstream governance controls is outside dfetch's own security posture.
-   * - DFT-33
-     - Upstream default-branch history rewritten — ancestry broken, pinned SHA orphaned or made unreachable
-     - DF-04a: VCS content inbound - HTTPS/SSH
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; dfetch cannot prevent or detect upstream force-pushes.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned Git dependencies are mutable references; upstream force-pushes silently change what is fetched without triggering a manifest diff, and dfetch has no mechanism to verify that a pinned SHA remains reachable after a history rewrite.
-   * - DFT-01
-     - Unencrypted transport interception (MITM)
-     - DF-04b: VCS content inbound - svn:// / http://
-     - | **Sev:** 🟠H
-       | **Risk:** 🔴C
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-005 mitigates only when ``integrity.hash`` is present; plain HTTP without a hash has no transport or content protection.
-   * - DFT-02
-     - Supply-chain content substitution via server-side compromise
-     - DF-04b: VCS content inbound - svn:// / http://
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - Archives: C-005 mitigates when hash is present. Git/SVN refs have no equivalent integrity mechanism; pinning to a commit SHA is the strongest available mitigation.
-   * - DFT-05
-     - Mutable VCS reference enables silent content substitution
-     - DF-04b: VCS content inbound - svn:// / http://
-     - | **Sev:** 🟡M
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-005 mitigates archive deps when hash present. Git/SVN: no integrity mechanism; pinning to an immutable commit SHA is recommended but not enforced by dfetch.
-   * - DFT-17
-     - Typosquatting or unverified source identity on an unauthenticated channel
-     - DF-04b: VCS content inbound - svn:// / http://
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** S
-       | **Status:** Accept
-     - Manifest author responsibility; the manifest is under code review.  Accepted based on the **Manifest under code review** assumption: ``dfetch.yaml`` is under version control and subject to code review; an adversary who introduces a typosquatted or unverified URL must do so through a manifest change that passes the review boundary.
-   * - DFT-23
-     - Replay or freeze attack delivers stale content to suppress security updates
-     - DF-04b: VCS content inbound - svn:// / http://
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - No freshness check; ``dfetch check`` detects version drift but does not enforce a minimum version or reject stale content.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned dependencies are mutable references whose content can be changed by upstream force-pushes; stale-content delivery is an acknowledged consequence of using mutable pins without a freshness enforcement mechanism.
-   * - DFT-31
-     - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
-     - DF-04b: VCS content inbound - svn:// / http://
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** R
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; no mechanism exists to require or verify upstream SLSA source level.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; verifying upstream governance controls is outside dfetch's own security posture.
-   * - DFT-33
-     - Upstream default-branch history rewritten — ancestry broken, pinned SHA orphaned or made unreachable
-     - DF-04b: VCS content inbound - svn:// / http://
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; dfetch cannot prevent or detect upstream force-pushes.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned Git dependencies are mutable references; upstream force-pushes silently change what is fetched without triggering a manifest diff, and dfetch has no mechanism to verify that a pinned SHA remains reachable after a history rewrite.
-   * - DFT-02
-     - Supply-chain content substitution via server-side compromise
-     - DF-05a: Archive download request - HTTPS
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - Archives: C-005 mitigates when hash is present. Git/SVN refs have no equivalent integrity mechanism; pinning to a commit SHA is the strongest available mitigation.
-   * - DFT-05
-     - Mutable VCS reference enables silent content substitution
-     - DF-05a: Archive download request - HTTPS
-     - | **Sev:** 🟡M
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-005 mitigates archive deps when hash present. Git/SVN: no integrity mechanism; pinning to an immutable commit SHA is recommended but not enforced by dfetch.
-   * - DFT-12
-     - SSRF via unvalidated HTTP redirect chain
-     - DF-05a: Archive download request - HTTPS
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** I
-       | **Status:** Accept
-     - Archive downloads follow up to 10 HTTP redirects without validating the destination against RFC-1918, loopback, or link-local ranges; SSRF to internal metadata endpoints is possible.  Accepted based on the **No HTTPS enforcement** assumption: HTTPS enforcement and safe URL selection are the manifest author's responsibility; the manifest is under code review, and URLs that could expose internal services should be rejected at the review boundary.
-   * - DFT-17
-     - Typosquatting or unverified source identity on an unauthenticated channel
-     - DF-05a: Archive download request - HTTPS
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** S
-       | **Status:** Accept
-     - Manifest author responsibility; the manifest is under code review.  Accepted based on the **Manifest under code review** assumption: ``dfetch.yaml`` is under version control and subject to code review; an adversary who introduces a typosquatted or unverified URL must do so through a manifest change that passes the review boundary.
-   * - DFT-23
-     - Replay or freeze attack delivers stale content to suppress security updates
-     - DF-05a: Archive download request - HTTPS
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - No freshness check; ``dfetch check`` detects version drift but does not enforce a minimum version or reject stale content.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned dependencies are mutable references whose content can be changed by upstream force-pushes; stale-content delivery is an acknowledged consequence of using mutable pins without a freshness enforcement mechanism.
-   * - DFT-31
-     - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
-     - DF-05a: Archive download request - HTTPS
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** R
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; no mechanism exists to require or verify upstream SLSA source level.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; verifying upstream governance controls is outside dfetch's own security posture.
-   * - DFT-33
-     - Upstream default-branch history rewritten — ancestry broken, pinned SHA orphaned or made unreachable
-     - DF-05a: Archive download request - HTTPS
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; dfetch cannot prevent or detect upstream force-pushes.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned Git dependencies are mutable references; upstream force-pushes silently change what is fetched without triggering a manifest diff, and dfetch has no mechanism to verify that a pinned SHA remains reachable after a history rewrite.
-   * - DFT-01
-     - Unencrypted transport interception (MITM)
-     - DF-05b: Archive download request - HTTP
-     - | **Sev:** 🟠H
-       | **Risk:** 🔴C
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-005 mitigates only when ``integrity.hash`` is present; plain HTTP without a hash has no transport or content protection.
-   * - DFT-02
-     - Supply-chain content substitution via server-side compromise
-     - DF-05b: Archive download request - HTTP
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - Archives: C-005 mitigates when hash is present. Git/SVN refs have no equivalent integrity mechanism; pinning to a commit SHA is the strongest available mitigation.
-   * - DFT-05
-     - Mutable VCS reference enables silent content substitution
-     - DF-05b: Archive download request - HTTP
-     - | **Sev:** 🟡M
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-005 mitigates archive deps when hash present. Git/SVN: no integrity mechanism; pinning to an immutable commit SHA is recommended but not enforced by dfetch.
-   * - DFT-12
-     - SSRF via unvalidated HTTP redirect chain
-     - DF-05b: Archive download request - HTTP
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** I
-       | **Status:** Accept
-     - Archive downloads follow up to 10 HTTP redirects without validating the destination against RFC-1918, loopback, or link-local ranges; SSRF to internal metadata endpoints is possible.  Accepted based on the **No HTTPS enforcement** assumption: HTTPS enforcement and safe URL selection are the manifest author's responsibility; the manifest is under code review, and URLs that could expose internal services should be rejected at the review boundary.
-   * - DFT-17
-     - Typosquatting or unverified source identity on an unauthenticated channel
-     - DF-05b: Archive download request - HTTP
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** S
-       | **Status:** Accept
-     - Manifest author responsibility; the manifest is under code review.  Accepted based on the **Manifest under code review** assumption: ``dfetch.yaml`` is under version control and subject to code review; an adversary who introduces a typosquatted or unverified URL must do so through a manifest change that passes the review boundary.
-   * - DFT-23
-     - Replay or freeze attack delivers stale content to suppress security updates
-     - DF-05b: Archive download request - HTTP
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - No freshness check; ``dfetch check`` detects version drift but does not enforce a minimum version or reject stale content.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned dependencies are mutable references whose content can be changed by upstream force-pushes; stale-content delivery is an acknowledged consequence of using mutable pins without a freshness enforcement mechanism.
-   * - DFT-31
-     - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
-     - DF-05b: Archive download request - HTTP
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** R
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; no mechanism exists to require or verify upstream SLSA source level.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; verifying upstream governance controls is outside dfetch's own security posture.
-   * - DFT-33
-     - Upstream default-branch history rewritten — ancestry broken, pinned SHA orphaned or made unreachable
-     - DF-05b: Archive download request - HTTP
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; dfetch cannot prevent or detect upstream force-pushes.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned Git dependencies are mutable references; upstream force-pushes silently change what is fetched without triggering a manifest diff, and dfetch has no mechanism to verify that a pinned SHA remains reachable after a history rewrite.
-   * - DFT-02
-     - Supply-chain content substitution via server-side compromise
-     - DF-06a: Archive bytes - HTTPS
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - Archives: C-005 mitigates when hash is present. Git/SVN refs have no equivalent integrity mechanism; pinning to a commit SHA is the strongest available mitigation.
-   * - DFT-05
-     - Mutable VCS reference enables silent content substitution
-     - DF-06a: Archive bytes - HTTPS
-     - | **Sev:** 🟡M
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-005 mitigates archive deps when hash present. Git/SVN: no integrity mechanism; pinning to an immutable commit SHA is recommended but not enforced by dfetch.
-   * - DFT-17
-     - Typosquatting or unverified source identity on an unauthenticated channel
-     - DF-06a: Archive bytes - HTTPS
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** S
-       | **Status:** Accept
-     - Manifest author responsibility; the manifest is under code review.  Accepted based on the **Manifest under code review** assumption: ``dfetch.yaml`` is under version control and subject to code review; an adversary who introduces a typosquatted or unverified URL must do so through a manifest change that passes the review boundary.
-   * - DFT-23
-     - Replay or freeze attack delivers stale content to suppress security updates
-     - DF-06a: Archive bytes - HTTPS
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - No freshness check; ``dfetch check`` detects version drift but does not enforce a minimum version or reject stale content.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned dependencies are mutable references whose content can be changed by upstream force-pushes; stale-content delivery is an acknowledged consequence of using mutable pins without a freshness enforcement mechanism.
-   * - DFT-31
-     - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
-     - DF-06a: Archive bytes - HTTPS
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** R
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; no mechanism exists to require or verify upstream SLSA source level.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; verifying upstream governance controls is outside dfetch's own security posture.
-   * - DFT-33
-     - Upstream default-branch history rewritten — ancestry broken, pinned SHA orphaned or made unreachable
-     - DF-06a: Archive bytes - HTTPS
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; dfetch cannot prevent or detect upstream force-pushes.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned Git dependencies are mutable references; upstream force-pushes silently change what is fetched without triggering a manifest diff, and dfetch has no mechanism to verify that a pinned SHA remains reachable after a history rewrite.
-   * - DFT-01
-     - Unencrypted transport interception (MITM)
-     - DF-06b: Archive bytes - HTTP (plaintext risk)
-     - | **Sev:** 🟠H
-       | **Risk:** 🔴C
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-005 mitigates only when ``integrity.hash`` is present; plain HTTP without a hash has no transport or content protection.
-   * - DFT-02
-     - Supply-chain content substitution via server-side compromise
-     - DF-06b: Archive bytes - HTTP (plaintext risk)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - Archives: C-005 mitigates when hash is present. Git/SVN refs have no equivalent integrity mechanism; pinning to a commit SHA is the strongest available mitigation.
-   * - DFT-05
-     - Mutable VCS reference enables silent content substitution
-     - DF-06b: Archive bytes - HTTP (plaintext risk)
-     - | **Sev:** 🟡M
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-005 mitigates archive deps when hash present. Git/SVN: no integrity mechanism; pinning to an immutable commit SHA is recommended but not enforced by dfetch.
-   * - DFT-17
-     - Typosquatting or unverified source identity on an unauthenticated channel
-     - DF-06b: Archive bytes - HTTP (plaintext risk)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** S
-       | **Status:** Accept
-     - Manifest author responsibility; the manifest is under code review.  Accepted based on the **Manifest under code review** assumption: ``dfetch.yaml`` is under version control and subject to code review; an adversary who introduces a typosquatted or unverified URL must do so through a manifest change that passes the review boundary.
-   * - DFT-23
-     - Replay or freeze attack delivers stale content to suppress security updates
-     - DF-06b: Archive bytes - HTTP (plaintext risk)
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - No freshness check; ``dfetch check`` detects version drift but does not enforce a minimum version or reject stale content.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned dependencies are mutable references whose content can be changed by upstream force-pushes; stale-content delivery is an acknowledged consequence of using mutable pins without a freshness enforcement mechanism.
-   * - DFT-31
-     - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
-     - DF-06b: Archive bytes - HTTP (plaintext risk)
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** R
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; no mechanism exists to require or verify upstream SLSA source level.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; verifying upstream governance controls is outside dfetch's own security posture.
-   * - DFT-33
-     - Upstream default-branch history rewritten — ancestry broken, pinned SHA orphaned or made unreachable
-     - DF-06b: Archive bytes - HTTP (plaintext risk)
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Upstream repositories are outside dfetch's control; dfetch cannot prevent or detect upstream force-pushes.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned Git dependencies are mutable references; upstream force-pushes silently change what is fetched without triggering a manifest diff, and dfetch has no mechanism to verify that a pinned SHA remains reachable after a history rewrite.
-   * - DFT-07
-     - CI/CD secret exfiltration via supply-chain attack on build environment
-     - A-24: Archive Extraction (tarfile / zipfile)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** I
-       | **Status:** Accept
-     - dfetch uses ``shell=False`` throughout (C-007); residual supply-chain compromise of dfetch itself is the supply-chain model's scope.  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; a compromised dfetch installation is addressed by the supply-chain threat model, not the runtime-usage model.
    * - DFT-14
      - Dangerous file permission bits preserved during archive extraction
      - A-24: Archive Extraction (tarfile / zipfile)
@@ -1510,25 +1006,81 @@ Threats
        | **STRIDE:** T
        | **Status:** Accept
      - dfetch does not strip executable or setuid/setgid bits from extracted archive members; on Python < 3.11.4, TAR extraction preserves such bits.  dfetch supports Python ≥ 3.10 (``requires-python = '>=3.10'`` in ``pyproject.toml``), so this is a live concern for users on Python 3.10.x or Python 3.11.0–3.11.3.  Mitigation: pin dfetch to archives from trusted, reviewed sources only, or run on Python ≥ 3.11.4 where the TAR extraction filter strips these bits.  Accepted based on the **Trusted workstation** assumption: developer workstations are trusted at dfetch invocation time; setuid bits on extracted files in the vendor directory are a local concern within that trusted environment, and a compromised workstation is outside the scope of this model.
+   * - DFT-15
+     - VCS externals / submodules trigger undeclared third-party fetches
+     - A-27: Git Clone (git init / fetch / checkout)
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** T
+       | **Status:** Accept
+     - Git submodules are followed: ``git submodule update --init --recursive`` is called unconditionally during every Git fetch (``dfetch/vcs/git.py``), and each submodule is recorded as a ``Dependency`` with ``source_type='git-submodule'`` (``gitsubproject.py``).  SVN ``export`` is invoked without ``--ignore-externals``; each ``svn:externals`` entry triggers an additional fetch, and ``SvnSubProject._fetch_externals()`` records it as a ``Dependency`` with ``source_type='svn-external'`` (``svnsubproject.py``).  Both behaviours are intentional — dfetch vendors submodule and external trees and surfaces them in metadata — but the fetched URLs come from the upstream repository (``.gitmodules`` / ``svn:externals``), not from ``dfetch.yaml``, and therefore bypass manifest code review and carry no integrity hash.  Suppressing these fetches (e.g. passing ``--no-recurse-submodules`` or ``--ignore-externals``) would be a design change that removes intentional vendoring behaviour.  Accepted based on the **Manifest under code review** assumption: the choice to vendor an upstream that contains submodules or svn:externals is declared in ``dfetch.yaml`` and subject to code review; the decision to trust those nested URLs is made at the manifest-review boundary.
    * - DFT-16
      - Configured destination path allows writes to security-sensitive project directories
-     - A-24: Archive Extraction (tarfile / zipfile)
+     - A-22: dfetch Process
      - | **Sev:** 🔴VH
        | **Risk:** 🟠H
        | **STRIDE:** T E
        | **Status:** Accept
      - C-001 prevents writes outside the project root; no denylist blocks writes to sensitive within-root paths such as ``.github/workflows/``.  Defense-in-depth: CI pipelines should run ``dfetch update`` in a step that does not have write access to ``.github/workflows/`` (e.g. by restricting permissions or running in a directory sandbox).  Accepted based on the **Manifest under code review** assumption: the ``dst:`` path for every dependency is declared in ``dfetch.yaml`` and subject to code review; any change pointing a destination at a sensitive directory would be rejected at the review boundary.
-   * - DFT-08
-     - Tampered secondary artifact suppresses or bypasses security checks
-     - A-20: Local VCS Cache (temp)
-     - | **Sev:** 🟡M
+   * - DFT-17
+     - Typosquatting or unverified source identity on an unauthenticated channel
+     - DF-06a: Archive bytes - HTTPS
+     - | **Sev:** 🟠H
+       | **Risk:** 🟡M
+       | **STRIDE:** S
+       | **Status:** Accept
+     - Manifest author responsibility; the manifest is under code review.  Accepted based on the **Manifest under code review** assumption: ``dfetch.yaml`` is under version control and subject to code review; an adversary who introduces a typosquatted or unverified URL must do so through a manifest change that passes the review boundary.
+   * - DFT-18
+     - Dependency confusion - public registry package shadows private internal package
+     - A-12: dfetch Manifest
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** T S
+       | **Status:** Accept
+     - Not applicable to dfetch's fetch-by-explicit-URL model; relevant only if using package-registry shorthand.  Accepted based on the **dfetch scope boundary** assumption: dfetch fetches by explicit URL declared in the manifest rather than by package name resolved against a registry; dependency confusion via registry namespace shadowing cannot occur within dfetch's fetch model.
+   * - DFT-19
+     - Malicious upstream update or intentional maintainer sabotage (protestware)
+     - A-13: Fetched Source Code
+     - | **Sev:** 🔴VH
        | **Risk:** 🟠H
        | **STRIDE:** T
-       | **Status:** Mitigate
-     - Manifest schema (C-008) validates all string fields; patch files carry no integrity hash and are not verified before application.
+       | **Status:** Accept
+     - Upstream maintainer trust; pinning to an immutable commit SHA is the strongest available mitigation but is not enforced by dfetch.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; intentional maintainer sabotage of an upstream is outside dfetch's control.
+   * - DFT-20
+     - Abandoned package namespace reclaimed by malicious actor
+     - A-12: dfetch Manifest
+     - | **Sev:** 🟠H
+       | **Risk:** 🟡M
+       | **STRIDE:** S T
+       | **Status:** Accept
+     - Not applicable to direct-URL fetches; relevant only if using Git-hosting shorthand with inferred registry lookup.  Accepted based on the **dfetch scope boundary** assumption: dfetch fetches by explicit URL declared in the manifest rather than resolving package names against a registry; abandoned-namespace reclaim attacks require a registry lookup step that does not exist in dfetch's fetch model.
+   * - DFT-21
+     - Unsigned or forged VCS tag accepted as a trusted version pin
+     - DF-04a: VCS content inbound - HTTPS/SSH
+     - | **Sev:** 🟠H
+       | **Risk:** 🟡M
+       | **STRIDE:** S T
+       | **Status:** Accept
+     - dfetch does not verify VCS tag signatures; pinning to an immutable commit SHA is recommended.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned Git dependencies are mutable references; upstream force-pushes can silently change the commit a tag resolves to without triggering a manifest diff, and tag-signature verification is not enforced by dfetch.
+   * - DFT-22
+     - Vendored content contains submodule or nested external reference triggering undeclared fetch
+     - A-13: Fetched Source Code
+     - | **Sev:** 🟡M
+       | **Risk:** 🟡M
+       | **STRIDE:** T
+       | **Status:** Accept
+     - dfetch does not parse or execute embedded build manifests (CMakeLists.txt, package.json, etc.); undeclared fetches via build-system externals cannot occur.  However, Git dependencies with submodules and SVN dependencies with ``svn:externals`` do trigger undeclared fetches — see DFT-15 for details and mitigations.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code and any nested dependencies it carries is the responsibility of the manifest author who selects and pins each dependency.
+   * - DFT-23
+     - Replay or freeze attack delivers stale content to suppress security updates
+     - DF-06a: Archive bytes - HTTPS
+     - | **Sev:** 🟡M
+       | **Risk:** 🟡M
+       | **STRIDE:** T
+       | **Status:** Accept
+     - No freshness check; ``dfetch check`` detects version drift but does not enforce a minimum version or reject stale content.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned dependencies are mutable references whose content can be changed by upstream force-pushes; stale-content delivery is an acknowledged consequence of using mutable pins without a freshness enforcement mechanism.
    * - DFT-24
      - Local dependency cache or metadata store poisoned to suppress integrity alerts
-     - A-20: Local VCS Cache (temp)
+     - A-18: Dependency Metadata
      - | **Sev:** 🟠H
        | **Risk:** 🟡M
        | **STRIDE:** T
@@ -1536,12 +1088,20 @@ Threats
      - ``.dfetch_data.yaml`` metadata is not integrity-protected; tampering could suppress update notifications from ``dfetch check``.  Accepted based on the **Trusted workstation** assumption: developer workstations are trusted at dfetch invocation time; local filesystem write access sufficient to tamper with ``.dfetch_data.yaml`` implies a compromised workstation, which is outside the scope of this model.
    * - DFT-25
      - Forged or unverifiable provenance attestation conceals malicious build output
-     - A-20: Local VCS Cache (temp)
+     - A-15: SBOM Output (CycloneDX)
      - | **Sev:** 🟠H
        | **Risk:** 🟠H
        | **STRIDE:** S T R
        | **Status:** Accept
      - dfetch does not verify upstream SLSA provenance of fetched sources; provenance verification is the consumer's responsibility.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; upstream provenance attestation is outside dfetch's own security posture.
+   * - DFT-26
+     - Protocol or transport downgrade forces connection over insecure channel
+     - A-27: Git Clone (git init / fetch / checkout)
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** T I
+       | **Status:** Mitigate
+     - C-009 emits a visible warning immediately before the VCS command when a plaintext scheme (``http://``, ``git://``, ``svn://``) is detected, with credentials redacted and ``https://`` / ``svn+ssh://`` recommended.  Detection only — dfetch does not reject or upgrade plaintext URLs; scheme selection remains the manifest author's responsibility.
    * - DFT-28
      - CI/CD build cache poisoned to silently substitute a malicious compiled artifact
      - A-20: Local VCS Cache (temp)
@@ -1550,118 +1110,38 @@ Threats
        | **STRIDE:** T
        | **Status:** Accept
      - Build-cache poisoning (SLSA E6) is a CI/CD supply-chain concern that applies to the dfetch build pipeline, not to runtime usage.  dfetch does not maintain a persistent compiled artifact cache; fetched source files are written directly to the vendor directory.  See the supply-chain threat model for the mitigating control (C-033).  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; the CI/CD build pipeline for dfetch itself is outside the scope of the runtime-usage model.
-   * - DFT-08
-     - Tampered secondary artifact suppresses or bypasses security checks
-     - A-21: Audit / Check Reports
+   * - DFT-30
+     - Weak or deprecated hash algorithm allows collision-based integrity bypass
+     - A-22: dfetch Process
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** T S
+       | **Status:** Mitigate
+     - C-005, C-034
+   * - DFT-31
+     - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
+     - DF-04a: VCS content inbound - HTTPS/SSH
      - | **Sev:** 🟡M
-       | **Risk:** 🟠H
-       | **STRIDE:** T
-       | **Status:** Mitigate
-     - Manifest schema (C-008) validates all string fields; patch files carry no integrity hash and are not verified before application.
-   * - DFT-24
-     - Local dependency cache or metadata store poisoned to suppress integrity alerts
-     - A-21: Audit / Check Reports
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** T
+       | **Risk:** 🟢L
+       | **STRIDE:** R
        | **Status:** Accept
-     - ``.dfetch_data.yaml`` metadata is not integrity-protected; tampering could suppress update notifications from ``dfetch check``.  Accepted based on the **Trusted workstation** assumption: developer workstations are trusted at dfetch invocation time; local filesystem write access sufficient to tamper with ``.dfetch_data.yaml`` implies a compromised workstation, which is outside the scope of this model.
-   * - DFT-25
-     - Forged or unverifiable provenance attestation conceals malicious build output
-     - A-21: Audit / Check Reports
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** S T R
-       | **Status:** Accept
-     - dfetch does not verify upstream SLSA provenance of fetched sources; provenance verification is the consumer's responsibility.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; upstream provenance attestation is outside dfetch's own security posture.
-   * - DFT-28
-     - CI/CD build cache poisoned to silently substitute a malicious compiled artifact
-     - A-21: Audit / Check Reports
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T
-       | **Status:** Accept
-     - Build-cache poisoning (SLSA E6) is a CI/CD supply-chain concern that applies to the dfetch build pipeline, not to runtime usage.  dfetch does not maintain a persistent compiled artifact cache; fetched source files are written directly to the vendor directory.  See the supply-chain threat model for the mitigating control (C-033).  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; the CI/CD build pipeline for dfetch itself is outside the scope of the runtime-usage model.
-   * - DFT-03
-     - Path traversal in archive or patch extraction
-     - A-27: Git Clone (git init / fetch / checkout)
-     - | **Sev:** 🔴VH
-       | **Risk:** 🟠H
-       | **STRIDE:** T E
-       | **Status:** Mitigate
-     - Archive and VCS extraction mitigated by C-001, C-003, C-004. Patch files carry no integrity hash and are not independently verified.
-   * - DFT-07
-     - CI/CD secret exfiltration via supply-chain attack on build environment
-     - A-27: Git Clone (git init / fetch / checkout)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** I
-       | **Status:** Accept
-     - dfetch uses ``shell=False`` throughout (C-007); residual supply-chain compromise of dfetch itself is the supply-chain model's scope.  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; a compromised dfetch installation is addressed by the supply-chain threat model, not the runtime-usage model.
-   * - DFT-09
-     - Archive decompression bomb causes resource exhaustion
-     - A-27: Git Clone (git init / fetch / checkout)
+     - Upstream repositories are outside dfetch's control; no mechanism exists to require or verify upstream SLSA source level.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; verifying upstream governance controls is outside dfetch's own security posture.
+   * - DFT-32
+     - Upstream source enforces no mandatory two-party review — single contributor can introduce changes without independent verification
+     - A-13: Fetched Source Code
      - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** D
-       | **Status:** Mitigate
-     - C-002
-   * - DFT-15
-     - VCS externals / submodules trigger undeclared third-party fetches
-     - A-27: Git Clone (git init / fetch / checkout)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
+       | **Risk:** 🟢L
        | **STRIDE:** T
        | **Status:** Accept
-     - Git submodules are followed: ``git submodule update --init --recursive`` is called unconditionally during every Git fetch (``dfetch/vcs/git.py``), and each submodule is recorded as a ``Dependency`` with ``source_type='git-submodule'`` (``gitsubproject.py``).  SVN ``export`` is invoked without ``--ignore-externals``; each ``svn:externals`` entry triggers an additional fetch, and ``SvnSubProject._fetch_externals()`` records it as a ``Dependency`` with ``source_type='svn-external'`` (``svnsubproject.py``).  Both behaviours are intentional — dfetch vendors submodule and external trees and surfaces them in metadata — but the fetched URLs come from the upstream repository (``.gitmodules`` / ``svn:externals``), not from ``dfetch.yaml``, and therefore bypass manifest code review and carry no integrity hash.  Suppressing these fetches (e.g. passing ``--no-recurse-submodules`` or ``--ignore-externals``) would be a design change that removes intentional vendoring behaviour.  Accepted based on the **Manifest under code review** assumption: the choice to vendor an upstream that contains submodules or svn:externals is declared in ``dfetch.yaml`` and subject to code review; the decision to trust those nested URLs is made at the manifest-review boundary.
-   * - DFT-26
-     - Protocol or transport downgrade forces connection over insecure channel
-     - A-27: Git Clone (git init / fetch / checkout)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T I
-       | **Status:** Accept
-     - dfetch accepts ``http://``, ``svn://``, and other non-TLS scheme URLs; HTTPS enforcement is the manifest author's responsibility.  Accepted based on the **No HTTPS enforcement** assumption: HTTPS enforcement is the responsibility of the manifest author; dfetch accepts non-TLS scheme URLs as written and does not upgrade or reject them.
-   * - DFT-03
-     - Path traversal in archive or patch extraction
-     - A-26: SVN Export (svn export)
-     - | **Sev:** 🔴VH
-       | **Risk:** 🟠H
-       | **STRIDE:** T E
-       | **Status:** Mitigate
-     - Archive and VCS extraction mitigated by C-001, C-003, C-004. Patch files carry no integrity hash and are not independently verified.
-   * - DFT-07
-     - CI/CD secret exfiltration via supply-chain attack on build environment
-     - A-26: SVN Export (svn export)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** I
-       | **Status:** Accept
-     - dfetch uses ``shell=False`` throughout (C-007); residual supply-chain compromise of dfetch itself is the supply-chain model's scope.  Accepted based on the **dfetch scope boundary** assumption: dfetch is responsible only for its own security posture; a compromised dfetch installation is addressed by the supply-chain threat model, not the runtime-usage model.
-   * - DFT-09
-     - Archive decompression bomb causes resource exhaustion
-     - A-26: SVN Export (svn export)
+     - Upstream repositories are outside dfetch's control; no mechanism exists to require mandatory two-party review on upstream changes.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code is the responsibility of the manifest author who selects and pins each dependency; requiring upstream review policies is outside dfetch's own security posture.
+   * - DFT-33
+     - Upstream default-branch history rewritten — ancestry broken, pinned SHA orphaned or made unreachable
+     - DF-04a: VCS content inbound - HTTPS/SSH
      - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** D
-       | **Status:** Mitigate
-     - C-002
-   * - DFT-15
-     - VCS externals / submodules trigger undeclared third-party fetches
-     - A-26: SVN Export (svn export)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
+       | **Risk:** 🟢L
        | **STRIDE:** T
        | **Status:** Accept
-     - Git submodules are followed: ``git submodule update --init --recursive`` is called unconditionally during every Git fetch (``dfetch/vcs/git.py``), and each submodule is recorded as a ``Dependency`` with ``source_type='git-submodule'`` (``gitsubproject.py``).  SVN ``export`` is invoked without ``--ignore-externals``; each ``svn:externals`` entry triggers an additional fetch, and ``SvnSubProject._fetch_externals()`` records it as a ``Dependency`` with ``source_type='svn-external'`` (``svnsubproject.py``).  Both behaviours are intentional — dfetch vendors submodule and external trees and surfaces them in metadata — but the fetched URLs come from the upstream repository (``.gitmodules`` / ``svn:externals``), not from ``dfetch.yaml``, and therefore bypass manifest code review and carry no integrity hash.  Suppressing these fetches (e.g. passing ``--no-recurse-submodules`` or ``--ignore-externals``) would be a design change that removes intentional vendoring behaviour.  Accepted based on the **Manifest under code review** assumption: the choice to vendor an upstream that contains submodules or svn:externals is declared in ``dfetch.yaml`` and subject to code review; the decision to trust those nested URLs is made at the manifest-review boundary.
-   * - DFT-26
-     - Protocol or transport downgrade forces connection over insecure channel
-     - A-26: SVN Export (svn export)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T I
-       | **Status:** Accept
-     - dfetch accepts ``http://``, ``svn://``, and other non-TLS scheme URLs; HTTPS enforcement is the manifest author's responsibility.  Accepted based on the **No HTTPS enforcement** assumption: HTTPS enforcement is the responsibility of the manifest author; dfetch accepts non-TLS scheme URLs as written and does not upgrade or reject them.
+     - Upstream repositories are outside dfetch's control; dfetch cannot prevent or detect upstream force-pushes.  Accepted based on the **Mutable VCS references** assumption: branch- and tag-pinned Git dependencies are mutable references; upstream force-pushes silently change what is fetched without triggering a manifest diff, and dfetch has no mechanism to verify that a pinned SHA remains reachable after a history rewrite.
 
 
 Controls
@@ -1708,6 +1188,10 @@ Controls
      - Manifest input validation
      - DFT-04, DFT-08
      - StrictYAML schema with ``SAFE_STR = Regex(r"^[^\x00-\x1F\x7F-\x9F]*$")`` rejects control characters in all string fields.  ``dfetch/manifest/schema.py``
+   * - C-009
+     - Plaintext transport detection
+     - DFT-26
+     - ``plaintext_warning()`` (``dfetch/manifest/project.py``) inspects the resolved remote URL immediately before each VCS command is issued (inside the ``check_for_update`` and ``update`` spinners in ``subproject.py``).  If the scheme is ``http://``, ``git://``, or ``svn://``, a visible warning is emitted naming the redacted URL (credentials stripped from the userinfo component) and recommending ``https://`` or ``svn+ssh://``.  Detection only — dfetch still proceeds with the plaintext connection; the control raises user awareness but does not enforce scheme selection.  ``dfetch/manifest/project.py, dfetch/project/subproject.py``
    * - C-034
      - Hash algorithm allowlist (SHA-256/384/512 only)
      - DFT-30
