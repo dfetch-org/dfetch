@@ -16,13 +16,21 @@ THREATS_FILE = os.path.join(os.path.dirname(__file__), "threats.json")
 
 @dataclass
 class ThreatResponse:
-    """Per-threat handling decision: how this model responds to a specific threat."""
+    """Per-threat handling decision: how this model responds to a specific threat.
+
+    ``target`` names the single canonical element or dataflow the threat is
+    documented against.  pytm matches a threat to every element its condition
+    satisfies, so a threat that applies to many elements yields many identical
+    findings; the rendered report collapses these to one row and shows this
+    target.  Leave empty for threats that match a single element.
+    """
 
     threat_id: str
     status: Literal["avoid", "mitigate", "accept", "transfer"]
     risk: Literal["Critical", "High", "Medium", "Low"] = "Medium"
     stride: list[str] = field(default_factory=list)
     note: str = ""
+    target: str = ""
 
 
 @dataclass

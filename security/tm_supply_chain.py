@@ -870,15 +870,26 @@ ASSET_CONTROLS: dict[str, list[Control]] = build_asset_controls_index(
 )
 
 RESPONSES: list[ThreatResponse] = [
-    ThreatResponse("DFT-02", "mitigate", risk="High", stride=["Tampering", "Spoofing"]),
+    ThreatResponse(
+        "DFT-02",
+        "mitigate",
+        risk="High",
+        stride=["Tampering", "Spoofing"],
+        target="A-03: PyPI / TestPyPI",
+    ),
     ThreatResponse(
         "DFT-03",
         "mitigate",
         risk="Medium",
         stride=["Tampering", "Elevation of Privilege"],
+        target="A-08: Python Build (wheel / sdist)",
     ),
     ThreatResponse(
-        "DFT-05", "mitigate", risk="Medium", stride=["Tampering", "Spoofing"]
+        "DFT-05",
+        "mitigate",
+        risk="Medium",
+        stride=["Tampering", "Spoofing"],
+        target="DF-16: CI fetches build/dev deps from PyPI",
     ),
     ThreatResponse(
         "DFT-06",
@@ -900,6 +911,7 @@ RESPONSES: list[ThreatResponse] = [
             "Information Disclosure",
             "Elevation of Privilege",
         ],
+        target="A-08: Python Build (wheel / sdist)",
     ),
     ThreatResponse(
         "DFT-08",
@@ -926,6 +938,7 @@ RESPONSES: list[ThreatResponse] = [
             "run on ephemeral, isolated runners; any denial-of-service impact from a "
             "decompression bomb is bounded to the affected job and does not persist beyond it."
         ),
+        target="A-08: Python Build (wheel / sdist)",
     ),
     ThreatResponse(
         "DFT-10",
@@ -947,7 +960,13 @@ RESPONSES: list[ThreatResponse] = [
             "a compromised maintainer account is outside the scope of this model."
         ),
     ),
-    ThreatResponse("DFT-17", "mitigate", risk="Medium", stride=["Spoofing"]),
+    ThreatResponse(
+        "DFT-17",
+        "mitigate",
+        risk="Medium",
+        stride=["Spoofing"],
+        target="A-03: PyPI / TestPyPI",
+    ),
     ThreatResponse(
         "DFT-18",
         "accept",
@@ -986,6 +1005,7 @@ RESPONSES: list[ThreatResponse] = [
             "for registry dependencies is a registry-level concern outside the scope of this "
             "model."
         ),
+        target="DF-16: CI fetches build/dev deps from PyPI",
     ),
     ThreatResponse(
         "DFT-24",
@@ -1006,18 +1026,35 @@ RESPONSES: list[ThreatResponse] = [
         risk="High",
         stride=["Spoofing", "Tampering", "Repudiation"],
     ),
-    ThreatResponse("DFT-27", "mitigate", risk="High", stride=["Tampering", "Spoofing"]),
+    ThreatResponse(
+        "DFT-27",
+        "mitigate",
+        risk="High",
+        stride=["Tampering", "Spoofing"],
+        target="A-04: Release Gate / Code Review",
+    ),
     ThreatResponse("DFT-28", "mitigate", risk="High", stride=["Tampering"]),
     ThreatResponse(
         "DFT-29",
         "mitigate",
         risk="High",
         stride=["Information Disclosure", "Tampering"],
+        target="A-08: Python Build (wheel / sdist)",
     ),
     ThreatResponse(
-        "DFT-31", "mitigate", risk="Low", stride=["Repudiation", "Spoofing"]
+        "DFT-31",
+        "mitigate",
+        risk="Low",
+        stride=["Repudiation", "Spoofing"],
+        target="DF-26: Consumer downloads dfetch from PyPI",
     ),
-    ThreatResponse("DFT-33", "mitigate", risk="Low", stride=["Tampering"]),
+    ThreatResponse(
+        "DFT-33",
+        "mitigate",
+        risk="Low",
+        stride=["Tampering"],
+        target="DF-26: Consumer downloads dfetch from PyPI",
+    ),
 ]
 
 if __name__ == "__main__":

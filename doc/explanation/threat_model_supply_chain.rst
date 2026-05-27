@@ -632,70 +632,14 @@ Threats
      - Target
      - Analysis
      - Controls / Notes
-   * - DFT-03
-     - Path traversal in archive or patch extraction
-     - A-04: Release Gate / Code Review
-     - | **Sev:** 🔴VH
-       | **Risk:** 🟡M
-       | **STRIDE:** T E
-       | **Status:** Mitigate
-     - C-015, C-017
-   * - DFT-07
-     - CI/CD secret exfiltration via supply-chain attack on build environment
-     - A-04: Release Gate / Code Review
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** S T I E
-       | **Status:** Mitigate
-     - C-009, C-010, C-011, C-012, C-013, C-024
-   * - DFT-09
-     - Archive decompression bomb causes resource exhaustion
-     - A-04: Release Gate / Code Review
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** D
-       | **Status:** Accept
-     - Decompression-bomb protection is a runtime concern (C-002 in usage model), not a supply-chain pipeline control.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments run on ephemeral, isolated runners; any denial-of-service impact from a decompression bomb is bounded to the affected job and does not persist beyond it.
-   * - DFT-11
-     - Privileged account compromise enables unauthorised merge or release
-     - A-04: Release Gate / Code Review
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** S E
-       | **Status:** Accept
-     - No hardware-token MFA or mandatory second-approver enforced for accounts with merge or release-trigger rights.  Accepted based on the **Trusted workstation** assumption: developer workstations and accounts are trusted at development and commit time; a compromised maintainer account is outside the scope of this model.
-   * - DFT-27
-     - Build or release triggered from unofficial source fork or unprotected branch
-     - A-04: Release Gate / Code Review
+   * - DFT-02
+     - Supply-chain content substitution via server-side compromise
+     - A-03: PyPI / TestPyPI
      - | **Sev:** 🟠H
        | **Risk:** 🟠H
        | **STRIDE:** T S
        | **Status:** Mitigate
-     - C-032
-   * - DFT-29
-     - Signing key or short-lived publish credential exfiltrated from build environment
-     - A-04: Release Gate / Code Review
-     - | **Sev:** 🔴VH
-       | **Risk:** 🟠H
-       | **STRIDE:** I T
-       | **Status:** Mitigate
-     - C-013
-   * - DFT-03
-     - Path traversal in archive or patch extraction
-     - A-06: GitHub Actions Workflow
-     - | **Sev:** 🔴VH
-       | **Risk:** 🟡M
-       | **STRIDE:** T E
-       | **Status:** Mitigate
-     - C-015, C-017
-   * - DFT-09
-     - Archive decompression bomb causes resource exhaustion
-     - A-06: GitHub Actions Workflow
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** D
-       | **Status:** Accept
-     - Decompression-bomb protection is a runtime concern (C-002 in usage model), not a supply-chain pipeline control.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments run on ephemeral, isolated runners; any denial-of-service impact from a decompression bomb is bounded to the affected job and does not persist beyond it.
+     - C-022
    * - DFT-03
      - Path traversal in archive or patch extraction
      - A-08: Python Build (wheel / sdist)
@@ -704,6 +648,14 @@ Threats
        | **STRIDE:** T E
        | **Status:** Mitigate
      - C-015, C-017
+   * - DFT-05
+     - Mutable VCS reference enables silent content substitution
+     - DF-16: CI fetches build/dev deps from PyPI
+     - | **Sev:** 🟡M
+       | **Risk:** 🟡M
+       | **STRIDE:** T S
+       | **Status:** Mitigate
+     - C-021
    * - DFT-07
      - CI/CD secret exfiltration via supply-chain attack on build environment
      - A-08: Python Build (wheel / sdist)
@@ -712,6 +664,14 @@ Threats
        | **STRIDE:** S T I E
        | **Status:** Mitigate
      - C-009, C-010, C-011, C-012, C-013, C-024
+   * - DFT-08
+     - Tampered secondary artifact suppresses or bypasses security checks
+     - A-08b: GitHub Actions Build Cache
+     - | **Sev:** 🟡M
+       | **Risk:** 🟠H
+       | **STRIDE:** T
+       | **Status:** Accept
+     - Secondary artifacts are not independently verified in the supply-chain pipeline.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments run on ephemeral, GitHub-hosted runners whose isolation is provided by GitHub, so secondary artifacts written and consumed within a single job are considered adequately protected by that isolation.
    * - DFT-09
      - Archive decompression bomb causes resource exhaustion
      - A-08: Python Build (wheel / sdist)
@@ -720,22 +680,6 @@ Threats
        | **STRIDE:** D
        | **Status:** Accept
      - Decompression-bomb protection is a runtime concern (C-002 in usage model), not a supply-chain pipeline control.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments run on ephemeral, isolated runners; any denial-of-service impact from a decompression bomb is bounded to the affected job and does not persist beyond it.
-   * - DFT-27
-     - Build or release triggered from unofficial source fork or unprotected branch
-     - A-08: Python Build (wheel / sdist)
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-032
-   * - DFT-29
-     - Signing key or short-lived publish credential exfiltrated from build environment
-     - A-08: Python Build (wheel / sdist)
-     - | **Sev:** 🔴VH
-       | **Risk:** 🟠H
-       | **STRIDE:** I T
-       | **Status:** Mitigate
-     - C-013
    * - DFT-10
      - Build or development dependency substitution via compromised registry
      - A-07: dfetch Build / Dev Dependencies
@@ -744,6 +688,22 @@ Threats
        | **STRIDE:** T
        | **Status:** Mitigate
      - C-016 checks known-vulnerable deps on PRs; build deps lack ``--require-hashes`` pinning.
+   * - DFT-11
+     - Privileged account compromise enables unauthorised merge or release
+     - A-04: Release Gate / Code Review
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** S E
+       | **Status:** Accept
+     - No hardware-token MFA or mandatory second-approver enforced for accounts with merge or release-trigger rights.  Accepted based on the **Trusted workstation** assumption: developer workstations and accounts are trusted at development and commit time; a compromised maintainer account is outside the scope of this model.
+   * - DFT-17
+     - Typosquatting or unverified source identity on an unauthenticated channel
+     - A-03: PyPI / TestPyPI
+     - | **Sev:** 🟠H
+       | **Risk:** 🟡M
+       | **STRIDE:** S
+       | **Status:** Mitigate
+     - C-026
    * - DFT-18
      - Dependency confusion - public registry package shadows private internal package
      - A-07: dfetch Build / Dev Dependencies
@@ -760,14 +720,14 @@ Threats
        | **STRIDE:** S T
        | **Status:** Accept
      - Abandoned namespace reclaim is a registry-level concern outside dfetch's control.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments inherit the security posture of the GitHub-hosted runner, including its access to the public PyPI registry; registry-level namespace integrity is outside the scope of this model.
-   * - DFT-08
-     - Tampered secondary artifact suppresses or bypasses security checks
-     - A-08b: GitHub Actions Build Cache
+   * - DFT-23
+     - Replay or freeze attack delivers stale content to suppress security updates
+     - DF-16: CI fetches build/dev deps from PyPI
      - | **Sev:** 🟡M
-       | **Risk:** 🟠H
+       | **Risk:** 🟡M
        | **STRIDE:** T
        | **Status:** Accept
-     - Secondary artifacts are not independently verified in the supply-chain pipeline.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments run on ephemeral, GitHub-hosted runners whose isolation is provided by GitHub, so secondary artifacts written and consumed within a single job are considered adequately protected by that isolation.
+     - No version-pinning or update-freshness check in the supply-chain pipeline.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments inherit the security posture of the GitHub-hosted runner; freshness enforcement for registry dependencies is a registry-level concern outside the scope of this model.
    * - DFT-24
      - Local dependency cache or metadata store poisoned to suppress integrity alerts
      - A-08b: GitHub Actions Build Cache
@@ -784,6 +744,14 @@ Threats
        | **STRIDE:** S T R
        | **Status:** Mitigate
      - C-026, C-039
+   * - DFT-27
+     - Build or release triggered from unofficial source fork or unprotected branch
+     - A-04: Release Gate / Code Review
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** T S
+       | **Status:** Mitigate
+     - C-032
    * - DFT-28
      - CI/CD build cache poisoned to silently substitute a malicious compiled artifact
      - A-08b: GitHub Actions Build Cache
@@ -792,134 +760,14 @@ Threats
        | **STRIDE:** T
        | **Status:** Mitigate
      - C-033
-   * - DFT-02
-     - Supply-chain content substitution via server-side compromise
-     - DF-16: CI fetches build/dev deps from PyPI
-     - | **Sev:** 🟠H
+   * - DFT-29
+     - Signing key or short-lived publish credential exfiltrated from build environment
+     - A-08: Python Build (wheel / sdist)
+     - | **Sev:** 🔴VH
        | **Risk:** 🟠H
-       | **STRIDE:** T S
+       | **STRIDE:** I T
        | **Status:** Mitigate
-     - C-022
-   * - DFT-05
-     - Mutable VCS reference enables silent content substitution
-     - DF-16: CI fetches build/dev deps from PyPI
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-021
-   * - DFT-17
-     - Typosquatting or unverified source identity on an unauthenticated channel
-     - DF-16: CI fetches build/dev deps from PyPI
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** S
-       | **Status:** Mitigate
-     - C-026
-   * - DFT-23
-     - Replay or freeze attack delivers stale content to suppress security updates
-     - DF-16: CI fetches build/dev deps from PyPI
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - No version-pinning or update-freshness check in the supply-chain pipeline.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments inherit the security posture of the GitHub-hosted runner; freshness enforcement for registry dependencies is a registry-level concern outside the scope of this model.
-   * - DFT-31
-     - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
-     - DF-16: CI fetches build/dev deps from PyPI
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** R S
-       | **Status:** Mitigate
-     - C-037, C-039, C-040
-   * - DFT-33
-     - Upstream default-branch history rewritten — ancestry broken, pinned SHA orphaned or made unreachable
-     - DF-16: CI fetches build/dev deps from PyPI
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** T
-       | **Status:** Mitigate
-     - C-038
-   * - DFT-02
-     - Supply-chain content substitution via server-side compromise
-     - DF-25: pip install dfetch
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-022
-   * - DFT-05
-     - Mutable VCS reference enables silent content substitution
-     - DF-25: pip install dfetch
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-021
-   * - DFT-17
-     - Typosquatting or unverified source identity on an unauthenticated channel
-     - DF-25: pip install dfetch
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** S
-       | **Status:** Mitigate
-     - C-026
-   * - DFT-23
-     - Replay or freeze attack delivers stale content to suppress security updates
-     - DF-25: pip install dfetch
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - No version-pinning or update-freshness check in the supply-chain pipeline.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments inherit the security posture of the GitHub-hosted runner; freshness enforcement for registry dependencies is a registry-level concern outside the scope of this model.
-   * - DFT-31
-     - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
-     - DF-25: pip install dfetch
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** R S
-       | **Status:** Mitigate
-     - C-037, C-039, C-040
-   * - DFT-33
-     - Upstream default-branch history rewritten — ancestry broken, pinned SHA orphaned or made unreachable
-     - DF-25: pip install dfetch
-     - | **Sev:** 🟡M
-       | **Risk:** 🟢L
-       | **STRIDE:** T
-       | **Status:** Mitigate
-     - C-038
-   * - DFT-02
-     - Supply-chain content substitution via server-side compromise
-     - DF-26: Consumer downloads dfetch from PyPI
-     - | **Sev:** 🟠H
-       | **Risk:** 🟠H
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-022
-   * - DFT-05
-     - Mutable VCS reference enables silent content substitution
-     - DF-26: Consumer downloads dfetch from PyPI
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T S
-       | **Status:** Mitigate
-     - C-021
-   * - DFT-17
-     - Typosquatting or unverified source identity on an unauthenticated channel
-     - DF-26: Consumer downloads dfetch from PyPI
-     - | **Sev:** 🟠H
-       | **Risk:** 🟡M
-       | **STRIDE:** S
-       | **Status:** Mitigate
-     - C-026
-   * - DFT-23
-     - Replay or freeze attack delivers stale content to suppress security updates
-     - DF-26: Consumer downloads dfetch from PyPI
-     - | **Sev:** 🟡M
-       | **Risk:** 🟡M
-       | **STRIDE:** T
-       | **Status:** Accept
-     - No version-pinning or update-freshness check in the supply-chain pipeline.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments inherit the security posture of the GitHub-hosted runner; freshness enforcement for registry dependencies is a registry-level concern outside the scope of this model.
+     - C-013
    * - DFT-31
      - Upstream source publishes no SLSA Source provenance attestation — consumer cannot verify upstream security controls
      - DF-26: Consumer downloads dfetch from PyPI
