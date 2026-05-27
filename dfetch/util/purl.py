@@ -46,7 +46,7 @@ def _namespace_and_name_from_domain_and_path(domain: str, path: str) -> tuple[st
 
     if path:
         parts.extend(path.split("/"))
-    name = parts[-1] if parts else DEFAULT_NAME
+    name = parts[-1] if parts and parts[-1] else DEFAULT_NAME
     namespace = "/".join(parts[:-1])
 
     return namespace, name
