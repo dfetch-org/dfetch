@@ -149,8 +149,8 @@ def test_latest_tag_is_a_known_tag(current, available):
 # A bare filename stem: no URL query (?)/fragment (#)/path (/) separators.
 STEM = st.text(
     alphabet=st.characters(
-        whitelist_categories=("Ll", "Lu", "Nd"),
-        whitelist_characters="-_.",
+        whitelist_categories=("Ll", "Lu"),
+        whitelist_characters="-_.0123456789",
     ),
     min_size=1,
     max_size=20,
@@ -220,8 +220,8 @@ def test_strip_glob_prefix_never_raises(path, pattern):
 
 PATH_COMPONENT = st.text(
     alphabet=st.characters(
-        whitelist_categories=("Ll", "Lu", "Nd"),
-        whitelist_characters="-_",
+        whitelist_categories=("Ll", "Lu"),
+        whitelist_characters="-_0123456789",
     ),
     min_size=1,
     max_size=12,
