@@ -83,24 +83,25 @@ up-to-date checks.
 non-interactively inside CI/CD pipelines (GitHub Actions, GitLab CI, Jenkins, etc.)
 to reproduce a deterministic dependency state.
 
-*Reasonably foreseeable misuse*:
+*Reasonably foreseeable misuse*: the following are the principal harms *dfetch*
+aims to protect against. They are acknowledged here as priorities; the specific
+threats that realise them and the corresponding responses are modelled in the
+threat models below.
 
-- A manifest crafted with a malicious ``dst:`` path could attempt to write
-  files outside the project root (path traversal). dfetch mitigates this through
-  `check_no_path_traversal()` applied to all file system write operations.
-- A manifest pointing to an attacker-controlled upstream may introduce malicious
-  source code into the build pipeline. This is a primary supply-chain risk; the
-  optional `integrity.hash` field can be used as a mitigation for archive-based
-  sources to provide content integrity validation.
-- Execution in CI environments with insufficient network or secret isolation may
-  allow exfiltration risks if upstream sources are compromised or intentionally
-  malicious.
-
-.. note::
-
-   dfetch warns during dependency update/check operations when a project URL uses a plaintext
-   transport scheme (``http://``, ``git://``, or ``svn://``). Use ``https://``
-   or SSH (e.g. ``svn+ssh://``) to protect dependency fetches against interception.
+- **Credential and secret exfiltration in CI/CD.** When *dfetch* runs
+  non-interactively in a pipeline holding registry tokens, signing keys, or cloud
+  credentials, a compromised or intentionally malicious upstream source could read
+  and exfiltrate those secrets.
+- **Resource exhaustion from hostile archives.** A crafted archive (for example a
+  decompression bomb) can expand to an extreme size or member count on extraction,
+  exhausting disk or memory and denying service to the developer or build host.
+- **Introduction of vulnerable or malicious code into the superproject.** More
+  subtle than denial of service: an attacker-controlled upstream may ship source
+  carrying latent vulnerabilities or backdoors that are vendored into the consuming
+  project and propagated into downstream products.
+- **Destruction or overwrite of files outside the destination folder.** A malicious
+  manifest destination path, or hostile archive entries, could write, overwrite, or
+  delete files outside the intended vendoring directory on the end-user machine.
 
 Threat Models
 -------------
