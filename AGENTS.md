@@ -103,8 +103,10 @@ Implement the abstract interfaces in `dfetch/project/subproject.py` and `dfetch/
 Every change must be reflected in the documentation. Depending on the nature of the change:
 
 - **User-visible behaviour** (new feature, changed CLI, new option) → update the relevant `doc/how-to/` or `doc/reference/` page
-- **Notable fix or change** → add an entry to the changelog (`doc/changelog/`)
+- **Notable change to the dfetch product/program** (feature, fix, behaviour change) → add an entry to the changelog (`doc/changelog/`)
 - **Architecture change** → update `doc/explanation/architecture.rst`
+
+The changelog tracks the dfetch product/program only. Documentation-only changes (wording, structure, new explanatory pages) do not require a changelog entry.
 
 Documentation lives in `doc/` and is built with Sphinx.
 
