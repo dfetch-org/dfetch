@@ -104,6 +104,7 @@ jobs:
             _http._tcp.azure.archive.ubuntu.com:443
             _https._tcp.archive.ubuntu.com:443
             _https._tcp.security.ubuntu.com:443
+            archive.ubuntu.com:80
             archive.ubuntu.com:443
             azure.archive.ubuntu.com:443
             azure.archive.ubuntu.com:80
@@ -114,6 +115,7 @@ jobs:
             plantuml.com:443
             plantuml.com:80
             pypi.org:443
+            security.ubuntu.com:80
             security.ubuntu.com:443
             www.plantuml.com:80
 
@@ -133,6 +135,7 @@ jobs:
 
       - name: Install LaTeX
         run: |
+          sudo apt-get update
           sudo apt-get install -y texlive-latex-recommended texlive-fonts-recommended \
             texlive-latex-extra texlive-xetex latexmk
 
