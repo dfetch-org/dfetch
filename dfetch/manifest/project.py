@@ -493,6 +493,8 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
             return self._url
         if self._remote_obj:
             base = self._remote_obj.url.strip("/")
+            if not self._repo_path:
+                return base
             separator = ":" if _is_ssh_shorthand(base) else "/"
             return (base + separator + self._repo_path).strip("/")
         return ""

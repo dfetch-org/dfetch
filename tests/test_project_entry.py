@@ -74,3 +74,15 @@ def test_set_remote_strips_slash_prefix_from_https_url():
     entry = ProjectEntry({"name": "myrepo", "url": "https://github.com/org/repo"})
     entry.set_remote(Remote({"name": "gh", "url-base": "https://github.com"}))
     assert entry.remote_url == "https://github.com/org/repo"
+
+
+def test_remote_url_with_trailing_slash_in_base():
+    entry = ProjectEntry({"name": "myrepo", "repo-path": "myorg/myrepo"})
+    entry.set_remote(Remote({"name": "corp", "url-base": "https://github.com/"}))
+    assert entry.remote_url == "https://github.com/myorg/myrepo"
+
+
+def test_remote_url_with_empty_repo_path():
+    entry = ProjectEntry({"name": "myrepo"})
+    entry.set_remote(Remote({"name": "corp", "url-base": "git@git.mycompany.com"}))
+    assert entry.remote_url == "git@git.mycompany.com"
