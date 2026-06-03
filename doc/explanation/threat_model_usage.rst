@@ -685,9 +685,9 @@ Asset Identification
      - Data
      - High / High / High
    * - A-17: Embedded Credential in Remote URL
-     - A VCS or archive URL that encodes a credential in the userinfo component (e.g. ``https://user:TOKEN@github.com/org/repo.git``).  dfetch writes ``remote_url`` verbatim to ``.dfetch_data.yaml`` after each successful fetch.  If the URL contains a Personal Access Token or password, that credential is persisted in plaintext and typically committed to VCS, where it becomes readable from every clone and CI checkout indefinitely.
+     - A VCS or archive URL that encodes a credential in the userinfo component (e.g. ``https://user:TOKEN@github.com/org/repo.git``).  Without C-035 dfetch would write ``remote_url`` verbatim to ``.dfetch_data.yaml`` after each successful fetch, persisting that credential in plaintext.  C-035 strips the userinfo from the persisted ``remote_url`` and from every ``dependencies[].remote_url`` before write, so the credential no longer reaches disk.  The in-memory URL used to authenticate the fetch is untouched.
      - Data
-     - — / — / —
+     - Medium / — / —
    * - A-18: Dependency Metadata
      - ``.dfetch_data.yaml`` files written after each successful fetch.  Contains: remote_url, revision/branch/tag, hash, last-fetch timestamp.  Read by ``dfetch check`` to detect outdated deps.  Tampering can suppress update notifications - an attacker who controls the local filesystem can silently mask a compromised vendored dep.
      - Datastore
@@ -996,8 +996,8 @@ Threats
      - | **Sev:** 🟠H
        | **Risk:** 🟡M
        | **STRIDE:** I
-       | **Status:** Accept
-     - dfetch persists the configured URL to ``.dfetch_data.yaml``; credentials embedded in URLs appear in that file in plaintext.  Accepted based on the **No persisted secrets** assumption: no runtime secrets are persisted to disk by dfetch itself — VCS credentials are expected to be managed by the OS keychain, SSH agent, or CI secret store rather than embedded in source URLs.
+       | **Status:** Mitigate
+     - C-035 strips the userinfo component from every ``remote_url`` (top-level and ``dependencies[]``) before ``Metadata.dump()`` writes ``.dfetch_data.yaml``, so credentials embedded in a manifest URL no longer land in the on-disk metadata file or any clone of it.
    * - DFT-14
      - Dangerous file permission bits preserved during archive extraction
      - A-24: Archive Extraction (tarfile / zipfile)
@@ -1196,3 +1196,9 @@ Controls
      - Hash algorithm allowlist (SHA-256/384/512 only)
      - DFT-30
      - ``integrity_hash.py`` accepts only ``sha256:``, ``sha384:``, and ``sha512:`` prefixes; any other algorithm prefix is rejected at parse time.  MD5 and SHA-1 are not accepted.  This directly mitigates DFT-30 (SLSA M2: exploit cryptographic hash collisions) by ensuring that integrity hashes, when present, use algorithms with no known practical collision attacks.  ``dfetch/vcs/integrity_hash.py``
+   * - C-035
+     - Persisted-metadata credential redaction
+     - DFT-13
+     - ``Metadata.dump()`` rebuilds the netloc of every persisted URL from ``parsed.hostname`` and ``parsed.port`` via ``urllib.parse.urlsplit`` / ``urlunsplit``, dropping any ``user:password@`` userinfo before writing ``.dfetch_data.yaml``.  The same stripper is applied to each ``dependencies[].remote_url`` entry (git submodule, svn:external) so a credential in a nested upstream URL also never reaches disk.  The in-memory ``Metadata`` object held by the running command keeps the original URL — only the on-disk representation is redacted, so an in-flight authenticated fetch is unaffected.  ``dfetch/project/metadata.py``
+
+

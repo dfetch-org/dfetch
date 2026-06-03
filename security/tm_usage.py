@@ -284,16 +284,18 @@ def _make_usage_datastores_b(b_dev: Boundary) -> tuple[Data, Datastore, Datastor
         "A-17: Embedded Credential in Remote URL",
         description=(
             "A VCS or archive URL that encodes a credential in the userinfo component "
-            "(e.g. ``https://user:TOKEN@github.com/org/repo.git``).  "
-            "dfetch writes ``remote_url`` verbatim to ``.dfetch_data.yaml`` after each "
-            "successful fetch.  If the URL contains a Personal Access Token or password, "
-            "that credential is persisted in plaintext and typically committed to VCS, "
-            "where it becomes readable from every clone and CI checkout indefinitely."
+            "(e.g. ``https://user:TOKEN@github.com/org/repo.git``).  Without C-035 "
+            "dfetch would write ``remote_url`` verbatim to ``.dfetch_data.yaml`` after "
+            "each successful fetch, persisting that credential in plaintext.  C-035 "
+            "strips the userinfo from the persisted ``remote_url`` and from every "
+            "``dependencies[].remote_url`` before write, so the credential no longer "
+            "reaches disk.  The in-memory URL used to authenticate the fetch is "
+            "untouched."
         ),
         classification=Classification.SECRET,
         isCredentials=True,
         isPII=False,
-        isStored=True,  # written verbatim to .dfetch_data.yaml
+        isStored=True,  # surfaces DFT-13 on DF-08; mitigated by C-035
         isDestEncryptedAtRest=False,  # .dfetch_data.yaml is plaintext on disk
         isSourceEncryptedAtRest=False,
     )
@@ -310,7 +312,7 @@ def _make_usage_datastores_b(b_dev: Boundary) -> tuple[Data, Datastore, Datastor
     metadata_store.hasWriteAccess = True
     metadata_store.isSQL = False
     metadata_store.classification = Classification.RESTRICTED
-    metadata_store.isCredentials = True  # may contain credential-bearing URLs verbatim
+    metadata_store.isCredentials = True  # surfaces DFT-13 on this store; mitigated by C-035
     metadata_store.isStored = True
     metadata_store.isDestEncryptedAtRest = False  # plaintext on disk
     patch_store = Datastore("A-19: Patch Files")
@@ -496,9 +498,10 @@ def _make_usage_output_flows(
     df08.description = (
         "Writes ``.dfetch_data.yaml`` tracking remote_url, revision, hash.  "
         "A-17: if the manifest URL contains a credential in the userinfo component "
-        "(e.g. ``https://user:TOKEN@host/``), it is written verbatim to this file."
+        "(e.g. ``https://user:TOKEN@host/``), C-035 strips it from the persisted "
+        "``remote_url`` before this write."
     )
-    df08.data = [embedded_url_credential]  # A-17: surfaces DFT-13 on this dataflow
+    df08.data = [embedded_url_credential]  # A-17: DFT-13 surfaced and mitigated by C-035
     df09 = Dataflow(dfetch_cli, sbom_output, "DF-09: Write SBOM")
     df09.description = "CycloneDX BOM generation from metadata store contents."
     df16 = Dataflow(metadata_store, dfetch_cli, "DF-16: Read dependency metadata")
@@ -991,6 +994,24 @@ CONTROLS: list[Control] = [
             "algorithms with no known practical collision attacks."
         ),
     ),
+    Control(
+        id="C-035",
+        name="Persisted-metadata credential redaction",
+        assets=["A-17", "A-18"],
+        threats=["DFT-13"],
+        reference="dfetch/project/metadata.py",
+        description=(
+            "``Metadata.dump()`` rebuilds the netloc of every persisted URL from "
+            "``parsed.hostname`` and ``parsed.port`` via ``urllib.parse.urlsplit`` / "
+            "``urlunsplit``, dropping any ``user:password@`` userinfo before writing "
+            "``.dfetch_data.yaml``.  The same stripper is applied to each "
+            "``dependencies[].remote_url`` entry (git submodule, svn:external) so a "
+            "credential in a nested upstream URL also never reaches disk.  The "
+            "in-memory ``Metadata`` object held by the running command keeps the "
+            "original URL — only the on-disk representation is redacted, so an "
+            "in-flight authenticated fetch is unaffected."
+        ),
+    ),
 ]
 
 RESPONSES: list[ThreatResponse] = [
@@ -1117,16 +1138,14 @@ RESPONSES: list[ThreatResponse] = [
     ),
     ThreatResponse(
         "DFT-13",
-        "accept",
+        "mitigate",
         risk="Medium",
         stride=["Information Disclosure"],
         note=(
-            "dfetch persists the configured URL to ``.dfetch_data.yaml``; "
-            "credentials embedded in URLs appear in that file in plaintext.  "
-            "Accepted based on the **No persisted secrets** assumption: no runtime secrets "
-            "are persisted to disk by dfetch itself — VCS credentials are expected to be "
-            "managed by the OS keychain, SSH agent, or CI secret store rather than embedded "
-            "in source URLs."
+            "C-035 strips the userinfo component from every ``remote_url`` (top-level "
+            "and ``dependencies[]``) before ``Metadata.dump()`` writes "
+            "``.dfetch_data.yaml``, so credentials embedded in a manifest URL no longer "
+            "land in the on-disk metadata file or any clone of it."
         ),
     ),
     ThreatResponse(
