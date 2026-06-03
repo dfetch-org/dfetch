@@ -2,6 +2,7 @@
 
 import datetime
 import os
+from urllib.parse import urlsplit, urlunsplit
 
 import yaml
 from typing_extensions import TypedDict
@@ -9,6 +10,26 @@ from typing_extensions import TypedDict
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
 from dfetch.util.util import always_str_list, str_if_possible
+
+
+def _strip_userinfo(url: str) -> str:
+    """Return *url* with any ``user:password@`` userinfo removed from the netloc.
+
+    Credentials embedded in remote URLs would otherwise be persisted verbatim
+    to ``.dfetch_data.yaml`` (mitigates DFT-13).
+    """
+    parsed = urlsplit(url)
+    try:
+        port = parsed.port
+    except ValueError:
+        port = None
+    host = parsed.hostname or ""
+    if not host and not parsed.netloc:
+        return url
+    netloc = f"{host}:{port}" if isinstance(port, int) else host
+    return urlunsplit(
+        (parsed.scheme, netloc, parsed.path, parsed.query, parsed.fragment)
+    )
 
 DONT_EDIT_WARNING = """\
 # This is a generated file by dfetch. Don't edit this, but edit the manifest.
@@ -199,7 +220,7 @@ class Metadata:
         """Dump metadata file to correct path."""
         metadata: dict[str, dict[str, str | list[str] | list[Dependency]]] = {
             "dfetch": {
-                "remote_url": self.remote_url,
+                "remote_url": _strip_userinfo(self.remote_url),
                 "branch": self._version.branch,
                 "revision": self._version.revision,
                 "last_fetch": self.last_fetch_string(),
@@ -210,7 +231,10 @@ class Metadata:
         }
 
         if self.dependencies:
-            metadata["dfetch"]["dependencies"] = self.dependencies
+            metadata["dfetch"]["dependencies"] = [
+                {**dep, "remote_url": _strip_userinfo(dep["remote_url"])}
+                for dep in self.dependencies
+            ]
 
         with open(self.path, "w+", encoding="utf-8") as metadata_file:
             metadata_file.write(DONT_EDIT_WARNING)
