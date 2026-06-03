@@ -6,6 +6,7 @@
 import pytest
 
 from dfetch.manifest.project import ProjectEntry
+from dfetch.manifest.remote import Remote
 
 
 def test_projectentry_name():
@@ -49,3 +50,27 @@ def test_projectentry_as_str():
         str(ProjectEntry({"name": "SomeProject"}))
         == "SomeProject          latest  SomeProject"
     )
+
+
+def test_remote_url_ssh_shorthand_uses_colon_separator():
+    entry = ProjectEntry({"name": "myrepo", "repo-path": "myorg/myrepo.git"})
+    entry.set_remote(Remote({"name": "corp", "url-base": "git@git.mycompany.com"}))
+    assert entry.remote_url == "git@git.mycompany.com:myorg/myrepo.git"
+
+
+def test_remote_url_https_base_uses_slash_separator():
+    entry = ProjectEntry({"name": "myrepo", "repo-path": "myorg/myrepo"})
+    entry.set_remote(Remote({"name": "corp", "url-base": "https://github.com"}))
+    assert entry.remote_url == "https://github.com/myorg/myrepo"
+
+
+def test_set_remote_strips_colon_prefix_from_ssh_url():
+    entry = ProjectEntry({"name": "myrepo", "url": "git@git.mycompany.com:my-repo.git"})
+    entry.set_remote(Remote({"name": "corp", "url-base": "git@git.mycompany.com"}))
+    assert entry.remote_url == "git@git.mycompany.com:my-repo.git"
+
+
+def test_set_remote_strips_slash_prefix_from_https_url():
+    entry = ProjectEntry({"name": "myrepo", "url": "https://github.com/org/repo"})
+    entry.set_remote(Remote({"name": "gh", "url-base": "https://github.com"}))
+    assert entry.remote_url == "https://github.com/org/repo"
