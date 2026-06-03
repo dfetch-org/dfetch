@@ -354,6 +354,11 @@ def plaintext_warning(url: str) -> str:
     )
 
 
+def _is_ssh_shorthand(url: str) -> bool:
+    """Return True if *url* is an SSH SCP-style shorthand (``git@host``, no scheme)."""
+    return "@" in url and "://" not in url
+
+
 @dataclass
 class Integrity:
     """Integrity verification data for an archive dependency.
@@ -461,7 +466,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._remote_obj = remote
         self._remote = remote.name
         if self._url.startswith(remote.url):
-            self._repo_path = self._url.replace(remote.url, "").strip("/")
+            self._repo_path = self._url[len(remote.url) :].lstrip("/:")
             self._url = ""
 
     @property
@@ -487,8 +492,9 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         if self._url:
             return self._url
         if self._remote_obj:
-            urls = [self._remote_obj.url.strip("/"), self._repo_path]
-            return "/".join(urls).strip("/")
+            base = self._remote_obj.url.strip("/")
+            separator = ":" if _is_ssh_shorthand(base) else "/"
+            return (base + separator + self._repo_path).strip("/")
         return ""
 
     @property
