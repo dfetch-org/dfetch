@@ -6,8 +6,9 @@
 import textwrap
 
 import pytest
+import yaml
 
-from dfetch.project.metadata import InvalidMetadataError, Metadata
+from dfetch.project.metadata import InvalidMetadataError, Metadata, _strip_userinfo
 
 VALID_METADATA = """\
     dfetch:
@@ -100,3 +101,95 @@ def test_from_file_uses_defaults_for_missing_fields(tmp_path):
     assert meta.hash == ""
     assert meta.patch == []
     assert meta.dependencies == []
+
+
+@pytest.mark.parametrize(
+    "url,expected",
+    [
+        ("https://user:token@github.com/org/repo.git",
+         "https://github.com/org/repo.git"),
+        ("https://user@github.com/org/repo.git",
+         "https://github.com/org/repo.git"),
+        ("https://github.com/org/repo.git",
+         "https://github.com/org/repo.git"),
+        ("https://user:tok@github.com:8443/org/repo.git",
+         "https://github.com:8443/org/repo.git"),
+        ("https://example.com/archive.tar.gz?token=keep&v=1",
+         "https://example.com/archive.tar.gz?token=keep&v=1"),
+        ("file:///local/path/repo",
+         "file:///local/path/repo"),
+        ("", ""),
+        ("/just/a/path", "/just/a/path"),
+    ],
+)
+def test_strip_userinfo_redacts_credentials(url, expected):
+    """_strip_userinfo removes userinfo, preserves scheme/host/port/path/query."""
+    assert _strip_userinfo(url) == expected
+
+
+def _dump_metadata(tmp_path, *, remote_url, dependencies=None):
+    """Build a Metadata pointing at *tmp_path* and dump it; return the YAML payload."""
+    meta = Metadata(
+        {
+            "remote_url": remote_url,
+            "branch": "main",
+            "revision": "abc123",
+            "hash": "deadbeef",
+            "destination": str(tmp_path),
+            "dependencies": dependencies or [],
+        }
+    )
+    meta.dump()
+    with open(meta.path, encoding="utf-8") as fh:
+        return fh.read(), meta.path
+
+
+def test_dump_strips_credentials_from_remote_url(tmp_path):
+    """Metadata.dump redacts userinfo from remote_url on disk."""
+    raw, path = _dump_metadata(
+        tmp_path, remote_url="https://alice:secret-token@example.com/org/repo.git"
+    )
+    assert "alice" not in raw
+    assert "secret-token" not in raw
+    assert "@example.com" not in raw
+    assert "https://example.com/org/repo.git" in raw
+    # Round-trip survives Metadata.from_file.
+    reloaded = Metadata.from_file(path)
+    assert reloaded.remote_url == "https://example.com/org/repo.git"
+
+
+def test_dump_strips_credentials_from_dependency_remote_url(tmp_path):
+    """Metadata.dump redacts userinfo from each dependencies[].remote_url."""
+    dep = {
+        "branch": "",
+        "tag": "",
+        "revision": "f00",
+        "remote_url": "https://bob:pat@gitlab.com/grp/sub.git",
+        "destination": "vendor/sub",
+        "source_type": "git-submodule",
+    }
+    raw, path = _dump_metadata(
+        tmp_path,
+        remote_url="https://example.com/org/repo.git",
+        dependencies=[dep],
+    )
+    assert "bob" not in raw
+    assert "bob:pat@" not in raw
+    assert "@gitlab.com" not in raw
+    parsed = yaml.safe_load(raw)
+    assert (
+        parsed["dfetch"]["dependencies"][0]["remote_url"]
+        == "https://gitlab.com/grp/sub.git"
+    )
+
+
+def test_dump_leaves_in_memory_remote_url_untouched(tmp_path):
+    """Redaction applies only to the on-disk representation."""
+    meta = Metadata(
+        {
+            "remote_url": "https://carol:hunter2@example.com/org/repo.git",
+            "destination": str(tmp_path),
+        }
+    )
+    meta.dump()
+    assert meta.remote_url == "https://carol:hunter2@example.com/org/repo.git"
