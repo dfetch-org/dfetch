@@ -86,3 +86,9 @@ def test_remote_url_with_empty_repo_path():
     entry = ProjectEntry({"name": "myrepo"})
     entry.set_remote(Remote({"name": "corp", "url-base": "git@git.mycompany.com"}))
     assert entry.remote_url == "git@git.mycompany.com"
+
+
+def test_remote_url_ssh_base_with_path_prefix_uses_slash_separator():
+    entry = ProjectEntry({"name": "myrepo", "repo-path": "repo.git"})
+    entry.set_remote(Remote({"name": "corp", "url-base": "git@host:org"}))
+    assert entry.remote_url == "git@host:org/repo.git"

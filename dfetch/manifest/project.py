@@ -355,8 +355,8 @@ def plaintext_warning(url: str) -> str:
 
 
 def _is_ssh_shorthand(url: str) -> bool:
-    """Return True if *url* is an SSH SCP-style shorthand (``git@host``, no scheme)."""
-    return "@" in url and "://" not in url
+    """Return True if *url* is an SSH SCP-style host-only shorthand (``git@host``, no scheme, no path separator)."""
+    return "@" in url and "://" not in url and ":" not in url
 
 
 @dataclass
