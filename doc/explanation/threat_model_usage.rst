@@ -685,7 +685,7 @@ Asset Identification
      - Data
      - High / High / High
    * - A-17: Embedded Credential in Remote URL
-     - A VCS or archive URL that encodes a credential in the userinfo component (e.g. ``https://user:TOKEN@github.com/org/repo.git``).  Without C-035 dfetch would write ``remote_url`` verbatim to ``.dfetch_data.yaml`` after each successful fetch, persisting that credential in plaintext.  C-035 strips the userinfo from the persisted ``remote_url`` and from every ``dependencies[].remote_url`` before write, so the credential no longer reaches disk.  The in-memory URL used to authenticate the fetch is untouched.
+     - A VCS or archive URL that encodes a credential in the userinfo component (e.g. ``https://user:TOKEN@github.com/org/repo.git``).  Without C-036 dfetch would write ``remote_url`` verbatim to ``.dfetch_data.yaml`` after each successful fetch, persisting that credential in plaintext.  C-036 strips the userinfo from the persisted ``remote_url`` and from every ``dependencies[].remote_url`` before write, so the credential no longer reaches disk.  The in-memory URL used to authenticate the fetch is untouched.
      - Data
      - Medium / — / —
    * - A-18: Dependency Metadata
@@ -997,7 +997,7 @@ Threats
        | **Risk:** 🟡M
        | **STRIDE:** I
        | **Status:** Mitigate
-     - C-035 strips the userinfo component from every ``remote_url`` (top-level and ``dependencies[]``) before ``Metadata.dump()`` writes ``.dfetch_data.yaml``, so credentials embedded in a manifest URL no longer land in the on-disk metadata file or any clone of it.
+     - C-036 strips the userinfo component from every ``remote_url`` (top-level and ``dependencies[]``) before ``Metadata.dump()`` writes ``.dfetch_data.yaml``, so credentials embedded in a manifest URL no longer land in the on-disk metadata file or any clone of it.
    * - DFT-14
      - Dangerous file permission bits preserved during archive extraction
      - A-24: Archive Extraction (tarfile / zipfile)
@@ -1196,7 +1196,7 @@ Controls
      - Hash algorithm allowlist (SHA-256/384/512 only)
      - DFT-30
      - ``integrity_hash.py`` accepts only ``sha256:``, ``sha384:``, and ``sha512:`` prefixes; any other algorithm prefix is rejected at parse time.  MD5 and SHA-1 are not accepted.  This directly mitigates DFT-30 (SLSA M2: exploit cryptographic hash collisions) by ensuring that integrity hashes, when present, use algorithms with no known practical collision attacks.  ``dfetch/vcs/integrity_hash.py``
-   * - C-035
+   * - C-036
      - Persisted-metadata credential redaction
      - DFT-13
      - ``Metadata.dump()`` rebuilds the netloc of every persisted URL from ``parsed.hostname`` and ``parsed.port`` via ``urllib.parse.urlsplit`` / ``urlunsplit``, dropping any ``user:password@`` userinfo before writing ``.dfetch_data.yaml``.  The same stripper is applied to each ``dependencies[].remote_url`` entry (git submodule, svn:external) so a credential in a nested upstream URL also never reaches disk.  The in-memory ``Metadata`` object held by the running command keeps the original URL — only the on-disk representation is redacted, so an in-flight authenticated fetch is unaffected.  ``dfetch/project/metadata.py``
