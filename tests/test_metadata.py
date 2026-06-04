@@ -120,6 +120,11 @@ def test_from_file_uses_defaults_for_missing_fields(tmp_path):
          "file:///local/path/repo"),
         ("", ""),
         ("/just/a/path", "/just/a/path"),
+        # IPv6 literals: brackets must be preserved when reconstructing netloc.
+        ("https://user:tok@[::1]:8080/x",
+         "https://[::1]:8080/x"),
+        ("https://[fe80::1]/x",
+         "https://[fe80::1]/x"),
     ],
 )
 def test_strip_userinfo_redacts_credentials(url, expected):
