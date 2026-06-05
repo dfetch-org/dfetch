@@ -33,7 +33,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: cygwin/cygwin-install-action@4ef15ca7fd18a18f1000989fcfd968e06d146ce8 # master
+      - uses: cygwin/cygwin-install-action@781ea34f8c7c28e794b807fb7120e93bfdac3089 # master
 
       - name: Install Subversion (SVN) on Windows
         run: |
