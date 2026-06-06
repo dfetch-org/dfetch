@@ -1200,5 +1200,3 @@ Controls
      - Persisted-metadata credential redaction
      - DFT-13
      - ``Metadata.dump()`` rebuilds the netloc of every persisted URL from ``parsed.hostname`` and ``parsed.port`` via ``urllib.parse.urlsplit`` / ``urlunsplit``, dropping any ``user:password@`` userinfo before writing ``.dfetch_data.yaml``.  The same stripper is applied to each ``dependencies[].remote_url`` entry (git submodule, svn:external) so a credential in a nested upstream URL also never reaches disk.  The in-memory ``Metadata`` object held by the running command keeps the original URL — only the on-disk representation is redacted, so an in-flight authenticated fetch is unaffected.  ``dfetch/project/metadata.py``
-
-

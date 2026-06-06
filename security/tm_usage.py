@@ -312,7 +312,9 @@ def _make_usage_datastores_b(b_dev: Boundary) -> tuple[Data, Datastore, Datastor
     metadata_store.hasWriteAccess = True
     metadata_store.isSQL = False
     metadata_store.classification = Classification.RESTRICTED
-    metadata_store.isCredentials = True  # surfaces DFT-13 on this store; mitigated by C-036
+    metadata_store.isCredentials = (
+        True  # surfaces DFT-13 on this store; mitigated by C-036
+    )
     metadata_store.isStored = True
     metadata_store.isDestEncryptedAtRest = False  # plaintext on disk
     patch_store = Datastore("A-19: Patch Files")
@@ -501,7 +503,9 @@ def _make_usage_output_flows(
         "(e.g. ``https://user:TOKEN@host/``), C-036 strips it from the persisted "
         "``remote_url`` before this write."
     )
-    df08.data = [embedded_url_credential]  # A-17: DFT-13 surfaced and mitigated by C-036
+    df08.data = [
+        embedded_url_credential
+    ]  # A-17: DFT-13 surfaced and mitigated by C-036
     df09 = Dataflow(dfetch_cli, sbom_output, "DF-09: Write SBOM")
     df09.description = "CycloneDX BOM generation from metadata store contents."
     df16 = Dataflow(metadata_store, dfetch_cli, "DF-16: Read dependency metadata")
