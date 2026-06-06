@@ -3,6 +3,7 @@
 # mypy: ignore-errors
 # flake8: noqa
 
+import datetime
 import textwrap
 
 import pytest
@@ -106,25 +107,26 @@ def test_from_file_uses_defaults_for_missing_fields(tmp_path):
 @pytest.mark.parametrize(
     "url,expected",
     [
-        ("https://user:token@github.com/org/repo.git",
-         "https://github.com/org/repo.git"),
-        ("https://user@github.com/org/repo.git",
-         "https://github.com/org/repo.git"),
-        ("https://github.com/org/repo.git",
-         "https://github.com/org/repo.git"),
-        ("https://user:tok@github.com:8443/org/repo.git",
-         "https://github.com:8443/org/repo.git"),
-        ("https://example.com/archive.tar.gz?token=keep&v=1",
-         "https://example.com/archive.tar.gz?token=keep&v=1"),
-        ("file:///local/path/repo",
-         "file:///local/path/repo"),
+        (
+            "https://user:token@github.com/org/repo.git",
+            "https://github.com/org/repo.git",
+        ),
+        ("https://user@github.com/org/repo.git", "https://github.com/org/repo.git"),
+        ("https://github.com/org/repo.git", "https://github.com/org/repo.git"),
+        (
+            "https://user:tok@github.com:8443/org/repo.git",
+            "https://github.com:8443/org/repo.git",
+        ),
+        (
+            "https://example.com/archive.tar.gz?token=keep&v=1",
+            "https://example.com/archive.tar.gz?token=keep&v=1",
+        ),
+        ("file:///local/path/repo", "file:///local/path/repo"),
         ("", ""),
         ("/just/a/path", "/just/a/path"),
         # IPv6 literals: brackets must be preserved when reconstructing netloc.
-        ("https://user:tok@[::1]:8080/x",
-         "https://[::1]:8080/x"),
-        ("https://[fe80::1]/x",
-         "https://[fe80::1]/x"),
+        ("https://user:tok@[::1]:8080/x", "https://[::1]:8080/x"),
+        ("https://[fe80::1]/x", "https://[fe80::1]/x"),
     ],
 )
 def test_strip_userinfo_redacts_credentials(url, expected):
@@ -136,11 +138,14 @@ def _dump_metadata(tmp_path, *, remote_url, dependencies=None):
     """Build a Metadata pointing at *tmp_path* and dump it; return the YAML payload."""
     meta = Metadata(
         {
-            "remote_url": remote_url,
+            "last_fetch": datetime.datetime(2000, 1, 1, 0, 0, 0),
             "branch": "main",
+            "tag": "",
             "revision": "abc123",
-            "hash": "deadbeef",
+            "remote_url": remote_url,
             "destination": str(tmp_path),
+            "hash": "deadbeef",
+            "patch": "",
             "dependencies": dependencies or [],
         }
     )
@@ -192,8 +197,15 @@ def test_dump_leaves_in_memory_remote_url_untouched(tmp_path):
     """Redaction applies only to the on-disk representation."""
     meta = Metadata(
         {
+            "last_fetch": datetime.datetime(2000, 1, 1, 0, 0, 0),
+            "branch": "",
+            "tag": "",
+            "revision": "",
             "remote_url": "https://carol:hunter2@example.com/org/repo.git",
             "destination": str(tmp_path),
+            "hash": "",
+            "patch": "",
+            "dependencies": [],
         }
     )
     meta.dump()
