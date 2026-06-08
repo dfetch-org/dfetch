@@ -220,7 +220,7 @@ Feature: Create an CycloneDX sbom
                                 ],
                                 "name": "cyclonedx-python-lib",
                                 "type": "library",
-                                "version": "11.8.0"
+                                "version": "11.9.0"
                             }
                         ]
                     }
