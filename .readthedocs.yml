@@ -19,7 +19,7 @@ build:
     python: "3.13"
   jobs:
     post_checkout:
-      - git fetch --unshallow || true
+      - if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then git fetch --unshallow; fi
   apt_packages:
     - texlive-latex-recommended
     - texlive-fonts-recommended
