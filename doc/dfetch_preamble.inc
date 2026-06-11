@@ -90,6 +90,9 @@
 \setlength{\tabcolsep}{8pt}            % horizontal cell padding (website 0.875rem)
 \AtBeginEnvironment{tabulary}{\small\renewcommand{\vline}{}}
 \AtBeginEnvironment{longtable}{\small\renewcommand{\vline}{}}
+% longtable: flush to text margins (Sphinx default centers with \fill padding)
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
 \providecommand{\sphinxstyletheadfamily}{\sffamily}
 \renewcommand{\sphinxstyletheadfamily}{\cellcolor{dfbgtint}\small\bfseries}
 
