@@ -287,9 +287,23 @@ def _set_latex_pygments_style(app):
         app.config.pygments_style = "dfetch"
 
 
+def _force_longtable(app, doctree, docname):
+    # tabulary does not support page breaks; longtable does.
+    # Mark every table as longtable so Sphinx's LaTeX writer uses the
+    # longtable environment, which splits automatically across pages.
+    if not app.builder.name.startswith("latex"):
+        return
+    from docutils import nodes
+
+    for tbl in doctree.traverse(nodes.table):
+        if "longtable" not in tbl["classes"]:
+            tbl["classes"].append("longtable")
+
+
 def setup(app):
     """Apply custom Pygments style only for LaTeX builds."""
     app.connect("builder-inited", _set_latex_pygments_style)
+    app.connect("doctree-resolved", _force_longtable)
 
 
 # -- Options for manual page output ---------------------------------------
