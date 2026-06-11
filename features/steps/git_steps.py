@@ -159,6 +159,15 @@ def step_impl(context, path, name):
         commit_all("A change")
 
 
+@given('"{path}" in git-repository "{name}" is created with CRLF and committed')
+def step_impl(context, path, name):
+    remote_path = os.path.join(context.remotes_dir, name)
+    with in_directory(remote_path):
+        crlf = context.text.strip().replace("\n", "\r\n").encode("utf-8")
+        pathlib.Path(path).write_bytes(crlf)
+        commit_all("Add CRLF file")
+
+
 @given("all files in {directory} are committed")
 @when("all files in {directory} are committed")
 def step_impl(_, directory):

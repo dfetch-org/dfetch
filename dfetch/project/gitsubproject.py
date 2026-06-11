@@ -2,6 +2,7 @@
 
 import pathlib
 from functools import lru_cache
+from pathlib import Path
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
@@ -78,6 +79,8 @@ class GitSubProject(SubProject):
             f"/{name.upper()}" for name in LICENSE_GLOBS
         ]
 
+        eol = GitLocalRepo(Path.cwd()).effective_eol(f"{self.local_path}/a")
+
         local_repo = GitLocalRepo(self.local_path)
         fetched_sha, submodules = local_repo.checkout_version(
             CheckoutOptions(
@@ -86,6 +89,7 @@ class GitSubProject(SubProject):
                 src=self.source,
                 must_keeps=license_globs + [".gitmodules"],
                 ignore=self.ignore,
+                eol=eol,
             )
         )
 
