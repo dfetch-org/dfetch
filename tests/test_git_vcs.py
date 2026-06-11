@@ -16,6 +16,7 @@ from dfetch.vcs.git import (
     GitRemote,
     _build_git_ssh_command,
 )
+from dfetch.vcs.git_types import Submodule
 
 # ---------------------------------------------------------------------------
 # unique_parent_dirs  (dfetch.util.util)
@@ -102,6 +103,82 @@ def test_move_src_folder_up_rejects_traversal_src(tmp_path):
             with patch("dfetch.vcs.git.os.getcwd", return_value=str(tmp_path)):
                 GitLocalRepo._move_src_folder_up("my-remote", "../outside")
     mock_move.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# GitLocalRepo._filter_submodules_by_src
+# ---------------------------------------------------------------------------
+
+
+def _make_submodule(path: str, url: str = "some-url") -> Submodule:
+    return Submodule(
+        name=path,
+        toplevel="",
+        path=path,
+        sha="abc123",
+        url=url,
+        branch="master",
+        tag="",
+    )
+
+
+def test_filter_submodules_ancestor_of_src_not_removed(tmp_path, monkeypatch):
+    """A submodule whose path is an ancestor of src must not be deleted.
+
+    When src='apps/myapp' and a submodule exists at 'apps', the old logic
+    incorrectly added 'apps' to to_remove (because Path('apps/myapp').is_relative_to('apps')
+    was True with sub_top='apps').  The fix checks the full submodule.path so that an
+    ancestor submodule is skipped and _move_src_folder_up can promote its content.
+    """
+    (tmp_path / "apps" / "myapp").mkdir(parents=True)
+    (tmp_path / "apps" / "myapp" / "README.md").write_text("content")
+    (tmp_path / "outside").mkdir()
+    (tmp_path / "outside" / "file.txt").write_text("content")
+
+    monkeypatch.chdir(tmp_path)
+    repo = GitLocalRepo(str(tmp_path))
+    result = repo._filter_submodules_by_src(
+        "remote-url",
+        "apps/myapp",
+        [_make_submodule("apps"), _make_submodule("outside")],
+    )
+
+    assert (
+        tmp_path / "README.md"
+    ).exists(), "apps/myapp content should be promoted to root"
+    assert not (tmp_path / "outside").exists(), "outside/ submodule should be removed"
+    assert not any(
+        s.path == "apps" for s in result
+    ), "ancestor submodule must not appear in result"
+    assert not any(
+        s.path == "outside" for s in result
+    ), "out-of-scope submodule must not appear in result"
+
+
+def test_filter_submodules_disjoint_submodule_removed(tmp_path, monkeypatch):
+    """A submodule whose path is disjoint from src must be removed."""
+    (tmp_path / "src_folder" / "ext" / "inside").mkdir(parents=True)
+    (tmp_path / "src_folder" / "ext" / "inside" / "README.md").write_text("content")
+    (tmp_path / "other_ext" / "outside").mkdir(parents=True)
+    (tmp_path / "other_ext" / "outside" / "README.md").write_text("content")
+
+    monkeypatch.chdir(tmp_path)
+    repo = GitLocalRepo(str(tmp_path))
+    result = repo._filter_submodules_by_src(
+        "remote-url",
+        "src_folder",
+        [
+            _make_submodule("src_folder/ext/inside"),
+            _make_submodule("other_ext/outside"),
+        ],
+    )
+
+    assert not (
+        tmp_path / "other_ext"
+    ).exists(), "other_ext/ should be removed (outside src)"
+    assert any(
+        s.path == "ext/inside" for s in result
+    ), "inside submodule should be promoted"
 
 
 @pytest.mark.parametrize(
