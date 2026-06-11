@@ -348,6 +348,26 @@ class GitLocalRepo:
         except (SubprocessCommandError, RuntimeError):
             return False
 
+    def effective_eol(self, path: str) -> str | None:
+        """Return the effective 'eol' gitattribute for *path* in this repo, or None."""
+        with in_directory(self._path):
+            try:
+                result = run_on_cmdline(
+                    logger, ["git", "check-attr", "eol", "--", path]
+                )
+                line = result.stdout.decode().strip()
+                m = re.search(r"\beol: (lf|crlf)\b", line, re.IGNORECASE)
+                return m.group(1).lower() if m else None
+            except SubprocessCommandError:
+                return None
+
+    def _configure_eol(self, eol: str) -> None:
+        Path(".git/info").mkdir(exist_ok=True)
+        Path(".git/info/attributes").write_text(
+            f"* text=auto eol={eol}\n", encoding="utf-8"
+        )
+        run_on_cmdline(logger, ["git", "config", "core.eol", eol])
+
     def _configure_sparse_checkout(
         self,
         src: str | None,
@@ -389,6 +409,10 @@ class GitLocalRepo:
                 ["git", "fetch", "--depth", "1", "origin", options.version],
                 env=_extend_env_for_non_interactive_mode(),
             )
+
+            if options.eol is not None:
+                self._configure_eol(options.eol)
+
             run_on_cmdline(logger, ["git", "reset", "--hard", "FETCH_HEAD"])
 
             run_on_cmdline(

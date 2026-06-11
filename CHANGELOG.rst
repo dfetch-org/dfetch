@@ -1,6 +1,7 @@
 Release 0.14.0 (unreleased)
 ===========================
 
+* Respect superproject ``.gitattributes`` ``eol=lf`` / ``eol=crlf`` rule when fetching Git dependencies, so line endings in vendored files match the project's enforced style on all platforms
 * Strip ``user:password@`` userinfo from ``remote_url`` before writing it to ``.dfetch_data.yaml``, so a manifest URL with an embedded credential no longer leaks the credential into the committed metadata file (DFT-13)
 * Warn when a project URL uses a plaintext transport scheme (#1229)
 * Documentation and threat-model clarifications for existing release attestation support (#1208)

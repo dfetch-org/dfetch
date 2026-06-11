@@ -121,3 +121,27 @@ submodule are recorded in ``.dfetch_data.yaml`` and are visible in
 :ref:`Report`.
 
 .. scenario-include:: ../features/fetch-git-repo-with-submodule.feature
+
+.. _updating-line-endings:
+
+Line endings
+------------
+
+If your superproject's ``.gitattributes`` file contains a global ``eol`` rule,
+*DFetch* reads the effective setting for each dependency's destination path and
+applies it when fetching, so the vendored files match your project's enforced
+style on every platform:
+
+.. code-block:: gitattributes
+
+   # force LF everywhere (common on cross-platform projects)
+   * text=auto eol=lf
+
+   # force CRLF everywhere (less common, but valid)
+   * text=auto eol=crlf
+
+*DFetch* uses ``git check-attr`` to resolve the effective setting for each
+destination, so per-directory rules are honoured as well as global ones.
+If no ``eol`` attribute is set the platform and git defaults apply unchanged.
+
+.. scenario-include:: ../features/superproject-line-ending-attrs.feature

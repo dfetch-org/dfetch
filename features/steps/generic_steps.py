@@ -425,3 +425,16 @@ def step_impl(_, path):
 def step_impl(_, path):
     """Assert that a directory has not been created."""
     assert not os.path.exists(path), f"Directory {path} exists but should not!"
+
+
+@then("'{path}' has {ending} line endings")
+def step_impl(_, path, ending):
+    with open(path, "rb") as f:
+        content = f.read()
+    if ending.upper() == "CRLF":
+        assert b"\r\n" in content, f"No CRLF found in {path}"
+        assert not re.search(rb"\r(?!\n)", content), f"Lone CR in {path}"
+    elif ending.upper() == "LF":
+        assert b"\r" not in content, f"CR found in {path}"
+    else:
+        raise ValueError(f"Unknown line ending type: {ending!r}")
