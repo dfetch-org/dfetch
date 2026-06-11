@@ -439,14 +439,28 @@ class GitLocalRepo:
         within_src = []
         to_remove: set[str] = set()
         for submodule in submodules:
+            if submodule.path == src:
+                # Submodule IS the src directory itself; keep it in-scope without
+                # altering its path and let _move_src_folder_up handle promotion.
+                within_src.append(submodule)
+                continue
             new_path = strip_glob_prefix(submodule.path, src)
             if new_path != submodule.path:
                 submodule.path = new_path
                 within_src.append(submodule)
             else:
-                to_remove.add(Path(submodule.path).parts[0])
-        for top_dir in to_remove:
-            safe_rm(top_dir, within=".")
+                sub_top = Path(submodule.path).parts[0]
+                # Only remove the top-level component when it is provably disjoint
+                # from src; if src lives under that same ancestor, removing it would
+                # clobber the src tree before _move_src_folder_up can promote it.
+                # In that case use the exact submodule path; the shared ancestor is
+                # cleaned up automatically by _move_src_folder_up.
+                if Path(src).is_relative_to(sub_top):
+                    to_remove.add(submodule.path)
+                else:
+                    to_remove.add(sub_top)
+        for path in to_remove:
+            safe_rm(path, within=".")
         self._move_src_folder_up(remote, src)
         return within_src
 
