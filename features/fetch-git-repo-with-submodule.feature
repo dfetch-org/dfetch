@@ -154,3 +154,68 @@ Feature: Fetch projects with nested VCS dependencies
                         test-repo/
                             README.md
             """
+
+    Scenario: A submodule within a plain src directory is fetched
+        Given a git-repository "PlainSrcProject.git" with the following submodules
+            | path                    | url                             | revision |
+            | src_folder/ext/sub-repo | some-remote-server/TestRepo.git | master   |
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: plain-src-project
+                      url: some-remote-server/PlainSrcProject.git
+                      src: src_folder
+            """
+        When I run "dfetch update"
+        Then the output shows
+            """
+            Dfetch (0.13.0)
+              plain-src-project:
+              > Found & fetched submodule "./ext/sub-repo"  (some-remote-server/TestRepo.git @ master - 79698c99152e4a4b7b759c9def50a130bc91a2ff)
+              > Fetched master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+            """
+        Then 'MyProject' looks like:
+            """
+            MyProject/
+                dfetch.yaml
+                plain-src-project/
+                    .dfetch_data.yaml
+                    ext/
+                        sub-repo/
+                            README.md
+            """
+
+    Scenario: A submodule outside the src folder is not fetched when src is specified
+        Given a git-repository "MixedSubmoduleProject.git" with the following submodules
+            | path                  | url                             | revision |
+            | src_folder/ext/inside | some-remote-server/TestRepo.git | master   |
+            | other_ext/outside     | some-remote-server/TestRepo.git | master   |
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: mixed-project
+                      url: some-remote-server/MixedSubmoduleProject.git
+                      src: src_folder
+            """
+        When I run "dfetch update"
+        Then the output shows
+            """
+            Dfetch (0.13.0)
+              mixed-project:
+              > Found & fetched submodule "./ext/inside"  (some-remote-server/TestRepo.git @ master - 79698c99152e4a4b7b759c9def50a130bc91a2ff)
+              > Fetched master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+            """
+        Then 'MyProject' looks like:
+            """
+            MyProject/
+                dfetch.yaml
+                mixed-project/
+                    .dfetch_data.yaml
+                    ext/
+                        inside/
+                            README.md
+            """

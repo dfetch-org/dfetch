@@ -420,8 +420,15 @@ class GitLocalRepo:
     ) -> list[Submodule]:
         """Apply src filter and ignore patterns, returning surviving submodules."""
         if src:
+            within_src = []
             for submodule in submodules:
-                submodule.path = strip_glob_prefix(submodule.path, src)
+                new_path = strip_glob_prefix(submodule.path, src)
+                if new_path != submodule.path:
+                    submodule.path = new_path
+                    within_src.append(submodule)
+                else:
+                    safe_rm(Path(submodule.path).parts[0], within=".")
+            submodules = within_src
             self._move_src_folder_up(remote, src)
 
         for ignore_path in ignore or []:
