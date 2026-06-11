@@ -437,13 +437,16 @@ class GitLocalRepo:
     ) -> list[Submodule]:
         """Keep only submodules within *src*, remove others, then promote *src* to root."""
         within_src = []
+        to_remove: set[str] = set()
         for submodule in submodules:
             new_path = strip_glob_prefix(submodule.path, src)
             if new_path != submodule.path:
                 submodule.path = new_path
                 within_src.append(submodule)
             else:
-                safe_rm(Path(submodule.path).parts[0], within=".")
+                to_remove.add(Path(submodule.path).parts[0])
+        for top_dir in to_remove:
+            safe_rm(top_dir, within=".")
         self._move_src_folder_up(remote, src)
         return within_src
 
