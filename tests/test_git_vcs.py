@@ -156,7 +156,11 @@ def test_filter_submodules_ancestor_of_src_not_removed(tmp_path, monkeypatch):
 
 
 def test_filter_submodules_disjoint_submodule_removed(tmp_path, monkeypatch):
-    """A submodule whose path is disjoint from src must be removed."""
+    """A submodule whose path is disjoint from src must be removed.
+
+    The fix stores the full submodule.path (not its top-level component) in
+    to_remove, so only the exact submodule directory is deleted.
+    """
     (tmp_path / "src_folder" / "ext" / "inside").mkdir(parents=True)
     (tmp_path / "src_folder" / "ext" / "inside" / "README.md").write_text("content")
     (tmp_path / "other_ext" / "outside").mkdir(parents=True)
@@ -174,11 +178,45 @@ def test_filter_submodules_disjoint_submodule_removed(tmp_path, monkeypatch):
     )
 
     assert not (
-        tmp_path / "other_ext"
-    ).exists(), "other_ext/ should be removed (outside src)"
+        tmp_path / "other_ext" / "outside"
+    ).exists(), "other_ext/outside submodule dir should be removed"
     assert any(
         s.path == "ext/inside" for s in result
     ), "inside submodule should be promoted"
+
+
+def test_filter_submodules_sibling_of_src_not_removed(tmp_path, monkeypatch):
+    """A sibling submodule sharing the same top-level dir as src must not destroy src content.
+
+    When src='apps/lib' and submodules exist at both 'apps/lib' (exact match, the src)
+    and 'apps/widget' (sibling, outside src), the old logic used parts[0]='apps' and
+    called safe_rm('apps'), which deleted the entire apps/ directory — including the
+    already-cloned apps/lib content needed by _move_src_folder_up.
+    The fix stores the full submodule.path so only apps/widget is targeted, leaving
+    apps/lib intact for promotion.
+    """
+    (tmp_path / "apps" / "lib").mkdir(parents=True)
+    (tmp_path / "apps" / "lib" / "README.md").write_text("content")
+    (tmp_path / "apps" / "widget").mkdir(parents=True)
+    (tmp_path / "apps" / "widget" / "widget.h").write_text("content")
+
+    monkeypatch.chdir(tmp_path)
+    repo = GitLocalRepo(str(tmp_path))
+    result = repo._filter_submodules_by_src(
+        "remote-url",
+        "apps/lib",
+        [_make_submodule("apps/lib"), _make_submodule("apps/widget")],
+    )
+
+    assert (
+        tmp_path / "README.md"
+    ).exists(), "apps/lib content must be promoted to root"
+    assert not (
+        tmp_path / "apps" / "widget"
+    ).exists(), "sibling apps/widget must be removed"
+    assert any(
+        s.path == "apps/lib" for s in result
+    ), "src submodule should appear in result before final os.path.exists filtering"
 
 
 @pytest.mark.parametrize(

@@ -219,3 +219,33 @@ Feature: Fetch projects with nested VCS dependencies
                         inside/
                             README.md
             """
+
+    Scenario: A sibling submodule at the same top-level dir as src is not fetched
+        Given a git-repository "SiblingSubmoduleProject.git" with the following submodules
+            | path        | url                             | revision |
+            | apps/lib    | some-remote-server/TestRepo.git | master   |
+            | apps/widget | some-remote-server/TestRepo.git | master   |
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: sibling-project
+                      url: some-remote-server/SiblingSubmoduleProject.git
+                      src: apps/lib
+            """
+        When I run "dfetch update"
+        Then the output shows
+            """
+            Dfetch (0.13.0)
+              sibling-project:
+              > Fetched master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+            """
+        Then 'MyProject' looks like:
+            """
+            MyProject/
+                dfetch.yaml
+                sibling-project/
+                    .dfetch_data.yaml
+                    README.md
+            """

@@ -451,11 +451,30 @@ class GitLocalRepo:
             else:
                 if Path(src).is_relative_to(Path(submodule.path)):
                     continue
-                to_remove.add(Path(submodule.path).parts[0])
+                to_remove.add(submodule.path)
         for path in to_remove:
             safe_rm(path, within=".")
+        GitLocalRepo._remove_empty_parents(to_remove)
         self._move_src_folder_up(remote, src)
         return within_src
+
+    @staticmethod
+    def _remove_empty_parents(paths: set[str]) -> None:
+        """Remove empty ancestor directories left after removing out-of-scope submodule dirs.
+
+        git submodule update may create a parent directory for a submodule even when
+        sparse-checkout excludes it; after safe_rm removes the exact submodule path the
+        parent can be left as an empty directory.  os.rmdir is used because it is atomic
+        and raises OSError when the directory is not empty, which stops the upward walk.
+        """
+        for path in paths:
+            parent = Path(path).parent
+            while parent != Path("."):
+                try:
+                    parent.rmdir()
+                except OSError:
+                    break
+                parent = parent.parent
 
     @staticmethod
     def _collect_safe_paths(src: str, repo_root: Path, remote: str) -> list[str]:
@@ -474,6 +493,12 @@ class GitLocalRepo:
     @staticmethod
     def _apply_move(chosen: Path, repo_root: Path, remote: str) -> None:
         """Move the contents of *chosen* to the repo root and remove the empty parent."""
+        # Pre-remove git metadata at the root of *chosen* before promoting its contents.
+        # When *chosen* is itself a cloned submodule it contains a .git file that would
+        # collide with the parent repo's .git directory; the caller cleans these up
+        # recursively after checkout anyway.
+        for name in (GitLocalRepo.METADATA_DIR, GitLocalRepo.GIT_MODULES_FILE):
+            safe_rm(chosen / name, within=chosen)
         try:
             move_directory_contents(str(chosen), ".")
         except FileNotFoundError:
