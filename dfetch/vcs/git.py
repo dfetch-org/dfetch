@@ -420,16 +420,7 @@ class GitLocalRepo:
     ) -> list[Submodule]:
         """Apply src filter and ignore patterns, returning surviving submodules."""
         if src:
-            within_src = []
-            for submodule in submodules:
-                new_path = strip_glob_prefix(submodule.path, src)
-                if new_path != submodule.path:
-                    submodule.path = new_path
-                    within_src.append(submodule)
-                else:
-                    safe_rm(Path(submodule.path).parts[0], within=".")
-            submodules = within_src
-            self._move_src_folder_up(remote, src)
+            submodules = self._filter_submodules_by_src(remote, src, submodules)
 
         for ignore_path in ignore or []:
             paths = [
@@ -440,6 +431,21 @@ class GitLocalRepo:
             safe_rm(paths, within=".")
 
         return [s for s in submodules if os.path.exists(s.path)]
+
+    def _filter_submodules_by_src(
+        self, remote: str, src: str, submodules: list[Submodule]
+    ) -> list[Submodule]:
+        """Keep only submodules within *src*, remove others, then promote *src* to root."""
+        within_src = []
+        for submodule in submodules:
+            new_path = strip_glob_prefix(submodule.path, src)
+            if new_path != submodule.path:
+                submodule.path = new_path
+                within_src.append(submodule)
+            else:
+                safe_rm(Path(submodule.path).parts[0], within=".")
+        self._move_src_folder_up(remote, src)
+        return within_src
 
     @staticmethod
     def _collect_safe_paths(src: str, repo_root: Path, remote: str) -> list[str]:

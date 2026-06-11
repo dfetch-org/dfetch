@@ -17,14 +17,21 @@ from rich.status import Status
 from dfetch import __version__
 
 
-class _NoExpandLogRender(LogRender):  # pylint: disable=too-few-public-methods
+class _NoExpandLogRender:  # pylint: disable=too-few-public-methods
     """LogRender that disables table expansion to prevent blank lines in asciicasts."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        self._render: Any = LogRender(**kwargs)
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         """Render log entry without expanding the table to the full terminal width."""
-        table = super().__call__(*args, **kwargs)
+        table = self._render(*args, **kwargs)
         table.expand = False
         return table
+
+    def __getattr__(self, name: str) -> Any:
+        """Forward attribute lookups to the wrapped LogRender instance."""
+        return getattr(self._render, name)
 
 
 def make_console(no_color: bool = False) -> Console:
