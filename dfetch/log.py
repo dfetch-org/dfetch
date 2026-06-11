@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from rich.traceback import Traceback
 
 
-class _NoExpandRichHandler(RichHandler):  # type: ignore[misc]
+class _NoExpandRichHandler(RichHandler):
     """RichHandler that disables table expansion to prevent blank lines in asciicasts.
 
     Rich's LogRender uses expand=True on its Table.grid, which pads every

@@ -145,6 +145,13 @@ ignore_missing_imports = true
 strict = true
 warn_unused_ignores = false
 
+[[tool.mypy.overrides]]
+module = "dfetch.log"
+# RichHandler is untyped in the pre-commit mypy environment (rich not installed there),
+# so mypy sees it as Any and raises [misc] when subclassing. Disabling this check for
+# this module avoids the false positive without suppressing other errors.
+disallow_subclassing_any = false
+
 [tool.doc8]
 ignore-path = "doc/_build,doc/static/uml/styles/plantuml-c4"
 max-line-length = 120
