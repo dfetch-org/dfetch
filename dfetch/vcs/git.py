@@ -362,48 +362,31 @@ class GitLocalRepo:
                 return None
 
     @staticmethod
-    def _collect_empty_dirs() -> list[Path]:
-        """Return all subdirectories under CWD that contain no files anywhere inside."""
-        return [
-            p
-            for p in Path(".").rglob("*")
-            if p.is_dir() and not any(f.is_file() for f in p.rglob("*"))
-        ]
-
-    @staticmethod
     def apply_eol_conversion(directory: str | Path, eol: str) -> None:
         """Apply line-ending conversion to text files in *directory* using git.
 
-        Commits all files (normalising text-file endings to LF in the object
-        store), deletes the working tree, then checks back out so git applies
-        the requested *eol* smudge filter on the way out.
+        Stages all files (normalising text-file endings to LF in the index via
+        the clean filter), deletes the working tree, then checks back out from
+        the index so git applies the requested *eol* smudge filter on the way out.
+        No commit is required — git checkout reads directly from the index.
         """
         if eol not in ("lf", "crlf"):
             raise ValueError(f"Invalid eol value {eol!r}: must be 'lf' or 'crlf'")
         with in_directory(directory):
             if not any(f.is_file() for f in Path(".").rglob("*")):
                 return
-            empty_dirs = GitLocalRepo._collect_empty_dirs()
             run_on_cmdline(logger, ["git", "init"])
-            info_dir = Path(".git") / "info"
-            info_dir.mkdir(exist_ok=True)
-            (info_dir / "attributes").write_text(
+            (Path(".git") / "info" / "attributes").write_text(
                 f"* text=auto eol={eol}\n", encoding="utf-8"
             )
             run_on_cmdline(logger, ["git", "config", "core.eol", eol])
             run_on_cmdline(logger, ["git", "config", "core.autocrlf", "false"])
-            run_on_cmdline(logger, ["git", "config", "user.email", "dfetch@local"])
-            run_on_cmdline(logger, ["git", "config", "user.name", "dfetch"])
-            run_on_cmdline(logger, ["git", "config", "commit.gpgsign", "false"])
             run_on_cmdline(logger, ["git", "add", "."])
-            run_on_cmdline(logger, ["git", "commit", "-m", "eol-norm"])
             for entry in list(Path(".").iterdir()):
                 if entry.name != ".git":
                     safe_rm(entry)
-            run_on_cmdline(logger, ["git", "checkout", "HEAD", "--", "."])
+            run_on_cmdline(logger, ["git", "checkout", "--", "."])
             safe_rm(Path(".git"))
-            for empty_dir in empty_dirs:
-                empty_dir.mkdir(parents=True, exist_ok=True)
 
     def _configure_eol(self, eol: str) -> None:
         """Write line-ending policy into the local repo before fetch.
