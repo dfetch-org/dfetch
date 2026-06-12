@@ -361,23 +361,22 @@ class GitLocalRepo:
             except SubprocessCommandError:
                 return None
 
-    def _apply_eol(self, eol: str) -> None:
-        """Convert line endings of every text file in the working tree."""
+    def _configure_eol(self, eol: str) -> None:
+        """Write line-ending policy into the local repo before fetch.
+
+        Uses .git/info/attributes (highest gitattributes priority) so the
+        superproject's preference overrides both the remote repo's own
+        .gitattributes and any system/global core.autocrlf setting.
+        """
         if eol not in ("lf", "crlf"):
             raise ValueError(f"Invalid eol value {eol!r}: must be 'lf' or 'crlf'")
-        for file_path in Path(".").rglob("*"):
-            if not file_path.is_file() or ".git" in file_path.parts:
-                continue
-            try:
-                raw = file_path.read_bytes()
-            except OSError:
-                continue
-            if b"\x00" in raw[:8192]:  # NUL in first 8 KiB signals binary — matches git's heuristic; avoids full-file scan
-                continue
-            normalized = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
-            result = normalized.replace(b"\n", b"\r\n") if eol == "crlf" else normalized
-            if result != raw:
-                file_path.write_bytes(result)
+        info_dir = Path(".git") / "info"
+        info_dir.mkdir(exist_ok=True)
+        (info_dir / "attributes").write_text(
+            f"* text=auto eol={eol}\n", encoding="utf-8"
+        )
+        run_on_cmdline(logger, ["git", "config", "core.eol", eol])
+        run_on_cmdline(logger, ["git", "config", "core.autocrlf", "false"])
 
     def _configure_sparse_checkout(
         self,
@@ -415,6 +414,9 @@ class GitLocalRepo:
                     options.src, options.must_keeps or [], options.ignore
                 )
 
+            if options.eol is not None:
+                self._configure_eol(options.eol)
+
             run_on_cmdline(
                 logger,
                 ["git", "fetch", "--depth", "1", "origin", options.version],
@@ -428,9 +430,6 @@ class GitLocalRepo:
                 ["git", "submodule", "update", "--init", "--recursive"],
                 env=_extend_env_for_non_interactive_mode(),
             )
-
-            if options.eol is not None:
-                self._apply_eol(options.eol)
 
             submodules = self.submodules()
 

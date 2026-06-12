@@ -26,7 +26,7 @@ Feature: Superproject .gitattributes line endings respected on fetch
         Then 'MyProject/SomeProject/README.md' has CRLF line endings
 
     Scenario: Superproject forces LF line endings
-        Given a git-repository "SomeProject.git" with CRLF content
+        Given a git-repository "SomeProject.git" with LF content
         And a local git repo "MyProject" with the manifest
             """
             manifest:
