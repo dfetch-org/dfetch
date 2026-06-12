@@ -361,12 +361,23 @@ class GitLocalRepo:
             except SubprocessCommandError:
                 return None
 
-    def _configure_eol(self, eol: str) -> None:
-        Path(".git/info").mkdir(exist_ok=True)
-        Path(".git/info/attributes").write_text(
-            f"* text=auto eol={eol}\n", encoding="utf-8"
-        )
-        run_on_cmdline(logger, ["git", "config", "core.eol", eol])
+    def _apply_eol(self, eol: str) -> None:
+        """Convert line endings of every text file in the working tree."""
+        if eol not in ("lf", "crlf"):
+            raise ValueError(f"Invalid eol value {eol!r}: must be 'lf' or 'crlf'")
+        for file_path in Path(".").rglob("*"):
+            if not file_path.is_file() or ".git" in file_path.parts:
+                continue
+            try:
+                raw = file_path.read_bytes()
+            except OSError:
+                continue
+            if b"\x00" in raw[:8192]:
+                continue
+            normalized = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+            result = normalized.replace(b"\n", b"\r\n") if eol == "crlf" else normalized
+            if result != raw:
+                file_path.write_bytes(result)
 
     def _configure_sparse_checkout(
         self,
@@ -410,9 +421,6 @@ class GitLocalRepo:
                 env=_extend_env_for_non_interactive_mode(),
             )
 
-            if options.eol is not None:
-                self._configure_eol(options.eol)
-
             run_on_cmdline(logger, ["git", "reset", "--hard", "FETCH_HEAD"])
 
             run_on_cmdline(
@@ -420,6 +428,9 @@ class GitLocalRepo:
                 ["git", "submodule", "update", "--init", "--recursive"],
                 env=_extend_env_for_non_interactive_mode(),
             )
+
+            if options.eol is not None:
+                self._apply_eol(options.eol)
 
             submodules = self.submodules()
 

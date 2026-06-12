@@ -433,7 +433,7 @@ def step_impl(_, path, ending):
         content = f.read()
     if ending.upper() == "CRLF":
         assert b"\r\n" in content, f"No CRLF found in {path}"
-        assert not re.search(rb"\r(?!\n)", content), f"Lone CR in {path}"
+        assert not re.search(rb"(?<!\r)\n", content), f"LF without preceding CR in {path}"
     elif ending.upper() == "LF":
         assert b"\r" not in content, f"CR found in {path}"
     else:
