@@ -78,6 +78,8 @@ class GitSubProject(SubProject):
             f"/{name.upper()}" for name in LICENSE_GLOBS
         ]
 
+        # "/a" gives git check-attr a hypothetical path inside the destination so
+        # path-based .gitattributes rules (e.g. "ext/mylib/ eol=lf") are evaluated
         eol = GitLocalRepo(Path.cwd()).effective_eol(f"{self.local_path}/a")
 
         local_repo = GitLocalRepo(self.local_path)
