@@ -16,3 +16,4 @@ venv*
 *.cdx.json
 release_notes.txt
 .hypothesis
+.claude/worktrees/
