@@ -372,7 +372,7 @@ class GitLocalRepo:
                 raw = file_path.read_bytes()
             except OSError:
                 continue
-            if b"\x00" in raw[:8192]:
+            if b"\x00" in raw[:8192]:  # NUL in first 8 KiB signals binary — matches git's heuristic; avoids full-file scan
                 continue
             normalized = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
             result = normalized.replace(b"\n", b"\r\n") if eol == "crlf" else normalized
