@@ -165,3 +165,29 @@ def step_impl(context, name, ext_path, source_name):
     with in_directory(name):
         with in_directory("trunk"):
             add_externals([{"url": source_url, "path": ext_path, "revision": ""}])
+
+
+@given('a svn-server "{name}" with LF content')
+def step_impl(context, name):
+    repo_path = create_svn_server_and_repo(context, name)
+    with in_directory(repo_path):
+        create_stdlayout()
+        with in_directory("trunk"):
+            pathlib.Path("README.md").write_bytes(
+                f"Generated file for {name}\n".encode("utf-8")
+            )
+        add_and_commit("Initial commit")
+        create_tag("v1")
+
+
+@given('a svn-server "{name}" with CRLF content')
+def step_impl(context, name):
+    repo_path = create_svn_server_and_repo(context, name)
+    with in_directory(repo_path):
+        create_stdlayout()
+        with in_directory("trunk"):
+            pathlib.Path("README.md").write_bytes(
+                f"Generated file for {name}\r\n".encode("utf-8")
+            )
+        add_and_commit("Initial commit")
+        create_tag("v1")

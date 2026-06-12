@@ -361,6 +361,28 @@ class GitLocalRepo:
             except SubprocessCommandError:
                 return None
 
+    @staticmethod
+    def apply_eol_conversion(directory: str | Path, eol: str) -> None:
+        """Apply line-ending conversion to text files in *directory* using git.
+
+        Stages all files (normalising text-file endings to LF in the object
+        store) then checks them out again with the requested *eol* applied.
+        """
+        if eol not in ("lf", "crlf"):
+            raise ValueError(f"Invalid eol value {eol!r}: must be 'lf' or 'crlf'")
+        with in_directory(directory):
+            run_on_cmdline(logger, ["git", "init"])
+            info_dir = Path(".git") / "info"
+            info_dir.mkdir(exist_ok=True)
+            (info_dir / "attributes").write_text(
+                f"* text=auto eol={eol}\n", encoding="utf-8"
+            )
+            run_on_cmdline(logger, ["git", "config", "core.eol", eol])
+            run_on_cmdline(logger, ["git", "config", "core.autocrlf", "false"])
+            run_on_cmdline(logger, ["git", "add", "."])
+            run_on_cmdline(logger, ["git", "checkout-index", "--all", "--force"])
+            safe_rm(Path(".git"))
+
     def _configure_eol(self, eol: str) -> None:
         """Write line-ending policy into the local repo before fetch.
 
