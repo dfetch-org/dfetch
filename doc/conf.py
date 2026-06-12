@@ -125,6 +125,7 @@ suppress_warnings = [
     "autosectionlabel.howto/updating-projects",
     "autosectionlabel.explanation/threat_model_supply_chain",
     "autosectionlabel.explanation/threat_model_usage",
+    "autosectionlabel.explanation/line-endings",
 ]
 
 # Options for sphinx-autoissues

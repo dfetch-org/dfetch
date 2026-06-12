@@ -92,6 +92,9 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
         force: bool = False,
         ignored_files_callback: Callable[[], Sequence[str]] | None = None,
         patch_count: int = -1,
+        eol_preferences_callback: (
+            Callable[[Sequence[str]], dict[str, str]] | None
+        ) = None,
     ) -> None:
         """Update this subproject if required.
 
@@ -104,6 +107,10 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
                 hash).  Calling it at both points ensures the stored hash and the check-time
                 hash use the same skiplist, preventing false "local changes" reports.
             patch_count (int, optional): Number of patches to apply (-1 means all).
+            eol_preferences_callback (Callable, optional): Given a list of paths, returns
+                the line ending ("lf" or "crlf") the superproject requests per path (e.g.
+                from its gitattributes). Used to resolve the destination's preference,
+                which the VCS backend applies natively while fetching.
         """
         to_fetch = self.update_is_required(force)
 
@@ -131,7 +138,9 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
         ):
             if warning := plaintext_warning(self.__project.remote_url):
                 logger.print_warning_line(self.__project.name, warning)
-            actually_fetched, dependency = self._fetch_impl(to_fetch)
+            actually_fetched, dependency = self._fetch_impl(
+                to_fetch, self._destination_eol_hint(eol_preferences_callback)
+            )
         self._log_project(f"Fetched {actually_fetched}")
 
         applied_patches = self._apply_patches(patch_count)
@@ -152,6 +161,22 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
 
         logger.debug(f"Writing repo metadata to: {self.__metadata.path}")
         self.__metadata.dump()
+
+    def _destination_eol_hint(
+        self, callback: Callable[[Sequence[str]], dict[str, str]] | None
+    ) -> str | None:
+        """Get the directory-wide line-ending preference for the destination, if any.
+
+        Resolved with a hypothetical path inside the destination, so global and
+        directory-level rules can match. The VCS backend applies it natively
+        while fetching (git renormalisation, ``svn export --native-eol``).
+        """
+        if not callback:
+            return None
+        exact = pathlib.PurePath(self.local_path).as_posix()
+        probe = f"{exact}/_"
+        result = callback([exact, probe])
+        return result.get(probe) or result.get(exact)
 
     def _apply_patches(self, count: int = -1) -> list[str]:
         """Apply the patches."""
@@ -429,8 +454,18 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
         )
 
     @abstractmethod
-    def _fetch_impl(self, version: Version) -> tuple[Version, list[Dependency]]:
-        """Fetch the given version of the subproject, should be implemented by the child class."""
+    def _fetch_impl(
+        self, version: Version, eol_hint: str | None = None
+    ) -> tuple[Version, list[Dependency]]:
+        """Fetch the given version of the subproject, should be implemented by the child class.
+
+        Args:
+            version: The version to fetch.
+            eol_hint: Directory-wide line ending ("lf" or "crlf") the superproject
+                requests for the destination. Backends apply it natively while
+                fetching where the VCS supports it (git renormalisation,
+                ``svn export --native-eol``).
+        """
 
     @abstractmethod
     def get_default_branch(self) -> str:

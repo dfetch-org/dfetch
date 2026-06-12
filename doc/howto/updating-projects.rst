@@ -127,12 +127,12 @@ submodule are recorded in ``.dfetch_data.yaml`` and are visible in
 Line endings
 ------------
 
-If your superproject's ``.gitattributes`` file contains a global ``eol`` rule,
-*DFetch* reads the effective setting for each dependency's destination path and
-applies it when fetching, so the vendored files match your project's enforced
-style on every platform:
+If your superproject is a git repository and its ``.gitattributes`` file
+contains a global or per-directory ``eol`` rule, *DFetch* lets the version
+control system that performs the fetch produce matching line endings, so the
+vendored files match your project's enforced style on every platform:
 
-.. code-block:: gitattributes
+.. code-block:: text
 
    # force LF everywhere (common on cross-platform projects)
    * text=auto eol=lf
@@ -141,11 +141,35 @@ style on every platform:
    * text=auto eol=crlf
 
 *DFetch* uses ``git check-attr`` to resolve the effective setting for each
-destination, so per-directory rules are honoured as well as global ones.
-If no ``eol`` attribute is set the platform and git defaults apply unchanged.
+dependency's destination directory, so per-directory rules are honoured as
+well as global ones. The conversion itself is done natively by the VCS that
+fetches the project, so even large dependencies convert at full speed:
+
+- Git dependencies are checked out with the requested ``eol`` configured and
+  renormalised by git itself; git's own text detection decides which files
+  are text, so binary files are never converted.
+- SVN dependencies are exported with ``svn export --native-eol``, which
+  applies the requested ending to every file carrying the
+  ``svn:eol-style=native`` property; files without that property keep their
+  bytes exactly as stored.
+
+If your superproject is an SVN repository, declare the preference with SVN's
+own mechanism instead — the ``svn:auto-props`` property:
+
+.. code-block:: console
+
+   svn propset svn:auto-props '* = svn:eol-style=LF' .
+
+*DFetch* reads the property (including values inherited from parent
+directories) for each dependency's destination and applies it the same way.
+
+Archive dependencies are extracted byte-for-byte. If no preference is set,
+the platform and VCS defaults apply unchanged.
 
 The scenarios below cover both Git and SVN subprojects, and verify all four
 combinations of remote content (LF or CRLF) against each superproject
-``eol`` setting — expressed concisely via Gherkin ``Examples`` tables:
+``eol`` setting — expressed concisely via Gherkin ``Examples`` tables. They
+also verify that a superproject using another VCS (such as SVN) leaves the
+fetched line endings untouched:
 
 .. scenario-include:: ../features/superproject-line-ending-attrs.feature

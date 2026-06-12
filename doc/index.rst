@@ -102,6 +102,7 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    explanation/alternatives
    explanation/architecture
    explanation/security
+   explanation/line-endings
 
 .. only:: latex
 

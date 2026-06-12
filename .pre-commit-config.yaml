@@ -66,10 +66,9 @@ repos:
         name: vulture
         language: python
         entry: vulture
-        args: ["--min-confidence=80"]
-        types: [python]
-        files: ^dfetch/
-        require_serial: true
+        args: ["--min-confidence=80", "dfetch/"]
+        pass_filenames: false
+        always_run: true
     -   id: pyroma (package friendliness)
         name: Pyroma
         entry: pyroma

@@ -126,6 +126,7 @@ class UpdatePatch(dfetch.commands.command.Command):
                         force=True,
                         ignored_files_callback=_ignored,
                         patch_count=len(subproject.patch) - 1,
+                        eol_preferences_callback=superproject.eol_preferences,
                     )
 
                     # generate reverse patch
@@ -147,7 +148,10 @@ class UpdatePatch(dfetch.commands.command.Command):
 
                     # force update again to fetched version from metadata but with applying patch
                     subproject.update(
-                        force=True, ignored_files_callback=_ignored, patch_count=-1
+                        force=True,
+                        ignored_files_callback=_ignored,
+                        patch_count=-1,
+                        eol_preferences_callback=superproject.eol_preferences,
                     )
 
         if exceptions:
