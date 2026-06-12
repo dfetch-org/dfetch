@@ -364,10 +364,11 @@ def glob_within_root(pattern: str, root: Path) -> tuple[list[str], list[str]]:
         A ``(safe, escaped)`` tuple where *safe* contains sorted paths that
         resolve inside *root* and *escaped* contains those that do not.
     """
+    root_resolved = root.resolve()
     safe: list[str] = []
     escaped: list[str] = []
     for p in sorted(glob.glob(pattern)):
-        (safe if Path(p).resolve().is_relative_to(root) else escaped).append(p)
+        (safe if Path(p).resolve().is_relative_to(root_resolved) else escaped).append(p)
     return safe, escaped
 
 

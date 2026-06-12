@@ -5,7 +5,7 @@
       "Bash(bandit -r dfetch)",
       "Bash(black --check dfetch)",
       "Bash(doc8 doc:*)",
-      "Bash(git fetch:*)",
+      "Bash(git fetch origin:*)",
       "Bash(git stash:*)",
       "Bash(git update-index --refresh)",
       "Bash(isort --diff dfetch)",
