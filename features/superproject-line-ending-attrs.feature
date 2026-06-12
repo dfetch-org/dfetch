@@ -81,3 +81,41 @@ Feature: Superproject .gitattributes line endings respected on fetch
             """
         When I run "dfetch update" in MyProject
         Then 'MyProject/SomeSvnProject/README.md' has LF line endings
+
+    Scenario: Git superproject forces CRLF on SVN subproject that already has CRLF
+        Given a svn-server "SomeSvnProject" with CRLF content
+        And a local git repo "MyProject" with the manifest
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: SomeSvnProject
+                  url: some-remote-server/SomeSvnProject
+                  tag: v1
+            """
+        And ".gitattributes" in MyProject is created and committed with
+            """
+            * text=auto eol=crlf
+            """
+        When I run "dfetch update" in MyProject
+        Then 'MyProject/SomeSvnProject/README.md' has CRLF line endings
+
+    Scenario: Git superproject forces LF on SVN subproject that already has LF
+        Given a svn-server "SomeSvnProject" with LF content
+        And a local git repo "MyProject" with the manifest
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: SomeSvnProject
+                  url: some-remote-server/SomeSvnProject
+                  tag: v1
+            """
+        And ".gitattributes" in MyProject is created and committed with
+            """
+            * text=auto eol=lf
+            """
+        When I run "dfetch update" in MyProject
+        Then 'MyProject/SomeSvnProject/README.md' has LF line endings
