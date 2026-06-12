@@ -126,3 +126,41 @@ def test_fetch_externals_nonstd_layout_preserves_space_branch():
         assert result[0]["remote_url"] == (
             "http://svn.mycompany.eu/MYCOMPANY/SomeModule/Core/Modules/Database"
         )
+
+
+# ---------------------------------------------------------------------------
+# SvnSubProject._apply_superproject_eol — file vs directory path handling
+# ---------------------------------------------------------------------------
+
+
+def test_apply_superproject_eol_single_file_uses_parent_dir(tmp_path, monkeypatch):
+    """When local_path is a single file, apply_eol_conversion targets parent dir."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "README.md").write_bytes(b"hello\n")
+
+    from unittest.mock import patch
+
+    subproject = SvnSubProject(ProjectEntry({"name": "README.md", "url": "http://repo"}))
+
+    with patch("dfetch.project.svnsubproject.GitLocalRepo") as MockGitLocalRepo:
+        MockGitLocalRepo.return_value.effective_eol.return_value = "crlf"
+        subproject._apply_superproject_eol()
+
+    # "README.md" is a file; parent is "." in the monkeypatched cwd
+    MockGitLocalRepo.apply_eol_conversion.assert_called_once_with(".", "crlf")
+
+
+def test_apply_superproject_eol_directory_path_unchanged(tmp_path, monkeypatch):
+    """When local_path is a directory, apply_eol_conversion targets it directly."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "mylib").mkdir()
+
+    from unittest.mock import patch
+
+    subproject = SvnSubProject(ProjectEntry({"name": "mylib", "url": "http://repo"}))
+
+    with patch("dfetch.project.svnsubproject.GitLocalRepo") as MockGitLocalRepo:
+        MockGitLocalRepo.return_value.effective_eol.return_value = "lf"
+        subproject._apply_superproject_eol()
+
+    MockGitLocalRepo.apply_eol_conversion.assert_called_once_with("mylib", "lf")

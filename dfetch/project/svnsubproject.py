@@ -164,7 +164,9 @@ class SvnSubProject(SubProject):
         """Apply the superproject's eol preference to all exported text files."""
         eol = GitLocalRepo(pathlib.Path.cwd()).effective_eol(f"{self.local_path}/a")
         if eol is not None:
-            GitLocalRepo.apply_eol_conversion(self.local_path, eol)
+            target = pathlib.Path(self.local_path)
+            conversion_dir = str(target.parent) if target.is_file() else self.local_path
+            GitLocalRepo.apply_eol_conversion(conversion_dir, eol)
 
     def _fetch_externals(self, complete_path: str, revision: str) -> list[Dependency]:
         """Detect and log SVN externals that were exported with the project."""
