@@ -7,7 +7,7 @@ Feature: Superproject .gitattributes line endings respected on fetch
     the vendored files always match the project's enforced style.
 
     Scenario: Superproject forces CRLF line endings
-        Given a git repository "SomeProject.git"
+        Given a git-repository "SomeProject.git" with LF content
         And a local git repo "MyProject" with the manifest
             """
             manifest:
@@ -26,11 +26,7 @@ Feature: Superproject .gitattributes line endings respected on fetch
         Then 'MyProject/SomeProject/README.md' has CRLF line endings
 
     Scenario: Superproject forces LF line endings
-        Given a git repository "SomeProject.git"
-        And "README.md" in git-repository "SomeProject.git" is created with CRLF and committed
-            """
-            A line with CRLF endings.
-            """
+        Given a git-repository "SomeProject.git" with CRLF content
         And a local git repo "MyProject" with the manifest
             """
             manifest:

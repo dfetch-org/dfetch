@@ -163,9 +163,37 @@ def step_impl(context, path, name):
 def step_impl(context, path, name):
     remote_path = os.path.join(context.remotes_dir, name)
     with in_directory(remote_path):
-        crlf = context.text.strip().replace("\n", "\r\n").encode("utf-8")
+        lines = context.text.splitlines()
+        crlf = ("\r\n".join(lines) + "\r\n").encode("utf-8")
         pathlib.Path(path).write_bytes(crlf)
         commit_all("Add CRLF file")
+
+
+@given('a git-repository "{name}" with LF content')
+def step_impl(context, name):
+    remote_path = os.path.join(context.remotes_dir, name)
+    pathlib.Path(remote_path).mkdir(parents=True, exist_ok=True)
+    with in_directory(remote_path):
+        create_repo()
+        pathlib.Path("README.md").write_bytes(
+            f"Generated file for {name}\n".encode("utf-8")
+        )
+        commit_all("Initial commit")
+        tag("v1")
+
+
+@given('a git-repository "{name}" with CRLF content')
+def step_impl(context, name):
+    remote_path = os.path.join(context.remotes_dir, name)
+    pathlib.Path(remote_path).mkdir(parents=True, exist_ok=True)
+    with in_directory(remote_path):
+        create_repo()
+        subprocess.check_call(["git", "config", "core.autocrlf", "false"])
+        pathlib.Path("README.md").write_bytes(
+            f"Generated file for {name}\r\n".encode("utf-8")
+        )
+        commit_all("Initial commit")
+        tag("v1")
 
 
 @given("all files in {directory} are committed")
