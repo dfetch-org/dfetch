@@ -365,8 +365,9 @@ class GitLocalRepo:
     def apply_eol_conversion(directory: str | Path, eol: str) -> None:
         """Apply line-ending conversion to text files in *directory* using git.
 
-        Stages all files (normalising text-file endings to LF in the object
-        store) then checks them out again with the requested *eol* applied.
+        Commits all files (normalising text-file endings to LF in the object
+        store), deletes the working tree, then checks back out so git applies
+        the requested *eol* smudge filter on the way out.
         """
         if eol not in ("lf", "crlf"):
             raise ValueError(f"Invalid eol value {eol!r}: must be 'lf' or 'crlf'")
@@ -379,8 +380,15 @@ class GitLocalRepo:
             )
             run_on_cmdline(logger, ["git", "config", "core.eol", eol])
             run_on_cmdline(logger, ["git", "config", "core.autocrlf", "false"])
+            run_on_cmdline(logger, ["git", "config", "user.email", "dfetch@local"])
+            run_on_cmdline(logger, ["git", "config", "user.name", "dfetch"])
+            run_on_cmdline(logger, ["git", "config", "commit.gpgsign", "false"])
             run_on_cmdline(logger, ["git", "add", "."])
-            run_on_cmdline(logger, ["git", "checkout-index", "--all", "--force"])
+            run_on_cmdline(logger, ["git", "commit", "-m", "eol-norm"])
+            for entry in list(Path(".").iterdir()):
+                if entry.name != ".git":
+                    safe_rm(entry)
+            run_on_cmdline(logger, ["git", "checkout", "HEAD", "--", "."])
             safe_rm(Path(".git"))
 
     def _configure_eol(self, eol: str) -> None:
