@@ -15,6 +15,7 @@ from dfetch.util.util import (
     find_non_matching_files,
     safe_rm,
 )
+from dfetch.vcs.git import GitLocalRepo
 from dfetch.vcs.svn import SvnRemote, SvnRepo, get_svn_version
 
 logger = get_logger(__name__)
@@ -152,10 +153,18 @@ class SvnSubProject(SubProject):
         if self.ignore:
             self._remove_ignored_files()
 
+        self._apply_superproject_eol()
+
         return (
             Version(tag=version.tag, branch=branch, revision=revision),
             self._fetch_externals(complete_path, revision),
         )
+
+    def _apply_superproject_eol(self) -> None:
+        """Apply the superproject's eol preference to all exported text files."""
+        eol = GitLocalRepo(pathlib.Path.cwd()).effective_eol(f"{self.local_path}/a")
+        if eol is not None:
+            GitLocalRepo.apply_eol_conversion(self.local_path, eol)
 
     def _fetch_externals(self, complete_path: str, revision: str) -> list[Dependency]:
         """Detect and log SVN externals that were exported with the project."""
