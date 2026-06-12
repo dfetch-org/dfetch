@@ -362,6 +362,15 @@ class GitLocalRepo:
                 return None
 
     @staticmethod
+    def _collect_empty_dirs() -> list[Path]:
+        """Return all subdirectories under CWD that contain no files anywhere inside."""
+        return [
+            p
+            for p in Path(".").rglob("*")
+            if p.is_dir() and not any(f.is_file() for f in p.rglob("*"))
+        ]
+
+    @staticmethod
     def apply_eol_conversion(directory: str | Path, eol: str) -> None:
         """Apply line-ending conversion to text files in *directory* using git.
 
@@ -372,6 +381,9 @@ class GitLocalRepo:
         if eol not in ("lf", "crlf"):
             raise ValueError(f"Invalid eol value {eol!r}: must be 'lf' or 'crlf'")
         with in_directory(directory):
+            if not any(f.is_file() for f in Path(".").rglob("*")):
+                return
+            empty_dirs = GitLocalRepo._collect_empty_dirs()
             run_on_cmdline(logger, ["git", "init"])
             info_dir = Path(".git") / "info"
             info_dir.mkdir(exist_ok=True)
@@ -390,6 +402,8 @@ class GitLocalRepo:
                     safe_rm(entry)
             run_on_cmdline(logger, ["git", "checkout", "HEAD", "--", "."])
             safe_rm(Path(".git"))
+            for empty_dir in empty_dirs:
+                empty_dir.mkdir(parents=True, exist_ok=True)
 
     def _configure_eol(self, eol: str) -> None:
         """Write line-ending policy into the local repo before fetch.

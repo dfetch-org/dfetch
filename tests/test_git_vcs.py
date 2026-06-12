@@ -433,3 +433,23 @@ def test_build_git_ssh_command(name, env_ssh, git_config_ssh, expected):
                     mock_logger.warning.assert_called()
                 else:
                     mock_logger.warning.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# GitLocalRepo.apply_eol_conversion — empty-dir preservation and empty-dir
+# early-return
+# ---------------------------------------------------------------------------
+
+
+def test_apply_eol_conversion_preserves_empty_dirs(tmp_path):
+    """Empty subdirectories survive the git round-trip."""
+    (tmp_path / "README.md").write_bytes(b"hello\n")
+    empty = tmp_path / "empty_subdir"
+    empty.mkdir()
+    GitLocalRepo.apply_eol_conversion(tmp_path, "lf")
+    assert empty.is_dir(), "Empty subdirectory should be preserved"
+
+
+def test_apply_eol_conversion_empty_directory_does_not_crash(tmp_path):
+    """A directory with no files is handled gracefully."""
+    GitLocalRepo.apply_eol_conversion(tmp_path, "crlf")  # must not raise
