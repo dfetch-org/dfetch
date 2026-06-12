@@ -44,6 +44,10 @@ class SvnSuperProject(SuperProject):
         """Get the subproject in the same vcs type as the superproject."""
         return SvnSubProject(project)
 
+    def eol_preferences(self, paths: Sequence[str]) -> dict[str, str]:
+        """Get the line ending requested per path by this repo's svn:auto-props."""
+        return {path: eol for path in paths if (eol := self._repo.eol_style_for(path))}
+
     def ignored_files(self, path: str) -> Sequence[str]:
         """Return a list of files that can be ignored in a given path."""
         resolved_path = resolve_absolute_path(path)

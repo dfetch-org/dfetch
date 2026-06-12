@@ -17,7 +17,9 @@ from dfetch.project.subproject import SubProject
 class ConcreteSubProject(SubProject):
     _wanted_version: Version
 
-    def _fetch_impl(self, version: Version) -> tuple[Version, list[Dependency]]:
+    def _fetch_impl(
+        self, version: Version, eol_hint: str | None = None
+    ) -> tuple[Version, list[Dependency]]:
         return Version(), []
 
     def _latest_revision_on_branch(self, branch):
@@ -169,6 +171,46 @@ def test_update_uses_ignored_files_callback_for_stored_hash():
                         hash_call_skiplist = mock_hash.call_args[1]["skiplist"]
                         assert "new_ignored.txt" in hash_call_skiplist
                         assert "old_file.txt" not in hash_call_skiplist
+
+
+def test_update_eol_hint_propagated_for_file_destination():
+    """EOL hint from an exact-path gitattributes rule reaches _fetch_impl.
+
+    When the destination is a single file, _destination_eol_hint must check
+    the exact path (not only the probe child path) so that rules like
+    ``vendor/lib.c eol=lf`` are picked up and forwarded to the VCS backend.
+    """
+    eol_callback = MagicMock(return_value={"vendor/lib.c": "lf"})
+
+    with patch("dfetch.project.subproject.os.path.exists") as mock_exists:
+        with patch("dfetch.project.subproject.Metadata.from_file") as mock_meta_file:
+            with patch("dfetch.project.subproject.hash_directory"):
+                with patch("dfetch.project.subproject.safe_rm"):
+                    with patch("dfetch.project.subproject.Metadata.dump"):
+                        with patch.object(
+                            ConcreteSubProject,
+                            "_fetch_impl",
+                            return_value=(Version(), []),
+                        ) as mock_fetch_impl:
+                            mock_exists.return_value = True
+                            mock_meta_file.return_value.version = Version(
+                                revision="abc"
+                            )
+
+                            subproject = ConcreteSubProject(
+                                ProjectEntry(
+                                    {"name": "vendor/lib.c", "dst": "vendor/lib.c"}
+                                )
+                            )
+                            subproject._wanted_version = Version(revision="new")
+
+                            subproject.update(
+                                force=True, eol_preferences_callback=eol_callback
+                            )
+
+                            mock_fetch_impl.assert_called_once()
+                            _, eol_hint = mock_fetch_impl.call_args[0]
+                            assert eol_hint == "lf"
 
 
 @pytest.mark.parametrize(

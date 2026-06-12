@@ -1,9 +1,11 @@
 """Svn repository."""
 
 import contextlib
+import fnmatch
 import functools
 import os
 import pathlib
+import posixpath
 import re
 from collections.abc import Callable, Generator, Mapping, Sequence
 from pathlib import Path
@@ -93,6 +95,46 @@ def get_svn_version() -> tuple[str, str]:
         raise RuntimeError(f"Unexpected svn --version output format: {first_line}")
     tool, version = first_line.replace(",", "").split("version", maxsplit=1)
     return (str(tool), str(version))
+
+
+def _self_and_ancestors(directory: str) -> Generator[str, None, None]:
+    """Yield *directory* and each of its ancestors, ending at ".".
+
+    Args:
+        directory: A relative directory path using forward slashes.
+    """
+    current = directory or "."
+    while current not in ("", "/", "."):
+        yield current
+        current = posixpath.dirname(current)
+    yield "."
+
+
+def _match_auto_props_eol_style(props: str, filename: str) -> str | None:
+    """Find the ``svn:eol-style`` the given auto-props text requests for *filename*.
+
+    Args:
+        props: ``svn propget svn:auto-props --show-inherited-props`` output:
+            pattern lines such as ``*.c = svn:eol-style=LF;svn:keywords=Id``,
+            where the first line of a block can be prefixed with ``<path> -``.
+        filename: The file name to match the patterns against.
+
+    Returns:
+        The value of the last matching pattern, mirroring how deeper
+        directories override shallower ones, or None if nothing matches.
+    """
+    style = None
+    for line in props.splitlines():
+        if " - " in line:
+            line = line.split(" - ", 1)[1]
+        pattern, _, values = line.partition("=")
+        if not values or not fnmatch.fnmatch(filename, pattern.strip()):
+            continue
+        for prop in values.split(";"):
+            name, _, value = prop.partition("=")
+            if name.strip() == "svn:eol-style":
+                style = value.strip()
+    return style
 
 
 class External(NamedTuple):
@@ -223,6 +265,47 @@ class SvnRepo:
             raise
         except (SubprocessCommandError, RuntimeError):
             return False
+
+    def eol_style_for(self, path: str) -> str | None:
+        """Resolve the line ending ``svn:auto-props`` requests for *path*, if any.
+
+        Reads the ``svn:auto-props`` property (own and inherited) of the
+        deepest existing versioned ancestor of *path* and matches its patterns
+        against the file name — mirroring how svn applies auto-props to newly
+        added files.
+
+        Args:
+            path: A path relative to this repository's root.
+
+        Returns:
+            ``"lf"`` or ``"crlf"``, or None when no preference applies.
+        """
+        props = self._inherited_auto_props(posixpath.dirname(path))
+        style = _match_auto_props_eol_style(props, posixpath.basename(path))
+        return {"LF": "lf", "CRLF": "crlf"}.get(style or "")
+
+    def _inherited_auto_props(self, directory: str) -> str:
+        """Get auto-props of the deepest existing versioned ancestor of *directory*."""
+        with in_directory(self._path):
+            for candidate in _self_and_ancestors(directory):
+                if not os.path.isdir(candidate):
+                    continue
+                try:
+                    result = run_on_cmdline(
+                        logger,
+                        [
+                            "svn",
+                            "propget",
+                            "svn:auto-props",
+                            "--show-inherited-props",
+                            "--non-interactive",
+                            candidate,
+                        ],
+                    )
+                except (SubprocessCommandError, RuntimeError):
+                    continue
+                return str(result.stdout.decode())
+        return ""
 
     def externals(self) -> list[External]:
         """Get list of externals."""
@@ -400,7 +483,7 @@ class SvnRepo:
         return files
 
     @staticmethod
-    def export(url: str, rev: str = "", dst: str = ".") -> None:
+    def export(url: str, rev: str = "", dst: str = ".", native_eol: str = "") -> None:
         """Export the given revision from url to destination.
 
         Args:
@@ -408,14 +491,22 @@ class SvnRepo:
             rev: Bare revision number (digits only) or empty string for HEAD.
                 Must not include flag names such as ``--revision``.
             dst: Local destination path.
+            native_eol: Line ending ("LF" or "CRLF") to use for files with the
+                ``svn:eol-style=native`` property, or empty for the platform default.
 
         Raises:
-            ValueError: If *rev* is non-empty and contains non-digit characters.
+            ValueError: If *rev* is non-empty and contains non-digit characters,
+                or *native_eol* is not one of "", "LF" or "CRLF".
         """
         if rev and not rev.isdigit():
             raise ValueError(f"SVN revision must be digits only, got: {rev!r}")
+        if native_eol not in ("", "LF", "CRLF"):
+            raise ValueError(f"SVN native-eol must be LF or CRLF, got: {native_eol!r}")
         _run_svn(
-            ["export", "--force"] + (["--revision", rev] if rev else []) + [url, dst],
+            ["export", "--force"]
+            + (["--revision", rev] if rev else [])
+            + (["--native-eol", native_eol] if native_eol else [])
+            + [url, dst],
             url=url,
         )
 

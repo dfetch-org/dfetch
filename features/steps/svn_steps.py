@@ -115,6 +115,29 @@ def step_impl(context, name):
         add_and_commit("Added files")
 
 
+@given("svn:auto-props in {directory} requests {eol} line endings")
+def step_impl(_, directory, eol):
+    with in_directory(directory):
+        subprocess.check_call(
+            [
+                "svn",
+                "propset",
+                "svn:auto-props",
+                f"* = svn:eol-style={eol.upper()}",
+                ".",
+            ]
+        )
+
+
+@given('a local svn repo "{directory}" with the manifest')
+def step_impl(context, directory):
+    repo_path = create_svn_server_and_repo(context, directory)
+
+    with in_directory(repo_path):
+        generate_manifest(context)
+        add_and_commit("Initial commit")
+
+
 @given("a fetched and committed MySvnProject with the manifest")
 def step_impl(context):
     repo_path = create_svn_server_and_repo(context, "MySvnProject")
@@ -167,27 +190,20 @@ def step_impl(context, name, ext_path, source_name):
             add_externals([{"url": source_url, "path": ext_path, "revision": ""}])
 
 
-@given('a svn-server "{name}" with LF content')
-def step_impl(context, name):
+@given('a svn-server "{name}" with {ending} content')
+def step_impl(context, name, ending):
+    terminator = {"LF": "\n", "CRLF": "\r\n"}[ending]
     repo_path = create_svn_server_and_repo(context, name)
     with in_directory(repo_path):
         create_stdlayout()
         with in_directory("trunk"):
             pathlib.Path("README.md").write_bytes(
-                f"Generated file for {name}\n".encode("utf-8")
+                f"Generated file for {name}{terminator}".encode("utf-8")
             )
-        add_and_commit("Initial commit")
-        create_tag("v1")
-
-
-@given('a svn-server "{name}" with CRLF content')
-def step_impl(context, name):
-    repo_path = create_svn_server_and_repo(context, name)
-    with in_directory(repo_path):
-        create_stdlayout()
-        with in_directory("trunk"):
-            pathlib.Path("README.md").write_bytes(
-                f"Generated file for {name}\r\n".encode("utf-8")
-            )
-        add_and_commit("Initial commit")
+        subprocess.check_call(["svn", "update", "."])
+        subprocess.check_call(["svn", "add", "--force", "."])
+        subprocess.check_call(
+            ["svn", "propset", "svn:eol-style", "native", "trunk/README.md"]
+        )
+        subprocess.check_call(["svn", "ci", "-m", '"Initial commit"'])
         create_tag("v1")
