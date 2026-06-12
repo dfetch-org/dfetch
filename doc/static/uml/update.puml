@@ -62,6 +62,10 @@ partition "Perform Update" {
          revision;
     endif
 
+    if (EOL setting given?) then (yes)
+        :Configure EOL from superproject;
+    endif
+
     :Fetch target:
     revision/tag/branch;
 

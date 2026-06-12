@@ -72,6 +72,10 @@ class GitSuperProject(SuperProject):
         """Get the revision of the given file."""
         return str(self._repo.get_last_file_hash(str(path)))
 
+    def eol_preferences(self, paths: Sequence[str]) -> dict[str, str]:
+        """Get the line ending requested per path by this repo's gitattributes."""
+        return self._repo.eol_attributes(paths)
+
     @staticmethod
     def import_projects() -> Sequence[ProjectEntry]:
         """Import projects from underlying superproject."""

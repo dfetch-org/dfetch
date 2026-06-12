@@ -157,7 +157,9 @@ class ArchiveSubProject(SubProject):
             return Version(revision=self._project_entry.hash)
         return Version(revision=self.remote)
 
-    def _fetch_impl(self, version: Version) -> tuple[Version, list[Dependency]]:
+    def _fetch_impl(
+        self, version: Version, eol_hint: str | None = None
+    ) -> tuple[Version, list[Dependency]]:
         """Download and extract the archive to the local destination.
 
         1. Download the archive to a temporary file.
@@ -170,6 +172,7 @@ class ArchiveSubProject(SubProject):
         Returns:
             The version that was actually fetched (hash string or URL).
         """
+        del eol_hint  # archives are extracted byte-for-byte
         revision = version.revision
 
         pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)

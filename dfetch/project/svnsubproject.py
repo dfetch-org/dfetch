@@ -15,7 +15,6 @@ from dfetch.util.util import (
     find_non_matching_files,
     safe_rm,
 )
-from dfetch.vcs.git import GitLocalRepo
 from dfetch.vcs.svn import SvnRemote, SvnRepo, get_svn_version
 
 logger = get_logger(__name__)
@@ -114,9 +113,15 @@ class SvnSubProject(SubProject):
             if not (file_or_dir.is_file() and is_license_file(file_or_dir.name)):
                 safe_rm(file_or_dir)
 
-    def _fetch_impl(self, version: Version) -> tuple[Version, list[Dependency]]:
+    def _fetch_impl(
+        self, version: Version, eol_hint: str | None = None
+    ) -> tuple[Version, list[Dependency]]:
         """Get the revision of the remote and place it at the local path."""
         branch, branch_path, revision = self._determine_what_to_fetch(version)
+
+        # Let svn itself produce the requested line endings; this applies to
+        # files marked 'svn:eol-style=native', other files keep their bytes.
+        native_eol = {"lf": "LF", "crlf": "CRLF"}.get(eol_hint or "", "")
 
         complete_path = "/".join(
             filter(None, [self.remote, branch_path.strip(), self.source])
@@ -129,7 +134,7 @@ class SvnSubProject(SubProject):
 
         complete_path, file_pattern = self._parse_file_pattern(complete_path)
 
-        SvnRepo.export(complete_path, revision, self.local_path)
+        SvnRepo.export(complete_path, revision, self.local_path, native_eol)
 
         if file_pattern:
             for file in find_non_matching_files(self.local_path, (file_pattern,)):
@@ -148,25 +153,17 @@ class SvnSubProject(SubProject):
                     if os.path.isdir(self.local_path)
                     else os.path.dirname(self.local_path)
                 )
-                SvnRepo.export(f"{root_branch_path}/{license_files[0]}", revision, dest)
+                SvnRepo.export(
+                    f"{root_branch_path}/{license_files[0]}", revision, dest, native_eol
+                )
 
         if self.ignore:
             self._remove_ignored_files()
-
-        self._apply_superproject_eol()
 
         return (
             Version(tag=version.tag, branch=branch, revision=revision),
             self._fetch_externals(complete_path, revision),
         )
-
-    def _apply_superproject_eol(self) -> None:
-        """Apply the superproject's eol preference to all exported text files."""
-        eol = GitLocalRepo(pathlib.Path.cwd()).effective_eol(f"{self.local_path}/a")
-        if eol is not None:
-            target = pathlib.Path(self.local_path)
-            conversion_dir = str(target.parent) if target.is_file() else self.local_path
-            GitLocalRepo.apply_eol_conversion(conversion_dir, eol)
 
     def _fetch_externals(self, complete_path: str, revision: str) -> list[Dependency]:
         """Detect and log SVN externals that were exported with the project."""

@@ -77,6 +77,7 @@ def test_forced_update():
                             mocked_create.return_value.update.assert_called_once_with(
                                 force=True,
                                 ignored_files_callback=ANY,
+                                eol_preferences_callback=ANY,
                             )
 
                             cb = mocked_create.return_value.update.call_args.kwargs[
