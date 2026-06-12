@@ -189,18 +189,6 @@ def in_directory(path: str | Path) -> Generator[str, None, None]:
 
 
 @contextmanager
-def catch_runtime_exceptions(
-    exc_list: list[str] | None = None,
-) -> Generator[list[str], None, None]:
-    """Catch all runtime errors and add it to list of strings."""
-    exc_list = exc_list or []
-    try:
-        yield exc_list
-    except RuntimeError as exc:
-        exc_list += [str(exc)]
-
-
-@contextmanager
 def prefix_runtime_exceptions(
     prefix: str,
 ) -> Generator[None, None, None]:
@@ -376,10 +364,11 @@ def glob_within_root(pattern: str, root: Path) -> tuple[list[str], list[str]]:
         A ``(safe, escaped)`` tuple where *safe* contains sorted paths that
         resolve inside *root* and *escaped* contains those that do not.
     """
+    root_resolved = root.resolve()
     safe: list[str] = []
     escaped: list[str] = []
     for p in sorted(glob.glob(pattern)):
-        (safe if Path(p).resolve().is_relative_to(root) else escaped).append(p)
+        (safe if Path(p).resolve().is_relative_to(root_resolved) else escaped).append(p)
     return safe, escaped
 
 
