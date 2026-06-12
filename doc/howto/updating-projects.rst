@@ -144,4 +144,8 @@ style on every platform:
 destination, so per-directory rules are honoured as well as global ones.
 If no ``eol`` attribute is set the platform and git defaults apply unchanged.
 
+The scenarios below cover both Git and SVN subprojects, and verify all four
+combinations of remote content (LF or CRLF) against each superproject
+``eol`` setting — expressed concisely via Gherkin ``Examples`` tables:
+
 .. scenario-include:: ../features/superproject-line-ending-attrs.feature

@@ -6,7 +6,7 @@ Feature: Superproject .gitattributes line endings respected on fetch
     on Linux), *DFetch* respects that setting when fetching dependencies, so
     the vendored files always match the project's enforced style.
 
-    Scenario: Superproject forces CRLF line endings
+    Scenario Outline: Superproject forces <eol> line endings on git subproject
         Given a git-repository "SomeProject.git" with LF content
         And a local git repo "MyProject" with the manifest
             """
@@ -20,32 +20,18 @@ Feature: Superproject .gitattributes line endings respected on fetch
             """
         And ".gitattributes" in MyProject is created and committed with
             """
-            * text=auto eol=crlf
+            * text=auto eol=<eol>
             """
         When I run "dfetch update" in MyProject
-        Then 'MyProject/SomeProject/README.md' has CRLF line endings
+        Then 'MyProject/SomeProject/README.md' has <eol> line endings
 
-    Scenario: Superproject forces LF line endings
-        Given a git-repository "SomeProject.git" with LF content
-        And a local git repo "MyProject" with the manifest
-            """
-            manifest:
-              version: '0.0'
+        Examples:
+            | eol  |
+            | crlf |
+            | lf   |
 
-              projects:
-                - name: SomeProject
-                  url: some-remote-server/SomeProject.git
-                  tag: v1
-            """
-        And ".gitattributes" in MyProject is created and committed with
-            """
-            * text=auto eol=lf
-            """
-        When I run "dfetch update" in MyProject
-        Then 'MyProject/SomeProject/README.md' has LF line endings
-
-    Scenario: Git superproject forces CRLF on SVN subproject
-        Given a svn-server "SomeSvnProject" with LF content
+    Scenario Outline: Git superproject forces <eol> on SVN subproject with <remote_eol> remote content
+        Given a svn-server "SomeSvnProject" with <remote_eol> content
         And a local git repo "MyProject" with the manifest
             """
             manifest:
@@ -58,64 +44,14 @@ Feature: Superproject .gitattributes line endings respected on fetch
             """
         And ".gitattributes" in MyProject is created and committed with
             """
-            * text=auto eol=crlf
+            * text=auto eol=<eol>
             """
         When I run "dfetch update" in MyProject
-        Then 'MyProject/SomeSvnProject/README.md' has CRLF line endings
+        Then 'MyProject/SomeSvnProject/README.md' has <eol> line endings
 
-    Scenario: Git superproject forces LF on SVN subproject
-        Given a svn-server "SomeSvnProject" with CRLF content
-        And a local git repo "MyProject" with the manifest
-            """
-            manifest:
-              version: '0.0'
-
-              projects:
-                - name: SomeSvnProject
-                  url: some-remote-server/SomeSvnProject
-                  tag: v1
-            """
-        And ".gitattributes" in MyProject is created and committed with
-            """
-            * text=auto eol=lf
-            """
-        When I run "dfetch update" in MyProject
-        Then 'MyProject/SomeSvnProject/README.md' has LF line endings
-
-    Scenario: Git superproject forces CRLF on SVN subproject that already has CRLF
-        Given a svn-server "SomeSvnProject" with CRLF content
-        And a local git repo "MyProject" with the manifest
-            """
-            manifest:
-              version: '0.0'
-
-              projects:
-                - name: SomeSvnProject
-                  url: some-remote-server/SomeSvnProject
-                  tag: v1
-            """
-        And ".gitattributes" in MyProject is created and committed with
-            """
-            * text=auto eol=crlf
-            """
-        When I run "dfetch update" in MyProject
-        Then 'MyProject/SomeSvnProject/README.md' has CRLF line endings
-
-    Scenario: Git superproject forces LF on SVN subproject that already has LF
-        Given a svn-server "SomeSvnProject" with LF content
-        And a local git repo "MyProject" with the manifest
-            """
-            manifest:
-              version: '0.0'
-
-              projects:
-                - name: SomeSvnProject
-                  url: some-remote-server/SomeSvnProject
-                  tag: v1
-            """
-        And ".gitattributes" in MyProject is created and committed with
-            """
-            * text=auto eol=lf
-            """
-        When I run "dfetch update" in MyProject
-        Then 'MyProject/SomeSvnProject/README.md' has LF line endings
+        Examples:
+            | remote_eol | eol  |
+            | LF         | crlf |
+            | CRLF       | lf   |
+            | CRLF       | crlf |
+            | LF         | lf   |
