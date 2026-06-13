@@ -1,6 +1,7 @@
 Release 0.14.0 (unreleased)
 ===========================
 
+* Winget manifest is now submitted automatically to the Windows Package Manager Community Repository when a new release is published (#TODO)
 * Check for new dfetch version during ``dfetch check`` & ``dfetch environment`` (#1262)
 * Respect the superproject's line-ending preference (#1260)
 * Strip ``user:password@`` userinfo before storing metadata (#1206)
