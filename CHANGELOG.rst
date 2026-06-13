@@ -1,6 +1,7 @@
 Release 0.14.0 (unreleased)
 ===========================
 
+* Show a dim notice below the dfetch header during ``dfetch check`` when a newer release is available on GitHub (skipped in CI environments)
 * Respect the superproject's line-ending preference (#1206)
 * Strip ``user:password@`` userinfo before storing metadata (#1206)
 * Warn when a project URL uses a plaintext transport scheme (#1229)
