@@ -433,3 +433,65 @@ def test_build_git_ssh_command(name, env_ssh, git_config_ssh, expected):
                     mock_logger.warning.assert_called()
                 else:
                     mock_logger.warning.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# GitLocalRepo.eol_attributes — check-attr based lookup
+# ---------------------------------------------------------------------------
+
+
+def _check_attr_output(records):
+    """Build `git check-attr -z` output bytes from (path, attr, value) tuples."""
+    return b"".join(
+        b"%s\0%s\0%s\0" % (p.encode(), a.encode(), v.encode()) for p, a, v in records
+    )
+
+
+def test_eol_attributes_returns_eol_per_path(tmp_path):
+    """Paths with an effective lf/crlf eol attribute are returned."""
+    output = _check_attr_output(
+        [
+            ("a.txt", "text", "auto"),
+            ("a.txt", "eol", "lf"),
+            ("b.bat", "text", "unspecified"),
+            ("b.bat", "eol", "crlf"),
+        ]
+    )
+    with patch("dfetch.vcs.git.run_on_cmdline") as mock_run:
+        mock_run.return_value.stdout = output
+        result = GitLocalRepo(tmp_path).eol_attributes(["a.txt", "b.bat"])
+
+    assert result == {"a.txt": "lf", "b.bat": "crlf"}
+
+
+def test_eol_attributes_skips_non_text_and_unspecified(tmp_path):
+    """Paths marked -text or without an eol attribute are omitted."""
+    output = _check_attr_output(
+        [
+            ("img.png", "text", "unset"),
+            ("img.png", "eol", "lf"),
+            ("plain.txt", "text", "auto"),
+            ("plain.txt", "eol", "unspecified"),
+        ]
+    )
+    with patch("dfetch.vcs.git.run_on_cmdline") as mock_run:
+        mock_run.return_value.stdout = output
+        result = GitLocalRepo(tmp_path).eol_attributes(["img.png", "plain.txt"])
+
+    assert result == {}
+
+
+def test_eol_attributes_without_git_returns_empty(tmp_path):
+    """A missing git binary must not break the update."""
+    with patch(
+        "dfetch.vcs.git.run_on_cmdline",
+        side_effect=RuntimeError("git not available on system, please install"),
+    ):
+        assert GitLocalRepo(tmp_path).eol_attributes(["a.txt"]) == {}
+
+
+def test_eol_attributes_no_paths_skips_git_call(tmp_path):
+    """An empty path list returns early without invoking git."""
+    with patch("dfetch.vcs.git.run_on_cmdline") as mock_run:
+        assert GitLocalRepo(tmp_path).eol_attributes([]) == {}
+    mock_run.assert_not_called()

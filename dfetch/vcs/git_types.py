@@ -26,3 +26,4 @@ class CheckoutOptions:
     src: str | None = None
     must_keeps: Sequence[str] | None = None
     ignore: Sequence[str] | None = None
+    eol: str | None = None

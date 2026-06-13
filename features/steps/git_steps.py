@@ -159,6 +159,21 @@ def step_impl(context, path, name):
         commit_all("A change")
 
 
+@given('a git-repository "{name}" with {ending} content')
+def step_impl(context, name, ending):
+    terminator = {"LF": "\n", "CRLF": "\r\n"}[ending]
+    remote_path = os.path.join(context.remotes_dir, name)
+    pathlib.Path(remote_path).mkdir(parents=True, exist_ok=True)
+    with in_directory(remote_path):
+        create_repo()
+        subprocess.check_call(["git", "config", "core.autocrlf", "false"])
+        pathlib.Path("README.md").write_bytes(
+            f"Generated file for {name}{terminator}".encode("utf-8")
+        )
+        commit_all("Initial commit")
+        tag("v1")
+
+
 @given("all files in {directory} are committed")
 @when("all files in {directory} are committed")
 def step_impl(_, directory):

@@ -103,6 +103,15 @@ class SuperProject(ABC):
     def get_file_revision(self, path: str | pathlib.Path) -> str:
         """Get the revision of the given file."""
 
+    def eol_preferences(self, paths: Sequence[str]) -> dict[str, str]:
+        """Get the line ending ("lf" or "crlf") this project requests per path.
+
+        Only paths with an explicit preference are returned. By default a
+        superproject has none; VCS-specific superprojects may override this.
+        """
+        del paths  # unused arg
+        return {}
+
     @staticmethod
     @abstractmethod
     def import_projects() -> Sequence[ProjectEntry]:

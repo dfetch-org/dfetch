@@ -319,6 +319,24 @@ class GitRemote:
         return exists
 
 
+def _parse_eol_attributes(output: str) -> dict[str, str]:
+    """Parse ``git check-attr -z text eol`` output into a path-to-eol mapping.
+
+    The ``-z`` output is a flat sequence of NUL-separated
+    ``<path> <attribute> <value>`` records. Only paths with an effective
+    ``eol`` of ``lf`` or ``crlf`` that are not marked ``-text`` are returned.
+    """
+    attrs: dict[str, dict[str, str]] = {}
+    fields = output.split("\0")
+    for path, name, value in zip(fields[0::3], fields[1::3], fields[2::3]):
+        attrs.setdefault(path, {})[name] = value
+    return {
+        path: values["eol"]
+        for path, values in attrs.items()
+        if values.get("eol") in ("lf", "crlf") and values.get("text") != "unset"
+    }
+
+
 class GitLocalRepo:
     """A git repository."""
 
@@ -347,6 +365,71 @@ class GitLocalRepo:
             return True
         except (SubprocessCommandError, RuntimeError):
             return False
+
+    def eol_attributes(self, paths: Sequence[str]) -> dict[str, str]:
+        """Resolve the effective 'eol' gitattribute for each given path.
+
+        Args:
+            paths: Paths relative to this repository's root.
+
+        Returns:
+            A mapping of path to ``"lf"`` or ``"crlf"`` for every path whose
+            attributes request a specific line ending. Paths marked ``-text``
+            and paths without an ``eol`` attribute are omitted. Empty when
+            git is unavailable or this is not a git repository.
+        """
+        if not paths:
+            return {}
+        with in_directory(self._path):
+            try:
+                result = run_on_cmdline(
+                    logger,
+                    ["git", "check-attr", "-z", "--stdin", "text", "eol"],
+                    input_data="\0".join(paths).encode() + b"\0",
+                )
+            except (SubprocessCommandError, RuntimeError):
+                return {}
+        return _parse_eol_attributes(result.stdout.decode())
+
+    def _configure_eol(self, eol: str) -> None:
+        """Write the line-ending policy into the local repo before fetch.
+
+        Uses .git/info/attributes so the superproject's preference overrides
+        any system/global core.autocrlf setting; git's own text=auto detection
+        decides which files are text, so binary files are never converted.
+        """
+        if eol not in ("lf", "crlf"):
+            raise ValueError(f"Invalid eol value {eol!r}: must be 'lf' or 'crlf'")
+        info_dir = Path(".git") / "info"
+        info_dir.mkdir(exist_ok=True)
+        (info_dir / "attributes").write_text(
+            f"* text=auto eol={eol}\n", encoding="utf-8"
+        )
+        run_on_cmdline(logger, ["git", "config", "core.eol", eol])
+        run_on_cmdline(logger, ["git", "config", "core.autocrlf", "false"])
+
+    def _renormalize_eol(self) -> None:
+        """Rewrite the working tree so the configured eol attribute takes effect.
+
+        ``git reset --hard`` only converts LF blobs to CRLF on the way out;
+        blobs stored with CRLF are left untouched. Renormalize the index and
+        check the files out again so git itself rewrites them with the
+        requested endings. Only files already present in the working tree are
+        written, keeping sparse checkouts sparse.
+        """
+        run_on_cmdline(logger, ["git", "add", "--renormalize", "."])
+        tracked = run_on_cmdline(logger, ["git", "ls-files", "-z"]).stdout.decode()
+        on_disk = [path for path in tracked.split("\0") if os.path.isfile(path)]
+        if not on_disk:
+            return
+        tree = run_on_cmdline(logger, ["git", "write-tree"]).stdout.decode().strip()
+        # read-tree drops the index stat-cache, so checkout-index rewrites files
+        run_on_cmdline(logger, ["git", "read-tree", tree])
+        run_on_cmdline(
+            logger,
+            ["git", "checkout-index", "-f", "-z", "--stdin"],
+            input_data="\0".join(on_disk).encode() + b"\0",
+        )
 
     def _configure_sparse_checkout(
         self,
@@ -384,12 +467,18 @@ class GitLocalRepo:
                     options.src, options.must_keeps or [], options.ignore
                 )
 
+            if options.eol is not None:
+                self._configure_eol(options.eol)
+
             run_on_cmdline(
                 logger,
                 ["git", "fetch", "--depth", "1", "origin", options.version],
                 env=_extend_env_for_non_interactive_mode(),
             )
             run_on_cmdline(logger, ["git", "reset", "--hard", "FETCH_HEAD"])
+
+            if options.eol is not None:
+                self._renormalize_eol()
 
             run_on_cmdline(
                 logger,

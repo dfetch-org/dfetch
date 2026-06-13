@@ -1,7 +1,7 @@
 """Git specific implementation."""
 
-import pathlib
 from functools import lru_cache
+from pathlib import Path
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
@@ -67,12 +67,14 @@ class GitSubProject(SubProject):
             )
             SubProject._log_tool("git", "<not found in PATH>")
 
-    def _fetch_impl(self, version: Version) -> tuple[Version, list[Dependency]]:
+    def _fetch_impl(
+        self, version: Version, eol_hint: str | None = None
+    ) -> tuple[Version, list[Dependency]]:
         """Get the revision of the remote and place it at the local path."""
         rev_or_branch_or_tag = self._determine_what_to_fetch(version)
 
         # When exporting a file, the destination directory must already exist
-        pathlib.Path(self.local_path).mkdir(parents=True, exist_ok=True)
+        Path(self.local_path).mkdir(parents=True, exist_ok=True)
 
         license_globs = [f"/{name.lower()}" for name in LICENSE_GLOBS] + [
             f"/{name.upper()}" for name in LICENSE_GLOBS
@@ -86,6 +88,7 @@ class GitSubProject(SubProject):
                 src=self.source,
                 must_keeps=license_globs + [".gitmodules"],
                 ignore=self.ignore,
+                eol=eol_hint,
             )
         )
 
@@ -108,7 +111,7 @@ class GitSubProject(SubProject):
 
         targets = {local_repo.METADATA_DIR, local_repo.GIT_MODULES_FILE}
 
-        for path in pathlib.Path(self.local_path).rglob("*"):
+        for path in Path(self.local_path).rglob("*"):
             if path.name in targets:
                 safe_rm(path)
 

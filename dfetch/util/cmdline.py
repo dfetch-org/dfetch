@@ -40,12 +40,15 @@ def run_on_cmdline(
     logger: logging.Logger,
     cmd: list[str],
     env: Mapping[str, str] | None = None,
+    input_data: bytes | None = None,
 ) -> "subprocess.CompletedProcess[Any]":
     """Run a command and log the output, and raise if something goes wrong."""
     logger.debug(f"Running {cmd}")
 
     try:
-        proc = subprocess.run(cmd, env=env, capture_output=True, check=True)  # nosec
+        proc = subprocess.run(  # nosec
+            cmd, env=env, input=input_data, capture_output=True, check=True
+        )
     except subprocess.CalledProcessError as exc:
         raise SubprocessCommandError(
             exc.cmd,

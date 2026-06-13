@@ -95,6 +95,7 @@ class Update(dfetch.commands.command.Command):
                     dfetch.project.create_sub_project(project).update(
                         force=args.force,
                         ignored_files_callback=_ignored,
+                        eol_preferences_callback=superproject.eol_preferences,
                     )
 
                     if not args.no_recommendations and os.path.isdir(
