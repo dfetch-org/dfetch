@@ -146,8 +146,13 @@ class SvnRemote:
 
     def list_of_tags(self) -> list[str]:
         """Get list of all available tags."""
-        output = _run_svn(["ls", f"{self._remote}/tags"], url=self._remote)
-        return [str(tag).strip("/\r") for tag in output.split("\n") if tag]
+        try:
+            output = _run_svn(["ls", f"{self._remote}/tags"], url=self._remote)
+            return [str(tag).strip("/\r") for tag in output.split("\n") if tag]
+        except SshHostKeyError:
+            raise
+        except (SubprocessCommandError, RuntimeError):
+            return []
 
     @contextlib.contextmanager
     def browse_tree(
@@ -214,6 +219,8 @@ class SvnRepo:
             with in_directory(self._path):
                 _run_svn(["info"])
             return True
+        except SshHostKeyError:
+            raise
         except (SubprocessCommandError, RuntimeError):
             return False
 
