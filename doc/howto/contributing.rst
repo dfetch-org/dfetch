@@ -375,7 +375,10 @@ Releasing
     git push --tags
 
 - The ``ci.yml`` job will automatically create a draft release in `GitHub Releases <https://github.com/dfetch-org/dfetch/releases/>`_ with all artifacts.
-- Once the release is published, a new package is automatically pushed to `PyPi <https://pypi.org/project/dfetch/>`_.
+- Once the release is published, a new package is automatically pushed to `PyPi <https://pypi.org/project/dfetch/>`_
+  and a manifest PR is automatically submitted to the `Winget Community Repository <https://github.com/microsoft/winget-pkgs>`_.
+  The Winget submission requires the ``WINGET_TOKEN`` secret (a GitHub PAT with ``public_repo`` scope) to be configured
+  in the repository settings.
 
 - After release, add new header to ``CHANGELOG.rst``:
 

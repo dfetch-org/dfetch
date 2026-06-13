@@ -505,7 +505,7 @@ Asset Identification
      - Data
      - High / High / High
    * - A-06: GitHub Actions Workflow
-     - CI/CD pipelines: test, build (wheel/msi/deb/rpm), lint, CodeQL, Scorecard, dependency-review, docs, release.  All actions pinned by commit SHA.  harden-runner used in every workflow that executes steps on a runner (egress: block with endpoint allowlist); ci.yml is a dispatcher-only workflow with no runner steps and does not include harden-runner.
+     - CI/CD pipelines: test, build (wheel/msi/deb/rpm), lint, CodeQL, Scorecard, dependency-review, docs, release, winget-publish.  All actions pinned by commit SHA.  harden-runner used in every workflow that executes steps on a runner (egress: block with endpoint allowlist); ci.yml is a dispatcher-only workflow with no runner steps and does not include harden-runner.  winget-publish.yml uses a stored PAT (``WINGET_TOKEN``) to submit manifest PRs to the Winget Community Repository.
      - Process
      - Medium / Medium / Medium
    * - A-07: dfetch Build / Dev Dependencies
