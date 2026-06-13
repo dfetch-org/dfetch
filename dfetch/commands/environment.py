@@ -15,8 +15,10 @@ import argparse
 import platform
 
 import dfetch.commands.command
+from dfetch import __version__
 from dfetch.log import get_logger
 from dfetch.project import SUPPORTED_SUBPROJECT_TYPES
+from dfetch.util.github_version_check import newer_version_available
 
 logger = get_logger(__name__)
 
@@ -34,6 +36,13 @@ class Environment(dfetch.commands.command.Command):
 
     def __call__(self, _: argparse.Namespace) -> None:
         """Perform listing the environment."""
+        logger.print_report_line("dfetch", __version__)
+        newer = newer_version_available()
+        if newer:
+            logger.info(
+                f"[dim]  dfetch {newer} available"
+                " — https://github.com/dfetch-org/dfetch/releases[/dim]"
+            )
         logger.print_report_line(
             "platform", f"{platform.system()} {platform.release()}"
         )

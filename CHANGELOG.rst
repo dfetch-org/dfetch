@@ -1,6 +1,7 @@
 Release 0.14.0 (unreleased)
 ===========================
 
+* Show a dim notice below the dfetch header during ``dfetch check`` when a newer release is available on GitHub (skipped in CI environments)
 * Strip ``user:password@`` userinfo from ``remote_url`` before writing it to ``.dfetch_data.yaml``, so a manifest URL with an embedded credential no longer leaks the credential into the committed metadata file (DFT-13)
 * Warn when a project URL uses a plaintext transport scheme (#1229)
 * Documentation and threat-model clarifications for existing release attestation support (#1208)
