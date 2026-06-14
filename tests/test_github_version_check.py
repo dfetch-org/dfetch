@@ -1,6 +1,7 @@
 # mypy: ignore-errors
 """Tests for dfetch.util.github_version_check."""
 
+import http.client
 import json
 import urllib.error
 from unittest.mock import MagicMock, patch
@@ -79,6 +80,26 @@ def test_newer_version_available_returns_none_on_network_error(mock_build_opener
     """Network failures are swallowed silently."""
     mock_build_opener.return_value = _make_opener_error(
         urllib.error.URLError("timeout")
+    ).return_value
+
+    assert newer_version_available() is None
+
+
+@patch(_PATCH_BUILD_OPENER)
+def test_newer_version_available_returns_none_on_remote_disconnected(mock_build_opener):
+    """HTTP protocol errors (e.g. RemoteDisconnected) are swallowed silently."""
+    mock_build_opener.return_value = _make_opener_error(
+        http.client.RemoteDisconnected("remote end closed connection")
+    ).return_value
+
+    assert newer_version_available() is None
+
+
+@patch(_PATCH_BUILD_OPENER)
+def test_newer_version_available_returns_none_on_ssl_error(mock_build_opener):
+    """SSL errors are swallowed silently."""
+    mock_build_opener.return_value = _make_opener_error(
+        OSError("SSL: CERTIFICATE_VERIFY_FAILED")
     ).return_value
 
     assert newer_version_available() is None

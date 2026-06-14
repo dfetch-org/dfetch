@@ -1,7 +1,7 @@
 """Poll the GitHub releases API to see if a newer dfetch version is available."""
 
+import http.client
 import json
-import urllib.error
 import urllib.request
 
 from dfetch import __version__
@@ -38,6 +38,6 @@ def newer_version_available() -> str | None:
         if not isinstance(tag, str) or not tag:
             return None
         return _is_newer(tag)
-    except (urllib.error.URLError, json.JSONDecodeError, ValueError):
+    except (OSError, json.JSONDecodeError, ValueError, http.client.HTTPException):
         pass  # best-effort check — network or parse failures must not affect the main command
     return None
