@@ -108,7 +108,7 @@ class Update(dfetch.commands.command.Command):
                         with in_directory(project.destination):
                             check_sub_manifests(superproject.manifest, project)
                 except RuntimeError as exc:
-                    logger.print_warning_line(project.name, str(exc))
+                    logger.print_error_line(project.name, str(exc))
                     had_errors = True
 
         if had_errors:

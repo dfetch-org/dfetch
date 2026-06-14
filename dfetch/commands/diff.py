@@ -126,7 +126,7 @@ class Diff(dfetch.commands.command.Command):
                 try:
                     self._diff_project(superproject, project, old_rev, new_rev)
                 except RuntimeError as exc:
-                    logger.print_warning_line(project.name, str(exc))
+                    logger.print_error_line(project.name, str(exc))
                     had_errors = True
 
         if had_errors:

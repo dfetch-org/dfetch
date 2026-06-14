@@ -116,6 +116,16 @@ class DLogger(logging.Logger):
         line = markup_escape(info).replace("\n", "\n    ")
         self.info(f"  [bold bright_yellow]> {line}[/bold bright_yellow]")
 
+    def print_error_line(self, name: str, info: str) -> None:
+        """Print an error line: green name, red value."""
+        if name not in DLogger._printed_projects:
+            safe_name = markup_escape(name)
+            self.info(f"  [bold][bright_green]{safe_name}:[/bright_green][/bold]")
+            DLogger._printed_projects.add(name)
+
+        line = markup_escape(info).replace("\n", "\n    ")
+        self.info(f"  [bold bright_red]> {line}[/bold bright_red]")
+
     def print_overview(self, name: str, title: str, info: dict[str, Any]) -> None:
         """Print an overview of fields."""
         self.print_info_line(name, title)

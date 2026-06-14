@@ -139,7 +139,7 @@ class FormatPatch(dfetch.commands.command.Command):
                             f"formatted patch written to {output_patch_file.relative_to(os.getcwd())}",
                         )
                 except RuntimeError as exc:
-                    logger.print_warning_line(project.name, str(exc))
+                    logger.print_error_line(project.name, str(exc))
                     had_errors = True
 
         if had_errors:

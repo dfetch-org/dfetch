@@ -90,7 +90,7 @@ class UpdatePatch(dfetch.commands.command.Command):
                 try:
                     self._process_project(superproject, project)
                 except RuntimeError as exc:
-                    logger.print_warning_line(project.name, str(exc))
+                    logger.print_error_line(project.name, str(exc))
                     had_errors = True
 
         if had_errors:
