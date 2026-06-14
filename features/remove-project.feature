@@ -56,7 +56,7 @@ Feature: Remove a project from the manifest
     And the directory 'ext/lib-alpha' should be removed from disk
     And the output shows
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               lib-alpha:
               > removed
             """
@@ -90,7 +90,7 @@ Feature: Remove a project from the manifest
     And the directory 'ext/lib-beta' should be removed from disk
     And the output shows
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               lib-alpha:
               > removed
               lib-beta:
@@ -126,7 +126,7 @@ Feature: Remove a project from the manifest
     And the directory 'ext/lib-beta' should be removed from disk
     And the output shows
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               lib-unknown:
               > project 'lib-unknown' not found in manifest
               lib-alpha:
@@ -166,7 +166,7 @@ Feature: Remove a project from the manifest
             """
     And the output shows
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               lib-gamma:
               > removed
             """
