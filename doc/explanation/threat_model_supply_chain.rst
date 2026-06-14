@@ -572,7 +572,7 @@ Asset Identification
      - ExternalEntity
      - High / High / —
    * - A-10: WINGET_TOKEN PAT
-     - Long-lived GitHub Personal Access Token with ``public_repo`` scope, stored as a GitHub Actions repository secret.  Used by ``winget-publish.yml`` to fork ``microsoft/winget-pkgs`` and submit manifest update PRs.  Unlike the PyPI OIDC token (A-05) which is short-lived and not stored, this PAT persists indefinitely until rotated.  If exfiltrated from the CI environment, an attacker could submit fraudulent manifest PRs from outside the project's pipeline.
+     - Long-lived GitHub Personal Access Token with ``public_repo`` scope, stored as a GitHub Actions environment secret in the ``winget`` environment.  Used by ``winget-publish.yml`` to fork ``microsoft/winget-pkgs`` and submit manifest update PRs.  Unlike the PyPI OIDC token (A-05) which is short-lived and not stored, this PAT persists indefinitely until rotated.  If exfiltrated from the CI environment, an attacker could submit fraudulent manifest PRs from outside the project's pipeline.
      - Data
      - High / High / —
 
@@ -601,22 +601,22 @@ Dataflows
    * - DF-22: PR enters code review
      - A-01b: GitHub Repository (feature branches / PRs)
      - A-04: Release Gate / Code Review
-     - 
+     -
 
    * - DF-12: Main branch workflows drive CI execution
      - A-01: GitHub Repository (main / protected)
      - A-06: GitHub Actions Workflow
-     - 
+     -
 
    * - DF-13a: PR CI checkout
      - A-01b: GitHub Repository (feature branches / PRs)
      - A-02: GitHub Actions Infrastructure
-     - 
+     -
 
    * - DF-13b: Release CI checkout
      - A-01: GitHub Repository (main / protected)
      - A-02: GitHub Actions Infrastructure
-     - 
+     -
 
    * - DF-14: CI cache restore
      - A-08b: GitHub Actions Build Cache
@@ -626,12 +626,12 @@ Dataflows
    * - DF-15: Workflow triggers build step
      - A-06: GitHub Actions Workflow
      - A-08: Python Build (wheel / sdist)
-     - 
+     -
 
    * - DF-15b: Built wheel/sdist artifacts
      - A-08: Python Build (wheel / sdist)
      - A-02: GitHub Actions Infrastructure
-     - 
+     -
 
    * - DF-16: CI fetches build/dev deps from PyPI
      - A-03: PyPI / TestPyPI
@@ -641,7 +641,7 @@ Dataflows
    * - DF-17: Build tools consumed by build step
      - A-07: dfetch Build / Dev Dependencies
      - A-08: Python Build (wheel / sdist)
-     - 
+     -
 
    * - DF-18: CI cache write
      - A-02: GitHub Actions Infrastructure
@@ -656,7 +656,7 @@ Dataflows
    * - DF-23: Approved merge to main
      - A-04: Release Gate / Code Review
      - A-01: GitHub Repository (main / protected)
-     - 
+     -
 
    * - DF-24: Publish wheel to PyPI (OIDC)
      - A-02: GitHub Actions Infrastructure
@@ -790,14 +790,6 @@ Threats
        | **STRIDE:** S T
        | **Status:** Accept
      - Abandoned namespace reclaim is a registry-level concern outside dfetch's control.  Accepted based on the **CI runner posture** assumption: GitHub Actions environments inherit the security posture of the GitHub-hosted runner, including its access to the public PyPI registry; registry-level namespace integrity is outside the scope of this model.
-   * - DFT-21
-     - Unsigned or forged VCS tag accepted as a trusted version pin
-     - DF-27: Winget manifest PR submission
-     - | **Sev:** 🟠H
-       | **Risk:** —
-       | **STRIDE:** —
-       | **Status:** —
-     - —
    * - DFT-23
      - Replay or freeze attack delivers stale content to suppress security updates
      - DF-16: CI fetches build/dev deps from PyPI
@@ -964,5 +956,3 @@ Controls
      - WINGET_TOKEN scoped to dedicated Winget environment
      - DFT-34
      - ``WINGET_TOKEN`` is stored in the ``winget`` GitHub Actions deployment environment, limiting its exposure: the PAT is only injected into workflows that explicitly reference that environment.  Only ``winget-publish.yml`` references the ``winget`` environment, so the PAT is not available to other workflows.  Residual risk: unlike PyPI which uses OIDC (A-05, no stored long-lived token), Winget does not support OIDC trusted publishing; the PAT must be stored and rotated manually (DFT-34).  ``.github/workflows/winget-publish.yml``
-
-

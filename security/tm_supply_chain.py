@@ -232,7 +232,7 @@ def _make_sc_datastores(b_github: Boundary) -> tuple[Datastore, Datastore]:
         "A-10: WINGET_TOKEN PAT",
         description=(
             "Long-lived GitHub Personal Access Token with ``public_repo`` scope, "
-            "stored as a GitHub Actions repository secret.  "
+            "stored as a GitHub Actions environment secret in the ``winget`` environment.  "
             "Used by ``winget-publish.yml`` to fork ``microsoft/winget-pkgs`` and "
             "submit manifest update PRs.  "
             "Unlike the PyPI OIDC token (A-05) which is short-lived and not stored, "
