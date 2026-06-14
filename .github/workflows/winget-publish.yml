@@ -1,0 +1,53 @@
+name: Publish to WinGet
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to WinGet
+    # Only publish versioned releases — skip the rolling 'latest' tag on main
+    if: github.event.release.tag_name != 'latest'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: winget-publish-${{ github.event.release.tag_name }}
+      cancel-in-progress: true
+
+    environment:
+      name: winget
+      url: https://github.com/microsoft/winget-pkgs
+
+    steps:
+      - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          allowed-endpoints: >+
+            github.com:443
+            api.github.com:443
+            release-assets.githubusercontent.com:443
+            uploads.github.com:443
+
+      - name: Publish to WinGet
+        # Requires WINGET_TOKEN secret in the 'winget' environment.
+        #
+        # Setup — create a fine-grained PAT:
+        #   1. GitHub → Settings → Developer settings → Personal access tokens
+        #      → Fine-grained tokens → Generate new token
+        #   2. Resource owner: DFetch-org (or your user)
+        #   3. Repository access: All repositories
+        #      (needed to fork microsoft/winget-pkgs and push the manifest branch)
+        #   4. Permissions:
+        #        Contents      → Read and write
+        #        Pull requests → Read and write
+        #   5. Store the token as secret WINGET_TOKEN in:
+        #      Repo → Settings → Environments → winget → Environment secrets
+        uses: vedantmgoyal9/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e # v2
+        with:
+          identifier: DFetch-org.DFetch
+          release-tag: ${{ github.event.release.tag_name }}
+          token: ${{ secrets.WINGET_TOKEN }}

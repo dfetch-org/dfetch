@@ -18,7 +18,7 @@ This report follows the risk-based approach of `BSI TR-03183-1
 <https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-1.pdf>`_
 Chapter 5.
 
-Threat model for dfetch.  Covers the pre-install lifecycle: code contribution, CI/CD, build (wheel / sdist), PyPI distribution, and consumer installation.  The installed dfetch package is the handoff point to tm_usage.py.
+Threat model for dfetch.  Covers the pre-install lifecycle: code contribution, CI/CD, build (wheel / sdist), PyPI distribution, Winget manifest submission, and consumer installation.  The installed dfetch package is the handoff point to tm_usage.py.
 
 Assumptions
 -----------
@@ -78,6 +78,9 @@ Boundaries
 
    * - PyPI / TestPyPI
      - Python Package Index and its staging registry.  dfetch publishes via OIDC trusted publishing - no long-lived API token stored.
+
+   * - Winget Community Repository
+     - The Windows Package Manager Community Repository (https://github.com/microsoft/winget-pkgs) where dfetch's Winget manifest is hosted.  Manifest PRs are submitted automatically by the CI release pipeline (winget-publish.yml) using the stored WINGET_TOKEN PAT (A-10).  Consumer installations resolve manifests from this repository; winget downloads the MSI installer from the URL declared in the manifest (pointing to GitHub Releases, A-01) and verifies its SHA256 hash.
 
 
 Data Flow Diagram
@@ -240,6 +243,25 @@ Data Flow Diagram
 
        }
 
+       subgraph cluster_boundary_WingetCommunityRepository_98b81486cc {
+           graph [
+               fontsize = 10;
+               fontcolor = black;
+               style = dashed;
+               color = firebrick2;
+               label = <<i>Winget Community\nRepository</i>>;
+           ]
+
+           externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48 [
+               shape = square;
+               color = black;
+               fontcolor = black;
+               label = "A-09: Winget\nCommunity\nRepository\n(microsoft/winget-\npkgs)";
+               margin = 0.02;
+           ]
+
+       }
+
        actor_DeveloperContributor_d2006ce1bb -> externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72 [
            color = black;
            fontcolor = black;
@@ -352,6 +374,27 @@ Data Flow Diagram
            label = "DF-26: Consumer\ndownloads dfetch\nfrom PyPI";
        ]
 
+       externalentity_AGitHubActionsInfrastructure_c76a0a7067 -> externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-27: Winget\nmanifest PR\nsubmission";
+       ]
+
+       actor_ConsumerEndUser_f8af758679 -> externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-28: winget\ninstall dfetch";
+       ]
+
+       externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48 -> actor_ConsumerEndUser_f8af758679 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-29: Consumer\ndownloads MSI via\nwinget";
+       ]
+
    }
    @enddot
 
@@ -413,6 +456,7 @@ Sequence Diagram
    entity process_APythonBuildwheelsdist_b2e5892d06 as "A-08: Python\nBuild (wheel\n/ sdist)"
    database datastore_AdfetchBuildDevDependencies_990b886585 as "A-07: dfetch\nBuild / Dev\nDependencies"
    database datastore_AbGitHubActionsBuildCache_9df04f8dae as "A-08b:\nGitHub\nActions\nBuild Cache"
+   entity externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48 as "A-09: Winget\nCommunity\nRepository\n(microsoft/winget-pkgs)"
 
    actor_DeveloperContributor_d2006ce1bb -> externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72: DF-11: Push commits / open PR
    externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72 -> process_AReleaseGateCodeReview_9345ab4c19: DF-22: PR enters code review
@@ -430,6 +474,9 @@ Sequence Diagram
    externalentity_AGitHubActionsInfrastructure_c76a0a7067 -> externalentity_APyPITestPyPI_c6f87088c2: DF-24: Publish wheel to PyPI (OIDC)
    actor_ConsumerEndUser_f8af758679 -> externalentity_APyPITestPyPI_c6f87088c2: DF-25: pip install dfetch
    externalentity_APyPITestPyPI_c6f87088c2 -> actor_ConsumerEndUser_f8af758679: DF-26: Consumer downloads dfetch from PyPI
+   externalentity_AGitHubActionsInfrastructure_c76a0a7067 -> externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48: DF-27: Winget manifest PR submission
+   actor_ConsumerEndUser_f8af758679 -> externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48: DF-28: winget install dfetch
+   externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48 -> actor_ConsumerEndUser_f8af758679: DF-29: Consumer downloads MSI via winget
    @enduml
 
 .. raw:: html
@@ -505,7 +552,7 @@ Asset Identification
      - Data
      - High / High / High
    * - A-06: GitHub Actions Workflow
-     - CI/CD pipelines: test, build (wheel/msi/deb/rpm), lint, CodeQL, Scorecard, dependency-review, docs, release.  All actions pinned by commit SHA.  harden-runner used in every workflow that executes steps on a runner (egress: block with endpoint allowlist); ci.yml is a dispatcher-only workflow with no runner steps and does not include harden-runner.
+     - CI/CD pipelines: test, build (wheel/msi/deb/rpm), lint, CodeQL, Scorecard, dependency-review, docs, release, winget-publish.  All actions pinned by commit SHA.  harden-runner used in every workflow that executes steps on a runner (egress: block with endpoint allowlist); ci.yml is a dispatcher-only workflow with no runner steps and does not include harden-runner.  winget-publish.yml uses a stored PAT (WINGET_TOKEN, A-10) to submit manifest PRs to the Winget Community Repository (A-09).
      - Process
      - Medium / Medium / Medium
    * - A-07: dfetch Build / Dev Dependencies
@@ -519,6 +566,14 @@ Asset Identification
    * - A-08b: GitHub Actions Build Cache
      - GitHub Actions cache entries written and restored across pipeline runs.  Used to speed up dependency installation (pip, gem) and incremental builds.  Cache-poisoning from forked PRs (DFT-28, SLSA E6: poison the build cache) is mitigated by ref-scoped cache keys: build.yml includes ``${{ github.ref_name }}`` in both ``key`` and ``restore-keys`` (C-033), which isolates PR and release caches per branch so a fork cannot write into the release cache namespace.
      - Datastore
+     - High / High / —
+   * - A-09: Winget Community Repository (microsoft/winget-pkgs)
+     - The Windows Package Manager Community Repository where the dfetch ``DFetch-org.DFetch`` manifest is hosted (https://github.com/microsoft/winget-pkgs).  CI submits manifest update PRs via ``vedantmgoyal9/winget-releaser`` using a stored PAT (A-10); PRs are reviewed by ``microsoft/winget-pkgs`` maintainers before merging (C-041).  Manifests contain SHA256 hashes of the installer binary; winget verifies the hash before installation.  A compromised PAT or a fraudulent PR that passes review could redirect consumers to a malicious installer (DFT-35).
+     - ExternalEntity
+     - High / High / —
+   * - A-10: WINGET_TOKEN PAT
+     - Long-lived GitHub Personal Access Token with ``public_repo`` scope, stored as a GitHub Actions environment secret in the ``winget`` environment.  Used by ``winget-publish.yml`` to fork ``microsoft/winget-pkgs`` and submit manifest update PRs.  Unlike the PyPI OIDC token (A-05) which is short-lived and not stored, this PAT persists indefinitely until rotated.  If exfiltrated from the CI environment, an attacker could submit fraudulent manifest PRs from outside the project's pipeline.
+     - Data
      - High / High / —
 
 
@@ -615,6 +670,21 @@ Dataflows
 
    * - DF-26: Consumer downloads dfetch from PyPI
      - A-03: PyPI / TestPyPI
+     - Consumer / End User
+     - HTTPS
+
+   * - DF-27: Winget manifest PR submission
+     - A-02: GitHub Actions Infrastructure
+     - A-09: Winget Community Repository (microsoft/winget-pkgs)
+     - HTTPS
+
+   * - DF-28: winget install dfetch
+     - Consumer / End User
+     - A-09: Winget Community Repository (microsoft/winget-pkgs)
+     - HTTPS
+
+   * - DF-29: Consumer downloads MSI via winget
+     - A-09: Winget Community Repository (microsoft/winget-pkgs)
      - Consumer / End User
      - HTTPS
 
@@ -784,6 +854,14 @@ Threats
        | **STRIDE:** T
        | **Status:** Mitigate
      - C-038
+   * - DFT-35
+     - Compromised publish credential enables malicious installer URL injection via package manifest submission
+     - A-09: Winget Community Repository (microsoft/winget-pkgs)
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** T S
+       | **Status:** Mitigate
+     - C-041
 
 
 Controls
@@ -870,3 +948,11 @@ Controls
      - Test result attestation on source archive
      - DFT-31
      - The CI test workflow (``test.yml``) generates an in-toto test result attestation (predicate type ``https://in-toto.io/attestation/test-result/v0.1``) for every release and main-branch commit.  The attestation proves the full CI test suite ran against the exact source archive and every check passed, before any binary was produced from that source.  Consumers can verify it using ``gh attestation verify dfetch-source.tar.gz`` with ``--predicate-type https://in-toto.io/attestation/test-result/v0.1`` and ``--cert-identity`` pinned to ``test.yml`` at the release tag ref.  This provides an additional layer of assurance beyond build provenance: not only was the artifact produced from the official commit, but the test suite demonstrably passed on that exact source before any binary was built.  ``.github/workflows/test.yml``
+   * - C-041
+     - Winget manifest PRs reviewed by community maintainers
+     - DFT-35
+     - Manifest update PRs submitted to ``microsoft/winget-pkgs`` by ``winget-publish.yml`` go through the standard Winget community review process before merging.  ``microsoft/winget-pkgs`` maintainers verify the publisher identity and inspect manifest changes including installer URLs and hashes.  This provides a manual review gate between a fraudulent PR submission and consumer exposure.  Residual risk: a reviewer who approves without independently verifying the installer URL origin could merge a fraudulent manifest.  ``.github/workflows/winget-publish.yml``
+   * - C-042
+     - WINGET_TOKEN scoped to dedicated Winget environment
+     - DFT-34
+     - ``WINGET_TOKEN`` is stored in the ``winget`` GitHub Actions deployment environment, limiting its exposure: the PAT is only injected into workflows that explicitly reference that environment.  Only ``winget-publish.yml`` references the ``winget`` environment, so the PAT is not available to other workflows.  Residual risk: unlike PyPI which uses OIDC (A-05, no stored long-lived token), Winget does not support OIDC trusted publishing; the PAT must be stored and rotated manually (DFT-34).  ``.github/workflows/winget-publish.yml``

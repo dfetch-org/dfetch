@@ -493,5 +493,35 @@
     "mitigations": "Pin VCS dependencies to immutable commit SHAs and, after each fetch, verify that the pinned SHA is reachable from the upstream's current default branch tip.  Prefer upstream repositories that enforce SLSA Source Level 2+ ancestry protection (no force-push policy on protected branches).  Use Source Provenance Attestations that include lineage records for additional assurance.  Monitor upstream repositories for unexpected history rewrites as part of regular dependency hygiene.",
     "example": "A project pins a dependency to commit abc123, which was reviewed before acceptance.  The upstream maintainer later performs a history rewrite to strip accidentally committed secrets, producing new commit hashes throughout the tree.  The original abc123 becomes an orphan — not reachable from main.  A fresh clone no longer contains abc123, making it impossible to verify the relationship between the pinned commit and the current release branch, and silently breaking any reproducibility check.",
     "references": "https://slsa.dev/spec/v1.2/source-requirements#level-2, https://capec.mitre.org/data/definitions/690.html, https://cwe.mitre.org/data/definitions/345.html"
+  },
+  {
+    "SID": "DFT-34",
+    "target": [
+      "Data"
+    ],
+    "description": "Long-lived stored credential enables persistent unauthorised publication after exfiltration",
+    "details": "Unlike short-lived OIDC tokens that expire within minutes of issuance, a long-lived personal access token (PAT) stored as a CI/CD secret retains its publish rights indefinitely once exfiltrated.  A compromised CI step — through a backdoored dependency, a malicious third-party action, or a supply-chain attack — can read the PAT from the runner environment variables and transmit it to an attacker-controlled endpoint.  The attacker can subsequently use the stolen PAT to perform privileged operations — such as submitting package manifests, pushing code, or triggering releases — from outside the CI pipeline, long after the compromised build run has ended.  OIDC short-lived tokens (used for PyPI publishing) expire in minutes and cannot be reused; a stored PAT has no such natural expiry.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.isCredentials is True and target.isStored is True and target.isDestEncryptedAtRest is True",
+    "prerequisites": "A long-lived PAT is stored as a CI/CD secret.  A pipeline step can execute attacker-controlled code — through a backdoored dependency, a compromised third-party action pinned to a mutable tag, or a malicious PR that reaches the production runner with secret access.  Outbound egress from the CI environment is not fully blocked for all endpoints required to receive the exfiltrated credential.",
+    "mitigations": "Prefer OIDC-based short-lived credential exchange over long-lived stored PATs wherever the target service supports it.  Where a PAT is unavoidable, scope it to the minimum required permissions and store it in a deployment environment that requires explicit reviewer approval before unlocking.  Rotate PATs on a regular schedule and immediately on suspected compromise.  Block all non-allowlisted egress from the CI environment so credential exfiltration channels are closed.  Monitor PAT usage logs for activity outside expected CI build windows.",
+    "example": "A compromised third-party Winget releaser action reads the WINGET_TOKEN PAT from the runner environment and posts it to an attacker-controlled server.  The attacker subsequently uses the token to submit a manifest PR pointing to a trojanised installer, bypassing the normal CI release pipeline entirely.",
+    "references": "https://slsa.dev/spec/v1.0/threats#e-build-process, https://capec.mitre.org/data/definitions/560.html, https://cwe.mitre.org/data/definitions/522.html"
+  },
+  {
+    "SID": "DFT-35",
+    "target": [
+      "ExternalEntity"
+    ],
+    "description": "Compromised publish credential enables malicious installer URL injection via package manifest submission",
+    "details": "Package registries that distribute software by manifest reference — where the manifest contains a URL pointing to the binary and its hash — face a distinct threat from registries that store the binary directly.  An attacker who obtains a valid publish credential can craft a manifest that: (1) points the installer URL to an attacker-controlled binary, (2) computes the correct SHA256 hash of that binary and places it in the manifest.  The manifest passes all automated hash-verification checks.  If the PR is merged by a reviewer who does not inspect the installer URL or does not independently verify the binary, consumers who install the package receive the malicious binary.  This differs from direct binary upload attacks: the attacker does not need to compromise the package registry itself — only the credential required to submit a manifest PR.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.hasAccessControl is True and target.controls.providesIntegrity is True and target.controls.usesCodeSigning is False and target.controls.isHardened is False",
+    "prerequisites": "The attacker has obtained a valid publish credential (PAT or equivalent) for the package registry.  The registry accepts manifests that specify installer URLs external to the registry itself.  The manifest review process does not independently verify that the installer URL points to a binary produced by the project's official release pipeline.  The binary served at the attacker-controlled URL passes any hash check declared in the manifest.",
+    "mitigations": "Pin installer URLs in manifests to the project's official release infrastructure and document that URL changes must be scrutinised as carefully as hash changes.  Store publish credentials in a deployment environment requiring reviewer approval.  Use OIDC-based credentials where available so exfiltrated tokens expire quickly.  Monitor PAT usage for activity outside expected CI build windows.",
+    "example": "An attacker exfiltrates the WINGET_TOKEN PAT from a CI run via a backdoored dependency.  They fork microsoft/winget-pkgs, update the dfetch manifest to point the installer URL to attacker.example/dfetch-0.14.0-win.msi (a trojaned MSI), compute its correct SHA256 hash, and open a PR.  A reviewer sees the hash matches the declared value and approves.  Consumers who run winget install DFetch-org.DFetch download and install the malicious binary.",
+    "references": "https://slsa.dev/spec/v1.0/threats#f-artifact-publication, https://capec.mitre.org/data/definitions/186.html, https://cwe.mitre.org/data/definitions/494.html"
   }
 ]
