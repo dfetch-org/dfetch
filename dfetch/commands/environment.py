@@ -39,10 +39,7 @@ class Environment(dfetch.commands.command.Command):
         logger.print_report_line("dfetch", __version__)
         newer = newer_version_available()
         if newer:
-            logger.info(
-                f"[dim]  dfetch {newer} available"
-                " — https://github.com/dfetch-org/dfetch/releases[/dim]"
-            )
+            logger.print_newer_version_notice(newer)
         logger.print_report_line(
             "platform", f"{platform.system()} {platform.release()}"
         )

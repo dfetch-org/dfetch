@@ -102,10 +102,7 @@ class Check(dfetch.commands.command.Command):
         if not os.environ.get("CI"):
             newer = newer_version_available()
             if newer:
-                logger.info(
-                    f"[dim]  dfetch {newer} available"
-                    " — https://github.com/dfetch-org/dfetch/releases[/dim]"
-                )
+                logger.print_newer_version_notice(newer)
         superproject = create_super_project()
         reporters = self._get_reporters(args, superproject.manifest)
 
