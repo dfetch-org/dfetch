@@ -9,7 +9,7 @@ Feature: Display environment information
         When I run "dfetch environment"
         Then the output starts with:
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               dfetch              : 0.13.0
             """
 
@@ -18,7 +18,7 @@ Feature: Display environment information
         When I run "dfetch environment"
         Then the output starts with:
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               dfetch              : 0.13.0
               dfetch 1.99.0 available — https://github.com/dfetch-org/dfetch/releases
             """

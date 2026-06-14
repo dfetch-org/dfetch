@@ -72,7 +72,7 @@ Feature: Freeze dependencies
         When I run "dfetch freeze"
         Then the output shows
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
             """
         And the manifest 'dfetch.yaml' is replaced with
             """

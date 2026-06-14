@@ -21,7 +21,7 @@ Feature: Fetch checks destinations
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               ext/test-repo-tag:
               > Skipping, path "." is not allowed as destination.
             """
@@ -42,7 +42,7 @@ Feature: Fetch checks destinations
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.13.0)
+            Dfetch (0.14.0)
               ext/test-repo-tag:
               > Skipping, path "../../some-higher-folder" is outside manifest directory tree.
             """

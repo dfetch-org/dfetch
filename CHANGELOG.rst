@@ -1,4 +1,4 @@
-Release 0.14.0 (unreleased)
+Release 0.14.0 (released 2026-06-14)
 ===========================
 
 * Update Winget manifest to the Windows Package Manager Community Repository on new release (#1263)
