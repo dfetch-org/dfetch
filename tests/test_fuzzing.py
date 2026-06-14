@@ -53,15 +53,18 @@ SAFE_TEXT = st.text(
     max_size=64,
 )
 
-# VERSION = Int() | Float() | Str(): generate unquoted ints and floats.
-# Arbitrary strings cannot be tested here: strictyaml's Float validator calls
-# float() directly and raises ValueError (not YAMLValidationError) for any
-# non-float string, so the OrValidator cannot fall through to Str().
-# The Str() branch is exercised implicitly by test_manifest_can_be_created
-# which uses yaml.dump (preserving YAML quoting) rather than as_document.
+# VERSION = Int() | Float() | Str(): generate unquoted ints, unquoted floats,
+# and float-like strings. Arbitrary strings cannot be used: strictyaml's Float
+# validator calls float() directly and raises ValueError (not
+# YAMLValidationError) for non-float strings, so the OrValidator cannot fall
+# through to Str(). Float-like strings are safe: as_document serializes them
+# via Float() (float("1.5") succeeds), while yaml.dump quotes them as YAML
+# string scalars ('1.5'), exercising the Str() branch during parsing in
+# test_manifest_can_be_created, test_check, and test_update.
 SAFE_VERSION = st.one_of(
     st.integers(),
     st.floats(allow_nan=False, allow_infinity=False),
+    st.floats(allow_nan=False, allow_infinity=False).map(str),
 )
 
 
