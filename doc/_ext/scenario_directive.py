@@ -38,11 +38,11 @@ the document tree:
 import html
 import os
 import re
+import textwrap
 from typing import Dict, FrozenSet, List, Tuple
 
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
-from docutils.statemachine import StringList
 from sphinx.util import logging
 from sphinx.util.nodes import make_refnode
 
@@ -63,6 +63,18 @@ class ScenarioAppendixRef(nodes.General, nodes.Element):
     Stores ``label``, ``reftitle``, ``group_tag``, and ``group_label`` as
     attributes.  Resolved to a paragraph with ``make_refnode`` links during
     ``doctree-resolved``, once the appendix document name is known.
+    """
+
+
+class ScenarioIncludePlaceholder(nodes.General, nodes.Element):
+    """Builder-agnostic placeholder emitted by ``scenario-include`` at parse-time.
+
+    Resolved at ``doctree-resolved`` time (after the builder is known with
+    certainty) to either a :class:`ScenarioAppendixRef` (PDF/LaTeX) or inline
+    expandable HTML blocks.  Storing a placeholder rather than the final nodes
+    fixes a caching bug: when an HTML build writes doctrees to disk and a
+    subsequent LaTeX build reuses them, the ``literalinclude`` nodes that the
+    old HTML-mode path emitted would appear inline instead of in the appendix.
     """
 
 
@@ -152,6 +164,10 @@ class ScenarioIncludeDirective(Directive):
 
     In PDF/LaTeX builds the examples are moved to a dedicated appendix and
     replaced inline by a cross-reference, unless ``:inline:`` is given.
+
+    Always emits a :class:`ScenarioIncludePlaceholder` node so the doctree
+    cache is builder-agnostic.  The actual HTML or PDF content is chosen at
+    ``doctree-resolved`` time by :func:`resolve_scenario_include_placeholders`.
     """
 
     required_arguments = 1
@@ -169,34 +185,12 @@ class ScenarioIncludeDirective(Directive):
     def _env(self):
         return self.state.document.settings.env
 
-    def _is_pdf(self) -> bool:
-        return self._env().app.builder.name in ("latex", "rinoh")
-
     def _feature_abs(self, feature_file: str) -> str:
         env = self._env()
         path = os.path.abspath(os.path.join(env.app.srcdir, feature_file))
         if not os.path.exists(path):
             raise self.error(f"Feature file not found: {path}")
         return path
-
-    def _include_path(self, feature_abs: str) -> str:
-        """Path for literalinclude, relative to the current RST document."""
-        env = self._env()
-        current_doc_dir = os.path.dirname(os.path.join(env.app.srcdir, env.docname))
-        return os.path.relpath(feature_abs, current_doc_dir)
-
-    @staticmethod
-    def _end_before(available: Tuple[Tuple[str, str], ...], title: str) -> str:
-        """Return the :end-before: value for *title*, or '' for the last scenario."""
-        all_titles = tuple(t for _, t in available)
-        try:
-            idx = all_titles.index(title)
-        except ValueError:
-            return ""
-        if idx < len(available) - 1:
-            next_header, next_title = available[idx + 1]
-            return f":end-before: {next_header}: {next_title}"
-        return ""
 
     def _requested_scenarios(self, available: Tuple[Tuple[str, str], ...]) -> List[str]:
         return [
@@ -206,67 +200,36 @@ class ScenarioIncludeDirective(Directive):
         ] or [title for _, title in available]
 
     # ------------------------------------------------------------------
-    # HTML / inline rendering (original behaviour)
+    # Appendix entry registration (always runs, any builder)
     # ------------------------------------------------------------------
 
-    def _render_html(
-        self,
-        include_path: str,
-        feature_file: str,
-        scenario_titles: List[str],
-        available: Tuple[Tuple[str, str], ...],
-    ) -> List[nodes.Node]:
-        title_to_header = {title: header for header, title in available}
-        container = nodes.section()
-        for title in scenario_titles:
-            header = title_to_header.get(title, "Scenario")
-            end_before = self._end_before(available, title)
-            directive_rst = f"""
-.. raw:: html
+    def _entry_metadata(self, feature_abs: str) -> Tuple[str, str, str]:
+        """Return (label, group_tag, feature_title) for a feature file."""
+        env = self._env()
+        non_group_tags = frozenset(getattr(env.config, "scenario_non_command_tags", []))
+        basename = os.path.splitext(os.path.basename(feature_abs))[0]
+        return (
+            f"appendix-{basename}",
+            _group_tag(feature_abs, non_group_tags),
+            _feature_title(feature_abs),
+        )
 
-   <details>
-   <summary><strong>Example</strong>: {html.escape(title)}</summary>
-
-.. literalinclude:: {include_path}
-    :language: gherkin
-    :caption: {feature_file}
-    :force:
-    :dedent:
-    :start-after: {header}: {title}
-    {end_before}
-
-.. raw:: html
-
-   </details>
-"""
-            viewlist = StringList()
-            for i, line in enumerate(directive_rst.splitlines()):
-                viewlist.append(line, source=f"<{self.name} directive>", offset=i)
-            self.state.nested_parse(viewlist, self.content_offset, container)
-        return container.children
-
-    # ------------------------------------------------------------------
-    # PDF rendering: register for appendix, return cross-reference
-    # ------------------------------------------------------------------
-
-    def _render_pdf(
+    def _register_appendix_entry(
         self,
         feature_file: str,
         feature_abs: str,
         scenario_titles: List[str],
-    ) -> List[nodes.Node]:
-        env = self._env()
-        non_group_tags = frozenset(getattr(env.config, "scenario_non_command_tags", []))
-        basename = os.path.splitext(os.path.basename(feature_abs))[0]
-        label = f"appendix-{basename}"
-        tag = _group_tag(feature_abs, non_group_tags)
-        title = _feature_title(feature_abs)
+    ) -> None:
+        """Store entry in env.scenario_appendix_entries for any builder.
 
-        # ----------------------------------------------------------
-        # Store entry so the appendix directive can render it later.
-        # The dict is keyed by absolute path to deduplicate across
-        # multiple RST files that reference the same feature.
-        # ----------------------------------------------------------
+        Always called so the appendix is populated even when switching from
+        an HTML build to a LaTeX build with a shared doctrees cache: entries
+        written during the HTML read are still present in the pickled env and
+        available when the LaTeX build runs without a full ``-E`` rebuild.
+        """
+        env = self._env()
+        label, tag, title = self._entry_metadata(feature_abs)
+
         if not hasattr(env, "scenario_appendix_entries"):
             env.scenario_appendix_entries = {}
 
@@ -286,21 +249,6 @@ class ScenarioIncludeDirective(Directive):
             for s in scenario_titles:
                 if s not in existing["scenarios"]:
                     existing["scenarios"].append(s)
-
-        # ----------------------------------------------------------
-        # Return a deferred ScenarioAppendixRef block node.  It is
-        # resolved to a full paragraph with make_refnode links during
-        # doctree-resolved, once the appendix document name is known.
-        # Sphinx's make_refnode handles LaTeX/HTML builder differences,
-        # producing a proper \hyperref in PDF output.
-        # ----------------------------------------------------------
-        ref_node = ScenarioAppendixRef()
-        ref_node["label"] = label
-        ref_node["reftitle"] = title
-        ref_node["group_tag"] = tag
-        ref_node["group_label"] = f"appendix-{tag}"
-        ref_node["scenario_count"] = len(scenario_titles)
-        return [ref_node]
 
     # ------------------------------------------------------------------
     # Entry point
@@ -325,15 +273,20 @@ class ScenarioIncludeDirective(Directive):
             if not scenario_titles:
                 raise self.error(f"No scenarios matched in {feature_file}.")
 
-        if self._is_pdf() and "inline" not in self.options:
-            return self._render_pdf(feature_file, feature_abs, scenario_titles)
+        self._register_appendix_entry(feature_file, feature_abs, scenario_titles)
 
-        return self._render_html(
-            self._include_path(feature_abs),
-            feature_file,
-            scenario_titles,
-            available,
-        )
+        label, tag, title = self._entry_metadata(feature_abs)
+        placeholder = ScenarioIncludePlaceholder()
+        placeholder["feature_abs"] = feature_abs
+        placeholder["feature_file"] = feature_file
+        placeholder["scenario_titles"] = scenario_titles
+        placeholder["inline_flag"] = "inline" in self.options
+        placeholder["label"] = label
+        placeholder["reftitle"] = title
+        placeholder["group_tag"] = tag
+        placeholder["group_label"] = f"appendix-{tag}"
+        placeholder["scenario_count"] = len(scenario_titles)
+        return [placeholder]
 
 
 # ---------------------------------------------------------------------------
@@ -359,22 +312,16 @@ class ScenarioAppendixDirective(Directive):
 
     def run(self) -> List[nodes.Node]:
         env = self.state.document.settings.env
-        if env.app.builder.name not in ("latex", "rinoh"):
-            note = nodes.note()
-            para = nodes.paragraph()
-            para += nodes.Text(
-                "In the HTML edition, feature examples appear as expandable "
-                "blocks directly within each guide section. "
-                "In the PDF edition they are collected here, grouped by command."
-            )
-            note += para
-            return [note]
-
         # Record which document hosts the appendix so that ScenarioAppendixRef
         # nodes in other documents can be resolved with the correct refdocname.
+        # Set unconditionally so the value survives a cached HTML→LaTeX switch.
         env.scenario_appendix_docname = env.docname
-        node = ScenarioAppendixPlaceholder()
-        return [node]
+        # Always emit the placeholder node.  process_scenario_appendix replaces
+        # it with real content in PDF builds and with an explanatory note in
+        # HTML builds.  Keeping the same node type in the cached doctree means
+        # a subsequent LaTeX build can still find and populate the appendix even
+        # when the doctrees were last written during an HTML build.
+        return [ScenarioAppendixPlaceholder()]
 
 
 # ---------------------------------------------------------------------------
@@ -416,6 +363,58 @@ def _build_appendix_nodes(entries: Dict) -> List[nodes.Node]:
         result.append(tag_section)
 
     return result
+
+
+def _render_scenario_inline(
+    scenario_titles: List[str], feature_abs: str
+) -> List[nodes.Node]:
+    """Return docutils nodes for inline HTML rendering of *scenario_titles*."""
+    result: List[nodes.Node] = []
+    for title in scenario_titles:
+        raw_content = _selected_scenarios_content(feature_abs, [title])
+        content = textwrap.dedent(raw_content).strip()
+        open_raw = nodes.raw(
+            "",
+            f"<details>\n<summary><strong>Example</strong>: {html.escape(title)}</summary>\n",
+            format="html",
+        )
+        code = nodes.literal_block(content, content)
+        code["language"] = "gherkin"
+        close_raw = nodes.raw("", "</details>\n", format="html")
+        result.extend([open_raw, code, close_raw])
+    return result
+
+
+def resolve_scenario_include_placeholders(
+    app, doctree: nodes.document, _fromdocname: str
+) -> None:
+    """Replace ScenarioIncludePlaceholder nodes with builder-appropriate content.
+
+    Called first among the ``doctree-resolved`` handlers so the
+    :class:`ScenarioAppendixRef` nodes it creates are available to
+    :func:`resolve_scenario_appendix_refs` in the same pass.
+
+    PDF/LaTeX builds get an appendix cross-reference; HTML (and any directive
+    marked ``:inline:``) gets expandable ``<details>`` blocks.  Because this
+    transform runs at write-time rather than parse-time, the doctree cache is
+    builder-agnostic: a LaTeX build reusing an HTML-built doctree will still
+    route scenario content to the appendix.
+    """
+    is_pdf = app.builder.name in ("latex", "rinoh")
+    for placeholder in list(doctree.traverse(ScenarioIncludePlaceholder)):
+        if is_pdf and not placeholder.get("inline_flag", False):
+            ref_node = ScenarioAppendixRef()
+            ref_node["label"] = placeholder["label"]
+            ref_node["reftitle"] = placeholder["reftitle"]
+            ref_node["group_tag"] = placeholder["group_tag"]
+            ref_node["group_label"] = placeholder["group_label"]
+            ref_node["scenario_count"] = placeholder["scenario_count"]
+            placeholder.replace_self([ref_node])
+        else:
+            inline_nodes = _render_scenario_inline(
+                placeholder["scenario_titles"], placeholder["feature_abs"]
+            )
+            placeholder.replace_self(inline_nodes)
 
 
 def resolve_scenario_appendix_refs(
@@ -482,9 +481,30 @@ def resolve_scenario_appendix_refs(
 
 
 def process_scenario_appendix(app, doctree: nodes.document, _fromdocname: str) -> None:
-    """Replace ScenarioAppendixPlaceholder nodes with generated content."""
+    """Replace ScenarioAppendixPlaceholder nodes with generated content.
+
+    In PDF/LaTeX builds the placeholder is replaced with the collected feature
+    sections.  In HTML builds it is replaced with an explanatory note — the
+    same text that was previously emitted inline by the directive itself.
+    Deferring this choice to write-time (rather than parse-time) keeps the
+    same node type in the cached doctree, so a LaTeX build can still populate
+    the appendix even when the doctrees were last written by an HTML build.
+    """
     placeholders = list(doctree.traverse(ScenarioAppendixPlaceholder))
     if not placeholders:
+        return
+
+    if app.builder.name not in ("latex", "rinoh"):
+        note = nodes.note()
+        para = nodes.paragraph()
+        para += nodes.Text(
+            "In the HTML edition, feature examples appear as expandable "
+            "blocks directly within each guide section. "
+            "In the PDF edition they are collected here, grouped by command."
+        )
+        note += para
+        for placeholder in placeholders:
+            placeholder.replace_self([note])
         return
 
     entries = getattr(app.env, "scenario_appendix_entries", {})
@@ -538,13 +558,17 @@ def setup(app):
     app.add_directive("scenario-appendix", ScenarioAppendixDirective)
     app.add_node(ScenarioAppendixPlaceholder)
     app.add_node(ScenarioAppendixRef)
+    app.add_node(ScenarioIncludePlaceholder)
+    # resolve_scenario_include_placeholders must run first: it may produce
+    # ScenarioAppendixRef nodes that resolve_scenario_appendix_refs then links.
+    app.connect("doctree-resolved", resolve_scenario_include_placeholders)
     app.connect("doctree-resolved", resolve_scenario_appendix_refs)
     app.connect("doctree-resolved", process_scenario_appendix)
     app.connect("env-purge-doc", purge_scenario_appendix)
     app.connect("env-merge-info", merge_scenario_appendix)
 
     return {
-        "version": "0.3",
+        "version": "0.4",
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }
