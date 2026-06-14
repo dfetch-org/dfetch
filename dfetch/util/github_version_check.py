@@ -39,5 +39,5 @@ def newer_version_available() -> str | None:
             return None
         return _is_newer(tag)
     except (urllib.error.URLError, json.JSONDecodeError, ValueError):
-        pass
+        pass  # best-effort check — network or parse failures must not affect the main command
     return None

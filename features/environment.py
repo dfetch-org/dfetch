@@ -3,6 +3,7 @@
 import os
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 from behave import fixture, use_fixture
 from rich.console import Console
@@ -35,6 +36,17 @@ def before_scenario(context, _):
         force_terminal=True,
         width=1024,
     )
+
+    context.newer_version_patcher = patch(
+        "dfetch.commands.environment.newer_version_available",
+        return_value=None,
+    )
+    context.newer_version_patcher.start()
+
+
+def after_scenario(context, _):
+    """Hook called after scenario is executed."""
+    context.newer_version_patcher.stop()
 
 
 def before_all(context):
