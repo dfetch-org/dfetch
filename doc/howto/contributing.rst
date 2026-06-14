@@ -378,7 +378,8 @@ Releasing
 - Once the release is published, a new package is automatically pushed to `PyPi <https://pypi.org/project/dfetch/>`_
   and a manifest PR is automatically submitted to the `Winget Community Repository <https://github.com/microsoft/winget-pkgs>`_.
   The Winget submission requires the ``WINGET_TOKEN`` secret (a GitHub PAT with ``public_repo`` scope) to be configured
-  in the repository settings.
+  as an environment secret in the ``winget`` environment settings (not at the repository level),
+  so it is only accessible to workflows that deploy to that environment.
 
 - After release, add new header to ``CHANGELOG.rst``:
 

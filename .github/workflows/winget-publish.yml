@@ -13,6 +13,9 @@ jobs:
     # Only publish versioned releases — skip the rolling 'latest' tag on main
     if: github.event.release.tag_name != 'latest'
     runs-on: ubuntu-latest
+    concurrency:
+      group: winget-publish-${{ github.event.release.tag_name }}
+      cancel-in-progress: true
 
     environment:
       name: winget

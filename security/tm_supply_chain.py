@@ -587,7 +587,9 @@ def _make_sc_winget_elements_and_flows(
         "consumers to a malicious installer (DFT-35)."
     )
     winget_repo.controls.hasAccessControl = True  # PAT required to submit PRs
-    winget_repo.controls.providesIntegrity = True  # manifests contain SHA256 installer hashes
+    winget_repo.controls.providesIntegrity = (
+        True  # manifests contain SHA256 installer hashes
+    )
     winget_repo.controls.usesCodeSigning = (
         False  # manifests are not cryptographically signed by the project
     )
@@ -615,6 +617,9 @@ def _make_sc_winget_elements_and_flows(
     df27.controls.isHardened = True  # harden-runner egress block; SHA-pinned action
     df27.controls.hasAccessControl = True  # WINGET_TOKEN PAT authentication
     df27.controls.isNetworkFlow = True
+    df27.controls.providesIntegrity = (
+        True  # action computes SHA256 of MSI and embeds it in manifest
+    )
 
     df28 = Dataflow(consumer, winget_repo, "DF-28: winget install dfetch")
     df28.description = (
