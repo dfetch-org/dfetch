@@ -5,6 +5,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence
 from contextlib import AbstractContextManager
+from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
 from dfetch.manifest.project import ProjectEntry
@@ -12,6 +13,15 @@ from dfetch.manifest.version import Version
 from dfetch.project.metadata import Dependency
 from dfetch.util.versions import latest_tag_from_list
 from dfetch.vcs.patch import PatchType
+
+
+@dataclass
+class FetchContext:
+    """Options describing what and how to fetch a dependency."""
+
+    source: str = ""
+    ignore: Sequence[str] = field(default_factory=list)
+    eol_hint: str | None = None
 
 
 @runtime_checkable
@@ -33,9 +43,7 @@ class Fetcher(Protocol):
         version: Version,
         local_path: str,
         name: str,
-        source: str,
-        ignore: Sequence[str],
-        eol_hint: str | None = None,
+        ctx: FetchContext,
     ) -> tuple[Version, list[Dependency]]:
         """Retrieve *version* and place it at *local_path*."""
         raise NotImplementedError

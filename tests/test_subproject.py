@@ -11,7 +11,7 @@ import pytest
 
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
-from dfetch.project.fetcher import AbstractVcsFetcher
+from dfetch.project.fetcher import AbstractVcsFetcher, FetchContext
 from dfetch.project.metadata import Dependency
 from dfetch.project.subproject import SubProject
 from dfetch.vcs.patch import PatchType
@@ -54,7 +54,7 @@ class MockVcsFetcher(AbstractVcsFetcher):
         return PatchType.GIT
 
     def fetch(
-        self, version, local_path, name, source, ignore, eol_hint=None
+        self, version, local_path, name, ctx: FetchContext
     ) -> tuple[Version, list[Dependency]]:
         return version, []
 
@@ -223,7 +223,9 @@ def test_update_eol_hint_propagated_for_file_destination():
 
                         fetcher = MockVcsFetcher(Version(revision="new"))
                         subproject = SubProject(
-                            ProjectEntry({"name": "vendor/lib.c", "dst": "vendor/lib.c"}),
+                            ProjectEntry(
+                                {"name": "vendor/lib.c", "dst": "vendor/lib.c"}
+                            ),
                             fetcher,
                         )
                         with patch.object(
@@ -235,7 +237,7 @@ def test_update_eol_hint_propagated_for_file_destination():
 
                             mock_fetch.assert_called_once()
                             args = mock_fetch.call_args[0]
-                            assert args[-1] == "lf"
+                            assert args[-1].eol_hint == "lf"
 
 
 @pytest.mark.parametrize(

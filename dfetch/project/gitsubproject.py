@@ -1,13 +1,13 @@
 """Git fetcher implementation."""
 
 import pathlib
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from contextlib import AbstractContextManager
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
-from dfetch.project.fetcher import AbstractVcsFetcher
+from dfetch.project.fetcher import AbstractVcsFetcher, FetchContext
 from dfetch.project.metadata import Dependency
 from dfetch.util.license import LICENSE_GLOBS
 from dfetch.util.util import safe_rm
@@ -83,9 +83,7 @@ class GitFetcher(AbstractVcsFetcher):
         version: Version,
         local_path: str,
         name: str,
-        source: str,
-        ignore: Sequence[str],
-        eol_hint: str | None = None,
+        ctx: FetchContext,
     ) -> tuple[Version, list[Dependency]]:
         """Checkout *version* from git and place it at *local_path*."""
         rev_or_branch_or_tag = self._determine_what_to_fetch(version)
@@ -101,10 +99,10 @@ class GitFetcher(AbstractVcsFetcher):
             CheckoutOptions(
                 remote=self._remote,
                 version=rev_or_branch_or_tag,
-                src=source,
+                src=ctx.source,
                 must_keeps=license_globs + [".gitmodules"],
-                ignore=ignore,
-                eol=eol_hint,
+                ignore=ctx.ignore,
+                eol=ctx.eol_hint,
             )
         )
 

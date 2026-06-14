@@ -37,11 +37,11 @@ Example manifest entries::
 from __future__ import annotations
 
 import pathlib
-from collections.abc import Sequence
 
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
+from dfetch.project.fetcher import FetchContext
 from dfetch.project.metadata import Dependency
 from dfetch.util.util import temp_file
 from dfetch.vcs.archive import (
@@ -103,9 +103,7 @@ class ArchiveFetcher:
         version: Version,
         local_path: str,
         name: str,
-        source: str,
-        ignore: Sequence[str],
-        _eol_hint: str | None = None,
+        ctx: FetchContext,
     ) -> tuple[Version, list[Dependency]]:
         """Download and extract the archive to *local_path*.
 
@@ -119,8 +117,8 @@ class ArchiveFetcher:
             ArchiveLocalRepo.extract(
                 tmp_path,
                 local_path,
-                src=source,
-                ignore=ignore,
+                src=ctx.source,
+                ignore=ctx.ignore,
             )
 
         return version, []

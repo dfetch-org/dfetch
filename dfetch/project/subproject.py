@@ -8,7 +8,7 @@ from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry, plaintext_warning
 from dfetch.manifest.version import Version
 from dfetch.project.abstract_check_reporter import AbstractCheckReporter
-from dfetch.project.fetcher import Fetcher, VcsFetcher
+from dfetch.project.fetcher import FetchContext, Fetcher, VcsFetcher
 from dfetch.project.metadata import InvalidMetadataError, Metadata
 from dfetch.util.util import hash_directory, safe_rm
 from dfetch.vcs.patch import Patch
@@ -203,9 +203,11 @@ class SubProject:
                 to_fetch,
                 self.local_path,
                 self.__project.name,
-                self.source,
-                self.ignore,
-                self._destination_eol_hint(eol_preferences_callback),
+                FetchContext(
+                    source=self.source,
+                    ignore=self.ignore,
+                    eol_hint=self._destination_eol_hint(eol_preferences_callback),
+                ),
             )
         self._log_project(f"Fetched {actually_fetched}")
 

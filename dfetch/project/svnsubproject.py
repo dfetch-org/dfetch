@@ -9,7 +9,7 @@ from contextlib import AbstractContextManager
 from dfetch.log import get_logger
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
-from dfetch.project.fetcher import AbstractVcsFetcher
+from dfetch.project.fetcher import AbstractVcsFetcher, FetchContext
 from dfetch.project.metadata import Dependency
 from dfetch.util.license import is_license_file
 from dfetch.util.util import (
@@ -101,17 +101,15 @@ class SvnFetcher(AbstractVcsFetcher):
         version: Version,
         local_path: str,
         name: str,
-        source: str,
-        ignore: Sequence[str],
-        eol_hint: str | None = None,
+        ctx: FetchContext,
     ) -> tuple[Version, list[Dependency]]:
         """Export *version* from SVN and place it at *local_path*."""
         logger.debug("Fetching SVN dependency: %s", name)
         branch, branch_path, revision = self._determine_what_to_fetch(version)
-        native_eol = {"lf": "LF", "crlf": "CRLF"}.get(eol_hint or "", "")
+        native_eol = {"lf": "LF", "crlf": "CRLF"}.get(ctx.eol_hint or "", "")
 
         complete_path = "/".join(
-            filter(None, [self._remote, branch_path.strip(), source])
+            filter(None, [self._remote, branch_path.strip(), ctx.source])
         ).strip("/")
 
         pathlib.Path(os.path.dirname(local_path)).mkdir(parents=True, exist_ok=True)
@@ -121,15 +119,18 @@ class SvnFetcher(AbstractVcsFetcher):
         SvnRepo.export(complete_path, revision, local_path, native_eol)
 
         if file_pattern:
-            self._apply_file_pattern(local_path, file_pattern, source)
+            self._apply_file_pattern(local_path, file_pattern, ctx.source)
 
-        if source:
+        if ctx.source:
             self._copy_license_files(local_path, branch_path, revision, native_eol)
 
-        if ignore:
-            self._remove_ignored_files(local_path, ignore)
+        if ctx.ignore:
+            self._remove_ignored_files(local_path, ctx.ignore)
 
-        return Version(tag=version.tag, branch=branch, revision=revision), []
+        return (
+            Version(tag=version.tag, branch=branch, revision=revision),
+            self._fetch_externals(complete_path, revision, name),
+        )
 
     def _apply_file_pattern(
         self, local_path: str, file_pattern: str, source: str
@@ -151,12 +152,40 @@ class SvnFetcher(AbstractVcsFetcher):
             dest = (
                 local_path if os.path.isdir(local_path) else os.path.dirname(local_path)
             )
-            SvnRepo.export(f"{root_branch_path}/{license_files[0]}", revision, dest, native_eol)
+            SvnRepo.export(
+                f"{root_branch_path}/{license_files[0]}", revision, dest, native_eol
+            )
 
     def _remove_ignored_files(self, local_path: str, ignore: Sequence[str]) -> None:
         for file_or_dir in find_matching_files(local_path, ignore):
             if not (file_or_dir.is_file() and is_license_file(file_or_dir.name)):
                 safe_rm(file_or_dir)
+
+    def _fetch_externals(
+        self, complete_path: str, revision: str, name: str
+    ) -> list[Dependency]:
+        """Detect and log SVN externals that were exported with the project."""
+        vcs_deps = []
+        for external in SvnRepo.externals_from_url(complete_path, revision):
+            path_display = "./" + external.path.lstrip("./")
+            display_branch = external.branch or SvnRepo.DEFAULT_BRANCH
+            logger.print_info_line(
+                name,
+                f'Found & fetched external "{path_display}" '
+                f"({external.url} @ "
+                f"{Version(tag=external.tag, branch=display_branch, revision=external.revision)})",
+            )
+            vcs_deps.append(
+                Dependency(
+                    remote_url=external.url,
+                    destination=external.path,
+                    branch=external.branch,
+                    tag=external.tag,
+                    revision=external.revision,
+                    source_type="svn-external",
+                )
+            )
+        return vcs_deps
 
     def _resolve_branch_path(self, version: Version) -> tuple[str, str]:
         """Return (branch, raw_branch_path) from version without URL-encoding."""
