@@ -5,10 +5,32 @@ other builders it falls back to plain ``nodes.container`` nodes, so the tab
 labels render as unstyled text with no visual separation between variants.
 
 This extension inserts a ``SphinxTransform`` (LaTeX/rinoh builds only) that
-rewrites the generic container tree produced by sphinx-tabs into custom
-``LatexTabsGroup`` / ``LatexTabEntry`` nodes, and registers LaTeX visitors
-that render each tab as an unnumbered subsection heading followed by its
-content.
+rewrites the sphinx-tabs tree into custom ``LatexTabsGroup`` / ``LatexTabEntry``
+nodes, and registers LaTeX visitors that render each tab as an unnumbered
+subsubsection heading followed by its content.
+
+The transform handles two possible document-tree structures:
+
+* **Non-HTML fallback** — produced when the LaTeX builder reads fresh RST.
+  sphinx-tabs emits plain ``nodes.container`` outer_nodes, each holding a tab
+  label container and a content container::
+
+      nodes.container[sphinx-tabs]
+        nodes.container           ← outer_node (one per tab)
+          nodes.container         ← tab (holds label)
+          nodes.container         ← panel (holds content)
+        …
+
+* **HTML-cached doctrees** — produced when a previous ``make html`` run has
+  already written ``.doctrees/`` files.  The Makefile ``-M`` flag shares a
+  single ``_build/.doctrees/`` directory across all builders.  Those cached
+  trees contain sphinx-tabs HTML node types::
+
+      nodes.container[sphinx-tabs]
+        SphinxTabsTablist         ← children are SphinxTabsTab paragraph nodes
+        SphinxTabsPanel           ← one per tab (content)
+        SphinxTabsPanel
+        …
 
 Expected result in PDF::
 
@@ -54,6 +76,22 @@ def _escape_latex(text: str) -> str:
     return _LATEX_SPECIAL.sub(lambda m: "\\" + m.group(1), text)
 
 
+def _is_html_cached_structure(children: list) -> bool:
+    """Return True if children look like an HTML-cached sphinx-tabs doctree.
+
+    The HTML doctree structure has a tablist container as first child, whose
+    children are sphinx-tabs tab nodes carrying class ``sphinx-tabs-tab``.
+    The non-HTML fallback has plain outer_node containers instead.
+    """
+    if not children:
+        return False
+    first = children[0]
+    return isinstance(first, nodes.Element) and any(
+        isinstance(c, nodes.Element) and "sphinx-tabs-tab" in c.get("classes", [])
+        for c in first.children
+    )
+
+
 class LatexTabsTransform(SphinxTransform):
     """Convert sphinx-tabs containers into styled LatexTabsGroup nodes.
 
@@ -78,7 +116,7 @@ class LatexTabsTransform(SphinxTransform):
     default_priority = 500
 
     def apply(self, **kwargs) -> None:
-        if self.app.builder.name not in ("latex", "rinoh"):
+        if self.env.app.builder.name not in ("latex", "rinoh"):
             return
 
         for tabs_node in self.document.traverse(
@@ -86,16 +124,27 @@ class LatexTabsTransform(SphinxTransform):
             and "sphinx-tabs" in n.get("classes", [])
         ):
             group = LatexTabsGroup()
-            for outer in list(tabs_node.children):
-                if not isinstance(outer, nodes.container) or len(outer.children) < 2:
-                    continue
-                tab_container = outer.children[0]
-                panel = outer.children[1]
+            children = list(tabs_node.children)
 
-                entry = LatexTabEntry()
-                entry["label"] = tab_container.astext().strip()
-                entry += list(panel.children)
-                group += entry
+            if _is_html_cached_structure(children):
+                # HTML-cached doctree: tablist of SphinxTabsTab nodes + SphinxTabsPanel nodes.
+                tablist, panels = children[0], children[1:]
+                for tab_node, panel in zip(tablist.children, panels):
+                    entry = LatexTabEntry()
+                    entry["label"] = tab_node.astext().strip()
+                    entry += list(panel.children)
+                    group += entry
+            else:
+                # Non-HTML fallback: plain container outer_nodes with [tab, panel] children.
+                for outer in children:
+                    if not isinstance(outer, nodes.container) or len(outer.children) < 2:
+                        continue
+                    tab_container = outer.children[0]
+                    panel = outer.children[1]
+                    entry = LatexTabEntry()
+                    entry["label"] = tab_container.astext().strip()
+                    entry += list(panel.children)
+                    group += entry
 
             tabs_node.replace_self(group)
 
