@@ -3,10 +3,7 @@
 
 import json
 import urllib.error
-from io import BytesIO
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from dfetch.util.github_version_check import newer_version_available
 

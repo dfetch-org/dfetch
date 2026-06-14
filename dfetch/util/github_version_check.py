@@ -8,9 +8,7 @@ from typing import Optional
 from dfetch import __version__
 from dfetch.util.versions import coerce
 
-_RELEASES_URL = (
-    "https://api.github.com/repos/dfetch-org/dfetch/releases/latest"
-)
+_RELEASES_URL = "https://api.github.com/repos/dfetch-org/dfetch/releases/latest"
 
 
 def newer_version_available() -> Optional[str]:
