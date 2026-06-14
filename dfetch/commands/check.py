@@ -45,6 +45,7 @@ from dfetch.reporting.check.jenkins_reporter import JenkinsReporter
 from dfetch.reporting.check.reporter import CheckReporter
 from dfetch.reporting.check.sarif_reporter import SarifReporter
 from dfetch.reporting.check.stdout_reporter import CheckStdoutReporter
+from dfetch.util.github_version_check import newer_version_available
 from dfetch.util.util import catch_runtime_exceptions, in_directory
 
 logger = get_logger(__name__)
@@ -98,6 +99,10 @@ class Check(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
+        if not os.environ.get("CI"):
+            newer = newer_version_available()
+            if newer:
+                logger.print_newer_version_notice(newer)
         superproject = create_super_project()
         reporters = self._get_reporters(args, superproject.manifest)
 

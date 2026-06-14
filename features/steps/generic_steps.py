@@ -12,6 +12,7 @@ import shutil
 from contextlib import contextmanager
 from itertools import zip_longest
 from typing import Iterable, List, Optional, Pattern, Tuple, Union
+from unittest.mock import patch
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 from behave.runner import Context
@@ -23,6 +24,7 @@ from dfetch.util.util import in_directory
 
 ansi_escape = re.compile(r"\[/?[a-z\_ ]+\]")
 dfetch_title = re.compile(r"Dfetch \(\d+.\d+.\d+\)")
+dfetch_version_report = re.compile(r"(dfetch\s+:\s+)\d+\.\d+\.\d+")
 timestamp = re.compile(r"\d+\/\d+\/\d+, \d+:\d+:\d+")
 git_hash = re.compile(r"(\s?)[a-f0-9]{40}(\s?)")
 git_timestamp = re.compile(
@@ -213,6 +215,7 @@ def check_output(context, line_count=None):
     expected_text = multisub(
         patterns=[
             (dfetch_title, "Dfetch (x.x.x)"),
+            (dfetch_version_report, r"\1x.x.x"),
             (git_hash, r"\1[commit-hash]\2"),
             (timestamp, "[timestamp]"),
             (ansi_escape, ""),
@@ -224,6 +227,7 @@ def check_output(context, line_count=None):
     actual_text = multisub(
         patterns=[
             (dfetch_title, "Dfetch (x.x.x)"),
+            (dfetch_version_report, r"\1x.x.x"),
             (git_hash, r"\1[commit-hash]\2"),
             (timestamp, "[timestamp]"),
             (ansi_escape, ""),
@@ -248,6 +252,16 @@ def check_output(context, line_count=None):
         print(actual_text)
         print(comp)
         assert False, "Output not as expected!"
+
+
+@given('dfetch "{version}" is available on GitHub')
+def step_impl(context, version: str):
+    context.newer_version_patcher.stop()
+    context.newer_version_patcher = patch(
+        "dfetch.commands.environment.newer_version_available",
+        return_value=version,
+    )
+    context.newer_version_patcher.start()
 
 
 @given('"{old}" is replaced with "{new}" in "{path}"')

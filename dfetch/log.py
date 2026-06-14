@@ -132,6 +132,13 @@ class DLogger(logging.Logger):
                     f"      [blue]{safe_key + ':':20s}[/blue][white] {markup_escape(str(value))}[/white]"
                 )
 
+    def print_newer_version_notice(self, version: str) -> None:
+        """Print a dim notice that a newer dfetch release is available."""
+        self.info(
+            f"[dim]  dfetch {markup_escape(version)} available"
+            " — https://github.com/dfetch-org/dfetch/releases[/dim]"
+        )
+
     def print_title(self) -> None:
         """Print the DFetch tool title and version."""
         self.info(f"[bold blue]Dfetch ({__version__})[/bold blue]")
