@@ -317,6 +317,11 @@ class SvnRepo:
     def externals_from_url(url: str, revision: str = "") -> list[External]:
         """Get list of externals from a remote SVN URL."""
         extra = ["--revision", revision] if revision else []
+        rev_suffix = f"@{revision}" if revision else ""
+        logger.debug(
+            f"Scanning '{url}{rev_suffix}' recursively for svn:externals "
+            f"(may be slow for large repositories)"
+        )
         output = _run_svn(["propget", "svn:externals", "-R"] + extra + [url], url=url)
         repo_root = SvnRepo.get_info_from_target(url)["Repository Root"]
         normalized = SvnRepo._normalize_url_prefix(output, url)

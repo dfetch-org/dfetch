@@ -86,6 +86,7 @@ class DLogger(logging.Logger):
     """Logging class extended with specific log items for dfetch."""
 
     _printed_projects: set[str] = set()
+    _active_status: Status | None = None
 
     def print_report_line(self, name: str, info: str) -> None:
         """Print a line for a report."""
@@ -115,6 +116,16 @@ class DLogger(logging.Logger):
 
         line = markup_escape(info).replace("\n", "\n    ")
         self.info(f"  [bold bright_yellow]> {line}[/bold bright_yellow]")
+
+    def print_error_line(self, name: str, info: str) -> None:
+        """Print an error line: green name, red value."""
+        if name not in DLogger._printed_projects:
+            safe_name = markup_escape(name)
+            self.info(f"  [bold][bright_green]{safe_name}:[/bright_green][/bold]")
+            DLogger._printed_projects.add(name)
+
+        line = markup_escape(info).replace("\n", "\n    ")
+        self.info(f"  [bold bright_red]> {line}[/bold bright_red]")
 
     def print_overview(self, name: str, title: str, info: dict[str, Any]) -> None:
         """Print an overview of fields."""
@@ -209,11 +220,20 @@ class DLogger(logging.Logger):
             self.info(f"  [bold][bright_green]{safe_name}:[/bright_green][/bold]")
             DLogger._printed_projects.add(name)
 
-        return Status(
+        active = Status(
             f"[bold bright_blue]> {markup_escape(message)}[/bold bright_blue]",
             spinner=spinner,
             console=rich_console,
         )
+        DLogger._active_status = active
+        return active
+
+    def update_status(self, message: str) -> None:
+        """Update the text of the currently active spinner, if any."""
+        if DLogger._active_status is not None:
+            DLogger._active_status.update(
+                f"[bold bright_blue]> {markup_escape(message)}[/bold bright_blue]"
+            )
 
     @classmethod
     def reset_projects(cls) -> None:

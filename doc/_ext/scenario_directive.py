@@ -495,23 +495,22 @@ def process_scenario_appendix(app, doctree: nodes.document, _fromdocname: str) -
         return
 
     if app.builder.name not in ("latex", "rinoh"):
-        note = nodes.note()
-        para = nodes.paragraph()
-        para += nodes.Text(
-            "In the HTML edition, feature examples appear as expandable "
-            "blocks directly within each guide section. "
-            "In the PDF edition they are collected here, grouped by command."
-        )
-        note += para
         for placeholder in placeholders:
+            note = nodes.note()
+            para = nodes.paragraph()
+            para += nodes.Text(
+                "In the HTML edition, feature examples appear as expandable "
+                "blocks directly within each guide section. "
+                "In the PDF edition they are collected here, grouped by command."
+            )
+            note += para
             placeholder.replace_self([note])
         return
 
     entries = getattr(app.env, "scenario_appendix_entries", {})
-    appendix_nodes = _build_appendix_nodes(entries) if entries else []
 
     for placeholder in placeholders:
-        placeholder.replace_self(appendix_nodes)
+        placeholder.replace_self(_build_appendix_nodes(entries) if entries else [])
 
 
 def purge_scenario_appendix(_app, env, docname: str) -> None:

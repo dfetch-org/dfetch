@@ -167,6 +167,7 @@ class SvnSubProject(SubProject):
 
     def _fetch_externals(self, complete_path: str, revision: str) -> list[Dependency]:
         """Detect and log SVN externals that were exported with the project."""
+        logger.update_status("Indexing externals")
         vcs_deps = []
         for external in SvnRepo.externals_from_url(complete_path, revision):
             path_display = "./" + external.path.lstrip("./")

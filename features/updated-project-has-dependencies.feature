@@ -92,12 +92,10 @@ Feature: Updated project has dependencies
             Dfetch (0.13.0)
               SomeProject:
               > Fetched v1
-            SomeProject/dfetch.yaml: Schema validation failed:
-
-                "very-invalid-manifest\n"
-                 ^ (line: 1)
-
-            found arbitrary text
+              > SomeProject/dfetch.yaml: Schema validation failed:
+                    "very-invalid-manifest\n"
+                     ^ (line: 1)
+                found arbitrary text
             """
         And 'MyProject' looks like:
             """
