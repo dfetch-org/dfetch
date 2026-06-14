@@ -37,6 +37,7 @@ class Environment(dfetch.commands.command.Command):
     def __call__(self, _: argparse.Namespace) -> None:
         """Perform listing the environment."""
         logger.print_report_line("dfetch", __version__)
+        logger.debug("Checking for a newer dfetch version")
         newer = newer_version_available()
         if newer:
             logger.print_newer_version_notice(newer)

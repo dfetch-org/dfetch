@@ -100,6 +100,7 @@ class Check(dfetch.commands.command.Command):
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the check."""
         if not os.environ.get("CI"):
+            logger.debug("Checking for a newer dfetch version")
             newer = newer_version_available()
             if newer:
                 logger.print_newer_version_notice(newer)
