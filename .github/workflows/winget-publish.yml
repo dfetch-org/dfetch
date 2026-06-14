@@ -33,8 +33,19 @@ jobs:
             uploads.github.com:443
 
       - name: Publish to WinGet
-        # Requires WINGET_TOKEN secret: a GitHub PAT with public_repo scope,
-        # used to fork microsoft/winget-pkgs and open the manifest PR.
+        # Requires WINGET_TOKEN secret in the 'winget' environment.
+        #
+        # Setup — create a fine-grained PAT:
+        #   1. GitHub → Settings → Developer settings → Personal access tokens
+        #      → Fine-grained tokens → Generate new token
+        #   2. Resource owner: DFetch-org (or your user)
+        #   3. Repository access: All repositories
+        #      (needed to fork microsoft/winget-pkgs and push the manifest branch)
+        #   4. Permissions:
+        #        Contents      → Read and write
+        #        Pull requests → Read and write
+        #   5. Store the token as secret WINGET_TOKEN in:
+        #      Repo → Settings → Environments → winget → Environment secrets
         uses: vedantmgoyal9/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e # v2
         with:
           identifier: DFetch-org.DFetch
