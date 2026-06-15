@@ -213,9 +213,9 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - ⚠ Partial
    * - 
      - SO.PreventAttackPropagation
-     - C-045
-     - No warning when dst: targets security-sensitive paths (→ C-045 planned)
-     - ○ Planned
+     - C-001, C-008
+     - —
+     - ✓ Implemented
    * - 
      - SO.MonitorExternalImpact
      - —
@@ -254,8 +254,8 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-M** — Provide the possibility for users to securely and easily remove on a permanent basis all data and settings and, where such data can be transferred to other products or systems, ensure that this is done in a secure manner.
      - SO.SecureDataDeletion
      - —
-     - No built-in delete command for .dfetch_data.yaml (DLM-1 gap; user deletes manually)
-     - ⚠ Partial
+     - —
+     - ✓ Implemented
    * - 
      - SO.DataTransmittedConfidentiality
      - —
@@ -325,7 +325,7 @@ Part II requirements are addressed via prEN 40000-1-3. pii-04 is not applicable 
 Gap Analysis — Compliance-Only Controls
 ---------------------------------------
 
-4 compliance-only controls address CRA requirements not independently covered by the Track A risk models.
+3 compliance-only controls address CRA requirements not independently covered by the Track A risk models.
 
 **C-043 — Release-gate CVE check (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)**
 
@@ -334,10 +334,6 @@ dfetch's CI detects vulnerabilities at commit time (C-015, C-016, C-017) but doe
 **C-044 — Data minimisation policy (ECR-g, SO.DataMinimization → DTM-1)**
 
 dfetch processes dependency metadata only. The ``.dfetch_data.yaml`` file stores: ``remote_url`` (credentials stripped by C-036), ``revision``, optional ``integrity.hash``, and ``last_fetch`` timestamp. Each field is functionally necessary for ``dfetch check`` and ``dfetch freeze``. No personal data is collected; no telemetry is sent. C-044 formalises this assertion as a documented policy.
-
-**C-045 — Destination path sensitivity warning (ECR-i, SO.PreventAttackPropagation → LIM-2)**
-
-A compromised upstream repository could instruct dfetch to overwrite CI/CD configuration files (e.g. ``.github/workflows/``) via a malicious ``dst:`` value. C-045 (planned) adds a non-blocking warning when ``dst:`` resolves to a security-sensitive path, following the ``plaintext_warning()`` pattern already used in ``dfetch/project/subproject.py``.
 
 **C-046 — Exploit mitigation inventory (ECR-k, SO.ReduceImpactOfIncident → GEC-11)**
 
@@ -492,10 +488,6 @@ All controls from Track A (risk-driven) and Track B (regulatory) merged and sort
      - Data minimisation policy
      - Track B
      - doc/explanation/compliance_track.rst (this document)
-   * - C-045
-     - Destination path sensitivity warning
-     - Track B
-     - dfetch/project/subproject.py (planned: _is_sensitive_dst())
    * - C-046
      - Exploit mitigation inventory
      - Track B

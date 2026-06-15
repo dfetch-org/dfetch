@@ -588,22 +588,18 @@
                 "props": [
                   {
                     "name": "implementation-status",
-                    "value": "planned"
-                  },
-                  {
-                    "name": "gaps",
-                    "value": "No warning when dst: targets security-sensitive paths (\u2192 C-045 planned)"
+                    "value": "implemented"
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-045"
+                    "value": "C-001, C-008"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-prevent-attack-propagation-stmt",
                     "uuid": "0841a803-efcb-56d5-9498-c0a6d2d1a49d",
-                    "description": "LIM-2: C-045 (planned) warns when dst: resolves to paths such as .github/workflows or .gitlab-ci.yml that could propagate a supply-chain attack to CI/CD infrastructure. Gaps: No warning when dst: targets security-sensitive paths (\u2192 C-045 planned)"
+                    "description": "LIM-2: Path traversal to destinations outside the project tree is prevented by C-001 (check_no_path_traversal() via realpath). The residual risk of a manifest declaring a legitimate but sensitive dst: (e.g. .github/workflows/) is accepted in the usage threat model under the 'Manifest under code review' assumption: dfetch.yaml is version-controlled and any such dst: change would be rejected at review."
                   }
                 ]
               },
@@ -780,18 +776,14 @@
                 "props": [
                   {
                     "name": "implementation-status",
-                    "value": "partially-implemented"
-                  },
-                  {
-                    "name": "gaps",
-                    "value": "No built-in delete command for .dfetch_data.yaml (DLM-1 gap; user deletes manually)"
+                    "value": "implemented"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-secure-data-deletion-stmt",
                     "uuid": "6fe16078-41e4-5fc5-9002-f26643b1c3ac",
-                    "description": "DLM-1: dfetch stores only dependency metadata (no personal data). Users can permanently delete .dfetch_data.yaml and vendored directories. Gaps: No built-in delete command for .dfetch_data.yaml (DLM-1 gap; user deletes manually)"
+                    "description": "DLM-1: .dfetch_data.yaml contains only non-sensitive metadata \u2014 remote URL (credentials stripped by C-036), revision, optional content hash, and last-fetch timestamp. Standard OS file deletion (rm / del) is sufficient; no secure-wipe is required. Users delete the file and vendored directories to remove all dfetch data."
                   }
                 ]
               },

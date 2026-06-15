@@ -130,7 +130,7 @@ STANDARDS: list[ApplicableStandard] = [
     ),
 ]
 
-# ── Track B controls (C-043–C-046) ───────────────────────────────────────────
+# ── Track B controls (C-043–C-044, C-046) ────────────────────────────────────
 
 TRACK_B_CONTROLS: list[Control] = [
     Control(
@@ -155,17 +155,6 @@ TRACK_B_CONTROLS: list[Control] = [
         ),
         threats=["Threat.UnnecessaryDataMisuse"],
         reference="doc/explanation/compliance_track.rst (this document)",
-    ),
-    Control(
-        id="C-045",
-        name="Destination path sensitivity warning",
-        description=(
-            "Non-blocking warning when dst: resolves to a security-sensitive path "
-            "(.github/workflows, .gitlab-ci.yml, CI/CD directories), following the "
-            "plaintext_warning() pattern."
-        ),
-        threats=["Threat.ExtServiceAvailabilityDegradation"],
-        reference="dfetch/project/subproject.py (planned: _is_sensitive_dst())",
     ),
     Control(
         id="C-046",
@@ -471,15 +460,15 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
     SOImplementation(
         so_id="so-prevent-attack-propagation",
         ecr_id="ecr-i",
-        controls=["C-045"],
-        gaps=[
-            "No warning when dst: targets security-sensitive paths (→ C-045 planned)"
-        ],
-        status="planned",
+        controls=["C-001", "C-008"],
+        status="implemented",
         description=(
-            "LIM-2: C-045 (planned) warns when dst: resolves to paths such as "
-            ".github/workflows or .gitlab-ci.yml that could propagate a supply-chain "
-            "attack to CI/CD infrastructure."
+            "LIM-2: Path traversal to destinations outside the project tree is "
+            "prevented by C-001 (check_no_path_traversal() via realpath). "
+            "The residual risk of a manifest declaring a legitimate but sensitive "
+            "dst: (e.g. .github/workflows/) is accepted in the usage threat model "
+            "under the 'Manifest under code review' assumption: dfetch.yaml is "
+            "version-controlled and any such dst: change would be rejected at review."
         ),
     ),
     SOImplementation(
@@ -567,14 +556,13 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
     SOImplementation(
         so_id="so-secure-data-deletion",
         ecr_id="ecr-m",
-        gaps=[
-            "No built-in delete command for .dfetch_data.yaml "
-            "(DLM-1 gap; user deletes manually)"
-        ],
-        status="partially-implemented",
+        status="implemented",
         description=(
-            "DLM-1: dfetch stores only dependency metadata (no personal data). "
-            "Users can permanently delete .dfetch_data.yaml and vendored directories."
+            "DLM-1: .dfetch_data.yaml contains only non-sensitive metadata — "
+            "remote URL (credentials stripped by C-036), revision, optional content "
+            "hash, and last-fetch timestamp. Standard OS file deletion (rm / del) is "
+            "sufficient; no secure-wipe is required. Users delete the file and "
+            "vendored directories to remove all dfetch data."
         ),
     ),
     SOImplementation(

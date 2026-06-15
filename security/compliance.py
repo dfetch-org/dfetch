@@ -427,17 +427,6 @@ def _gap_entries() -> list[tuple[str, str]]:
             ),
         ),
         (
-            "C-045 — Destination path sensitivity warning"
-            + " (ECR-i, SO.PreventAttackPropagation → LIM-2)",
-            (
-                "A compromised upstream repository could instruct dfetch to overwrite "
-                "CI/CD configuration files (e.g. ``.github/workflows/``) via a malicious "
-                "``dst:`` value. C-045 (planned) adds a non-blocking warning when ``dst:`` "
-                "resolves to a security-sensitive path, following the ``plaintext_warning()`` "
-                "pattern already used in ``dfetch/project/subproject.py``."
-            ),
-        ),
-        (
             "C-046 — Exploit mitigation inventory"
             + " (ECR-k, SO.ReduceImpactOfIncident → GEC-11)",
             (
