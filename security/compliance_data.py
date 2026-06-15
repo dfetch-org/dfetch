@@ -83,7 +83,7 @@ STANDARDS: list[ApplicableStandard] = [
         applies=True,
         scope_note=(
             "Process standard covering risk-based product security across the lifecycle. "
-            "The Product Security Context (§6.2) is documented in security.rst. "
+            "The Product Security Context (§6.2) is documented in :doc:`security`. "
             "Track A threat models (tm_supply_chain.py, tm_usage.py) implement §6.3–§6.6."
         ),
     ),

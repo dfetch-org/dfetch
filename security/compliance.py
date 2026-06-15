@@ -484,7 +484,7 @@ def _render_control_register(track_b_only: bool = False) -> None:
     print(_rst_title("Final Control Register", "-"))
     print(
         "All controls from Track A (risk-driven) and Track B (regulatory) merged and "
-        "sorted. Track B controls (C-043–C-046) are marked accordingly.\n"
+        "sorted. Track B controls (C-043, C-044, and C-046) are marked accordingly.\n"
     )
     track_b_ids = {c.id for c in TRACK_B_CONTROLS}
     rows = [

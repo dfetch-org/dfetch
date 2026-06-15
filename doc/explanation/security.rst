@@ -136,8 +136,8 @@ The three-tier traceability model is::
 Three compliance-only controls introduced in Track B address CRA requirements
 not independently surfaced by the risk models:
 
+- **C-043** (release-gate CVE check) — ECR-a / SO.VulnerabilityManagementProcess → GEC-1
 - **C-044** (data minimisation policy) — ECR-g / SO.DataMinimization → DTM-1
-- **C-045** (destination-path sensitivity warning) — ECR-i / SO.PreventAttackPropagation → LIM-2
 - **C-046** (exploit mitigation inventory) — ECR-k / SO.ReduceImpactOfIncident → GEC-11
 
 Machine-readable OSCAL 1.1.2 artifacts are kept alongside the source:

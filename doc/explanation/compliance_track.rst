@@ -59,7 +59,7 @@ Applicable Standards
    * - prEN 40000-1-2
      - Cyber Resilience Principles and Risk Management
      - Yes
-     - Process standard covering risk-based product security across the lifecycle. The Product Security Context (§6.2) is documented in security.rst. Track A threat models (tm_supply_chain.py, tm_usage.py) implement §6.3–§6.6.
+     - Process standard covering risk-based product security across the lifecycle. The Product Security Context (§6.2) is documented in :doc:`security`. Track A threat models (tm_supply_chain.py, tm_usage.py) implement §6.3–§6.6.
      - —
    * - prEN 40000-1-3
      - Vulnerability Handling Requirements
@@ -350,7 +350,7 @@ prEN 40000-1-4 ECR-k requires documenting applicable exploit mitigation techniqu
 Final Control Register
 ----------------------
 
-All controls from Track A (risk-driven) and Track B (regulatory) merged and sorted. Track B controls (C-043–C-046) are marked accordingly.
+All controls from Track A (risk-driven) and Track B (regulatory) merged and sorted. Track B controls (C-043, C-044, and C-046) are marked accordingly.
 
 .. list-table::
    :header-rows: 1
