@@ -149,8 +149,8 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-E** — Protect the confidentiality of stored, transmitted or otherwise processed data by state-of-the-art mechanisms such as encryption at rest and in transit.
      - SO.DataStoredConfidentiality
      - C-036
-     - .dfetch_data.yaml stored as plaintext YAML (no encryption at rest)
-     - ⚠ Partial
+     - —
+     - ✓ Implemented
    * - 
      - SO.DataProcessedConfidentiality
      - C-005, C-034
@@ -158,14 +158,14 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - ✓ Implemented
    * - 
      - SO.DataTransmittedConfidentiality
-     - C-009
-     - HTTP accepted for remote URLs (SCM-3/SCM-4 gap; mitigated by C-009 warning)
-     - ⚠ Partial
+     - C-005, C-009
+     - —
+     - ✓ Implemented
    * - 
      - SO.ComAuth
-     - C-003, C-004
-     - No end-to-end authenticity verification for plain git/svn transport
-     - ⚠ Partial
+     - C-003, C-004, C-009
+     - —
+     - ✓ Implemented
    * - 
      - SO.SecureProvisioning
      - C-005

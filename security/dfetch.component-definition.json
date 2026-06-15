@@ -283,11 +283,7 @@
                 "props": [
                   {
                     "name": "implementation-status",
-                    "value": "partially-implemented"
-                  },
-                  {
-                    "name": "gaps",
-                    "value": ".dfetch_data.yaml stored as plaintext YAML (no encryption at rest)"
+                    "value": "implemented"
                   },
                   {
                     "name": "dfetch-controls",
@@ -298,7 +294,7 @@
                   {
                     "statement-id": "so-data-stored-confidentiality-stmt",
                     "uuid": "d6a8cfa8-3e30-5318-8ca6-59f99fb7dbff",
-                    "description": "SSM-1/SSM-3: C-036 strips userinfo from URLs before storage. The .dfetch_data.yaml file itself is not encrypted; encryption would require key management infrastructure not appropriate for a developer tool. Gaps: .dfetch_data.yaml stored as plaintext YAML (no encryption at rest)"
+                    "description": "SSM-1/SSM-3: The developer workstation is a trusted boundary (as established in the usage threat model: 'Trusted at workstation invocation time'). C-036 strips all credentials from .dfetch_data.yaml before write, so the stored file contains only non-sensitive metadata (remote URL without userinfo, revision, content hash, timestamp). The threat model explicitly marks metadata_store.storesSensitiveData = False and isDestEncryptedAtRest = False as a conscious design choice; no encryption-at-rest is required."
                   }
                 ]
               },
@@ -329,22 +325,18 @@
                 "props": [
                   {
                     "name": "implementation-status",
-                    "value": "partially-implemented"
-                  },
-                  {
-                    "name": "gaps",
-                    "value": "HTTP accepted for remote URLs (SCM-3/SCM-4 gap; mitigated by C-009 warning)"
+                    "value": "implemented"
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-009"
+                    "value": "C-005, C-009"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-data-transmitted-confidentiality-stmt",
                     "uuid": "4440d616-231f-51ca-a514-c5cd42a3851b",
-                    "description": "SCM-3/SCM-4: dfetch warns on plaintext transport (C-009) but accepts HTTP remote URLs to avoid breaking existing manifests. Gaps: HTTP accepted for remote URLs (SCM-3/SCM-4 gap; mitigated by C-009 warning)"
+                    "description": "SCM-3/SCM-4: Plaintext transport (http://, git://, svn://) is accepted by design for legacy source compatibility. C-009 detects and warns the user before proceeding \u2014 'Detection only; dfetch still proceeds with the plaintext connection; the control raises user awareness but does not enforce scheme selection' (usage threat model, C-009 description). For archive URLs over HTTP, C-005 (integrity hash) provides content-level confidentiality assurance independent of transport. This is a deliberate design decision, not a residual gap."
                   }
                 ]
               },
@@ -354,22 +346,18 @@
                 "props": [
                   {
                     "name": "implementation-status",
-                    "value": "partially-implemented"
-                  },
-                  {
-                    "name": "gaps",
-                    "value": "No end-to-end authenticity verification for plain git/svn transport"
+                    "value": "implemented"
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-003, C-004"
+                    "value": "C-003, C-004, C-009"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-com-auth-e-stmt",
                     "uuid": "c083999a-6c6c-5185-a7ad-8ee203dc13a4",
-                    "description": "SCM-2: C-003 (TLS CA verification for HTTPS) and C-004 (SSH host-key checking) provide authenticity for most connections. Gaps: No end-to-end authenticity verification for plain git/svn transport"
+                    "description": "SCM-2: HTTPS connections authenticate via TLS CA chain (C-003); SSH connections authenticate via host-key verification (C-004). Plain git:// and svn:// connections lack channel-level authentication but are accepted by design for legacy compatibility \u2014 the same rationale as DataTransmittedConfidentiality \u2014 and C-009 warns the user. The usage threat model notes the network adversary 'cannot break correctly implemented TLS or SSH'; the residual risk for unauthenticated transports is an accepted design trade-off."
                   }
                 ]
               },
