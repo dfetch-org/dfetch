@@ -5,6 +5,8 @@ Release 0.14.1 (unreleased)
 * Add CRA Compliance: OSCAL 1.2.2 Component Definition
 * Fix ``dfetch import`` mangling the namespace of a generic VCS URL whose path contains ``.git`` (#1268)
 * Fix ``Version`` comparison raising ``AttributeError`` when compared against a non-``Version`` object (#1268)
+* Fix ``dfetch import`` mangling the namespace of a generic VCS URL whose path contains ``.git`` other than as a suffix (#1268)
+* Fix ``dfetch add`` matching remote whose base URL is only string (not path) prefix of the project URL (#1268)
 
 Release 0.14.0 (released 2026-06-14)
 ====================================
