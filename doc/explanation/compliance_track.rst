@@ -325,7 +325,7 @@ Part II requirements are addressed via prEN 40000-1-3. pii-04 is not applicable 
 Gap Analysis — Compliance-Only Controls
 ---------------------------------------
 
-Three CRA essential requirements were not independently surfaced by the Track A risk models. The following controls address them.
+4 compliance-only controls address CRA requirements not independently covered by the Track A risk models.
 
 **C-043 — Release-gate CVE check (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)**
 
@@ -337,7 +337,7 @@ dfetch processes dependency metadata only. The ``.dfetch_data.yaml`` file stores
 
 **C-045 — Destination path sensitivity warning (ECR-i, SO.PreventAttackPropagation → LIM-2)**
 
-A compromised upstream repository could instruct dfetch to overwrite CI/CD configuration files (e.g. ``.github/workflows/``) via a malicious ``dst:`` value. C-045 (planned) adds a non-blocking warning when ``dst:`` resolves to a security-sensitive path, following the ``plaintext_warning()`` pattern in ``dfetch/manifest/project.py``.
+A compromised upstream repository could instruct dfetch to overwrite CI/CD configuration files (e.g. ``.github/workflows/``) via a malicious ``dst:`` value. C-045 (planned) adds a non-blocking warning when ``dst:`` resolves to a security-sensitive path, following the ``plaintext_warning()`` pattern already used in ``dfetch/project/subproject.py``.
 
 **C-046 — Exploit mitigation inventory (ECR-k, SO.ReduceImpactOfIncident → GEC-11)**
 

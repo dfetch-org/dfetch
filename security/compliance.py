@@ -67,6 +67,10 @@ def _load_track_a_controls() -> list[Control]:
         tm_sc = importlib.import_module("security.tm_supply_chain")
         tm_u = importlib.import_module("security.tm_usage")
     except ImportError:
+        print(
+            "Note: pytm not available — Track A controls omitted from control register.",
+            file=sys.stderr,
+        )
         return []
     sc_controls: list[Any] = getattr(tm_sc, "CONTROLS", [])
     u_controls: list[Any] = getattr(tm_u, "CONTROLS", [])
@@ -430,7 +434,7 @@ def _gap_entries() -> list[tuple[str, str]]:
                 "CI/CD configuration files (e.g. ``.github/workflows/``) via a malicious "
                 "``dst:`` value. C-045 (planned) adds a non-blocking warning when ``dst:`` "
                 "resolves to a security-sensitive path, following the ``plaintext_warning()`` "
-                "pattern in ``dfetch/manifest/project.py``."
+                "pattern already used in ``dfetch/project/subproject.py``."
             ),
         ),
         (
@@ -459,11 +463,12 @@ def _gap_entries() -> list[tuple[str, str]]:
 def _render_gap_analysis() -> None:
     """Print the Gap Analysis section."""
     print(_rst_title("Gap Analysis — Compliance-Only Controls", "-"))
+    entries = _gap_entries()
     print(
-        "Three CRA essential requirements were not independently surfaced by "
-        "the Track A risk models. The following controls address them.\n"
+        f"{len(entries)} compliance-only controls address CRA requirements not "
+        "independently covered by the Track A risk models.\n"
     )
-    for title, body in _gap_entries():
+    for title, body in entries:
         print(f"**{title}**\n")
         print(f"{body}\n")
 
