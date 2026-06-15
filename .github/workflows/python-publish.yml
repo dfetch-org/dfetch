@@ -52,6 +52,13 @@ jobs:
       run: python3 -m build
     - name: Generate SBOM for Python distribution
       run: python script/create_sbom.py --py --output-dir dist-sbom
+    - name: Generate OSCAL Component Definition
+      run: |
+        mkdir -p dist-oscal
+        VERSION=$(python -c "import importlib.metadata; print(importlib.metadata.version('dfetch'))")
+        python -m security.compliance \
+          --component dist-oscal/dfetch.component-definition.json \
+          --version "$VERSION"
     - name: Store the distribution packages
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
@@ -73,6 +80,11 @@ jobs:
       with:
         name: python-sbom
         path: dist-sbom/
+    - name: Store the OSCAL Component Definition
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: oscal-component-definition
+        path: dist-oscal/
 
   publish-to-testpypi:
     name: Publish Python distribution 📦 to TestPyPI
@@ -131,10 +143,17 @@ jobs:
       with:
         name: python-sbom
         path: dist-sbom/
-    - name: Upload SBOM to GitHub Release
+    - name: Download OSCAL Component Definition
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: oscal-component-definition
+        path: dist-oscal/
+    - name: Upload SBOM and OSCAL to GitHub Release
       uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v2.5.0
       with:
         tag_name: ${{ github.event.release.tag_name }}
-        files: dist-sbom/*
+        files: |
+          dist-sbom/*
+          dist-oscal/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
