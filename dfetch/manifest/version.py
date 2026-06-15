@@ -16,13 +16,17 @@ class Version(NamedTuple):
 
     def __eq__(self, other: Any) -> bool:
         """Check if two versions can be considered as equal."""
-        if not other:
+        if not isinstance(other, Version):
             return False
 
         if self.tag or other.tag:
             return bool(self.tag == other.tag)
 
         return bool(self.branch == other.branch and self.revision == other.revision)
+
+    def __hash__(self) -> int:
+        """Hash based on the underlying tuple value."""
+        return tuple.__hash__(self)
 
     @property
     def field(self) -> tuple[str, str]:

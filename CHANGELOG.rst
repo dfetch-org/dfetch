@@ -20,6 +20,12 @@ Release 0.14.0 (unreleased)
 * Fix arbitrary file write via malicious tar/zip symlink (#1152)
 * Prevent SSH command injection (#1152)
 * Allow manifests with no ``projects`` key so ``dfetch add`` can bootstrap empty manifest (#1197)
+* Fix ``dfetch import`` dropping a remote when the optimal solution needs the maximum number of remotes, leaving a project URL uncovered
+* Fix ``dfetch import`` mangling the namespace of a generic VCS URL whose path contains ``.git`` other than as a suffix
+* Fix ``dfetch add`` matching a remote whose base URL is only a string prefix (not a path prefix) of the project URL, and stripping every occurrence of the remote URL instead of only the leading one
+* Fix git submodule detection not reporting both the branch and the tag when a commit is pointed at by both, and spuriously matching the first reference for an empty revision
+* Fix ``Version`` comparison raising ``AttributeError`` when compared against a non-``Version`` object
+* Strip the trailing newline from the git origin URL returned by ``get_remote_url``
 
 Release 0.13.0 (released 2026-03-30)
 ====================================

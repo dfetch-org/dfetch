@@ -203,6 +203,35 @@ def test_ls_remote():
         assert info == expected
 
 
+def test_get_remote_url_strips_trailing_newline():
+    """git remote get-url appends a newline that must not leak into the URL."""
+    with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
+        run_on_cmdline_mock.return_value.stdout = b"https://github.com/org/repo.git\n"
+        assert GitLocalRepo.get_remote_url() == "https://github.com/org/repo.git"
+
+
+def test_find_branch_tip_or_tag_from_sha_reports_both_branch_and_tag():
+    """When a SHA is both a branch tip and a tag, both must be reported."""
+    info = {
+        "refs/heads/master": "33d11e10699bae03ba2a58a280e92494f4fa0d82",
+        "refs/tags/latest-passing-build": "33d11e10699bae03ba2a58a280e92494f4fa0d82",
+    }
+    branch, tag = GitRemote._find_branch_tip_or_tag_from_sha(
+        info, "33d11e10699bae03ba2a58a280e92494f4fa0d82"
+    )
+    assert branch == "master"
+    assert tag == "latest-passing-build"
+
+
+def test_find_branch_tip_or_tag_from_sha_empty_rev_matches_nothing():
+    """An empty revision must not spuriously match the first reference."""
+    info = {
+        "refs/heads/master": "33d11e10699bae03ba2a58a280e92494f4fa0d82",
+        "refs/tags/v1.0": "0e3b216c7ab365b67765e94aeb45085c4db029e0",
+    }
+    assert GitRemote._find_branch_tip_or_tag_from_sha(info, "") == ("", "")
+
+
 @pytest.mark.parametrize(
     "name, env_ssh, git_config_ssh, expected",
     [

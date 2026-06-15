@@ -101,7 +101,7 @@ def _vcs_namespace_and_name(remote_url: str) -> tuple[str, str, str]:
                 remote_url = f"ssh://{parsed.path.replace(':', '/')}"
         else:
             namespace, name = _namespace_and_name_from_domain_and_path(
-                remote_url, path.replace(".git", "")
+                remote_url, path.removesuffix(".git")
             )
     return namespace, name, remote_url
 

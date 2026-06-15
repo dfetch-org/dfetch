@@ -592,7 +592,7 @@ class Manifest:
         target = remote_url.rstrip("/")
         for remote in self.remotes:
             remote_base = remote.url.rstrip("/")
-            if target.startswith(remote_base):
+            if target == remote_base or target.startswith(remote_base + "/"):
                 return remote
         return None
 

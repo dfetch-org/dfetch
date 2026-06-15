@@ -277,13 +277,15 @@ class GitRemote:
     ) -> tuple[str, str]:
         """Check all branch tips and tags and see if the sha is one of them."""
         branch, tag = "", ""
+        if not rev:
+            return (branch, tag)
         for reference, sha in info.items():
-            if sha.startswith(rev):  # Also allow for shorter SHA's
-                if reference.startswith("refs/tags/"):
-                    tag = reference.replace("refs/tags/", "")
-                elif reference.startswith("refs/heads/"):
-                    branch = reference.replace("refs/heads/", "")
-                break
+            if not sha.startswith(rev):  # Also allow for shorter SHA's
+                continue
+            if reference.startswith("refs/tags/") and not tag:
+                tag = reference.replace("refs/tags/", "")
+            elif reference.startswith("refs/heads/") and not branch:
+                branch = reference.replace("refs/heads/", "")
         return (branch, tag)
 
     def check_version_exists(
@@ -536,7 +538,7 @@ class GitLocalRepo:
         """Get the url of the remote origin."""
         try:
             result = run_on_cmdline(logger, ["git", "remote", "get-url", "origin"])
-            decoded_result = str(result.stdout.decode())
+            decoded_result = str(result.stdout.decode()).strip()
         except SubprocessCommandError:
             decoded_result = ""
 

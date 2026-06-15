@@ -461,7 +461,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         self._remote_obj = remote
         self._remote = remote.name
         if self._url.startswith(remote.url):
-            self._repo_path = self._url.replace(remote.url, "").strip("/")
+            self._repo_path = self._url[len(remote.url) :].strip("/")
             self._url = ""
 
     @property
