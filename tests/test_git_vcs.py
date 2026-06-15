@@ -318,6 +318,13 @@ def test_ls_remote():
         assert info == expected
 
 
+def test_get_remote_url_strips_trailing_newline():
+    """git remote get-url appends a newline that must not leak into the URL."""
+    with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
+        run_on_cmdline_mock.return_value.stdout = b"https://github.com/org/repo.git\n"
+        assert GitLocalRepo.get_remote_url() == "https://github.com/org/repo.git"
+
+
 def test_find_branch_tip_or_tag_from_sha_empty_rev_matches_nothing():
     """An empty revision must not spuriously match the first reference."""
     info = {

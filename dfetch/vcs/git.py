@@ -682,7 +682,7 @@ class GitLocalRepo:
         """Get the url of the remote origin."""
         try:
             result = run_on_cmdline(logger, ["git", "remote", "get-url", "origin"])
-            decoded_result = str(result.stdout.decode())
+            decoded_result = str(result.stdout.decode()).strip()
         except SubprocessCommandError:
             decoded_result = ""
 

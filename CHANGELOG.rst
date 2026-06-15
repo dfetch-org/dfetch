@@ -8,6 +8,7 @@ Release 0.14.1 (unreleased)
 * Fix ``dfetch import`` mangling the namespace of a generic VCS URL whose path contains ``.git`` other than as a suffix (#1268)
 * Fix ``dfetch add`` matching remote whose base URL is only string (not path) prefix of the project URL (#1268)
 * Fix git ref resolution spuriously matching the first reference for an empty revision (#1268)
+* Strip the trailing newline from the git origin URL returned by ``get_remote_url`` (#1268)
 
 Release 0.14.0 (released 2026-06-14)
 ====================================
