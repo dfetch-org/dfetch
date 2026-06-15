@@ -318,6 +318,15 @@ def test_ls_remote():
         assert info == expected
 
 
+def test_find_branch_tip_or_tag_from_sha_empty_rev_matches_nothing():
+    """An empty revision must not spuriously match the first reference."""
+    info = {
+        "refs/heads/master": "33d11e10699bae03ba2a58a280e92494f4fa0d82",
+        "refs/tags/v1.0": "0e3b216c7ab365b67765e94aeb45085c4db029e0",
+    }
+    assert GitRemote._find_branch_tip_or_tag_from_sha(info, "") == ("", "")
+
+
 @pytest.mark.parametrize(
     "name, env_ssh, git_config_ssh, expected",
     [

@@ -277,6 +277,8 @@ class GitRemote:
     ) -> tuple[str, str]:
         """Check all branch tips and tags and see if the sha is one of them."""
         branch, tag = "", ""
+        if not rev:
+            return (branch, tag)
         for reference, sha in info.items():
             if sha.startswith(rev):  # Also allow for shorter SHA's
                 if reference.startswith("refs/tags/"):
