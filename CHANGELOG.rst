@@ -4,6 +4,7 @@ Release 0.14.1 (unreleased)
 * Implement C-043: add ``pip-audit`` OSV gate to the release workflow
 * Add CRA Compliance: OSCAL 1.2.2 Component Definition
 * Fix ``dfetch import`` mangling the namespace of a generic VCS URL whose path contains ``.git`` (#1268)
+* Fix ``Version`` comparison raising ``AttributeError`` when compared against a non-``Version`` object (#1268)
 
 Release 0.14.0 (released 2026-06-14)
 ====================================
