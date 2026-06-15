@@ -11,8 +11,14 @@ We aim to respond to security reports within 5 business days.
 
 ## Supported Versions
 
-We actively maintain and patch the latest release of Dfetch.
-Older versions may not receive security updates.
+We actively maintain and patch the **latest release** of Dfetch only.
+Older versions do not receive security backports, and there is no long-term support (LTS) track.
+
+## Security Update Commitment
+
+We will address confirmed security vulnerabilities in the latest release as quickly as possible and provide updates free of charge.
+We aim to release a security fix within 30 days of confirming a vulnerability, though we cannot guarantee a specific timeline for every issue.
+Security fixes are distributed through the normal PyPI release process at no charge under the MIT licence.
 
 ## Disclosure Policy
 
