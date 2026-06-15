@@ -115,6 +115,11 @@ from dfetch.vcs.archive import archive_url_to_purl
             "git://git.git.savannah.gnu.org/automake.git",
             "pkg:generic/automake?vcs_url=git://git.git.savannah.gnu.org/automake.git",
         ),
+        # A ".git" substring inside the path must not be stripped (only the suffix)
+        (
+            "https://gitlab.com/group/foo.github/project.git",
+            "pkg:generic/group/foo.github/project?vcs_url=https://gitlab.com/group/foo.github/project.git",
+        ),
         # Trailing slash – issue #1137
         ("https://github.com/cpputest/cpputest/", "pkg:github/cpputest/cpputest"),
         ("https://github.com/dfetch-org/dfetch/", "pkg:github/dfetch-org/dfetch"),
