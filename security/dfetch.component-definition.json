@@ -4,7 +4,7 @@
     "metadata": {
       "title": "dfetch CRA Compliance Component Definition",
       "last-modified": "2026-06-15T00:00:00Z",
-      "version": "0.14.0",
+      "version": "0.15.0",
       "oscal-version": "1.1.2",
       "props": [
         {
@@ -31,7 +31,7 @@
         "props": [
           {
             "name": "software-version",
-            "value": "0.14.0"
+            "value": "0.15.0"
           }
         ],
         "links": [
@@ -336,7 +336,7 @@
                   {
                     "statement-id": "so-data-transmitted-confidentiality-stmt",
                     "uuid": "4440d616-231f-51ca-a514-c5cd42a3851b",
-                    "description": "SCM-3/SCM-4: Plaintext transport (http://, git://, svn://) is accepted by design for legacy source compatibility. C-009 detects and warns the user before proceeding \u2014 'Detection only; dfetch still proceeds with the plaintext connection; the control raises user awareness but does not enforce scheme selection' (usage threat model, C-009 description). For archive URLs over HTTP, C-005 (integrity hash) provides content-level confidentiality assurance independent of transport. This is a deliberate design decision, not a residual gap."
+                    "description": "SCM-3/SCM-4: Plaintext transport (http://, git://, svn://) is accepted by design for legacy source compatibility. C-009 detects and warns the user before proceeding \u2014 'Detection only; dfetch still proceeds with the plaintext connection; the control raises user awareness but does not enforce scheme selection' (usage threat model, C-009 description). For archive URLs over HTTP, C-005 (integrity hash) verifies that content has not been tampered with in transit; it does not encrypt or conceal the content. This is a deliberate design decision, not a residual gap."
                   }
                 ]
               },

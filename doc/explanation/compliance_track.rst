@@ -69,12 +69,12 @@ Applicable Standards
    * - prEN 40000-1-4
      - Generic Security Requirements (draft, indicative publication October 2027)
      - Yes
-     - Primary standard for this document. Maps CRA Annex I Part I Art. 2(a)–(m) to Security Objectives (SO.*) and Technical Controls (GEC-*, SUM-*, etc.). The catalog is included as security/cra_pren_4000014_oscal_catalog.json.
+     - Primary standard for this document. Maps CRA Annex I Part I Art. 2(a)–(m) to Security Objectives (SO.\*) and Technical Controls (GEC-\*, SUM-\*, etc.). The catalog is included as security/cra_pren_4000014_oscal_catalog.json.
      - Standard is in draft; final clause numbering may change.
    * - EN 18031-1/2:2024
      - Common security requirements for radio equipment (basis of prEN 40000-1-4)
      - Yes
-     - prEN 40000-1-4 builds on EN 18031. Many technical controls (GEC-*, SUM-*, AUM-*, SSM-*, SCM-*) originate from EN 18031. dfetch's applicability is assessed at the prEN 40000-1-4 SO level.
+     - prEN 40000-1-4 builds on EN 18031. Many technical controls (GEC-\*, SUM-\*, AUM-\*, SSM-\*, SCM-\*) originate from EN 18031. dfetch's applicability is assessed at the prEN 40000-1-4 SO level.
      - —
    * - ETSI EN 303 645 V3.1.3
      - Cyber Security for Consumer Internet of Things
@@ -106,12 +106,12 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - C-001, C-002
      - —
      - ⚠ Partial
-   * - 
+   * -
      - SO.SecureStartupConfig
      - —
      - —
      - — N/A
-   * - 
+   * -
      - SO.FactoryReset
      - —
      - —
@@ -121,17 +121,17 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - —
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.AutomaticUpdates
      - —
      - —
      - — N/A
-   * - 
+   * -
      - SO.UserUpdateNotification
      - C-040
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.PostponeUpdates
      - —
      - —
@@ -141,7 +141,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - C-006, C-036
      - —
      - ⚠ Partial
-   * - 
+   * -
      - SO.AccessControlReport
      - C-009
      - No persistent log of unauthorised access attempts
@@ -151,22 +151,22 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - C-036
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.DataProcessedConfidentiality
      - C-005, C-034
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.DataTransmittedConfidentiality
      - C-005, C-009
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.ComAuth
      - C-003, C-004, C-009
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.SecureProvisioning
      - C-005
      - —
@@ -176,17 +176,17 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - C-005
      - Integrity hash opt-in only; not enforced by default for git/svn
      - ⚠ Partial
-   * - 
+   * -
      - SO.DataProcessedIntegrity
      - C-005, C-034
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.DataTransmittedIntegrity
      - C-003, C-004
      - No end-to-end hash for git/svn transport beyond TLS/SSH channel integrity
      - ⚠ Partial
-   * - 
+   * -
      - SO.IntegrityReport
      - C-009
      - No persistent integrity-violation log
@@ -201,7 +201,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - —
      - —
      - — N/A
-   * - 
+   * -
      - SO.IncidentResilience
      - C-002, C-007
      - No timeout on VCS operations (potential resource exhaustion)
@@ -211,12 +211,12 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - C-001, C-007
      - —
      - ⚠ Partial
-   * - 
+   * -
      - SO.PreventAttackPropagation
      - C-001, C-008
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.MonitorExternalImpact
      - —
      - —
@@ -236,17 +236,17 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - C-036
      - No persistent security event log (LGM-2/3/4 gap); No opt-out for logging — dfetch does not log by default
      - ⚠ Partial
-   * - 
+   * -
      - SO.MonitorSecurityRelevantActivities
      - C-009
      - —
      - ⚠ Partial
-   * - 
+   * -
      - SO.OptionDisableDataLogging
      - —
      - —
      - — N/A
-   * - 
+   * -
      - SO.OptionDisableDataMonitoring
      - —
      - —
@@ -256,17 +256,17 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - —
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.DataTransmittedConfidentiality
      - —
      - —
      - — N/A
-   * - 
+   * -
      - SO.DataTransmittedIntegrity
      - —
      - —
      - — N/A
-   * - 
+   * -
      - SO.ComAuth
      - —
      - —
@@ -395,7 +395,7 @@ All controls from Track A (risk-driven) and Track B (regulatory) merged and sort
    * - C-009
      - Actions commit-SHA pinning
      - Track A
-     - .github/workflows/*.yml
+     - .github/workflows/\*.yml
    * - C-010
      - OIDC trusted publishing
      - Track A
@@ -403,15 +403,15 @@ All controls from Track A (risk-driven) and Track B (regulatory) merged and sort
    * - C-011
      - Minimal workflow permissions
      - Track A
-     - .github/workflows/*.yml
+     - .github/workflows/\*.yml
    * - C-012
      - persist-credentials: false
      - Track A
-     - .github/workflows/*.yml
+     - .github/workflows/\*.yml
    * - C-013
      - Harden-runner (egress block)
      - Track A
-     - .github/workflows/*.yml
+     - .github/workflows/\*.yml
    * - C-015
      - CodeQL static analysis
      - Track A
@@ -504,4 +504,3 @@ regenerated with:
    python -m security.compliance \\
        --component security/dfetch.component-definition.json \\
        --rst > doc/explanation/compliance_track.rst
-

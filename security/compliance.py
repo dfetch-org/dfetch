@@ -18,6 +18,7 @@ import argparse
 import importlib
 import json
 import os
+import re
 import sys
 import uuid
 from datetime import date
@@ -66,7 +67,7 @@ def _load_track_a_controls() -> list[Control]:
     try:
         tm_sc = importlib.import_module("security.tm_supply_chain")
         tm_u = importlib.import_module("security.tm_usage")
-    except ImportError:
+    except ModuleNotFoundError:
         print(
             "Note: pytm not available — Track A controls omitted from control register.",
             file=sys.stderr,
@@ -274,6 +275,11 @@ def _rst_title(text: str, char: str = "=") -> str:
     return f"{text}\n{char * len(text)}\n"
 
 
+def _rst_escape_star(text: str) -> str:
+    """Escape standalone * in RST cell text without touching **bold** markup."""
+    return re.sub(r"(?<!\*)\*(?!\*)", r"\\*", text)
+
+
 def _rst_list_table(
     headers: list[str],
     rows: list[list[str]],
@@ -284,9 +290,11 @@ def _rst_list_table(
     if widths:
         lines.append("   :widths: " + " ".join(str(w) for w in widths))
     lines.append("")
-    lines.append("   * - " + "\n     - ".join(headers))
+    lines.append("   * - " + "\n     - ".join(_rst_escape_star(h) for h in headers))
     for row in rows:
-        lines.append("   * - " + "\n     - ".join(str(c) for c in row))
+        lines.append(
+            "   * - " + "\n     - ".join(_rst_escape_star(str(c)) for c in row)
+        )
     lines.append("")
     return "\n".join(lines)
 

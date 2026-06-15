@@ -322,9 +322,9 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "user before proceeding — 'Detection only; dfetch still proceeds with the "
             "plaintext connection; the control raises user awareness but does not "
             "enforce scheme selection' (usage threat model, C-009 description). "
-            "For archive URLs over HTTP, C-005 (integrity hash) provides content-level "
-            "confidentiality assurance independent of transport. This is a deliberate "
-            "design decision, not a residual gap."
+            "For archive URLs over HTTP, C-005 (integrity hash) verifies that content "
+            "has not been tampered with in transit; it does not encrypt or conceal the "
+            "content. This is a deliberate design decision, not a residual gap."
         ),
     ),
     SOImplementation(
