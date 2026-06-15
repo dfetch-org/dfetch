@@ -80,6 +80,10 @@ jobs:
       with:
         name: python-sbom
         path: dist-sbom/
+    - name: Attest OSCAL build provenance
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+      with:
+        subject-path: dist-oscal/dfetch.component-definition.json
     - name: Store the OSCAL Component Definition
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
