@@ -503,4 +503,5 @@ regenerated with:
 
    python -m security.compliance \\
        --component security/dfetch.component-definition.json \\
+       --track-b-only \\
        --rst > doc/explanation/compliance_track.rst

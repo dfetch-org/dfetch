@@ -62,14 +62,23 @@ def _so_title(so_id: str) -> str:
     return "SO." + "".join(p.capitalize() for p in parts)
 
 
-def _load_track_a_controls() -> list[Control]:
-    """Load Track A controls from threat models if pytm is available."""
+def _load_track_a_controls(track_b_only: bool = False) -> list[Control]:
+    """Load Track A controls from threat models if pytm is available.
+
+    Raises RuntimeError when pytm is unavailable and track_b_only is False,
+    so callers must explicitly opt in to Track-B-only degraded mode.
+    """
     try:
         tm_sc = importlib.import_module("security.tm_supply_chain")
         tm_u = importlib.import_module("security.tm_usage")
-    except ModuleNotFoundError:
+    except ModuleNotFoundError as exc:
+        if not track_b_only:
+            raise RuntimeError(
+                "Track A controls unavailable (pytm not installed). "
+                "Pass --track-b-only to generate a Track B only artifact."
+            ) from exc
         print(
-            "Note: pytm not available — Track A controls omitted from control register.",
+            "Note: pytm not available — Track A controls omitted (--track-b-only).",
             file=sys.stderr,
         )
         return []
@@ -81,9 +90,9 @@ def _load_track_a_controls() -> list[Control]:
     ]
 
 
-def get_all_controls() -> list[Control]:
+def get_all_controls(track_b_only: bool = False) -> list[Control]:
     """Return merged, deduplicated, sorted control register from both tracks."""
-    track_a = _load_track_a_controls()
+    track_a = _load_track_a_controls(track_b_only=track_b_only)
     seen: set[str] = set()
     merged: list[Control] = []
     for ctrl in track_a + TRACK_B_CONTROLS:
@@ -470,7 +479,7 @@ def _render_gap_analysis() -> None:
         print(f"{body}\n")
 
 
-def _render_control_register() -> None:
+def _render_control_register(track_b_only: bool = False) -> None:
     """Print the final merged control register table."""
     print(_rst_title("Final Control Register", "-"))
     print(
@@ -485,7 +494,7 @@ def _render_control_register() -> None:
             "Track B" if ctrl.id in track_b_ids else "Track A",
             ctrl.reference or "—",
         ]
-        for ctrl in get_all_controls()
+        for ctrl in get_all_controls(track_b_only=track_b_only)
     ]
     print(
         _rst_list_table(
@@ -496,7 +505,7 @@ def _render_control_register() -> None:
     )
 
 
-def render_rst() -> None:
+def render_rst(track_b_only: bool = False) -> None:
     """Print the full compliance track RST document to stdout."""
     print(".. _compliance_track:\n")
     print(_rst_title("CRA Compliance Track B"))
@@ -526,7 +535,7 @@ def render_rst() -> None:
     _render_part_i_table()
     _render_part_ii_table()
     _render_gap_analysis()
-    _render_control_register()
+    _render_control_register(track_b_only=track_b_only)
     print(_rst_title("OSCAL Artifacts", "-"))
     print(
         "The OSCAL 1.1.2 Component Definition references the catalog file and can be\n"
@@ -534,6 +543,7 @@ def render_rst() -> None:
         ".. code-block:: bash\n\n"
         "   python -m security.compliance \\\\\n"
         "       --component security/dfetch.component-definition.json \\\\\n"
+        "       --track-b-only \\\\\n"
         "       --rst > doc/explanation/compliance_track.rst\n"
     )
 
@@ -553,6 +563,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--version", default="0.14.0", help="dfetch version (default: 0.14.0)"
     )
+    parser.add_argument(
+        "--track-b-only",
+        action="store_true",
+        help=(
+            "Omit Track A controls when pytm is not installed instead of failing. "
+            "Must be set explicitly to allow degraded output."
+        ),
+    )
     args = parser.parse_args()
 
     if args.component:
@@ -562,4 +580,4 @@ if __name__ == "__main__":
         print(f"Written: {args.component}", file=sys.stderr)
 
     if args.rst:
-        render_rst()
+        render_rst(track_b_only=args.track_b_only)

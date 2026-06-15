@@ -24,11 +24,14 @@ python -m security.tm_usage --seq
 
 ## CRA Compliance Track B
 
-The compliance track does not require pytm. Regenerate with:
+The compliance track does not require pytm. Use `--track-b-only` when pytm is
+not installed to explicitly opt in to Track-B-only output (otherwise the
+command fails fast to avoid silently incomplete artifacts):
 
 ```bash
 python -m security.compliance \
     --component security/dfetch.component-definition.json \
+    --track-b-only \
     --rst > doc/explanation/compliance_track.rst
 ```
 
