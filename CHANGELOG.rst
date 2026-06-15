@@ -1,5 +1,13 @@
+Release 0.15.0 (unreleased)
+============================
+
+* Add CRA Compliance Track B: OSCAL 1.1.2 Component Definition mapping all CRA Annex I Part I
+  essential requirements (ECR-a–m) through prEN 40000-1-4 Security Objectives to dfetch controls;
+  covers Part II via prEN 40000-1-3; introduces controls C-043 (release-gate CVE check), C-044
+  (data minimisation policy), and C-046 (exploit mitigation inventory)
+
 Release 0.14.0 (released 2026-06-14)
-===========================
+====================================
 
 * Update Winget manifest to the Windows Package Manager Community Repository on new release (#1263)
 * Check for new dfetch version during ``dfetch check`` & ``dfetch environment`` (#1262)

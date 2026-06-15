@@ -1,0 +1,1130 @@
+{
+  "catalog": {
+    "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "metadata": {
+      "title": "CRA Security Controls Catalog – prEN 40000-1-4 (PT2 Generic Security Requirements)",
+      "last-modified": "2026-06-15T00:00:00Z",
+      "version": "draft-2026-03-05",
+      "oscal-version": "1.1.2",
+      "remarks": "Derived from the CEN/CLC/JTC 13/WG 9 PT2 deep-dive session by Angelo D'Amato (Vulnir B.V.), 5 March 2026, under STAN4CR Grant Agreement No. 101196779. Maps CRA Annex I Part I Essential Requirements (a)–(m) to security objectives and technical controls from prEN 40000-1-4, building on EN 18031:2024 with new controls for CRA scope.",
+      "props": [
+        { "name": "regulation", "value": "Regulation (EU) 2024/2847 – Cyber Resilience Act" },
+        { "name": "standard-reference", "value": "prEN 40000-1-4" },
+        { "name": "source-presentation", "value": "2026-03-05_CRA_Unlocked_DeepDive_SecurityControls_CEN-CLC-JTC-13-WG-9_PT2.pdf" },
+        { "name": "status", "value": "draft – indicative publication October 2027" }
+      ]
+    },
+    "groups": [
+      {
+        "id": "ecr-a",
+        "title": "ECR (a) – Vulnerability Assessment",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(a)" },
+          { "name": "requirement-text", "value": "Be made available on the market without known exploitable vulnerabilities." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-a-threats",
+            "name": "threats",
+            "prose": "Threat.KnownVulnerabilityExploitation"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-vulnerability-management-process",
+            "class": "security-objective",
+            "title": "SO.VulnerabilityManagementProcess",
+            "parts": [
+              {
+                "id": "so-vmp-stmt",
+                "name": "statement",
+                "prose": "Ensure that the product is placed on the market without known exploitable vulnerabilities by maintaining a vulnerability management process including asset lists, EUVD monitoring, and supply-chain due diligence."
+              }
+            ],
+            "controls": [
+              {
+                "id": "gec-1",
+                "class": "technical-control",
+                "title": "[GEC-1] Up-to-date software and hardware without known exploitable vulnerabilities",
+                "props": [
+                  { "name": "control-family", "value": "GEC – General Equipment Capabilities" },
+                  { "name": "source", "value": "EN 18031" },
+                  { "name": "status", "value": "existing" }
+                ],
+                "parts": [
+                  {
+                    "id": "gec-1-stmt",
+                    "name": "statement",
+                    "prose": "The product shall be made available on the market with up-to-date software and hardware that do not contain publicly known exploitable vulnerabilities under practical operational conditions."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecr-b",
+        "title": "ECR (b) – Secure Configuration",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(b)" },
+          { "name": "requirement-text", "value": "Be made available on the market with a secure by default configuration, including the possibility to reset the product to its original state." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-b-threats",
+            "name": "threats",
+            "prose": "Threat.UnsecureDefaultConfigExploitation | Threat.StartupConfigExploitation | Threat.MissingResetFunctionalityConfigExploitation"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-secure-default-configuration",
+            "class": "security-objective",
+            "title": "SO.SecureDefaultConfiguration",
+            "parts": [
+              {
+                "id": "so-sdc-stmt",
+                "name": "statement",
+                "prose": "Ensure the product is delivered with a secure default configuration, minimising exposed interfaces and services."
+              }
+            ],
+            "controls": [
+              {
+                "id": "gec-2",
+                "class": "technical-control",
+                "title": "[GEC-2] Limit exposure of services via related network interfaces",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "gec-2-stmt", "name": "statement", "prose": "The product shall limit exposure of services via related network interfaces." }]
+              },
+              {
+                "id": "gec-3",
+                "class": "technical-control",
+                "title": "[GEC-3] Configuration of optional services and related exposed network interfaces",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "gec-3-stmt", "name": "statement", "prose": "Optional services and their related exposed network interfaces shall be configurable." }]
+              },
+              {
+                "id": "gec-4",
+                "class": "technical-control",
+                "title": "[GEC-4] Documentation of exposed network interfaces and services",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "gec-4-stmt", "name": "statement", "prose": "Exposed network interfaces and services shall be documented." }]
+              },
+              {
+                "id": "gec-5",
+                "class": "technical-control",
+                "title": "[GEC-5] No unnecessary external interfaces",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "gec-5-stmt", "name": "statement", "prose": "The product shall not include unnecessary external interfaces." }]
+              },
+              {
+                "id": "gec-7",
+                "class": "technical-control",
+                "title": "[GEC-7] Documentation of external sensing capabilities",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "gec-7-stmt", "name": "statement", "prose": "External sensing capabilities shall be documented." }]
+              },
+              {
+                "id": "gec-12",
+                "class": "technical-control",
+                "title": "[GEC-12] No Unneeded Software Components",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "gec-12-stmt", "name": "statement", "prose": "The product shall not include software components that are not required for its intended functionality." }]
+              },
+              {
+                "id": "aum-5",
+                "class": "technical-control",
+                "title": "[AUM-5] Password strength",
+                "props": [{ "name": "control-family", "value": "AUM – Authentication Mechanism" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "aum-5-stmt", "name": "statement", "prose": "The product shall enforce password strength requirements." }],
+                "controls": [
+                  {
+                    "id": "aum-5-1",
+                    "class": "technical-control",
+                    "title": "[AUM-5-1] Requirement for factory default passwords",
+                    "props": [{ "name": "source", "value": "EN 18031" }],
+                    "parts": [{ "id": "aum-5-1-stmt", "name": "statement", "prose": "Factory default passwords shall meet defined strength requirements." }]
+                  },
+                  {
+                    "id": "aum-5-2",
+                    "class": "technical-control",
+                    "title": "[AUM-5-2] Requirement for non-factory default passwords",
+                    "props": [{ "name": "source", "value": "EN 18031" }],
+                    "parts": [{ "id": "aum-5-2-stmt", "name": "statement", "prose": "Non-factory-default passwords shall meet defined strength requirements." }]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "so-secure-startup-config",
+            "class": "security-objective",
+            "title": "SO.SecureStartupConfig",
+            "controls": [
+              {
+                "id": "gec-9",
+                "class": "technical-control",
+                "title": "[GEC-9] Secure startup configuration",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "gec-9-stmt", "name": "statement", "prose": "The product shall enforce a secure configuration during the startup process." }]
+              }
+            ]
+          },
+          {
+            "id": "so-factory-reset",
+            "class": "security-objective",
+            "title": "SO.FactoryReset",
+            "controls": [
+              {
+                "id": "dlm-1-b",
+                "class": "technical-control",
+                "title": "[DLM-1] Applicability of deletion mechanisms (factory reset context)",
+                "props": [{ "name": "control-family", "value": "DLM – Deletion Mechanism" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "dlm-1-b-stmt", "name": "statement", "prose": "Deletion mechanisms shall be applicable to support factory reset functionality." }]
+              },
+              {
+                "id": "gec-10",
+                "class": "technical-control",
+                "title": "[GEC-10] Factory Reset",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "gec-10-stmt", "name": "statement", "prose": "The product shall provide a factory reset function to restore the original state." }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecr-c",
+        "title": "ECR (c) – Security Updates",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(c)" },
+          { "name": "requirement-text", "value": "Ensure that vulnerabilities can be addressed through security updates, including automatic updates enabled by default, with an opt-out mechanism, user notification, and the option to postpone updates." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-c-threats",
+            "name": "threats",
+            "prose": "Threat.UnpatchableVulnerabilityExploitation | Threat.UnpatchedVulnerabilityExploitation | Threat.MissingUpdateNotificationExploitation | Threat.FunctionalityUpdateInterruption"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-updateability",
+            "class": "security-objective",
+            "title": "SO.Updateability",
+            "controls": [
+              {
+                "id": "sum-1",
+                "class": "technical-control",
+                "title": "[SUM-1] Applicability of update mechanisms",
+                "props": [{ "name": "control-family", "value": "SUM – Secure Update Mechanism" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "sum-1-stmt", "name": "statement", "prose": "The product shall include applicable and appropriate update mechanisms." }]
+              },
+              {
+                "id": "sum-2",
+                "class": "technical-control",
+                "title": "[SUM-2] Secure updates",
+                "props": [{ "name": "control-family", "value": "SUM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "sum-2-stmt", "name": "statement", "prose": "Updates shall be delivered and installed securely." }]
+              }
+            ]
+          },
+          {
+            "id": "so-automatic-updates",
+            "class": "security-objective",
+            "title": "SO.AutomaticUpdates",
+            "controls": [
+              {
+                "id": "sum-3",
+                "class": "technical-control",
+                "title": "[SUM-3] Automated updates",
+                "props": [{ "name": "control-family", "value": "SUM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "sum-3-stmt", "name": "statement", "prose": "The product shall support automated security updates enabled by default, with a clear opt-out mechanism." }]
+              }
+            ]
+          },
+          {
+            "id": "so-user-update-notification",
+            "class": "security-objective",
+            "title": "SO.UserUpdateNotification",
+            "controls": [
+              {
+                "id": "unm-4",
+                "class": "technical-control",
+                "title": "[UNM-4] User Security Update Notifications",
+                "props": [{ "name": "control-family", "value": "UNM – User Notification Mechanism" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "unm-4-stmt", "name": "statement", "prose": "The product shall notify users of available security updates." }]
+              }
+            ]
+          },
+          {
+            "id": "so-postpone-updates",
+            "class": "security-objective",
+            "title": "SO.PostponeUpdates",
+            "controls": [
+              {
+                "id": "sum-4",
+                "class": "technical-control",
+                "title": "[SUM-4] Postponed Updates",
+                "props": [{ "name": "control-family", "value": "SUM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "sum-4-stmt", "name": "statement", "prose": "The product shall allow users to temporarily postpone security updates." }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecr-d",
+        "title": "ECR (d) – Access Control",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(d)" },
+          { "name": "requirement-text", "value": "Ensure protection from unauthorised access by appropriate control mechanisms including authentication, identity or access management systems, and report on possible unauthorised access." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-d-threats",
+            "name": "threats",
+            "prose": "Threat.UnauthorizedAccess | Threat.NotReportedUnauthorizedAccess"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-access-control",
+            "class": "security-objective",
+            "title": "SO.AccessControl",
+            "controls": [
+              {
+                "id": "acm-2",
+                "class": "technical-control",
+                "title": "[ACM-2] Appropriate access control mechanisms",
+                "props": [{ "name": "control-family", "value": "ACM – Access Control Mechanism" }, { "name": "source", "value": "EN 18031" }, { "name": "note", "value": "Merges former ACM-1 and ACM-2" }],
+                "parts": [{ "id": "acm-2-stmt", "name": "statement", "prose": "The product shall implement appropriate access control mechanisms." }]
+              },
+              {
+                "id": "aum-2",
+                "class": "technical-control",
+                "title": "[AUM-2] Appropriate authentication mechanisms",
+                "props": [{ "name": "control-family", "value": "AUM" }, { "name": "source", "value": "EN 18031" }, { "name": "note", "value": "Merges former AUM-1 and AUM-2" }],
+                "parts": [{ "id": "aum-2-stmt", "name": "statement", "prose": "The product shall implement appropriate authentication mechanisms." }],
+                "controls": [
+                  {
+                    "id": "aum-2-1",
+                    "class": "technical-control",
+                    "title": "[AUM-2-1] Requirement one-factor authentication",
+                    "props": [{ "name": "source", "value": "EN 18031" }],
+                    "parts": [{ "id": "aum-2-1-stmt", "name": "statement", "prose": "Where one-factor authentication is used, the mechanism shall meet defined requirements." }]
+                  },
+                  {
+                    "id": "aum-2-2",
+                    "class": "technical-control",
+                    "title": "[AUM-2-2] Requirement multi-factor authentication",
+                    "props": [{ "name": "source", "value": "EN 18031" }],
+                    "parts": [{ "id": "aum-2-2-stmt", "name": "statement", "prose": "Where multi-factor authentication is available, the mechanism shall meet defined requirements." }]
+                  }
+                ]
+              },
+              {
+                "id": "aum-3",
+                "class": "technical-control",
+                "title": "[AUM-3] Authenticator validation",
+                "props": [{ "name": "control-family", "value": "AUM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "aum-3-stmt", "name": "statement", "prose": "The product shall validate authenticators appropriately." }]
+              },
+              {
+                "id": "aum-4",
+                "class": "technical-control",
+                "title": "[AUM-4] Changing authenticators",
+                "props": [{ "name": "control-family", "value": "AUM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "aum-4-stmt", "name": "statement", "prose": "The product shall support the changing of authenticators." }]
+              },
+              {
+                "id": "aum-6",
+                "class": "technical-control",
+                "title": "[AUM-6] Brute force protection",
+                "props": [{ "name": "control-family", "value": "AUM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "aum-6-stmt", "name": "statement", "prose": "The product shall implement brute force protection for authentication mechanisms." }]
+              }
+            ]
+          },
+          {
+            "id": "so-access-control-report",
+            "class": "security-objective",
+            "title": "SO.AccessControlReport",
+            "controls": [
+              {
+                "id": "gec-13",
+                "class": "technical-control",
+                "title": "[GEC-13] Report on possible unauthorised access and corruption",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "gec-13-stmt", "name": "statement", "prose": "The product shall report on possible unauthorised access attempts and detected corruption." }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecr-e",
+        "title": "ECR (e) – Confidentiality (Disclosure)",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(e)" },
+          { "name": "requirement-text", "value": "Protect the confidentiality of stored, transmitted or otherwise processed data by state-of-the-art mechanisms such as encryption at rest and in transit." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-e-threats",
+            "name": "threats",
+            "prose": "Threat.DataAtRestDisclosure | Threat.DataProcessedDataDisclosure | Threat.DataInTransitDisclosure"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-data-stored-confidentiality",
+            "class": "security-objective",
+            "title": "SO.DataStoredConfidentiality",
+            "controls": [
+              {
+                "id": "ssm-1",
+                "class": "technical-control",
+                "title": "[SSM-1] Applicability of secure storage mechanisms",
+                "props": [{ "name": "control-family", "value": "SSM – Secure Storage Mechanism" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "ssm-1-stmt", "name": "statement", "prose": "The product shall implement applicable secure storage mechanisms to protect data confidentiality at rest." }]
+              },
+              {
+                "id": "ssm-3",
+                "class": "technical-control",
+                "title": "[SSM-3] Appropriate confidentiality protection for secure storage mechanisms",
+                "props": [{ "name": "control-family", "value": "SSM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "ssm-3-stmt", "name": "statement", "prose": "Secure storage mechanisms shall provide appropriate confidentiality protection." }]
+              }
+            ]
+          },
+          {
+            "id": "so-data-processed-confidentiality",
+            "class": "security-objective",
+            "title": "SO.DataProcessedConfidentiality",
+            "controls": [
+              {
+                "id": "gec-8",
+                "class": "technical-control",
+                "title": "[GEC-8] Product Integrity",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "gec-8-stmt", "name": "statement", "prose": "The product shall protect the integrity of its software, firmware, and data during processing." }]
+              }
+            ]
+          },
+          {
+            "id": "so-data-transmitted-confidentiality",
+            "class": "security-objective",
+            "title": "SO.DataTransmittedConfidentiality",
+            "controls": [
+              {
+                "id": "scm-3",
+                "class": "technical-control",
+                "title": "[SCM-3] Secure communication with confidentiality protection",
+                "props": [{ "name": "control-family", "value": "SCM – Secure Communication Mechanism" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "scm-3-stmt", "name": "statement", "prose": "Secure communication mechanisms shall provide confidentiality protection for transmitted data." }]
+              },
+              {
+                "id": "scm-4",
+                "class": "technical-control",
+                "title": "[SCM-4] Replay protection for secure communication mechanisms",
+                "props": [{ "name": "control-family", "value": "SCM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "scm-4-stmt", "name": "statement", "prose": "Secure communication mechanisms shall implement replay protection." }]
+              }
+            ]
+          },
+          {
+            "id": "so-com-auth-e",
+            "class": "security-objective",
+            "title": "SO.ComAuth",
+            "controls": [
+              {
+                "id": "scm-2",
+                "class": "technical-control",
+                "title": "[SCM-2] Appropriate integrity and authenticity protection for secure communication",
+                "props": [{ "name": "control-family", "value": "SCM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "scm-2-stmt", "name": "statement", "prose": "Secure communication mechanisms shall provide appropriate integrity and authenticity protection." }]
+              }
+            ]
+          },
+          {
+            "id": "so-secure-provisioning",
+            "class": "security-objective",
+            "title": "SO.SecureProvisioning",
+            "controls": [
+              {
+                "id": "cck-1",
+                "class": "technical-control",
+                "title": "[CCK-1] Appropriate confidential cryptographic keys",
+                "props": [{ "name": "control-family", "value": "CCK – Confidential Cryptographic Keys" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "cck-1-stmt", "name": "statement", "prose": "The product shall use appropriate confidential cryptographic keys." }]
+              },
+              {
+                "id": "cck-2",
+                "class": "technical-control",
+                "title": "[CCK-2] CCK generation mechanisms",
+                "props": [{ "name": "control-family", "value": "CCK" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "cck-2-stmt", "name": "statement", "prose": "The product shall implement appropriate cryptographic key generation mechanisms." }]
+              },
+              {
+                "id": "cck-3",
+                "class": "technical-control",
+                "title": "[CCK-3] Preventing static default values for preinstalled CCKs",
+                "props": [{ "name": "control-family", "value": "CCK" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "cck-3-stmt", "name": "statement", "prose": "Preinstalled confidential cryptographic keys shall not use static default values." }]
+              },
+              {
+                "id": "cry-1",
+                "class": "technical-control",
+                "title": "[CRY-1] Best practice cryptography",
+                "props": [{ "name": "control-family", "value": "CRY – Cryptography" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "cry-1-stmt", "name": "statement", "prose": "The product shall use state-of-the-art (best practice) cryptographic mechanisms, including crypto-agility." }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecr-f",
+        "title": "ECR (f) – Integrity (Tampering)",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(f)" },
+          { "name": "requirement-text", "value": "Protect the integrity of stored, transmitted or otherwise processed data, commands, programs and configuration against unauthorised manipulation or modification, and report on corruptions." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-f-threats",
+            "name": "threats",
+            "prose": "Threat.DataAtRestTampering | Threat.DataInTransitTampering | Threat.ProcessedDataTampering | Threat.TamperingUndetected"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-data-stored-integrity",
+            "class": "security-objective",
+            "title": "SO.DataStoredIntegrity",
+            "controls": [
+              {
+                "id": "ssm-2",
+                "class": "technical-control",
+                "title": "[SSM-2] Appropriate integrity protection for secure storage mechanisms",
+                "props": [{ "name": "control-family", "value": "SSM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "ssm-2-stmt", "name": "statement", "prose": "Secure storage mechanisms shall provide appropriate integrity protection." }]
+              }
+            ]
+          },
+          {
+            "id": "so-data-processed-integrity",
+            "class": "security-objective",
+            "title": "SO.DataProcessedIntegrity",
+            "controls": [
+              {
+                "id": "gec-8-f",
+                "class": "technical-control",
+                "title": "[GEC-8] Product Integrity (integrity of processed data)",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }, { "name": "shared-with", "value": "ecr-e" }],
+                "parts": [{ "id": "gec-8-f-stmt", "name": "statement", "prose": "The product shall protect the integrity of data and functions during processing." }]
+              }
+            ]
+          },
+          {
+            "id": "so-data-transmitted-integrity",
+            "class": "security-objective",
+            "title": "SO.DataTransmittedIntegrity",
+            "controls": [
+              {
+                "id": "scm-2-f",
+                "class": "technical-control",
+                "title": "[SCM-2] Integrity and authenticity protection for communication (integrity context)",
+                "props": [{ "name": "control-family", "value": "SCM" }, { "name": "source", "value": "EN 18031" }, { "name": "shared-with", "value": "ecr-e" }],
+                "parts": [{ "id": "scm-2-f-stmt", "name": "statement", "prose": "Secure communication mechanisms shall provide integrity protection for transmitted data." }]
+              }
+            ]
+          },
+          {
+            "id": "so-integrity-report",
+            "class": "security-objective",
+            "title": "SO.IntegrityReport",
+            "controls": [
+              {
+                "id": "gec-13-f",
+                "class": "technical-control",
+                "title": "[GEC-13] Report on possible unauthorised access and corruption (integrity context)",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "NEW" }, { "name": "shared-with", "value": "ecr-d" }],
+                "parts": [{ "id": "gec-13-f-stmt", "name": "statement", "prose": "The product shall report on detected integrity violations and data corruption." }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecr-g",
+        "title": "ECR (g) – Data Minimization",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(g)" },
+          { "name": "requirement-text", "value": "Process only data, personal or other, that are adequate, relevant and limited to what is necessary in relation to the intended purpose of the product with digital elements (data minimisation)." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-g-threats",
+            "name": "threats",
+            "prose": "Threat.UnnecessaryDataMisuse"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-data-minimization",
+            "class": "security-objective",
+            "title": "SO.DataMinimization",
+            "controls": [
+              {
+                "id": "unm-1",
+                "class": "technical-control",
+                "title": "[UNM-1] Applicability of user notification mechanisms",
+                "props": [{ "name": "control-family", "value": "UNM" }, { "name": "source", "value": "EN 18031-2" }],
+                "parts": [{ "id": "unm-1-stmt", "name": "statement", "prose": "The product shall include applicable user notification mechanisms." }]
+              },
+              {
+                "id": "unm-2",
+                "class": "technical-control",
+                "title": "[UNM-2] Appropriate user notification content",
+                "props": [{ "name": "control-family", "value": "UNM" }, { "name": "source", "value": "EN 18031-2" }],
+                "parts": [{ "id": "unm-2-stmt", "name": "statement", "prose": "User notifications shall contain appropriate content to inform the user about data processing activities." }]
+              },
+              {
+                "id": "dtm-1",
+                "class": "technical-control",
+                "title": "[DTM-1] Data minimisation in relation to intended purpose",
+                "props": [{ "name": "control-family", "value": "DTM – Data Minimization" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "dtm-1-stmt", "name": "statement", "prose": "The product shall only process data adequate, relevant and limited to what is necessary for its intended purpose." }]
+              },
+              {
+                "id": "dtm-2",
+                "class": "technical-control",
+                "title": "[DTM-2] Default Data Processing Minimisation",
+                "props": [{ "name": "control-family", "value": "DTM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "dtm-2-stmt", "name": "statement", "prose": "The product shall default to minimal data processing, with any additional processing requiring explicit user consent." }]
+              },
+              {
+                "id": "dtm-3",
+                "class": "technical-control",
+                "title": "[DTM-3] Configurable Controls for Optional Data Processing",
+                "props": [{ "name": "control-family", "value": "DTM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "dtm-3-stmt", "name": "statement", "prose": "The product shall provide configurable controls enabling users to manage optional data processing, including opt-in and opt-out mechanisms." }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecr-h",
+        "title": "ECR (h) – Availability",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(h)" },
+          { "name": "requirement-text", "value": "Protect the availability of essential and basic functions, also after an incident, including through resilience and mitigation measures against denial-of-service attacks." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-h-threats",
+            "name": "threats",
+            "prose": "Threat.AvailabilityDegradationAfterIncident | Threat.AvailabilityDegradationDuringIncident"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-incident-recovery",
+            "class": "security-objective",
+            "title": "SO.IncidentRecovery",
+            "controls": [
+              {
+                "id": "rlm-2",
+                "class": "technical-control",
+                "title": "[RLM-2] Recovery from incidents",
+                "props": [{ "name": "control-family", "value": "RLM – Resilience Mechanism" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "rlm-2-stmt", "name": "statement", "prose": "The product shall support recovery of essential and basic functions after a security incident." }]
+              },
+              {
+                "id": "rlm-6",
+                "class": "technical-control",
+                "title": "[RLM-6] Control system backup",
+                "props": [{ "name": "control-family", "value": "RLM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "rlm-6-stmt", "name": "statement", "prose": "The product shall support control system backup to facilitate recovery after an incident." }]
+              }
+            ]
+          },
+          {
+            "id": "so-incident-resilience",
+            "class": "security-objective",
+            "title": "SO.IncidentResilience",
+            "controls": [
+              {
+                "id": "rlm-1",
+                "class": "technical-control",
+                "title": "[RLM-1] Applicability and appropriateness of resilience mechanisms",
+                "props": [{ "name": "control-family", "value": "RLM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "rlm-1-stmt", "name": "statement", "prose": "The product shall include applicable and appropriate resilience mechanisms to maintain availability during incidents, including DoS attacks." }]
+              },
+              {
+                "id": "rlm-3",
+                "class": "technical-control",
+                "title": "[RLM-3] Network prioritization",
+                "props": [{ "name": "control-family", "value": "RLM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "rlm-3-stmt", "name": "statement", "prose": "The product shall prioritize essential network traffic to maintain core functions during an incident." }]
+              },
+              {
+                "id": "rlm-4",
+                "class": "technical-control",
+                "title": "[RLM-4] Resource prioritization",
+                "props": [{ "name": "control-family", "value": "RLM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "rlm-4-stmt", "name": "statement", "prose": "The product shall prioritize critical resources to maintain essential functions during an incident." }]
+              },
+              {
+                "id": "rlm-5",
+                "class": "technical-control",
+                "title": "[RLM-5] Resource management",
+                "props": [{ "name": "control-family", "value": "RLM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "rlm-5-stmt", "name": "statement", "prose": "The product shall implement resource management to prevent resource exhaustion attacks." }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecr-i",
+        "title": "ECR (i) – Minimize Negative Impact",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(i)" },
+          { "name": "requirement-text", "value": "Minimise the negative impact by the products themselves or connected devices on the availability of services provided by other devices or networks." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-i-threats",
+            "name": "threats",
+            "prose": "Threat.ExtServiceAvailabilityDegradation"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-limit-external-impact",
+            "class": "security-objective",
+            "title": "SO.LimitExternalImpact",
+            "controls": [
+              {
+                "id": "gec-8-i",
+                "class": "technical-control",
+                "title": "[GEC-8] Product Integrity (external impact context)",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }, { "name": "shared-with", "value": "ecr-e ecr-f" }],
+                "parts": [{ "id": "gec-8-i-stmt", "name": "statement", "prose": "Product integrity shall be maintained to prevent the product from being used as a vector for external attacks." }]
+              },
+              {
+                "id": "tcm-1",
+                "class": "technical-control",
+                "title": "[TCM-1] Applicability of and appropriate traffic control mechanisms",
+                "props": [{ "name": "control-family", "value": "TCM – Traffic Control Mechanism" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "tcm-1-stmt", "name": "statement", "prose": "The product shall implement applicable and appropriate traffic control mechanisms to manage and limit outgoing network traffic." }]
+              },
+              {
+                "id": "lim-1",
+                "class": "technical-control",
+                "title": "[LIM-1] External impact limitation",
+                "props": [{ "name": "control-family", "value": "LIM – External Impact Limitation" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "lim-1-stmt", "name": "statement", "prose": "The product shall implement mechanisms to limit its negative impact on external services and networks." }]
+              }
+            ]
+          },
+          {
+            "id": "so-prevent-attack-propagation",
+            "class": "security-objective",
+            "title": "SO.PreventAttackPropagation",
+            "controls": [
+              {
+                "id": "lim-2",
+                "class": "technical-control",
+                "title": "[LIM-2] Prevention of attack propagation",
+                "props": [{ "name": "control-family", "value": "LIM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "lim-2-stmt", "name": "statement", "prose": "The product shall implement controls to prevent propagation of attacks to other devices or networks." }]
+              }
+            ]
+          },
+          {
+            "id": "so-monitor-external-impact",
+            "class": "security-objective",
+            "title": "SO.MonitorExternalImpact",
+            "controls": [
+              {
+                "id": "nmm-1",
+                "class": "technical-control",
+                "title": "[NMM-1] Applicability and appropriateness of network monitoring mechanisms",
+                "props": [{ "name": "control-family", "value": "NMM – Network Monitoring Mechanism" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "nmm-1-stmt", "name": "statement", "prose": "The product shall include applicable and appropriate network monitoring mechanisms to detect abnormal traffic patterns and potential external impact." }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecr-j",
+        "title": "ECR (j) – Attack Surface Minimization",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(j)" },
+          { "name": "requirement-text", "value": "Be designed, developed and produced to limit attack surfaces, including external interfaces." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-j-threats",
+            "name": "threats",
+            "prose": "Threat.UnnecessaryFunctionalityExploitation"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-reduce-attack-surface",
+            "class": "security-objective",
+            "title": "SO.ReduceAttackSurface",
+            "controls": [
+              {
+                "id": "gec-2-j",
+                "class": "technical-control",
+                "title": "[GEC-2] Limit exposure of services via network interfaces (attack surface context)",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }, { "name": "shared-with", "value": "ecr-b" }],
+                "parts": [{ "id": "gec-2-j-stmt", "name": "statement", "prose": "Network service exposure shall be minimised to reduce the attack surface." }]
+              },
+              {
+                "id": "gec-3-j",
+                "class": "technical-control",
+                "title": "[GEC-3] Configuration of optional services (attack surface context)",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }, { "name": "shared-with", "value": "ecr-b" }],
+                "parts": [{ "id": "gec-3-j-stmt", "name": "statement", "prose": "Optional services and interfaces shall be configurable and disabled when not needed." }]
+              },
+              {
+                "id": "gec-4-j",
+                "class": "technical-control",
+                "title": "[GEC-4] Documentation of exposed network interfaces (attack surface context)",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }, { "name": "shared-with", "value": "ecr-b" }],
+                "parts": [{ "id": "gec-4-j-stmt", "name": "statement", "prose": "All exposed network interfaces and services shall be documented as part of attack surface analysis." }]
+              },
+              {
+                "id": "gec-5-j",
+                "class": "technical-control",
+                "title": "[GEC-5] No unnecessary external interfaces (attack surface context)",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }, { "name": "shared-with", "value": "ecr-b" }],
+                "parts": [{ "id": "gec-5-j-stmt", "name": "statement", "prose": "Unnecessary external interfaces shall be removed or disabled." }]
+              },
+              {
+                "id": "gec-6",
+                "class": "technical-control",
+                "title": "[GEC-6] Input validation",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "gec-6-stmt", "name": "statement", "prose": "The product shall validate all inputs to prevent exploitation via malformed data." }]
+              },
+              {
+                "id": "gec-7-j",
+                "class": "technical-control",
+                "title": "[GEC-7] Documentation of external sensing capabilities (attack surface context)",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "EN 18031" }, { "name": "shared-with", "value": "ecr-b" }],
+                "parts": [{ "id": "gec-7-j-stmt", "name": "statement", "prose": "External sensing capabilities shall be documented as part of attack surface characterisation." }]
+              },
+              {
+                "id": "gec-12-j",
+                "class": "technical-control",
+                "title": "[GEC-12] No Unneeded Software Components (attack surface context)",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "NEW" }, { "name": "shared-with", "value": "ecr-b" }],
+                "parts": [{ "id": "gec-12-j-stmt", "name": "statement", "prose": "Unneeded software components shall be removed to minimise the attack surface." }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecr-k",
+        "title": "ECR (k) – Reduce Impact of Incident (Hardening / Exploit Mitigations)",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(k)" },
+          { "name": "requirement-text", "value": "Be designed, developed and produced to reduce the impact of an incident using appropriate exploitation mitigation mechanisms and techniques." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-k-threats",
+            "name": "threats",
+            "prose": "Threat.ExploitationMitigationFailure"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-reduce-impact-of-incident",
+            "class": "security-objective",
+            "title": "SO.ReduceImpactOfIncident",
+            "parts": [
+              {
+                "id": "so-rii-guidance",
+                "name": "guidance",
+                "prose": "Applicable exploit mitigation techniques include: Address Space Layout Randomization (ASLR), Data Execution Prevention (DEP), Control-Flow Integrity (CFI), sandboxing, signed software execution policies, secure-by-default configuration, memory safety management, and least privilege. Operational controls include patch management, application whitelisting, network segmentation, and access control."
+              }
+            ],
+            "controls": [
+              {
+                "id": "gec-11",
+                "class": "technical-control",
+                "title": "[GEC-11] Exploit mitigation mechanisms",
+                "props": [{ "name": "control-family", "value": "GEC" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "gec-11-stmt", "name": "statement", "prose": "The product shall implement appropriate exploit mitigation mechanisms and techniques to reduce the impact of successful attacks, including privilege escalation, lateral movement, malware installation, and injection exploits." }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecr-l",
+        "title": "ECR (l) – Monitoring and Logging",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(l)" },
+          { "name": "requirement-text", "value": "Provide security related information by recording and monitoring relevant internal activity, including the access to or modification of data, services or functions, with an opt-out mechanism for the user." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-l-threats",
+            "name": "threats",
+            "prose": "Threat.NotRecordedSecurityActivity | Threat.NotMonitoredSecurityActivity | Threat.UnnecessaryDataLogging | Threat.UnnecessaryDataMonitoring"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-log-security-relevant-activities",
+            "class": "security-objective",
+            "title": "SO.LogSecurityRelevantActivities",
+            "controls": [
+              {
+                "id": "lgm-1",
+                "class": "technical-control",
+                "title": "[LGM-1] Applicability of logging mechanisms",
+                "props": [{ "name": "control-family", "value": "LGM – Logging Mechanism" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "lgm-1-stmt", "name": "statement", "prose": "The product shall include applicable logging mechanisms for security-relevant events." }]
+              },
+              {
+                "id": "lgm-2",
+                "class": "technical-control",
+                "title": "[LGM-2] Persistent storage of log data",
+                "props": [{ "name": "control-family", "value": "LGM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "lgm-2-stmt", "name": "statement", "prose": "Log data shall be persistently stored to support post-incident analysis." }]
+              },
+              {
+                "id": "lgm-3",
+                "class": "technical-control",
+                "title": "[LGM-3] Minimum number of persistently stored events",
+                "props": [{ "name": "control-family", "value": "LGM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "lgm-3-stmt", "name": "statement", "prose": "A defined minimum number of security-relevant events shall be persistently stored." }]
+              },
+              {
+                "id": "lgm-4",
+                "class": "technical-control",
+                "title": "[LGM-4] Time-related information of persistently stored log data",
+                "props": [{ "name": "control-family", "value": "LGM" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "lgm-4-stmt", "name": "statement", "prose": "Persistently stored log data shall include time-related information (timestamps) to support forensic analysis." }]
+              },
+              {
+                "id": "lgm-6",
+                "class": "technical-control",
+                "title": "[LGM-6] Exclude sensitive personal information from logs",
+                "props": [{ "name": "control-family", "value": "LGM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "lgm-6-stmt", "name": "statement", "prose": "Log records shall exclude sensitive personal information unless strictly necessary, in line with data minimisation principles." }]
+              }
+            ]
+          },
+          {
+            "id": "so-monitor-security-relevant-activities",
+            "class": "security-objective",
+            "title": "SO.MonitorSecurityRelevantActivities",
+            "controls": [
+              {
+                "id": "nmm-1-l",
+                "class": "technical-control",
+                "title": "[NMM-1] Network monitoring mechanisms (logging context)",
+                "props": [{ "name": "control-family", "value": "NMM" }, { "name": "source", "value": "EN 18031" }, { "name": "shared-with", "value": "ecr-i" }],
+                "parts": [{ "id": "nmm-1-l-stmt", "name": "statement", "prose": "Network monitoring mechanisms shall detect security-relevant activities and anomalous behaviour." }]
+              },
+              {
+                "id": "mon-1",
+                "class": "technical-control",
+                "title": "[MON-1] Monitor security relevant activities",
+                "props": [{ "name": "control-family", "value": "MON – Monitoring of Security Activities" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "mon-1-stmt", "name": "statement", "prose": "The product shall monitor security-relevant internal activities, including access to and modification of data, services and functions." }]
+              }
+            ]
+          },
+          {
+            "id": "so-option-disable-data-logging",
+            "class": "security-objective",
+            "title": "SO.OptionDisableDataLogging",
+            "controls": [
+              {
+                "id": "lgm-5",
+                "class": "technical-control",
+                "title": "[LGM-5] Disabling logging",
+                "props": [{ "name": "control-family", "value": "LGM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "lgm-5-stmt", "name": "statement", "prose": "The product shall provide an opt-out mechanism allowing users to disable data logging where appropriate." }]
+              }
+            ]
+          },
+          {
+            "id": "so-option-disable-data-monitoring",
+            "class": "security-objective",
+            "title": "SO.OptionDisableDataMonitoring",
+            "controls": [
+              {
+                "id": "mon-2",
+                "class": "technical-control",
+                "title": "[MON-2] Disable monitoring",
+                "props": [{ "name": "control-family", "value": "MON" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "mon-2-stmt", "name": "statement", "prose": "The product shall provide an opt-out mechanism allowing users to disable data monitoring where appropriate." }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ecr-m",
+        "title": "ECR (m) – Data Deletion",
+        "class": "essential-requirement",
+        "props": [
+          { "name": "cra-annex-ref", "value": "Annex I, Part I, Art. 2(m)" },
+          { "name": "requirement-text", "value": "Provide the possibility for users to securely and easily remove on a permanent basis all data and settings and, where such data can be transferred to other products or systems, ensure that this is done in a secure manner." }
+        ],
+        "parts": [
+          {
+            "id": "ecr-m-threats",
+            "name": "threats",
+            "prose": "Threat.DeletedDataDisclosure | Threat.DataInTransitDisclosure | Threat.DataInTransitTampering"
+          }
+        ],
+        "controls": [
+          {
+            "id": "so-secure-data-deletion",
+            "class": "security-objective",
+            "title": "SO.SecureDataDeletion",
+            "controls": [
+              {
+                "id": "dlm-1",
+                "class": "technical-control",
+                "title": "[DLM-1] Secure Data deletion mechanisms (applicability)",
+                "props": [{ "name": "control-family", "value": "DLM – Deletion Mechanism" }, { "name": "source", "value": "EN 18031" }],
+                "parts": [{ "id": "dlm-1-stmt", "name": "statement", "prose": "The product shall provide applicable secure data deletion mechanisms enabling users to permanently and easily remove all data and settings." }]
+              }
+            ]
+          },
+          {
+            "id": "so-data-transmitted-confidentiality-m",
+            "class": "security-objective",
+            "title": "SO.DataTransmittedConfidentiality (data export context)",
+            "props": [{ "name": "cra-cross-ref", "value": "Annex I Part I (2)(e) of (EU) 2024/2847" }],
+            "controls": [
+              {
+                "id": "dlm-2",
+                "class": "technical-control",
+                "title": "[DLM-2] Confidential export of user data",
+                "props": [{ "name": "control-family", "value": "DLM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "dlm-2-stmt", "name": "statement", "prose": "When user data is transferred to other products or systems, confidentiality shall be protected during the transfer." }]
+              }
+            ]
+          },
+          {
+            "id": "so-data-transmitted-integrity-m",
+            "class": "security-objective",
+            "title": "SO.DataTransmittedIntegrity (data export context)",
+            "props": [{ "name": "cra-cross-ref", "value": "Annex I Part I (2)(f) of (EU) 2024/2847" }],
+            "controls": [
+              {
+                "id": "dlm-3",
+                "class": "technical-control",
+                "title": "[DLM-3] Integrity protection of exported data",
+                "props": [{ "name": "control-family", "value": "DLM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "dlm-3-stmt", "name": "statement", "prose": "When user data is transferred to other products or systems, integrity shall be protected during the transfer." }]
+              }
+            ]
+          },
+          {
+            "id": "so-com-auth-m",
+            "class": "security-objective",
+            "title": "SO.ComAuth (data export context)",
+            "props": [{ "name": "cra-cross-ref", "value": "Annex I Part I (2)(e)(f) of (EU) 2024/2847" }],
+            "controls": [
+              {
+                "id": "dlm-4",
+                "class": "technical-control",
+                "title": "[DLM-4] Authenticity of the communication partner for export of data",
+                "props": [{ "name": "control-family", "value": "DLM" }, { "name": "source", "value": "NEW" }],
+                "parts": [{ "id": "dlm-4-stmt", "name": "statement", "prose": "When user data is transferred to other products or systems, the authenticity of the receiving party shall be verified." }]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "back-matter": {
+      "resources": [
+        {
+          "uuid": "r001",
+          "title": "Cyber Resilience Act – Regulation (EU) 2024/2847",
+          "rlinks": [{ "href": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847" }]
+        },
+        {
+          "uuid": "r002",
+          "title": "Standardisation Request M/606 – C(2025)618",
+          "rlinks": [{ "href": "https://ec.europa.eu/growth/tools-databases/enorm/mandate/606_en" }]
+        },
+        {
+          "uuid": "r003",
+          "title": "EN 18031-1:2024 – Common security requirements for radio equipment",
+          "rlinks": [{ "href": "https://www.etsi.org/deliver/etsi_en/18031_18031-1/" }]
+        },
+        {
+          "uuid": "r004",
+          "title": "EN 18031-2:2024 – Common security requirements for radio equipment (part 2)",
+          "rlinks": [{ "href": "https://www.etsi.org/deliver/etsi_en/18031_18031-2/" }]
+        },
+        {
+          "uuid": "r005",
+          "title": "EN 18031-3:2024 – Common security requirements for radio equipment (part 3)",
+          "rlinks": [{ "href": "https://www.etsi.org/deliver/etsi_en/18031_18031-3/" }]
+        },
+        {
+          "uuid": "r006",
+          "title": "ETSI EN 303 645 V3.1.3 – Cyber Security for Consumer Internet of Things",
+          "rlinks": [{ "href": "https://www.etsi.org/deliver/etsi_en/303600_303699/303645/" }]
+        },
+        {
+          "uuid": "r007",
+          "title": "EN IEC 62443-4-2 – Security for industrial automation and control systems",
+          "rlinks": [{ "href": "https://www.iec.ch/publication/62443" }]
+        },
+        {
+          "uuid": "r008",
+          "title": "STAN4CR Project – EISMEA Grant Agreement No. 101196779",
+          "rlinks": [{ "href": "https://stan4cr.eu" }]
+        },
+        {
+          "uuid": "r009",
+          "title": "CRA FAQ on Implementation – European Commission",
+          "rlinks": [{ "href": "https://digital-strategy.ec.europa.eu/en/policies/cyber-resilience-act" }]
+        },
+        {
+          "uuid": "r010",
+          "title": "NIST SP 800-88 Rev. 1 – Guidelines for Media Sanitization",
+          "rlinks": [{ "href": "https://doi.org/10.6028/NIST.SP.800-88r1" }]
+        }
+      ]
+    }
+  }
+}
