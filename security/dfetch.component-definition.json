@@ -1,0 +1,910 @@
+{
+  "component-definition": {
+    "uuid": "eddc2e8c-a2ae-5a42-8d35-88f5c2af55b2",
+    "metadata": {
+      "title": "dfetch CRA Compliance Component Definition",
+      "last-modified": "2026-06-15T00:00:00Z",
+      "version": "0.14.0",
+      "oscal-version": "1.1.2",
+      "props": [
+        {
+          "name": "cra-class",
+          "value": "Non-commercial OSS \u2014 Recital 18 exemption"
+        },
+        {
+          "name": "cra-article",
+          "value": "Article 3(14), Recital 18, Article 13(5) of Regulation (EU) 2024/2847"
+        },
+        {
+          "name": "standard",
+          "value": "prEN 40000-1-4 (draft, indicative publication October 2027)"
+        }
+      ],
+      "remarks": "Produced voluntarily under Article 13(5) to support downstream integrators. dfetch is non-commercial open-source software and is not subject to mandatory CRA conformity obligations (Recital 18)."
+    },
+    "components": [
+      {
+        "uuid": "4c787261-bc8c-5e3f-802d-3de5c33f382c",
+        "type": "software",
+        "title": "dfetch",
+        "description": "Python CLI tool for vendoring source-code dependencies from Git, SVN, or archive files into a project as plain files.",
+        "props": [
+          {
+            "name": "software-version",
+            "value": "0.14.0"
+          }
+        ],
+        "links": [
+          {
+            "href": "https://github.com/dfetch-org/dfetch",
+            "rel": "homepage"
+          },
+          {
+            "href": "https://pypi.org/project/dfetch/",
+            "rel": "distribution"
+          },
+          {
+            "href": "security/cra_pren_4000014_oscal_catalog.json",
+            "rel": "reference",
+            "text": "prEN 40000-1-4 OSCAL Catalog"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "2736b532-92d4-51f9-9f98-059485a4cafa",
+            "source": "security/cra_pren_4000014_oscal_catalog.json",
+            "description": "Voluntary alignment with prEN 40000-1-4 Security Objectives. The catalog organises CRA Annex I Part I essential requirements (ECR-a\u2013m) as groups; this component implements the Security Objectives (SO.*) within each ECR using dfetch controls (C-001\u2013C-046).",
+            "implemented-requirements": [
+              {
+                "uuid": "f552e9f1-c64d-5d57-9fd2-05cdf2e238b6",
+                "control-id": "so-vulnerability-management-process",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "No CVE gate at release time (\u2192 C-043 planned)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-015, C-016, C-017, C-022"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-vulnerability-management-process-stmt",
+                    "uuid": "d07ef2cb-63b5-5c7b-a70e-6530e894f633",
+                    "description": "GEC-1: C-015 (CodeQL), C-016 (dependency-review), C-017 (bandit), C-022 (SBOM) address known-vulnerability detection in CI. Gaps: No CVE gate at release time (\u2192 C-043 planned)"
+                  }
+                ]
+              },
+              {
+                "uuid": "57ea1e4c-a0dc-52af-aaf6-8fd2545924e0",
+                "control-id": "so-secure-default-configuration",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "GEC-2, GEC-3, GEC-4, GEC-5 (no exposed network services \u2014 CLI tool); GEC-7 (no external sensing capabilities); AUM-5 (no password or authentication mechanism)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-001, C-002"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-secure-default-configuration-stmt",
+                    "uuid": "709823d8-4d88-57af-924b-59bde9ed1e31",
+                    "description": "GEC-12 (no unneeded software components): C-001 enforces minimal runtime dependencies. dfetch does not expose network services. Not applicable: GEC-2, GEC-3, GEC-4, GEC-5 (no exposed network services \u2014 CLI tool); GEC-7 (no external sensing capabilities); AUM-5 (no password or authentication mechanism)"
+                  }
+                ]
+              },
+              {
+                "uuid": "7a3c27cf-4f60-58a5-9e0b-5d8ba122e26c",
+                "control-id": "so-secure-startup-config",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "not-applicable"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "GEC-9 (no security-relevant startup configuration state in dfetch)"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-secure-startup-config-stmt",
+                    "uuid": "7955988d-5f64-51cc-8bb9-73f639f36d2f",
+                    "description": "dfetch reads only its manifest at startup; no security-sensitive config initialisation. Not applicable: GEC-9 (no security-relevant startup configuration state in dfetch)"
+                  }
+                ]
+              },
+              {
+                "uuid": "385ed85e-6e40-5954-98fd-19a935f34cf8",
+                "control-id": "so-factory-reset",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "not-applicable"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "DLM-1-b, GEC-10 (no persistent device state requiring factory reset \u2014 CLI tool)"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-factory-reset-stmt",
+                    "uuid": "9cea77fd-b1b8-5519-ba17-c6d19fef7080",
+                    "description": "dfetch is a stateless CLI tool; no factory-reset concept applies. Not applicable: DLM-1-b, GEC-10 (no persistent device state requiring factory reset \u2014 CLI tool)"
+                  }
+                ]
+              },
+              {
+                "uuid": "c35dd96d-7054-5e77-9270-76c72ab9c317",
+                "control-id": "so-updateability",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "implemented"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-updateability-stmt",
+                    "uuid": "4619e5ae-8f33-53a0-ae99-dcb6e045d1fd",
+                    "description": "SUM-1/SUM-2: Updates distributed via PyPI (pip install --upgrade dfetch) and GitHub Releases. pip's TLS-protected download satisfies SUM-2."
+                  }
+                ]
+              },
+              {
+                "uuid": "c5af9d98-c312-5ceb-ab74-9845e84c513e",
+                "control-id": "so-automatic-updates",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "not-applicable"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "SUM-3 (automatic updates managed by pip/pipenv/poetry \u2014 not dfetch itself)"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-automatic-updates-stmt",
+                    "uuid": "14e9face-c488-5840-a2a5-b02c8cae6932",
+                    "description": "Update automation is the responsibility of the user's package manager. Not applicable: SUM-3 (automatic updates managed by pip/pipenv/poetry \u2014 not dfetch itself)"
+                  }
+                ]
+              },
+              {
+                "uuid": "d91fbedf-bf3e-5b7d-aad0-ca00c6a3b451",
+                "control-id": "so-user-update-notification",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "implemented"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-040"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-user-update-notification-stmt",
+                    "uuid": "5ecb3c34-e8a6-5998-95e1-4918aae6993a",
+                    "description": "UNM-4: dfetch check and dfetch environment report when a newer dfetch version is available (C-040)."
+                  }
+                ]
+              },
+              {
+                "uuid": "81d4c300-4c12-5798-b3e6-d94603a2e2ed",
+                "control-id": "so-postpone-updates",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "not-applicable"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "SUM-4 (update scheduling controlled by pip/pipenv \u2014 not dfetch)"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-postpone-updates-stmt",
+                    "uuid": "9fe01c6c-4caf-5604-a0b5-f7bb868b53de",
+                    "description": "Postponement is handled by the user's package manager. Not applicable: SUM-4 (update scheduling controlled by pip/pipenv \u2014 not dfetch)"
+                  }
+                ]
+              },
+              {
+                "uuid": "b6338f89-d6e8-5a4e-a2c6-1a3d4fe8b15b",
+                "control-id": "so-access-control",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "ACM-2, AUM-2, AUM-3, AUM-4, AUM-6 (dfetch has no user-facing authentication or access control)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-006, C-036"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-access-control-stmt",
+                    "uuid": "851f2832-c17f-51e2-8fef-28d575f3ea42",
+                    "description": "dfetch delegates authentication to the host VCS client (git, svn) and the OS credential store. C-006 prevents SSH command injection; C-036 strips credentials from stored metadata. Not applicable: ACM-2, AUM-2, AUM-3, AUM-4, AUM-6 (dfetch has no user-facing authentication or access control)"
+                  }
+                ]
+              },
+              {
+                "uuid": "833fedff-7756-5a5e-a3f6-37deeb9ffbfc",
+                "control-id": "so-access-control-report",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "No persistent log of unauthorised access attempts"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-009"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-access-control-report-stmt",
+                    "uuid": "5fc0e660-93e3-57a5-ae6a-55d9b9365c55",
+                    "description": "GEC-13: C-009 (plaintext transport warning) alerts on unauthenticated connections. No persistent security event log. Gaps: No persistent log of unauthorised access attempts"
+                  }
+                ]
+              },
+              {
+                "uuid": "9095a65f-d098-50ae-b4c1-a820b0f37492",
+                "control-id": "so-data-stored-confidentiality",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": ".dfetch_data.yaml stored as plaintext YAML (no encryption at rest)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-036"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-data-stored-confidentiality-stmt",
+                    "uuid": "d6a8cfa8-3e30-5318-8ca6-59f99fb7dbff",
+                    "description": "SSM-1/SSM-3: C-036 strips userinfo from URLs before storage. The .dfetch_data.yaml file itself is not encrypted; encryption would require key management infrastructure not appropriate for a developer tool. Gaps: .dfetch_data.yaml stored as plaintext YAML (no encryption at rest)"
+                  }
+                ]
+              },
+              {
+                "uuid": "aa21320e-a496-57b8-8c1e-7aeb87da62f8",
+                "control-id": "so-data-processed-confidentiality",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "implemented"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-005, C-034"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-data-processed-confidentiality-stmt",
+                    "uuid": "38cff185-27ad-55b2-96f7-da88b47eedaa",
+                    "description": "GEC-8: C-005 (constant-time comparison), C-034 (temp-file cleanup) protect in-process data."
+                  }
+                ]
+              },
+              {
+                "uuid": "f3b4e2c0-7586-5fbd-9eab-84e0f5a9f088",
+                "control-id": "so-data-transmitted-confidentiality",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "HTTP accepted for remote URLs (SCM-3/SCM-4 gap; mitigated by C-009 warning)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-009"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-data-transmitted-confidentiality-stmt",
+                    "uuid": "4440d616-231f-51ca-a514-c5cd42a3851b",
+                    "description": "SCM-3/SCM-4: dfetch warns on plaintext transport (C-009) but accepts HTTP remote URLs to avoid breaking existing manifests. Gaps: HTTP accepted for remote URLs (SCM-3/SCM-4 gap; mitigated by C-009 warning)"
+                  }
+                ]
+              },
+              {
+                "uuid": "5ca7d5ae-a5dc-5e73-bcfe-d06973f86a94",
+                "control-id": "so-com-auth-e",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "No end-to-end authenticity verification for plain git/svn transport"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-003, C-004"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-com-auth-e-stmt",
+                    "uuid": "c083999a-6c6c-5185-a7ad-8ee203dc13a4",
+                    "description": "SCM-2: C-003 (TLS CA verification for HTTPS) and C-004 (SSH host-key checking) provide authenticity for most connections. Gaps: No end-to-end authenticity verification for plain git/svn transport"
+                  }
+                ]
+              },
+              {
+                "uuid": "a3a0d849-051e-5a03-b520-2f765a9e5386",
+                "control-id": "so-secure-provisioning",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "CCK-1, CCK-2, CCK-3 (dfetch manages no cryptographic keys)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-005"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-secure-provisioning-stmt",
+                    "uuid": "f337f022-b1e9-58f6-9b96-87434a022998",
+                    "description": "CRY-1: C-005 uses Python's hashlib with SHA-256 for integrity hashes. No key management is required or performed by dfetch. Not applicable: CCK-1, CCK-2, CCK-3 (dfetch manages no cryptographic keys)"
+                  }
+                ]
+              },
+              {
+                "uuid": "be09eb50-6158-57dd-83e2-7c72d2e4bd55",
+                "control-id": "so-data-stored-integrity",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "Integrity hash opt-in only; not enforced by default for git/svn"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-005"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-data-stored-integrity-stmt",
+                    "uuid": "8a522c77-b369-527f-a9ee-ef2b66e95dd4",
+                    "description": "SSM-2: C-005 (integrity hash in .dfetch_data.yaml) provides optional stored-data integrity verification. Gaps: Integrity hash opt-in only; not enforced by default for git/svn"
+                  }
+                ]
+              },
+              {
+                "uuid": "79282e9e-af7f-5d94-8a4b-4e75fe53125c",
+                "control-id": "so-data-processed-integrity",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "implemented"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-005, C-034"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-data-processed-integrity-stmt",
+                    "uuid": "5de5eb69-9db8-5b2c-9d56-cd7dc067c9e1",
+                    "description": "GEC-8: C-005 and C-034 protect data integrity during processing."
+                  }
+                ]
+              },
+              {
+                "uuid": "d38ade39-84f0-5eaf-a6f4-62fb00462f03",
+                "control-id": "so-data-transmitted-integrity",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "No end-to-end hash for git/svn transport beyond TLS/SSH channel integrity"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-003, C-004"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-data-transmitted-integrity-stmt",
+                    "uuid": "615addd1-b43e-5585-9bea-2a806c4f6f0e",
+                    "description": "SCM-2: TLS (C-003) and SSH (C-004) provide channel-level integrity. Commit-hash pinning (rev: <sha>) provides content-level integrity for git. Gaps: No end-to-end hash for git/svn transport beyond TLS/SSH channel integrity"
+                  }
+                ]
+              },
+              {
+                "uuid": "acd45544-636a-5504-8122-bed43f8ecbbd",
+                "control-id": "so-integrity-report",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "No persistent integrity-violation log"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-009"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-integrity-report-stmt",
+                    "uuid": "99d5808a-c006-5839-a3f3-acbfe9e93974",
+                    "description": "GEC-13-f: dfetch surfaces transport-integrity warnings (C-009) at runtime but does not maintain a persistent security event log. Gaps: No persistent integrity-violation log"
+                  }
+                ]
+              },
+              {
+                "uuid": "a72e2565-b9a7-5ddc-b8f6-936797f8ea69",
+                "control-id": "so-data-minimization",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "planned"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "UNM-1, UNM-2 (dfetch processes no personal data requiring user notification); DTM-3 (no optional data processing to configure)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-044"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-data-minimization-stmt",
+                    "uuid": "dda2d3c4-5ef4-56bd-a2a2-923a894ae320",
+                    "description": "DTM-1: C-044 (planned) documents that .dfetch_data.yaml is limited to remote_url (stripped), revision, optional hash, and last_fetch \u2014 each justified by functional necessity. DTM-2: met by design \u2014 dfetch collects no telemetry or optional data. Not applicable: UNM-1, UNM-2 (dfetch processes no personal data requiring user notification); DTM-3 (no optional data processing to configure)"
+                  }
+                ]
+              },
+              {
+                "uuid": "67e874a1-2b13-5cd2-9930-bd2cf57cf45b",
+                "control-id": "so-incident-recovery",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "not-applicable"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "RLM-2, RLM-6 (CLI tool; no persistent device state or control-system backup needed)"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-incident-recovery-stmt",
+                    "uuid": "a01c9815-7b15-56b5-85f2-fc2b7fb2e3b8",
+                    "description": "dfetch is a stateless CLI tool. Recovery consists of re-running dfetch update, which re-fetches all dependencies. Not applicable: RLM-2, RLM-6 (CLI tool; no persistent device state or control-system backup needed)"
+                  }
+                ]
+              },
+              {
+                "uuid": "7b55fca6-d432-5234-9049-893e23dba785",
+                "control-id": "so-incident-resilience",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "RLM-3, RLM-4, RLM-5 (no persistent network services to prioritize)"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "No timeout on VCS operations (potential resource exhaustion)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-002, C-007"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-incident-resilience-stmt",
+                    "uuid": "bce717f3-5301-5ce6-b321-e0cb67b79431",
+                    "description": "RLM-1: C-002 (no background daemon) and C-007 (subprocess controls) reduce exposure. DoS resilience applies only to the transient fetch operation. Gaps: No timeout on VCS operations (potential resource exhaustion) Not applicable: RLM-3, RLM-4, RLM-5 (no persistent network services to prioritize)"
+                  }
+                ]
+              },
+              {
+                "uuid": "b8466026-1031-5146-b310-aa467f324c0a",
+                "control-id": "so-limit-external-impact",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "TCM-1 (dfetch makes targeted VCS fetch requests; no ambient outbound traffic to throttle)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-001, C-007"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-limit-external-impact-stmt",
+                    "uuid": "27745cea-042a-5b68-85d4-a3fc05e25645",
+                    "description": "GEC-8-i: C-001 (minimal deps) and C-007 (subprocess controls) reduce the risk of dfetch being weaponised against external services. LIM-1: dfetch fetches only what is listed in the manifest. Not applicable: TCM-1 (dfetch makes targeted VCS fetch requests; no ambient outbound traffic to throttle)"
+                  }
+                ]
+              },
+              {
+                "uuid": "62ec731a-1065-5db3-a1cd-1aca9f95c257",
+                "control-id": "so-prevent-attack-propagation",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "planned"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "No warning when dst: targets security-sensitive paths (\u2192 C-045 planned)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-045"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-prevent-attack-propagation-stmt",
+                    "uuid": "0841a803-efcb-56d5-9498-c0a6d2d1a49d",
+                    "description": "LIM-2: C-045 (planned) warns when dst: resolves to paths such as .github/workflows or .gitlab-ci.yml that could propagate a supply-chain attack to CI/CD infrastructure. Gaps: No warning when dst: targets security-sensitive paths (\u2192 C-045 planned)"
+                  }
+                ]
+              },
+              {
+                "uuid": "0f387a2a-852a-531b-811c-39fffecbd782",
+                "control-id": "so-monitor-external-impact",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "not-applicable"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "NMM-1 (dfetch makes no ambient outbound network traffic to monitor)"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-monitor-external-impact-stmt",
+                    "uuid": "73367208-aed2-52b0-88ba-799db9ded5e0",
+                    "description": "dfetch makes targeted, user-initiated VCS requests only. Not applicable: NMM-1 (dfetch makes no ambient outbound network traffic to monitor)"
+                  }
+                ]
+              },
+              {
+                "uuid": "6519d184-d3b7-5f23-addb-6a7dd6540613",
+                "control-id": "so-reduce-attack-surface",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "GEC-2-j, GEC-3-j, GEC-4-j, GEC-5-j, GEC-7-j (dfetch exposes no network services)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-001, C-003, C-004, C-007, C-008"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-reduce-attack-surface-stmt",
+                    "uuid": "d05109ab-eb71-5788-86f4-77ee6a6005f7",
+                    "description": "GEC-6: C-007 (no shell=True), C-008 (URL/path validation) implement input validation. GEC-12-j: C-001 enforces minimal runtime dependencies. Not applicable: GEC-2-j, GEC-3-j, GEC-4-j, GEC-5-j, GEC-7-j (dfetch exposes no network services)"
+                  }
+                ]
+              },
+              {
+                "uuid": "7e317929-647b-56ff-8c68-2f7ddb437970",
+                "control-id": "so-reduce-impact-of-incident",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "planned"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "Compile-time mitigations (CFI, sandboxing) \u2014 not applicable to pure Python"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "No documented exploit mitigation inventory (\u2192 C-046 planned)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-005, C-007, C-015, C-017, C-046"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-reduce-impact-of-incident-stmt",
+                    "uuid": "c6e07d34-53fe-5d62-8e20-14848fc721e1",
+                    "description": "GEC-11: Python interpreter provides ASLR/DEP/stack-canaries (OS-level). dfetch: no eval/exec of remote content; constant-time comparison (C-005); shell=False (C-007); static analysis (C-015, C-017). C-046 (planned) formalises this inventory. Gaps: No documented exploit mitigation inventory (\u2192 C-046 planned) Not applicable: Compile-time mitigations (CFI, sandboxing) \u2014 not applicable to pure Python"
+                  }
+                ]
+              },
+              {
+                "uuid": "2f1733f3-78da-54dd-9908-3fa83ad82667",
+                "control-id": "so-log-security-relevant-activities",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "No persistent security event log (LGM-2/3/4 gap); No opt-out for logging \u2014 dfetch does not log by default"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-036"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-log-security-relevant-activities-stmt",
+                    "uuid": "25624d61-2d09-5f3f-b16c-9ab4f44755bf",
+                    "description": "LGM-1: dfetch logs warnings to stderr during a run but does not persist them. LGM-6: C-036 ensures credentials are not logged. Gaps: No persistent security event log (LGM-2/3/4 gap); No opt-out for logging \u2014 dfetch does not log by default"
+                  }
+                ]
+              },
+              {
+                "uuid": "7b788c22-3f62-50bc-be07-9f464eb3602c",
+                "control-id": "so-monitor-security-relevant-activities",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "NMM-1 (no ambient network monitoring)"
+                  },
+                  {
+                    "name": "dfetch-controls",
+                    "value": "C-009"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-monitor-security-relevant-activities-stmt",
+                    "uuid": "70de7f3c-825a-520e-b8c9-e7e40d847c4a",
+                    "description": "MON-1: C-009 (plaintext transport detection) monitors for insecure connections at runtime and surfaces warnings to the user. Not applicable: NMM-1 (no ambient network monitoring)"
+                  }
+                ]
+              },
+              {
+                "uuid": "449a14c3-9f28-5a1d-a3cf-d071ac57db88",
+                "control-id": "so-option-disable-data-logging",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "not-applicable"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "LGM-5 (dfetch does not persist logs; nothing to disable)"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-option-disable-data-logging-stmt",
+                    "uuid": "51dece0d-f373-52d0-9e66-5d1d8495318b",
+                    "description": "dfetch emits transient stderr warnings only; no persistent log to opt out of. Not applicable: LGM-5 (dfetch does not persist logs; nothing to disable)"
+                  }
+                ]
+              },
+              {
+                "uuid": "74e99a9d-1f55-5fe1-a2db-83430f87b99e",
+                "control-id": "so-option-disable-data-monitoring",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "not-applicable"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "MON-2 (no persistent monitoring to disable)"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-option-disable-data-monitoring-stmt",
+                    "uuid": "8d1315f5-a299-5017-b607-304dd81171c2",
+                    "description": "dfetch performs no ongoing monitoring between invocations. Not applicable: MON-2 (no persistent monitoring to disable)"
+                  }
+                ]
+              },
+              {
+                "uuid": "01d392f6-f590-5b9a-9aab-72cbb368026c",
+                "control-id": "so-secure-data-deletion",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "No built-in delete command for .dfetch_data.yaml (DLM-1 gap; user deletes manually)"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-secure-data-deletion-stmt",
+                    "uuid": "6fe16078-41e4-5fc5-9002-f26643b1c3ac",
+                    "description": "DLM-1: dfetch stores only dependency metadata (no personal data). Users can permanently delete .dfetch_data.yaml and vendored directories. Gaps: No built-in delete command for .dfetch_data.yaml (DLM-1 gap; user deletes manually)"
+                  }
+                ]
+              },
+              {
+                "uuid": "a3f137d0-aae2-5409-b04b-c3093db11586",
+                "control-id": "so-data-transmitted-confidentiality-m",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "not-applicable"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "DLM-2, DLM-3, DLM-4 (dfetch does not export user data to external systems)"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-data-transmitted-confidentiality-m-stmt",
+                    "uuid": "205cf8b1-df82-5234-83ac-00abe0df3b25",
+                    "description": "dfetch does not provide data export or transfer functionality. Not applicable: DLM-2, DLM-3, DLM-4 (dfetch does not export user data to external systems)"
+                  }
+                ]
+              },
+              {
+                "uuid": "a95b048a-730c-5f8c-9475-50475c38de9b",
+                "control-id": "so-data-transmitted-integrity-m",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "not-applicable"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "DLM-3 (no data export)"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-data-transmitted-integrity-m-stmt",
+                    "uuid": "f4830f4a-a336-5efe-a503-fbc44d55ead0",
+                    "description": "Not applicable \u2014 see SO.DataTransmittedConfidentiality (data export context). Not applicable: DLM-3 (no data export)"
+                  }
+                ]
+              },
+              {
+                "uuid": "37a0d0f3-cd43-5bec-9f93-2cd01786a66f",
+                "control-id": "so-com-auth-m",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "not-applicable"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "DLM-4 (no data export)"
+                  }
+                ],
+                "statements": [
+                  {
+                    "statement-id": "so-com-auth-m-stmt",
+                    "uuid": "a9a39ea7-5957-5c40-abc8-a8bef0766b8c",
+                    "description": "Not applicable \u2014 see SO.DataTransmittedConfidentiality (data export context). Not applicable: DLM-4 (no data export)"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "back-matter": {
+      "resources": [
+        {
+          "uuid": "816ae564-48fe-571f-8807-ea3d94bf206d",
+          "title": "Cyber Resilience Act \u2014 Regulation (EU) 2024/2847",
+          "rlinks": [
+            {
+              "href": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847"
+            }
+          ]
+        },
+        {
+          "uuid": "b44bda69-1a69-57f9-9545-95a7aa3a2d61",
+          "title": "prEN 40000-1-4 OSCAL Catalog (this repository)",
+          "rlinks": [
+            {
+              "href": "security/cra_pren_4000014_oscal_catalog.json"
+            }
+          ]
+        },
+        {
+          "uuid": "ba6fc625-58ea-5b9b-afc6-9358d247f19a",
+          "title": "dfetch Security Policy (SECURITY.md)",
+          "rlinks": [
+            {
+              "href": "https://github.com/dfetch-org/dfetch/blob/main/SECURITY.md"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
