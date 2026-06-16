@@ -137,12 +137,12 @@ TRACK_B_CONTROLS: list[Control] = [
         id="C-043",
         name="Release-gate CVE check on runtime dependencies",
         description=(
-            "Run pip-audit or osv-scanner at release time against dfetch's runtime "
-            "dependencies; fail the publish workflow if any Critical/High CVE is "
-            "unresolved."
+            "Run pip-audit at release time against dfetch's runtime dependencies via "
+            "the OSV database; the publish workflow fails if any known vulnerability "
+            "is found in the installed package set."
         ),
         threats=["Threat.KnownVulnerabilityExploitation"],
-        reference=".github/workflows/python-publish.yml (planned CI addition)",
+        reference=".github/workflows/python-publish.yml (Audit runtime dependencies for CVEs step)",
     ),
     Control(
         id="C-044",
@@ -178,12 +178,13 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
     SOImplementation(
         so_id="so-vulnerability-management-process",
         ecr_id="ecr-a",
-        controls=["C-015", "C-016", "C-017", "C-022"],
-        gaps=["No CVE gate at release time (→ C-043 planned)"],
-        status="partially-implemented",
+        controls=["C-015", "C-016", "C-017", "C-022", "C-043"],
+        status="implemented",
         description=(
             "GEC-1: C-015 (CodeQL), C-016 (dependency-review), C-017 (bandit), "
-            "C-022 (SBOM) address known-vulnerability detection in CI."
+            "C-022 (SBOM) address known-vulnerability detection in CI. "
+            "C-043 (pip-audit OSV gate) blocks release if runtime dependencies "
+            "carry known vulnerabilities."
         ),
     ),
     # ECR-b: Secure Configuration
