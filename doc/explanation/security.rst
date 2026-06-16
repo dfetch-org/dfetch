@@ -106,8 +106,14 @@ threat models below.
 Security Documentation Pipeline
 --------------------------------
 
-The diagram below shows how the security documentation is generated from its
-source files and what output artifacts each pipeline produces.
+The diagram below follows the structure of figure 4.1.2.2 in the
+`EU Blue Guide on the implementation of EU product rules (2022) <https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX%3A52022XC0629%2804%29>`_:
+all requirements are on the left, a risk-and-threat assessment step (dashed box)
+selects which requirements apply, the applicable subset sits in the third column,
+and the right side shows two output paths — a solid-arrow path where coverage is
+provided by a recognised methodology (STRIDE / pytm), and a dashed-arrow path
+where no harmonised standard applies and the requirement is addressed directly as
+a documented gap or compliance artefact.
 
 .. uml:: /static/uml/security_doc_flow.puml
 
