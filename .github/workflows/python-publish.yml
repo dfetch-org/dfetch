@@ -52,7 +52,7 @@ jobs:
     - name: Audit runtime dependencies for CVEs (C-043)
       run: |
         pip install .[cve-audit]
-        pip-audit --vulnerability-service osv
+        pip-audit --vulnerability-service osv .
     - name: Build a binary wheel and a source tarball
       run: python3 -m build
     - name: Generate SBOM for Python distribution
