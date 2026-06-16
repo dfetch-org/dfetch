@@ -23,8 +23,8 @@ concrete dfetch controls or documented gaps::
 
 Machine-readable OSCAL 1.1.2 artifacts are kept alongside the source:
 
-- ``security/cra_pren_4000014_oscal_catalog.json`` — prEN 40000-1-4 catalog
-- ``security/dfetch.component-definition.json`` — dfetch Component Definition
+- `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ — prEN 40000-1-4 catalog
+- `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_ — dfetch Component Definition
 
 The full list of all controls is available on the :doc:`control_register` page.
 
@@ -79,17 +79,17 @@ Applicable Standards
    * - prEN 40000-1-2
      - Cyber Resilience Principles and Risk Management
      - Yes
-     - Process standard covering risk-based product security across the lifecycle. The Product Security Context (§6.2) is documented in :doc:`security`. The threat models (tm_supply_chain.py, tm_usage.py) implement §6.3–§6.6.
+     - Process standard covering risk-based product security across the lifecycle. The Product Security Context (§6.2) is documented in :doc:`security`. The threat models (`tm_supply_chain.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_supply_chain.py>`_, `tm_usage.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_usage.py>`_) implement §6.3–§6.6.
      - —
    * - prEN 40000-1-3
      - Vulnerability Handling Requirements
      - Yes
-     - Covers CRA Annex I Part II vulnerability handling obligations. Addressed in the Part II table below via SECURITY.md, SBOM (C-022), and dependency-review CI (C-016).
+     - Covers CRA Annex I Part II vulnerability handling obligations. Addressed in the Part II table below via `SECURITY.md <https://github.com/dfetch-org/dfetch/blob/main/SECURITY.md>`_, SBOM (:ref:`C-022 <c-022>`), and dependency-review CI (:ref:`C-016 <c-016>`).
      - No formal patch SLA or LTS backport policy defined.
    * - prEN 40000-1-4
      - Generic Security Requirements (draft, indicative publication October 2027)
      - Yes
-     - Primary standard for this document. Maps CRA Annex I Part I Art. 2(a)–(m) to Security Objectives (SO.\*) and Technical Controls (GEC-\*, SUM-\*, etc.). The catalog is included as security/cra_pren_4000014_oscal_catalog.json.
+     - Primary standard for this document. Maps CRA Annex I Part I Art. 2(a)–(m) to Security Objectives (SO.\*) and Technical Controls (GEC-\*, SUM-\*, etc.). The catalog is included as `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_.
      - Standard is in draft; final clause numbering may change.
    * - EN 18031-1/2:2024
      - Common security requirements for radio equipment (basis of prEN 40000-1-4)
@@ -120,12 +120,12 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - Status
    * - **ECR-A** — Be made available on the market without known exploitable vulnerabilities.
      - SO.VulnerabilityManagementProcess
-     - C-015, C-016, C-017, C-022
-     - No CVE gate at release time (→ C-043 planned)
+     - :ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`, :ref:`C-022 <c-022>`
+     - No CVE gate at release time (→ :ref:`C-043 <c-043>` planned)
      - ⚠ Partial
    * - **ECR-B** — Be made available on the market with a secure by default configuration, including the possibility to reset the product to its original state.
      - SO.SecureDefaultConfiguration
-     - C-001, C-002
+     - :ref:`C-001 <c-001>`, :ref:`C-002 <c-002>`
      - —
      - ⚠ Partial
    * -
@@ -150,7 +150,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - — N/A
    * -
      - SO.UserUpdateNotification
-     - C-040
+     - :ref:`C-040 <c-040>`
      - —
      - ✓ Implemented
    * -
@@ -160,62 +160,62 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - — N/A
    * - **ECR-D** — Ensure protection from unauthorised access by appropriate control mechanisms including authentication, identity or access management systems, and report on possible unauthorised access.
      - SO.AccessControl
-     - C-006, C-036
+     - :ref:`C-006 <c-006>`, :ref:`C-036 <c-036>`
      - —
      - ⚠ Partial
    * -
      - SO.AccessControlReport
-     - C-009
+     - :ref:`C-009 <c-009>`
      - No persistent log of unauthorised access attempts
      - ⚠ Partial
    * - **ECR-E** — Protect the confidentiality of stored, transmitted or otherwise processed data by state-of-the-art mechanisms such as encryption at rest and in transit.
      - SO.DataStoredConfidentiality
-     - C-036
+     - :ref:`C-036 <c-036>`
      - —
      - ✓ Implemented
    * -
      - SO.DataProcessedConfidentiality
-     - C-005, C-034
+     - :ref:`C-005 <c-005>`, :ref:`C-034 <c-034>`
      - —
      - ✓ Implemented
    * -
      - SO.DataTransmittedConfidentiality
-     - C-005, C-009
+     - :ref:`C-005 <c-005>`, :ref:`C-009 <c-009>`
      - —
      - ✓ Implemented
    * -
      - SO.ComAuth
-     - C-003, C-004, C-009
+     - :ref:`C-003 <c-003>`, :ref:`C-004 <c-004>`, :ref:`C-009 <c-009>`
      - —
      - ✓ Implemented
    * -
      - SO.SecureProvisioning
-     - C-005
+     - :ref:`C-005 <c-005>`
      - —
      - ⚠ Partial
    * - **ECR-F** — Protect the integrity of stored, transmitted or otherwise processed data, commands, programs and configuration against unauthorised manipulation or modification, and report on corruptions.
      - SO.DataStoredIntegrity
-     - C-005
+     - :ref:`C-005 <c-005>`
      - Integrity hash opt-in only; not enforced by default for git/svn
      - ⚠ Partial
    * -
      - SO.DataProcessedIntegrity
-     - C-005, C-034
+     - :ref:`C-005 <c-005>`, :ref:`C-034 <c-034>`
      - —
      - ✓ Implemented
    * -
      - SO.DataTransmittedIntegrity
-     - C-003, C-004
+     - :ref:`C-003 <c-003>`, :ref:`C-004 <c-004>`
      - No end-to-end hash for git/svn transport beyond TLS/SSH channel integrity
      - ⚠ Partial
    * -
      - SO.IntegrityReport
-     - C-009
+     - :ref:`C-009 <c-009>`
      - No persistent integrity-violation log
      - ⚠ Partial
    * - **ECR-G** — Process only data, personal or other, that are adequate, relevant and limited to what is necessary in relation to the intended purpose of the product with digital elements (data minimisation).
      - SO.DataMinimization
-     - C-044
+     - :ref:`C-044 <c-044>`
      - —
      - ✓ Implemented
    * - **ECR-H** — Protect the availability of essential and basic functions, also after an incident, including through resilience and mitigation measures against denial-of-service attacks.
@@ -225,17 +225,17 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - — N/A
    * -
      - SO.IncidentResilience
-     - C-002, C-007
+     - :ref:`C-002 <c-002>`, :ref:`C-007 <c-007>`
      - No timeout on VCS operations (potential resource exhaustion)
      - ⚠ Partial
    * - **ECR-I** — Minimise the negative impact by the products themselves or connected devices on the availability of services provided by other devices or networks.
      - SO.LimitExternalImpact
-     - C-001, C-007
+     - :ref:`C-001 <c-001>`, :ref:`C-007 <c-007>`
      - —
      - ⚠ Partial
    * -
      - SO.PreventAttackPropagation
-     - C-001, C-008
+     - :ref:`C-001 <c-001>`, :ref:`C-008 <c-008>`
      - —
      - ✓ Implemented
    * -
@@ -245,22 +245,22 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - — N/A
    * - **ECR-J** — Be designed, developed and produced to limit attack surfaces, including external interfaces.
      - SO.ReduceAttackSurface
-     - C-001, C-003, C-004, C-007, C-008
+     - :ref:`C-001 <c-001>`, :ref:`C-003 <c-003>`, :ref:`C-004 <c-004>`, :ref:`C-007 <c-007>`, :ref:`C-008 <c-008>`
      - —
      - ⚠ Partial
    * - **ECR-K** — Be designed, developed and produced to reduce the impact of an incident using appropriate exploitation mitigation mechanisms and techniques.
      - SO.ReduceImpactOfIncident
-     - C-005, C-007, C-015, C-017, C-046
+     - :ref:`C-005 <c-005>`, :ref:`C-007 <c-007>`, :ref:`C-015 <c-015>`, :ref:`C-017 <c-017>`, :ref:`C-046 <c-046>`
      - —
      - ✓ Implemented
    * - **ECR-L** — Provide security related information by recording and monitoring relevant internal activity, including the access to or modification of data, services or functions, with an opt-out mechanism for the user.
      - SO.LogSecurityRelevantActivities
-     - C-036
+     - :ref:`C-036 <c-036>`
      - No persistent security event log (LGM-2/3/4 gap); No opt-out for logging — dfetch does not log by default
      - ⚠ Partial
    * -
      - SO.MonitorSecurityRelevantActivities
-     - C-009
+     - :ref:`C-009 <c-009>`
      - —
      - ⚠ Partial
    * -
@@ -312,17 +312,17 @@ Part II requirements are addressed via prEN 40000-1-3. pii-04 is not applicable 
      - Status
    * - Part II §1
      - Identify and document vulnerabilities and components (SBOM).
-     - C-021, C-022
+     - :ref:`C-021 <c-021>`, :ref:`C-022 <c-022>`
      - —
      - ✓ Implemented
    * - Part II §2
      - Address vulnerabilities without delay; provide free security updates.
-     - C-015, C-016, SECURITY.md
-     - No LTS backport policy (latest release only — documented in SECURITY.md)
+     - :ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, `SECURITY.md <https://github.com/dfetch-org/dfetch/blob/main/SECURITY.md>`_
+     - No LTS backport policy (latest release only — documented in `SECURITY.md <https://github.com/dfetch-org/dfetch/blob/main/SECURITY.md>`_)
      - ⚠ Partial
    * - Part II §3
      - Apply effective coordinated vulnerability disclosure (CVD) policy.
-     - SECURITY.md
+     - `SECURITY.md <https://github.com/dfetch-org/dfetch/blob/main/SECURITY.md>`_
      - —
      - ✓ Implemented
    * - Part II §4
@@ -332,17 +332,17 @@ Part II requirements are addressed via prEN 40000-1-3. pii-04 is not applicable 
      - — N/A
    * - Part II §5
      - Publish coordinated vulnerability disclosure policy.
-     - SECURITY.md
+     - `SECURITY.md <https://github.com/dfetch-org/dfetch/blob/main/SECURITY.md>`_
      - —
      - ✓ Implemented
    * - Part II §6
      - Share information on vulnerabilities in integrated components.
-     - C-022, C-016
+     - :ref:`C-022 <c-022>`, :ref:`C-016 <c-016>`
      - No proactive downstream notification process
      - ⚠ Partial
    * - Part II §7
      - Provide security updates free of charge for the support period.
-     - MIT licence, PyPI, SECURITY.md
+     - MIT licence, PyPI, `SECURITY.md <https://github.com/dfetch-org/dfetch/blob/main/SECURITY.md>`_
      - —
      - ✓ Implemented
 
@@ -353,24 +353,24 @@ Gap Analysis — Compliance-Only Controls
 
 Three compliance-only controls address CRA requirements not independently covered by the risk models.
 
-**C-043 — Release-gate CVE check (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)**
+**:ref:`C-043 <c-043>` — Release-gate CVE check (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)**
 
-dfetch's CI detects vulnerabilities at commit time (C-015, C-016, C-017) but does not gate the release publish on a CVE scan of runtime dependencies. C-043 (planned) adds ``pip-audit`` or ``osv-scanner`` to the publish workflow.
+dfetch's CI detects vulnerabilities at commit time (:ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`) but does not gate the release publish on a CVE scan of runtime dependencies. :ref:`C-043 <c-043>` (planned) adds ``pip-audit`` or ``osv-scanner`` to the publish workflow.
 
-**C-044 — Data minimisation policy (ECR-g, SO.DataMinimization → DTM-1)**
+**:ref:`C-044 <c-044>` — Data minimisation policy (ECR-g, SO.DataMinimization → DTM-1)**
 
-dfetch processes dependency metadata only. The ``.dfetch_data.yaml`` file stores: ``remote_url`` (credentials stripped by C-036), ``revision``, optional ``integrity.hash``, and ``last_fetch`` timestamp. Each field is functionally necessary for ``dfetch check`` and ``dfetch freeze``. No personal data is collected; no telemetry is sent. C-044 formalises this assertion as a documented policy.
+dfetch processes dependency metadata only. The ``.dfetch_data.yaml`` file stores: ``remote_url`` (credentials stripped by :ref:`C-036 <c-036>`), ``revision``, optional ``integrity.hash``, and ``last_fetch`` timestamp. Each field is functionally necessary for ``dfetch check`` and ``dfetch freeze``. No personal data is collected; no telemetry is sent. :ref:`C-044 <c-044>` formalises this assertion as a documented policy.
 
-**C-046 — Exploit mitigation inventory (ECR-k, SO.ReduceImpactOfIncident → GEC-11)**
+**:ref:`C-046 <c-046>` — Exploit mitigation inventory (ECR-k, SO.ReduceImpactOfIncident → GEC-11)**
 
 prEN 40000-1-4 ECR-k requires documenting applicable exploit mitigation techniques. For dfetch (pure Python):
 
 - **ASLR / DEP / stack canaries**: provided by CPython and the OS;   not in dfetch's control but inherited.
 - **No eval/exec of remote content**: dfetch never evaluates fetched   content as code.
-- **Constant-time comparison** (C-005): HMAC-based integrity hash uses   ``hmac.compare_digest``.
-- **No shell injection** (C-007): all subprocess calls use ``shell=False``.
-- **Input validation** (C-008): URL scheme, path, and revision inputs   are validated.
-- **Static analysis** (C-015, C-017): CodeQL and bandit gate every commit.
+- **Constant-time comparison** (:ref:`C-005 <c-005>`): HMAC-based integrity hash uses   ``hmac.compare_digest``.
+- **No shell injection** (:ref:`C-007 <c-007>`): all subprocess calls use ``shell=False``.
+- **Input validation** (:ref:`C-008 <c-008>`): URL scheme, path, and revision inputs   are validated.
+- **Static analysis** (:ref:`C-015 <c-015>`, :ref:`C-017 <c-017>`): CodeQL and bandit gate every commit.
 - CFI, sandboxing, and signed-execution policies are not applicable to   a pure-Python tool.
 
 ----
