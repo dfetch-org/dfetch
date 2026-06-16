@@ -45,19 +45,25 @@ package "Covered by pytm\n+ tm_render.py" as p_tm_out #e1f0da {
 ' ── Column 4b: Compliance artifacts (solid path — CRA compliance evidence) ────
 
 package "Covered by\ncompliance.py" as p_comp_out #fff2cc {
-    [compliance_track.rst · control_register.rst\ndfetch.component-definition.json (OSCAL 1.1.2)] as comp_out
+    [compliance_track.rst\ndfetch.component-definition.json (OSCAL 1.1.2)] as comp_out
 }
 
 ' ── Column 4c: Supply-chain release attestations (GitHub Actions, about dfetch) ─
 
 package "Release attestations\n(GitHub Actions, about dfetch)" as p_sc_out #e8d5f5 {
-    [CycloneDX SBOM · SLSA Build Provenance\nSource Provenance · VSA · in-toto Test Results] as sc_out
+    [GitHub Actions\nrelease workflow] as release_wf
+    [CycloneDX SBOM · SLSA Build Provenance\nVSA · in-toto Test Results] as sc_out
+    [Source Provenance\n(every push to main)] as src_prov
+    release_wf --> sc_out
+    release_wf --> src_prov
 }
 
 ' ── Column 4d: Dependency-scanning outputs (dfetch check, for users) ───────────
 
 package "Dependency-scanning outputs\n(dfetch check, for users)" as p_rt_out #f8cecc {
+    [dfetch check] as dfetch_check
     [SARIF · Code Climate JSON · Jenkins JSON] as rt_out
+    dfetch_check --> rt_out
 }
 
 ' ── Arrows: Column 1 → Column 2 (dashed = assessment selects applicable items) ─
@@ -87,10 +93,10 @@ appl_c --> comp_out : "CRA compliance evidence"
 ' Dashed: no harmonised standard — gap documented directly
 na_c   ..> comp_out : "No harmonised\nstandard / gap"
 
-' Solid: supply-chain controls (C-026, C-037, C-039, C-040) require release attestations
-tm_out  --> sc_out  : "C-026 C-037\nC-039 C-040"
+' Dashed: threat model documents controls that require the release attestations
+tm_out  ..> release_wf : "requires\n(C-026, C-037,\nC-039, C-040)"
 
-' Solid: dfetch check outputs for users (dependency scanning)
-appl_c --> rt_out   : "Dependency\nscanning"
+' Dashed: applicable controls exercised by dfetch check
+appl_c  ..> dfetch_check : "Dependency\nscanning"
 
 @enduml

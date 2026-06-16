@@ -103,10 +103,11 @@ Glossary
       via :term:`Sigstore` and published in the `dfetch attestation registry
       <https://github.com/dfetch-org/dfetch/attestations>`_.  Attestations are
       verifiable by anyone using ``gh attestation verify`` without trusting any
-      private key.  dfetch publishes five attestation types on every release:
-      :term:`Build Provenance`, :term:`Source Provenance`, :term:`SBOM`
-      (CycloneDX composition of the package), :term:`VSA`, and in-toto Test
-      Results (the CI test suite passed before any binary was produced).  See
+      private key.  dfetch publishes four attestation types on every release:
+      :term:`Build Provenance`, :term:`SBOM` (CycloneDX composition of the
+      package), :term:`VSA`, and in-toto Test Results (the CI test suite passed
+      before any binary was produced).  :term:`Source Provenance` is published
+      on every push to ``main`` rather than per-release.  See
       :ref:`verify-integrity` for per-artifact verification instructions.
 
    Build Provenance
