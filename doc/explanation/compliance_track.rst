@@ -1,7 +1,7 @@
 .. _compliance_track:
 
-CRA Compliance Track B
-======================
+CRA Compliance
+==============
 
 .. note::
 
@@ -11,7 +11,9 @@ CRA Compliance Track B
    downstream integrators who must account for open-source components in
    their own conformity assessments.
 
-Three-tier traceability::
+This page provides three-tier traceability from the CRA Annex I essential
+requirements through the prEN 40000-1-4 Security Objectives to the
+concrete dfetch controls or documented gaps::
 
    CRA Annex I Essential Requirement (ECR-a … ECR-m)
            ↓
@@ -23,6 +25,22 @@ Machine-readable OSCAL 1.1.2 artifacts are kept alongside the source:
 
 - ``security/cra_pren_4000014_oscal_catalog.json`` — prEN 40000-1-4 catalog
 - ``security/dfetch.component-definition.json`` — dfetch Component Definition
+
+The full list of all controls is available on the :doc:`control_register` page.
+
+.. rubric:: Status key
+
+.. list-table::
+   :widths: 10 90
+
+   * - ✓
+     - Implemented — control satisfies the objective fully.
+   * - ⚠
+     - Partial — control exists but a gap remains (see Gaps column).
+   * - N/A
+     - Not applicable — the objective does not apply to dfetch.
+
+----
 
 Classification Decision
 -----------------------
@@ -42,7 +60,9 @@ Classification Decision
    * - Mandatory obligations
      - None — not a commercial product; no CE marking required
    * - Voluntary alignment
-     - This Track B document is produced voluntarily under Article 13(5) to support downstream integrators who must account for open-source components in their own CRA conformity assessments.
+     - This compliance document is produced voluntarily under Article 13(5) to support downstream integrators who must account for open-source components in their own CRA conformity assessments.
+
+----
 
 Applicable Standards
 --------------------
@@ -59,7 +79,7 @@ Applicable Standards
    * - prEN 40000-1-2
      - Cyber Resilience Principles and Risk Management
      - Yes
-     - Process standard covering risk-based product security across the lifecycle. The Product Security Context (§6.2) is documented in :doc:`security`. Track A threat models (tm_supply_chain.py, tm_usage.py) implement §6.3–§6.6.
+     - Process standard covering risk-based product security across the lifecycle. The Product Security Context (§6.2) is documented in :doc:`security`. The threat models (tm_supply_chain.py, tm_usage.py) implement §6.3–§6.6.
      - —
    * - prEN 40000-1-3
      - Vulnerability Handling Requirements
@@ -82,8 +102,10 @@ Applicable Standards
      - IoT-specific standard. dfetch is a developer CLI tool with no IoT device functionality, physical interfaces, or consumer IoT use case.
      - —
 
+----
+
 Part I — Product Security Requirements (ECR-a to ECR-m)
--------------------------------------------------------
+--------------------------------------------------------
 
 The table below summarises dfetch's implementation of each prEN 40000-1-4 Security Objective per CRA essential requirement.
 
@@ -272,6 +294,8 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - —
      - — N/A
 
+----
+
 Part II — Vulnerability Handling (prEN 40000-1-3)
 -------------------------------------------------
 
@@ -322,10 +346,12 @@ Part II requirements are addressed via prEN 40000-1-3. pii-04 is not applicable 
      - —
      - ✓ Implemented
 
-Gap Analysis — Compliance-Only Controls
----------------------------------------
+----
 
-3 compliance-only controls address CRA requirements not independently covered by the Track A risk models.
+Gap Analysis — Compliance-Only Controls
+----------------------------------------
+
+Three compliance-only controls address CRA requirements not independently covered by the risk models.
 
 **C-043 — Release-gate CVE check (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)**
 
@@ -347,151 +373,7 @@ prEN 40000-1-4 ECR-k requires documenting applicable exploit mitigation techniqu
 - **Static analysis** (C-015, C-017): CodeQL and bandit gate every commit.
 - CFI, sandboxing, and signed-execution policies are not applicable to   a pure-Python tool.
 
-Final Control Register
-----------------------
-
-All controls from Track A (risk-driven) and Track B (regulatory) merged and sorted. Track B controls (C-043, C-044, and C-046) are marked accordingly.
-
-.. list-table::
-   :header-rows: 1
-   :widths: 8 40 10 42
-
-   * - ID
-     - Name
-     - Track
-     - Reference
-   * - C-001
-     - Path-traversal prevention
-     - Track A
-     - dfetch/util/util.py
-   * - C-002
-     - Decompression-bomb protection
-     - Track A
-     - dfetch/vcs/archive.py
-   * - C-003
-     - Archive symlink validation
-     - Track A
-     - dfetch/vcs/archive.py
-   * - C-004
-     - Archive member type checks
-     - Track A
-     - dfetch/vcs/archive.py
-   * - C-005
-     - Integrity hash verification
-     - Track A
-     - dfetch/vcs/integrity_hash.py
-   * - C-006
-     - Non-interactive VCS
-     - Track A
-     - dfetch/vcs/git.py, dfetch/vcs/svn.py
-   * - C-007
-     - Subprocess safety
-     - Track A
-     - dfetch/util/cmdline.py
-   * - C-008
-     - Manifest input validation
-     - Track A
-     - dfetch/manifest/schema.py
-   * - C-009
-     - Actions commit-SHA pinning
-     - Track A
-     - .github/workflows/\*.yml
-   * - C-010
-     - OIDC trusted publishing
-     - Track A
-     - .github/workflows/python-publish.yml
-   * - C-011
-     - Minimal workflow permissions
-     - Track A
-     - .github/workflows/\*.yml
-   * - C-012
-     - persist-credentials: false
-     - Track A
-     - .github/workflows/\*.yml
-   * - C-013
-     - Harden-runner (egress block)
-     - Track A
-     - .github/workflows/\*.yml
-   * - C-015
-     - CodeQL static analysis
-     - Track A
-     - .github/workflows/codeql-analysis.yml
-   * - C-016
-     - Dependency review
-     - Track A
-     - .github/workflows/dependency-review.yml
-   * - C-017
-     - bandit security linter
-     - Track A
-     - pyproject.toml
-   * - C-021
-     - Sigstore SBOM attestation
-     - Track A
-     - —
-   * - C-022
-     - CycloneDX SBOM on PyPI
-     - Track A
-     - —
-   * - C-024
-     - ``secrets: inherit`` scope
-     - Track A
-     - —
-   * - C-026
-     - Consumer-side package provenance verification
-     - Track A
-     - doc/howto/verify-integrity.rst
-   * - C-032
-     - Consumer attestation verification pins to release tag ref
-     - Track A
-     - doc/howto/verify-integrity.rst
-   * - C-033
-     - Ref-scoped build cache keys isolate PR and release builds
-     - Track A
-     - .github/workflows/build.yml
-   * - C-034
-     - Hash algorithm allowlist (SHA-256/384/512 only)
-     - Track A
-     - dfetch/vcs/integrity_hash.py
-   * - C-036
-     - Persisted-metadata credential redaction
-     - Track A
-     - dfetch/project/metadata.py
-   * - C-037
-     - SLSA Source Provenance Attestation of repository governance controls
-     - Track A
-     - .github/workflows/source-provenance.yml
-   * - C-038
-     - Ancestry enforcement on dfetch main branch
-     - Track A
-     - .github/workflows/
-   * - C-039
-     - Source build provenance and VSA attestations
-     - Track A
-     - doc/howto/verify-integrity.rst
-   * - C-040
-     - Test result attestation on source archive
-     - Track A
-     - .github/workflows/test.yml
-   * - C-041
-     - Winget manifest PRs reviewed by community maintainers
-     - Track A
-     - .github/workflows/winget-publish.yml
-   * - C-042
-     - WINGET_TOKEN scoped to dedicated Winget environment
-     - Track A
-     - .github/workflows/winget-publish.yml
-   * - C-043
-     - Release-gate CVE check on runtime dependencies
-     - Track B
-     - .github/workflows/python-publish.yml (planned CI addition)
-   * - C-044
-     - Data minimisation policy
-     - Track B
-     - doc/explanation/compliance_track.rst (this document)
-   * - C-046
-     - Exploit mitigation inventory
-     - Track B
-     - doc/explanation/compliance_track.rst (this document)
+----
 
 OSCAL Artifacts
 ---------------
@@ -503,5 +385,4 @@ regenerated with:
 
    python -m security.compliance \\
        --component security/dfetch.component-definition.json \\
-       --track-b-only \\
        --rst > doc/explanation/compliance_track.rst

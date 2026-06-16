@@ -116,9 +116,10 @@ generated from the corresponding Python module in ``security/`` — see
    threat_model_supply_chain
    threat_model_usage
    compliance_track
+   control_register
 
-Compliance Track (Track B)
---------------------------
+CRA Compliance
+--------------
 
 The :doc:`compliance_track` page maps all 13 CRA Annex I Part I essential
 requirements (ECR-a through ECR-m) through prEN 40000-1-4 Security Objectives
@@ -133,8 +134,8 @@ The three-tier traceability model is::
            ↓
    dfetch control (C-001 … C-046) or documented gap
 
-Three compliance-only controls introduced in Track B address CRA requirements
-not independently surfaced by the risk models:
+Three compliance-only controls address CRA requirements not independently
+surfaced by the risk models:
 
 - **C-043** (release-gate CVE check) — ECR-a / SO.VulnerabilityManagementProcess → GEC-1
 - **C-044** (data minimisation policy) — ECR-g / SO.DataMinimization → DTM-1
@@ -145,3 +146,5 @@ Machine-readable OSCAL 1.1.2 artifacts are kept alongside the source:
 - ``security/cra_pren_4000014_oscal_catalog.json`` — prEN 40000-1-4 catalog
   (derived from the CEN/CLC/JTC 13 WG 9 deep-dive session, March 2026)
 - ``security/dfetch.component-definition.json`` — dfetch Component Definition
+
+The complete list of all controls is on the :doc:`control_register` page.
