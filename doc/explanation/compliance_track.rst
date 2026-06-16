@@ -355,7 +355,7 @@ Three compliance-only controls address CRA requirements not independently covere
 
 **:ref:`C-043 <c-043>` — Release-gate CVE check (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)**
 
-dfetch's CI detects vulnerabilities at commit time (:ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`) but does not gate the release publish on a CVE scan of runtime dependencies. :ref:`C-043 <c-043>` (planned) adds ``pip-audit`` or ``osv-scanner`` to the publish workflow.
+dfetch's CI detects vulnerabilities at commit time (:ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`). :ref:`C-043 <c-043>` completes the coverage: the publish workflow runs ``pip-audit`` against the project's runtime dependencies via the OSV database and blocks the release if any known vulnerability is found.
 
 **:ref:`C-044 <c-044>` — Data minimisation policy (ECR-g, SO.DataMinimization → DTM-1)**
 
