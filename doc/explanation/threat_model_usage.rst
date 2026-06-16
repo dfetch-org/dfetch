@@ -18,7 +18,7 @@ This report follows the risk-based approach of `BSI TR-03183-1
 <https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-1.pdf>`_
 Chapter 5.
 The Sev / Risk rating scale and treatment vocabulary (Mitigate / Accept / Transfer)
-are defined in the :ref:`Risk Rating Methodology <security>` section of the main security page.
+are defined in the :ref:`Risk Rating Methodology <risk-rating-methodology>` section of the main security page.
 
 Threat model for dfetch.  Covers the post-install lifecycle: reading the manifest, fetching dependencies from VCS and archive sources, applying patches, writing vendored files, and generating reports (SBOM, SARIF, check output).  The installed dfetch package - produced by the supply chain in tm_supply_chain.py - is the entry point.
 

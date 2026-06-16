@@ -108,6 +108,8 @@ For an overview of how this documentation set is produced — the threat-model
 pipeline, compliance pipeline, release attestations, and the full artifact
 inventory — see :doc:`security_pipeline`.
 
+.. _risk-rating-methodology:
+
 Risk Rating Methodology
 -----------------------
 

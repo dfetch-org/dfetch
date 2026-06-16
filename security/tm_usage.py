@@ -1368,7 +1368,7 @@ RESPONSES: list[ThreatResponse] = [
         risk="High",
         stride=["Tampering", "Information Disclosure"],
         note=(
-            "C-009 emits a visible warning immediately before the VCS command when a "
+            "C-045 emits a visible warning immediately before the VCS command when a "
             "plaintext scheme (``http://``, ``git://``, ``svn://``) is detected, "
             "with credentials redacted and ``https://`` / ``svn+ssh://`` recommended.  "
             "Detection only — dfetch does not reject or upgrade plaintext URLs; "
