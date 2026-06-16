@@ -48,10 +48,16 @@ package "Covered by\ncompliance.py" as p_comp_out #fff2cc {
     [compliance_track.rst · control_register.rst\ndfetch.component-definition.json (OSCAL 1.1.2)] as comp_out
 }
 
-' ── Column 4c: Runtime artifacts (dashed path — no pre-generated document) ───
+' ── Column 4c: Supply-chain release attestations (GitHub Actions, about dfetch) ─
 
-package "Runtime evidence\n(dfetch check / report)" as p_rt_out #f8cecc {
-    [SARIF · SBOM / CycloneDX\nCode Climate · Jenkins JSON] as rt_out
+package "Release attestations\n(GitHub Actions, about dfetch)" as p_sc_out #e8d5f5 {
+    [CycloneDX SBOM · SLSA Build Provenance\nSource Provenance · VSA · in-toto Test Results] as sc_out
+}
+
+' ── Column 4d: Dependency-scanning outputs (dfetch check, for users) ───────────
+
+package "Dependency-scanning outputs\n(dfetch check, for users)" as p_rt_out #f8cecc {
+    [SARIF · Code Climate JSON · Jenkins JSON] as rt_out
 }
 
 ' ── Arrows: Column 1 → Column 2 (dashed = assessment selects applicable items) ─
@@ -81,7 +87,10 @@ appl_c --> comp_out : "CRA compliance evidence"
 ' Dashed: no harmonised standard — gap documented directly
 na_c   ..> comp_out : "No harmonised\nstandard / gap"
 
-' Solid: runtime check / report commands produce live evidence
-appl_c --> rt_out   : "Runtime evidence"
+' Solid: supply-chain controls (C-026, C-037, C-039, C-040) require release attestations
+tm_out  --> sc_out  : "C-026 C-037\nC-039 C-040"
+
+' Solid: dfetch check outputs for users (dependency scanning)
+appl_c --> rt_out   : "Dependency\nscanning"
 
 @enduml

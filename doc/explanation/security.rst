@@ -146,10 +146,20 @@ reads those definitions together with the static OSCAL catalog and generates
 :doc:`control_register` page is maintained manually and references controls
 defined in ``compliance_data.py``.
 
-**Runtime outputs** — When users run ``dfetch check`` or ``dfetch report``,
-the reporting layer emits findings in the selected format:
+**Release attestations** — GitHub Actions generates five cryptographic attestation
+types *about dfetch itself* during every release, signed by Sigstore and verifiable
+by consumers with ``gh attestation verify`` (see :ref:`verify-integrity`):
+CycloneDX SBOM (composition of the published package), SLSA Build Provenance
+(source-to-binary traceability), SLSA Source Provenance (governance controls on
+``main``), Verification Summary Attestation (VSA), and in-toto Test Results
+(CI test suite passed before any binary was produced).  These are required by
+supply-chain controls :ref:`C-026 <c-026>`, :ref:`C-037 <c-037>`,
+:ref:`C-039 <c-039>`, and :ref:`C-040 <c-040>`.
+
+**Dependency-scanning outputs** — When users run ``dfetch check``, the reporting
+layer emits findings about outdated or missing vendored dependencies in the format
+of their choice:
 :ref:`SARIF <check-ci-github>` (for GitHub code scanning),
-:ref:`SBOM / CycloneDX <sbom>` (bill of materials),
 :ref:`Code Climate JSON <check-ci-gitlab>` (GitLab merge-request quality reports), or
 :ref:`Jenkins JSON <check-ci-jenkins>` (Jenkins warnings-ng plugin).
 
@@ -187,13 +197,17 @@ the reporting layer emits findings in the selected format:
      - OSCAL 1.1.2 JSON
      - Static prEN 40000-1-4 catalog (input to compliance pipeline, not generated)
 
+   * - :ref:`Release attestations <verify-integrity>`
+     - Sigstore-signed (GitHub Actions)
+     - Five attestation types generated *about dfetch* on every release: CycloneDX
+       SBOM, SLSA Build Provenance, SLSA Source Provenance, VSA, in-toto Test Results.
+       Required by controls :ref:`C-026 <c-026>`, :ref:`C-037 <c-037>`,
+       :ref:`C-039 <c-039>`, :ref:`C-040 <c-040>`;
+       verifiable with ``gh attestation verify``.
+
    * - :ref:`SARIF output <check-ci-github>`
      - JSON (SARIF 2.1.0)
      - ``dfetch check --output-type sarif``; upload to GitHub code scanning
-
-   * - :ref:`SBOM / CycloneDX <sbom>`
-     - JSON (CycloneDX)
-     - ``dfetch report --sbom``; bill of materials with SPDX licence data
 
    * - :ref:`Code Climate JSON <check-ci-gitlab>`
      - JSON (Code Climate)
@@ -327,8 +341,9 @@ Security assessment output formats
   Static Analysis Results Interchange Format; used by ``dfetch check --output-type sarif``
   for :ref:`GitHub code scanning integration <check-ci-github>`.
 - `CycloneDX specification <https://cyclonedx.org/specification/overview/>`_ —
-  SBOM format used by ``dfetch report --sbom``; includes SPDX licence identifiers
-  and ``dfetch:*`` custom properties for licence provenance.
+  SBOM format used for the release attestation that GitHub Actions generates
+  *about dfetch itself* on every release; verifiable with ``gh attestation verify``
+  (see :ref:`verify-integrity`).
 - `Code Climate test coverage spec <https://github.com/codeclimate/platform/blob/master/spec/analyzers/SPEC.md>`_ —
   JSON format used by ``dfetch check --output-type code-climate`` for
   :ref:`GitLab merge-request quality widgets <check-ci-gitlab>`.
