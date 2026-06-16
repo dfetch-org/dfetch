@@ -51,7 +51,7 @@ jobs:
       run: python -m pip install .[wheel]
     - name: Audit runtime dependencies for CVEs (C-043)
       run: |
-        pip install pip-audit
+        pip install .[cve-audit]
         pip-audit --vulnerability-service osv
     - name: Build a binary wheel and a source tarball
       run: python3 -m build
