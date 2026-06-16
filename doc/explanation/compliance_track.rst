@@ -65,6 +65,60 @@ Classification Decision
 
 ----
 
+CRA Annex V — Technical Documentation Map
+------------------------------------------
+
+Annex V of Regulation (EU) 2024/2847 specifies the minimum content for
+a manufacturer's technical documentation. The table below maps each
+Annex V element to the corresponding dfetch artifact or section.
+Because dfetch is outside mandatory CRA scope, this mapping is provided
+as a convenience for downstream integrators conducting their own
+Article 13 conformity assessments.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - Annex V element
+     - dfetch artifact / section
+
+   * - **1. General description** — intended purpose, product name and version,
+       manufacturer address
+     - :doc:`security` § *Product and manufacturer identification*;
+       :doc:`../reference/manifest` (manifest schema and version field)
+
+   * - **2. Design and development** — software architecture; how components
+       build on or feed into each other
+     - :doc:`../explanation/architecture` (layer diagram and module overview);
+       :doc:`security_pipeline` § *Threat model pipeline* (security-relevant
+       component relationships)
+
+   * - **3. Production and monitoring** — build pipeline, dependency
+       management, CI/CD monitoring
+     - :doc:`security_pipeline` § *Compliance pipeline* and *Release
+       attestations*; CI workflows in
+       `.github/workflows/ <https://github.com/dfetch-org/dfetch/tree/main/.github/workflows>`_
+
+   * - **4. Cybersecurity risk assessment** (Article 13(2)) — asset
+       identification, threat analysis, risk treatment
+     - :doc:`threat_model_supply_chain` (pre-install lifecycle);
+       :doc:`threat_model_usage` (runtime invocation);
+       see also :doc:`security` § *Risk Rating Methodology*
+
+   * - **5. Implemented security solutions and applied standards** —
+       list of harmonised standards applied; where not applied,
+       description of how each Annex I requirement is met
+     - This page (§§ *Applicable Standards*, *Part I*, *Part II*);
+       :doc:`control_register` (all 46 controls with references);
+       OSCAL Component Definition
+       `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_
+
+   * - **6. EU Declaration of Conformity** (Annex IV)
+     - Not required. dfetch is outside mandatory CRA scope (see
+       *Classification Decision* above). No CE marking is affixed.
+
+----
+
 Applicable Standards
 --------------------
 
@@ -127,7 +181,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-B** — Be made available on the market with a secure by default configuration, including the possibility to reset the product to its original state.
      - SO.SecureDefaultConfiguration
      - :ref:`C-001 <c-001>`, :ref:`C-002 <c-002>`
-     - —
+     - Integrity hash verification (:ref:`C-005 <c-005>`) is opt-in; manifest entries without an ``integrity`` field are fetched without hash verification by default
      - ⚠ Partial
    * -
      - SO.SecureStartupConfig
@@ -151,9 +205,9 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - — N/A
    * -
      - SO.UserUpdateNotification
-     - :ref:`C-040 <c-040>`
      - —
-     - ✓ Implemented
+     - dfetch is a passive CLI tool with no persistent process or network channel; proactive in-product update notification is not technically feasible without architectural change. Users discover updates via PyPI and GitHub Releases.
+     - — N/A
    * -
      - SO.PostponeUpdates
      - —
@@ -162,12 +216,12 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-D** — Ensure protection from unauthorised access by appropriate control mechanisms including authentication, identity or access management systems, and report on possible unauthorised access.
      - SO.AccessControl
      - :ref:`C-006 <c-006>`, :ref:`C-036 <c-036>`
-     - —
+     - dfetch has no native authentication or authorisation layer; access control is fully delegated to the underlying VCS server and host OS. C-006 prevents interactive credential prompts (mitigating credential interception), and C-036 strips credentials from persisted metadata — both are confidentiality controls, not access control mechanisms in the authentication/authorisation sense.
      - ⚠ Partial
    * -
      - SO.AccessControlReport
      - :ref:`C-045 <c-045>`
-     - No persistent log of unauthorised access attempts
+     - No persistent log of access attempts; C-045 detects and warns on plaintext transport but does not log events
      - ⚠ Partial
    * - **ECR-E** — Protect the confidentiality of stored, transmitted or otherwise processed data by state-of-the-art mechanisms such as encryption at rest and in transit.
      - SO.DataStoredConfidentiality
@@ -297,11 +351,21 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
 
 .. rubric:: Notes on "Implemented" rows with no control listed
 
-**ECR-C SO.Updateability** — No dfetch-specific control is needed.  SUM-1/SUM-2
-are satisfied by the PyPI distribution mechanism (``pip install --upgrade dfetch``
-and GitHub Releases binary packages).  pip's TLS-protected download channel provides
-the required secure update path.  The update mechanism is the responsibility of the
-user's package manager, not of dfetch itself.
+**ECR-C SO.Updateability** — SUM-1/SUM-2 require the manufacturer to make security
+updates available through a secure channel.  dfetch publishes every release to PyPI
+(TLS-protected, OIDC-authenticated via :ref:`C-010 <c-010>`) and GitHub Releases
+(with release attestations per :ref:`C-039 <c-039>`).  The CVE gate (:ref:`C-043 <c-043>`)
+blocks release if known vulnerabilities are present in runtime dependencies.  Providing
+the update *mechanism* is the manufacturer's obligation under SUM-1/SUM-2; delivery
+to the end user is the responsibility of the user's package manager.
+
+**ECR-C SO.UserUpdateNotification** — N/A.  dfetch is a passive CLI tool that runs
+to completion and exits; it has no persistent process, no background service, and
+no maintained network channel between invocations.  Proactive in-product update
+notification (LNM-1) is not technically feasible without a fundamental architectural
+change.  Users discover new releases via PyPI (``pip index versions dfetch``),
+GitHub Release subscriptions, or Dependabot/Renovate rules on their own
+``requirements.txt``.
 
 **ECR-M SO.SecureDataDeletion** — No dfetch-specific control is needed.  DLM-1 is
 satisfied by design: dfetch stores no personal data, credentials, or cryptographic
