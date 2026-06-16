@@ -59,7 +59,7 @@ Applicable Standards
    * - prEN 40000-1-2
      - Cyber Resilience Principles and Risk Management
      - Yes
-     - Process standard covering risk-based product security across the lifecycle. The Product Security Context (§6.2) is documented in security.rst. Track A threat models (tm_supply_chain.py, tm_usage.py) implement §6.3–§6.6.
+     - Process standard covering risk-based product security across the lifecycle. The Product Security Context (§6.2) is documented in :doc:`security`. Track A threat models (tm_supply_chain.py, tm_usage.py) implement §6.3–§6.6.
      - —
    * - prEN 40000-1-3
      - Vulnerability Handling Requirements
@@ -195,7 +195,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - SO.DataMinimization
      - C-044
      - —
-     - ○ Planned
+     - ✓ Implemented
    * - **ECR-H** — Protect the availability of essential and basic functions, also after an incident, including through resilience and mitigation measures against denial-of-service attacks.
      - SO.IncidentRecovery
      - —
@@ -229,8 +229,8 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-K** — Be designed, developed and produced to reduce the impact of an incident using appropriate exploitation mitigation mechanisms and techniques.
      - SO.ReduceImpactOfIncident
      - C-005, C-007, C-015, C-017, C-046
-     - No documented exploit mitigation inventory (→ C-046 planned)
-     - ○ Planned
+     - —
+     - ✓ Implemented
    * - **ECR-L** — Provide security related information by recording and monitoring relevant internal activity, including the access to or modification of data, services or functions, with an opt-out mechanism for the user.
      - SO.LogSecurityRelevantActivities
      - C-036
@@ -293,8 +293,8 @@ Part II requirements are addressed via prEN 40000-1-3. pii-04 is not applicable 
      - ✓ Implemented
    * - Part II §2
      - Address vulnerabilities without delay; provide free security updates.
-     - C-015, C-016
-     - No formal patch SLA defined; No backport/LTS commitment documented
+     - C-015, C-016, SECURITY.md
+     - No LTS backport policy (latest release only — documented in SECURITY.md)
      - ⚠ Partial
    * - Part II §3
      - Apply effective coordinated vulnerability disclosure (CVD) policy.
@@ -318,9 +318,9 @@ Part II requirements are addressed via prEN 40000-1-3. pii-04 is not applicable 
      - ⚠ Partial
    * - Part II §7
      - Provide security updates free of charge for the support period.
-     - MIT licence, PyPI
-     - No support period or LTS policy documented
-     - ⚠ Partial
+     - MIT licence, PyPI, SECURITY.md
+     - —
+     - ✓ Implemented
 
 Gap Analysis — Compliance-Only Controls
 ---------------------------------------
@@ -350,7 +350,7 @@ prEN 40000-1-4 ECR-k requires documenting applicable exploit mitigation techniqu
 Final Control Register
 ----------------------
 
-All controls from Track A (risk-driven) and Track B (regulatory) merged and sorted. Track B controls (C-043–C-046) are marked accordingly.
+All controls from Track A (risk-driven) and Track B (regulatory) merged and sorted. Track B controls (C-043, C-044, and C-046) are marked accordingly.
 
 .. list-table::
    :header-rows: 1

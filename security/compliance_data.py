@@ -83,7 +83,7 @@ STANDARDS: list[ApplicableStandard] = [
         applies=True,
         scope_note=(
             "Process standard covering risk-based product security across the lifecycle. "
-            "The Product Security Context (§6.2) is documented in security.rst. "
+            "The Product Security Context (§6.2) is documented in :doc:`security`. "
             "Track A threat models (tm_supply_chain.py, tm_usage.py) implement §6.3–§6.6."
         ),
     ),
@@ -406,9 +406,9 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "UNM-1, UNM-2 (dfetch processes no personal data requiring user notification)",
             "DTM-3 (no optional data processing to configure)",
         ],
-        status="planned",
+        status="implemented",
         description=(
-            "DTM-1: C-044 (planned) documents that .dfetch_data.yaml is limited to "
+            "DTM-1: C-044 documents that .dfetch_data.yaml is limited to "
             "remote_url (stripped), revision, optional hash, and last_fetch — each "
             "justified by functional necessity. "
             "DTM-2: met by design — dfetch collects no telemetry or optional data."
@@ -503,13 +503,12 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         not_applicable=[
             "Compile-time mitigations (CFI, sandboxing) — not applicable to pure Python"
         ],
-        gaps=["No documented exploit mitigation inventory (→ C-046 planned)"],
-        status="planned",
+        status="implemented",
         description=(
             "GEC-11: Python interpreter provides ASLR/DEP/stack-canaries (OS-level). "
             "dfetch: no eval/exec of remote content; constant-time comparison (C-005); "
             "shell=False (C-007); static analysis (C-015, C-017). "
-            "C-046 (planned) formalises this inventory."
+            "C-046 formalises this inventory in doc/explanation/compliance_track.rst."
         ),
     ),
     # ECR-l: Monitoring and Logging
@@ -604,8 +603,8 @@ PART_II_REQUIREMENTS: list[PartIIRequirement] = [
         id="pii-02",
         ref="Part II §2",
         text="Address vulnerabilities without delay; provide free security updates.",
-        controls=["C-015", "C-016"],
-        gaps=["No formal patch SLA defined", "No backport/LTS commitment documented"],
+        controls=["C-015", "C-016", "SECURITY.md"],
+        gaps=["No LTS backport policy (latest release only — documented in SECURITY.md)"],
         status="partially-implemented",
     ),
     PartIIRequirement(
@@ -640,8 +639,7 @@ PART_II_REQUIREMENTS: list[PartIIRequirement] = [
         id="pii-07",
         ref="Part II §7",
         text="Provide security updates free of charge for the support period.",
-        controls=["MIT licence", "PyPI"],
-        gaps=["No support period or LTS policy documented"],
-        status="partially-implemented",
+        controls=["MIT licence", "PyPI", "SECURITY.md"],
+        status="implemented",
     ),
 ]
