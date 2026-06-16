@@ -127,9 +127,9 @@ requirements not independently surfaced by the risk analysis.
    * - .. _c-024:
 
        C-024
-     - ``secrets: inherit`` scope
+     - Explicit secret forwarding
      - Risk-driven
-     - —
+     - `.github/workflows/ci.yml <https://github.com/dfetch-org/dfetch/blob/main/.github/workflows/ci.yml>`_
    * - .. _c-026:
 
        C-026
@@ -208,6 +208,13 @@ requirements not independently surfaced by the risk analysis.
      - Data minimisation policy
      - Compliance-only
      - :doc:`compliance_track`
+   * - .. _c-045:
+
+       C-045
+     - Plaintext transport detection
+     - Risk-driven
+     - `dfetch/manifest/project.py <https://github.com/dfetch-org/dfetch/blob/main/dfetch/manifest/project.py>`_,
+       `dfetch/project/subproject.py <https://github.com/dfetch-org/dfetch/blob/main/dfetch/project/subproject.py>`_
    * - .. _c-046:
 
        C-046

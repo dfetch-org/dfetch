@@ -717,8 +717,8 @@ CONTROLS: list[Control] = [
         threats=["DFT-07"],
         reference=".github/workflows/*.yml",
         description=(
-            "Every third-party GitHub Action is pinned to a full commit SHA, "
-            "preventing tag-mutable supply-chain substitution."
+            "All third-party GitHub Actions are pinned to a full commit SHA "
+            "(``@<40-hex>``), preventing tag-mutable supply-chain substitution."
         ),
     ),
     Control(
@@ -827,13 +827,15 @@ CONTROLS: list[Control] = [
     ),
     Control(
         id="C-024",
-        name="``secrets: inherit`` scope",
+        name="Explicit secret forwarding",
         assets=["A-01", "A-05"],
         threats=["DFT-07"],
         description=(
-            "``ci.yml`` only passes required repository secrets to the test and "
-            "docs workflows, preventing malicious PR steps from exfiltrating "
-            "unrelated secrets."
+            "``ci.yml`` explicitly names only the secrets each child workflow "
+            "requires (``CODACY_PROJECT_TOKEN`` → ``test.yml``; "
+            "``GH_DFETCH_ORG_DEPLOY`` → ``docs.yml``); all other repository "
+            "secrets are not forwarded.  ``secrets: inherit`` is deliberately "
+            "not used so that malicious PR steps cannot exfiltrate unrelated secrets."
         ),
     ),
     Control(

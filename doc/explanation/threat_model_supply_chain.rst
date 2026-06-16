@@ -17,6 +17,8 @@ Risk Context
 This report follows the risk-based approach of `BSI TR-03183-1
 <https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-1.pdf>`_
 Chapter 5.
+The Sev / Risk rating scale and treatment vocabulary (Mitigate / Accept / Transfer)
+are defined in the :ref:`Risk Rating Methodology <security>` section of the main security page.
 
 Threat model for dfetch.  Covers the pre-install lifecycle: code contribution, CI/CD, build (wheel / sdist), PyPI distribution, Winget manifest submission, and consumer installation.  The installed dfetch package is the handoff point to tm_usage.py.
 
@@ -879,7 +881,7 @@ Controls
    * - C-009
      - Actions commit-SHA pinning
      - DFT-07
-     - Every third-party GitHub Action is pinned to a full commit SHA, preventing tag-mutable supply-chain substitution.  ``.github/workflows/*.yml``
+     - All third-party GitHub Actions are pinned to a full commit SHA (``@<40-hex>``), preventing tag-mutable supply-chain substitution.  ``.github/workflows/*.yml``
    * - C-010
      - OIDC trusted publishing
      - DFT-07
@@ -917,9 +919,9 @@ Controls
      - DFT-02
      - A CycloneDX SBOM is generated during the build and published alongside the PyPI release, satisfying CRA Article 13 requirements.
    * - C-024
-     - ``secrets: inherit`` scope
+     - Explicit secret forwarding
      - DFT-07
-     - ``ci.yml`` only passes required repository secrets to the test and docs workflows, preventing malicious PR steps from exfiltrating unrelated secrets.
+     - ``ci.yml`` explicitly names only the secrets each child workflow requires (``CODACY_PROJECT_TOKEN`` → ``test.yml``; ``GH_DFETCH_ORG_DEPLOY`` → ``docs.yml``); all other repository secrets are not forwarded.  ``secrets: inherit`` is deliberately not used so that malicious PR steps cannot exfiltrate unrelated secrets.  ``.github/workflows/ci.yml``
    * - C-026
      - Consumer-side package provenance verification
      - DFT-17, DFT-25

@@ -46,8 +46,8 @@ def run_on_cmdline(
     logger.debug(f"Running {cmd}")
 
     try:
-        proc = subprocess.run(  # nosec
-            cmd, env=env, input=input_data, capture_output=True, check=True
+        proc = subprocess.run(
+            cmd, shell=False, env=env, input=input_data, capture_output=True, check=True
         )
     except subprocess.CalledProcessError as exc:
         raise SubprocessCommandError(
