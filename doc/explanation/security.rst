@@ -146,9 +146,61 @@ reads those definitions together with the static OSCAL catalog and generates
 defined in ``compliance_data.py``.
 
 **Runtime outputs** — When users run ``dfetch check`` or ``dfetch report``,
-the reporting layer emits findings in the selected format: SARIF (for GitHub
-code scanning), SBOM / CycloneDX (bill of materials), Code Climate JSON, or
-Jenkins JSON.
+the reporting layer emits findings in the selected format:
+:ref:`SARIF <check-ci-github>` (for GitHub code scanning),
+:ref:`SBOM / CycloneDX <sbom>` (bill of materials),
+:ref:`Code Climate JSON <check-ci-gitlab>` (GitLab merge-request quality reports), or
+:ref:`Jenkins JSON <check-ci-jenkins>` (Jenkins warnings-ng plugin).
+
+**Artifacts at a glance**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 15 45
+
+   * - Artifact
+     - Type
+     - Purpose
+
+   * - :doc:`threat_model_supply_chain`
+     - RST (generated)
+     - Supply-chain threat model: DFD, sequence diagram, STRIDE tables, controls
+
+   * - :doc:`threat_model_usage`
+     - RST (generated)
+     - Runtime threat model: DFD, sequence diagram, STRIDE tables, controls
+
+   * - :doc:`compliance_track`
+     - RST (generated)
+     - CRA Annex I → prEN 40000-1-4 SO.* → dfetch control traceability tables
+
+   * - :doc:`control_register`
+     - RST (maintained)
+     - All 46 dfetch controls (C-001 to C-046) with references and status
+
+   * - `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_
+     - OSCAL 1.1.2 JSON
+     - Machine-readable Component Definition; maps dfetch controls to CRA ECRs
+
+   * - `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_
+     - OSCAL 1.1.2 JSON
+     - Static prEN 40000-1-4 catalog (input to compliance pipeline, not generated)
+
+   * - :ref:`SARIF output <check-ci-github>`
+     - JSON (SARIF 2.1.0)
+     - ``dfetch check --output-type sarif``; upload to GitHub code scanning
+
+   * - :ref:`SBOM / CycloneDX <sbom>`
+     - JSON (CycloneDX)
+     - ``dfetch report --sbom``; bill of materials with SPDX licence data
+
+   * - :ref:`Code Climate JSON <check-ci-gitlab>`
+     - JSON (Code Climate)
+     - ``dfetch check --output-type code-climate``; GitLab MR quality widget
+
+   * - :ref:`Jenkins JSON <check-ci-jenkins>`
+     - JSON
+     - ``dfetch check --output-type jenkins``; Jenkins warnings-ng plugin
 
 Threat Models
 -------------
