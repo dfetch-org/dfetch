@@ -1,0 +1,74 @@
+@startuml
+
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam arrowColor #444444
+skinparam componentBorderColor #888888
+skinparam packageBorderColor #666666
+skinparam noteBorderColor #999999
+skinparam noteBackgroundColor #FFFFF0
+
+left to right direction
+
+package "Threat Model Sources  (security/)" #dae8fc {
+    [tm_supply_chain.py\ntm_usage.py] as tm_models
+    [tm_elements.py] as tm_el
+    [threats.json] as threats
+    [report_template.rst] as tmpl
+}
+
+package "Compliance Sources  (security/)" #dae8fc {
+    [compliance_data.py] as comp_data
+    [cra_pren_4000014_oscal_catalog.json] as cra_cat
+}
+
+package "Processors  (security/)" #d5e8d4 {
+    [pytm] as pytm
+    [tm_render.py] as tm_render
+    [compliance.py] as compliance_py
+}
+
+package "Documentation  (doc/explanation/)" #fff2cc {
+    [threat_model_supply_chain.rst\nthreat_model_usage.rst] as tm_rst
+    [compliance_track.rst] as comp_rst
+    [control_register.rst] as ctrl_rst
+}
+
+package "Machine-Readable  (security/)" #fff2cc {
+    [dfetch.component-definition.json\n(OSCAL 1.1.2)] as oscal_out
+}
+
+package "Runtime Outputs  (dfetch check/report)" #f8cecc {
+    [SARIF] as sarif
+    [SBOM / CycloneDX] as sbom
+    [Code Climate / Jenkins JSON] as other_fmt
+}
+
+' Threat model pipeline
+tm_models --> pytm
+tm_el --> pytm
+threats --> tm_render
+tmpl --> tm_render
+pytm --> tm_render
+tm_render --> tm_rst : "DFD, sequence diagrams,\nthreat & control tables"
+
+' Compliance pipeline
+comp_data --> compliance_py
+cra_cat --> compliance_py
+compliance_py --> comp_rst : "RST mapping tables"
+compliance_py --> oscal_out : "OSCAL 1.1.2 JSON"
+
+' Runtime pipeline — dfetch check/report commands
+[dfetch check/report] as dfetch_rt
+dfetch_rt --> sarif
+dfetch_rt --> sbom
+dfetch_rt --> other_fmt
+
+note right of ctrl_rst
+  Manually maintained;
+  references controls
+  from compliance_data.py
+end note
+
+@enduml

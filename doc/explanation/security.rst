@@ -103,6 +103,37 @@ threat models below.
   manifest destination path, or hostile archive entries, could write, overwrite, or
   delete files outside the intended vendoring directory on the end-user machine.
 
+Security Documentation Pipeline
+--------------------------------
+
+The diagram below shows how the security documentation is generated from its
+source files and what output artifacts each pipeline produces.
+
+.. uml:: /static/uml/security_doc_flow.puml
+
+**Threat model pipeline** — ``security/tm_supply_chain.py`` and
+``security/tm_usage.py`` define the model elements (actors, data flows, trust
+boundaries) using the *pytm* library. ``security/threats.json`` provides a
+catalog of 60+ STRIDE-classified threats. ``security/tm_render.py`` drives
+*pytm*, matches threats against model elements, and combines the output with
+``security/report_template.rst`` to produce the two RST threat-model pages,
+each containing an embedded data-flow diagram, a sequence diagram, and tables
+for assets, threats, and controls.
+
+**Compliance pipeline** — ``security/compliance_data.py`` defines the 46
+dfetch controls and their mapping to CRA essential requirements and
+prEN 40000-1-4 security objectives. ``security/compliance.py`` reads those
+definitions together with the static OSCAL catalog and generates
+``doc/explanation/compliance_track.rst`` (human-readable RST mapping tables)
+and ``security/dfetch.component-definition.json`` (machine-readable OSCAL 1.1.2
+Component Definition). The :doc:`control_register` page is maintained manually
+and references controls defined in ``compliance_data.py``.
+
+**Runtime outputs** — When users run ``dfetch check`` or ``dfetch report``,
+the reporting layer emits findings in the selected format: SARIF (for GitHub
+code scanning), SBOM / CycloneDX (bill of materials), Code Climate JSON, or
+Jenkins JSON.
+
 Threat Models
 -------------
 
