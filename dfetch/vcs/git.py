@@ -337,6 +337,24 @@ def _parse_eol_attributes(output: str) -> dict[str, str]:
     }
 
 
+def _rewrite_line_endings(path: Path, eol: str) -> None:
+    """Rewrite *path* in-place so every line uses the requested *eol* style.
+
+    Binary files (those containing a NUL byte) are left untouched.
+    """
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return
+    if b"\0" in data:
+        return
+    normalised = data.replace(b"\r\n", b"\n")
+    if eol == "crlf":
+        normalised = normalised.replace(b"\n", b"\r\n")
+    if normalised != data:
+        path.write_bytes(normalised)
+
+
 class GitLocalRepo:
     """A git repository."""
 
@@ -390,6 +408,27 @@ class GitLocalRepo:
             except (SubprocessCommandError, RuntimeError):
                 return {}
         return _parse_eol_attributes(result.stdout.decode())
+
+    def renormalize(self, path: str) -> None:
+        """Rewrite files in *path* per this repo's .gitattributes eol settings.
+
+        Queries each file's ``eol`` gitattribute and rewrites its line endings
+        in-place so on-disk content matches what git would store. Only files
+        with an explicit ``eol`` attribute are touched; binary files (NUL byte
+        present) are always skipped.
+        """
+        root = Path(self._path)
+        dest = root / path
+        if not dest.is_dir():
+            return
+        rel_files = [
+            f.relative_to(root).as_posix() for f in dest.rglob("*") if f.is_file()
+        ]
+        if not rel_files:
+            return
+        eol_map = self.eol_attributes(rel_files)
+        for rel_path, eol in eol_map.items():
+            _rewrite_line_endings(root / rel_path, eol)
 
     def _configure_eol(self, eol: str) -> None:
         """Write the line-ending policy into the local repo before fetch.

@@ -155,3 +155,26 @@ Feature: Superproject .gitattributes line endings respected on fetch
             """
         When I run "dfetch update" in MyProject
         Then 'MyProject/SomeProject/script.bat' has CRLF line endings
+
+    Scenario: Superproject per-file eol attribute is applied when no global preference exists
+        A per-file ``eol`` rule in the superproject (e.g. ``*.bat eol=crlf``)
+        without a blanket ``* text=auto eol=...`` preference causes DFetch to
+        renormalise fetched files to match the per-file eol setting.
+
+        Given a git-repository "SomeProject.git" with a LF "script.bat" file
+        And a local git repo "MyProject" with the manifest
+            """
+            manifest:
+              version: '0.0'
+
+              projects:
+                - name: SomeProject
+                  url: some-remote-server/SomeProject.git
+                  tag: v1
+            """
+        And ".gitattributes" in MyProject is created and committed with
+            """
+            *.bat eol=crlf
+            """
+        When I run "dfetch update" in MyProject
+        Then 'MyProject/SomeProject/script.bat' has CRLF line endings

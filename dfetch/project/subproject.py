@@ -95,6 +95,7 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
         eol_preferences_callback: (
             Callable[[Sequence[str]], dict[str, str]] | None
         ) = None,
+        renormalize_callback: Callable[[str], None] | None = None,
     ) -> None:
         """Update this subproject if required.
 
@@ -111,6 +112,10 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
                 the line ending ("lf" or "crlf") the superproject requests per path (e.g.
                 from its gitattributes). Used to resolve the destination's preference,
                 which the VCS backend applies natively while fetching.
+            renormalize_callback (Callable, optional): Called with the destination path
+                after fetching when no global EOL preference was applied.  Rewrites
+                on-disk files whose per-file gitattributes eol setting differs from
+                the content that came from the remote.
         """
         to_fetch = self.update_is_required(force)
 
@@ -131,6 +136,8 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
             logger.debug(f"Clearing destination {self.local_path}")
             safe_rm(self.local_path)
 
+        eol_hint = self._destination_eol_hint(eol_preferences_callback)
+
         with logger.status(
             self.__project.name,
             f"Fetching {to_fetch}",
@@ -138,12 +145,13 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
         ):
             if warning := plaintext_warning(self.__project.remote_url):
                 logger.print_warning_line(self.__project.name, warning)
-            actually_fetched, dependency = self._fetch_impl(
-                to_fetch, self._destination_eol_hint(eol_preferences_callback)
-            )
+            actually_fetched, dependency = self._fetch_impl(to_fetch, eol_hint)
         self._log_project(f"Fetched {actually_fetched}")
 
         applied_patches = self._apply_patches(patch_count)
+
+        if renormalize_callback and eol_hint is None:
+            renormalize_callback(self.local_path)
 
         post_fetch_ignored = (
             list(ignored_files_callback()) if ignored_files_callback else []

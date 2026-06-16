@@ -112,6 +112,14 @@ class SuperProject(ABC):
         del paths  # unused arg
         return {}
 
+    def renormalize(self, path: str) -> None:
+        """Renormalize fetched files per this project's line-ending attributes.
+
+        By default this is a no-op; VCS-specific superprojects may override
+        this to rewrite on-disk files so they match the project's attributes.
+        """
+        del path  # unused
+
     @staticmethod
     @abstractmethod
     def import_projects() -> Sequence[ProjectEntry]:

@@ -1,6 +1,7 @@
 Release 0.15.0 (unreleased)
 ============================
 
+* Renormalize fetched files per the superproject's per-file ``.gitattributes`` eol rules when no blanket line-ending preference is set
 * Add CRA Compliance Track B: OSCAL 1.1.2 Component Definition mapping all CRA Annex I Part I
   essential requirements (ECR-a–m) through prEN 40000-1-4 Security Objectives to dfetch controls;
   covers Part II via prEN 40000-1-3; introduces controls C-043 (release-gate CVE check), C-044

@@ -100,6 +100,7 @@ class Update(dfetch.commands.command.Command):
                         force=args.force,
                         ignored_files_callback=_ignored,
                         eol_preferences_callback=superproject.eol_preferences,
+                        renormalize_callback=superproject.renormalize,
                     )
 
                     if not args.no_recommendations and os.path.isdir(

@@ -76,6 +76,10 @@ class GitSuperProject(SuperProject):
         """Get the line ending requested per path by this repo's gitattributes."""
         return self._repo.eol_attributes(paths)
 
+    def renormalize(self, path: str) -> None:
+        """Rewrite fetched files per this superproject's .gitattributes eol settings."""
+        self._repo.renormalize(path)
+
     @staticmethod
     def import_projects() -> Sequence[ProjectEntry]:
         """Import projects from underlying superproject."""
