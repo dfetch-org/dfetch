@@ -235,14 +235,14 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - ✓ Implemented
    * -
      - SO.DataTransmittedConfidentiality
-     - :ref:`C-005 <c-005>`, :ref:`C-045 <c-045>`
-     - —
-     - ✓ Implemented
+     - :ref:`C-045 <c-045>`
+     - C-045 warns on plaintext-scheme URLs but does not refuse to proceed; TLS/SSH confidentiality is provided by the underlying VCS client, not enforced by dfetch itself
+     - ⚠ Partial
    * -
      - SO.ComAuth
-     - :ref:`C-003 <c-003>`, :ref:`C-004 <c-004>`, :ref:`C-045 <c-045>`
-     - —
-     - ✓ Implemented
+     - :ref:`C-045 <c-045>`
+     - Server authentication (TLS certificate verification, SSH host-key checking) is delegated to the OS trust store and VCS client; dfetch does not independently authenticate remote endpoints and cannot enforce authenticated channels when C-045's warning is overridden by the user
+     - ⚠ Partial
    * -
      - SO.SecureProvisioning
      - :ref:`C-005 <c-005>`
@@ -260,8 +260,8 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - ✓ Implemented
    * -
      - SO.DataTransmittedIntegrity
-     - :ref:`C-003 <c-003>`, :ref:`C-004 <c-004>`
-     - No end-to-end hash for git/svn transport beyond TLS/SSH channel integrity
+     - :ref:`C-005 <c-005>`
+     - C-005 provides end-to-end hash verification for archive sources only (opt-in); git and svn sources rely solely on VCS object integrity (SHA-1/SHA-256 object model) and TLS/SSH channel integrity — no dfetch-level hash verification
      - ⚠ Partial
    * -
      - SO.IntegrityReport
@@ -286,7 +286,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-I** — Minimise the negative impact by the products themselves or connected devices on the availability of services provided by other devices or networks.
      - SO.LimitExternalImpact
      - :ref:`C-001 <c-001>`, :ref:`C-007 <c-007>`
-     - —
+     - No connection timeout or rate limiting on VCS operations; a stalled or slow remote can consume resources indefinitely
      - ⚠ Partial
    * -
      - SO.PreventAttackPropagation
@@ -301,7 +301,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-J** — Be designed, developed and produced to limit attack surfaces, including external interfaces.
      - SO.ReduceAttackSurface
      - :ref:`C-001 <c-001>`, :ref:`C-003 <c-003>`, :ref:`C-004 <c-004>`, :ref:`C-007 <c-007>`, :ref:`C-008 <c-008>`
-     - —
+     - No domain or URL-scheme allowlist constrains which remote URLs the manifest may reference; no network-operation timeout is enforced
      - ⚠ Partial
    * - **ECR-K** — Be designed, developed and produced to reduce the impact of an incident using appropriate exploitation mitigation mechanisms and techniques.
      - SO.ReduceImpactOfIncident
@@ -310,8 +310,8 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - ✓ Implemented
    * - **ECR-L** — Provide security related information by recording and monitoring relevant internal activity, including the access to or modification of data, services or functions, with an opt-out mechanism for the user.
      - SO.LogSecurityRelevantActivities
-     - :ref:`C-036 <c-036>`
-     - No persistent security event log (LGM-2/3/4 gap); No opt-out for logging — dfetch does not log by default
+     - —
+     - No persistent structured security event log (LGM-1/2/3/4 gap). dfetch prints operational output to stderr but does not retain it, does not record which credentials were used, which files were modified, or when remote access occurred. C-036 ensures credentials are excluded from the operational output but is not a logging control.
      - ⚠ Partial
    * -
      - SO.MonitorSecurityRelevantActivities
