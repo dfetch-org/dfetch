@@ -175,7 +175,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - Status
    * - **ECR-A** — Be made available on the market without known exploitable vulnerabilities.
      - SO.VulnerabilityManagementProcess
-     - :ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`, :ref:`C-022 <c-022>`, :ref:`C-043 <c-043>`
+     - :ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`, :ref:`C-022 <c-022>`, :ref:`C-040 <c-040>`, :ref:`C-043 <c-043>`
      - —
      - ✓ Implemented
    * - **ECR-B** — Be made available on the market with a secure by default configuration, including the possibility to reset the product to its original state.
@@ -205,9 +205,9 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - — N/A
    * -
      - SO.UserUpdateNotification
-     - —
-     - dfetch is a passive CLI tool with no persistent process or network channel; proactive in-product update notification is not technically feasible without architectural change. Users discover updates via PyPI and GitHub Releases.
-     - — N/A
+     - `dfetch/util/github_version_check.py <https://github.com/dfetch-org/dfetch/blob/main/dfetch/util/github_version_check.py>`_
+     - Check is suppressed when the ``CI`` environment variable is set (intentional: avoids spurious output in automated pipelines)
+     - ✓ Implemented
    * -
      - SO.PostponeUpdates
      - —
@@ -359,13 +359,12 @@ blocks release if known vulnerabilities are present in runtime dependencies.  Pr
 the update *mechanism* is the manufacturer's obligation under SUM-1/SUM-2; delivery
 to the end user is the responsibility of the user's package manager.
 
-**ECR-C SO.UserUpdateNotification** — N/A.  dfetch is a passive CLI tool that runs
-to completion and exits; it has no persistent process, no background service, and
-no maintained network channel between invocations.  Proactive in-product update
-notification (LNM-1) is not technically feasible without a fundamental architectural
-change.  Users discover new releases via PyPI (``pip index versions dfetch``),
-GitHub Release subscriptions, or Dependabot/Renovate rules on their own
-``requirements.txt``.
+**ECR-C SO.UserUpdateNotification** — ``dfetch check`` and ``dfetch environment``
+both call ``newer_version_available()`` (``dfetch/util/github_version_check.py``),
+which polls the GitHub releases API and prints a notice if a newer dfetch release
+exists.  The check is skipped when the ``CI`` environment variable is set to avoid
+noise in automated pipelines; developers running dfetch interactively always receive
+the notification.
 
 **ECR-M SO.SecureDataDeletion** — No dfetch-specific control is needed.  DLM-1 is
 satisfied by design: dfetch stores no personal data, credentials, or cryptographic
