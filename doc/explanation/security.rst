@@ -18,11 +18,12 @@ PyPI distribution, and runtime execution in developer and build
 environments.
 
 The model is aligned with the `Cyber Resilience Act (CRA)`_ and the
-`EN 40000`_ series of cybersecurity standards, using STRIDE as the threat
+`EN 40000`_ series of cybersecurity standards, using `STRIDE`_ as the threat
 classification methodology. It is inspired by the `ENISA Security by Design and Default Playbook`_.
 
 .. _`Cyber Resilience Act (CRA)`: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847
-.. _`EN 40000`: https://www.cencenelec.eu/media/CEN-CENELEC/Events/Webinars/2025/2025-03-10_webinar_cyberresilience_act.pdf
+.. _`EN 40000`: https://www.cencenelec.eu/areas-of-work/cen-cenelec-topics/cybersecurity/
+.. _`STRIDE`: https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats
 .. _`ENISA Security by Design and Default Playbook`: https://www.enisa.europa.eu/sites/default/files/2026-03/ENISA_Secure_By_Design_and_Default_Playbook_v0.4_draft_for_consultation.pdf
 
 The threat model is split into two focused modules:
@@ -248,3 +249,86 @@ Machine-readable OSCAL 1.1.2 artifacts are kept alongside the source:
 - `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_ — dfetch Component Definition
 
 The complete list of all controls is on the :doc:`control_register` page.
+
+Further Reading
+---------------
+
+Cyber Resilience Act
+~~~~~~~~~~~~~~~~~~~~
+
+- `Regulation (EU) 2024/2847 — Cyber Resilience Act <https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847>`_ —
+  the legislative text; Annex I Part I lists the 13 essential requirements (ECR-a … ECR-m)
+  and Part II the seven vulnerability-handling requirements.
+- `EU Commission CRA overview <https://digital-strategy.ec.europa.eu/en/policies/cyber-resilience-act>`_ —
+  accessible summary of scope, obligations, timeline, and links to delegated and implementing acts.
+- `CRA draft guidance, March 2026 (Ares(2026)2319816) <https://digital-strategy.ec.europa.eu/en/news/commission-publishes-feedback-draft-guidance-assist-companies-applying-cyber-resilience-act>`_ —
+  Commission guidance on applying the CRA; covers free and open-source software, remote data
+  processing, and support periods.
+- `BSI TR-03183-1: Cyber Resilience Requirements for Manufacturers <https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-1.pdf>`_ —
+  practical risk-based guidance aligned with CRA; used as the risk-context framework in
+  dfetch's threat model pages.
+
+EN 40000 harmonised standards
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The EN 40000 family is being developed by CEN/CLC/JTC 13 to provide harmonised
+standards under the CRA. Once published in the OJEU, compliance with them confers a
+presumption of conformity with the corresponding CRA essential requirements.
+
+- `CEN/CENELEC cybersecurity standards page <https://www.cencenelec.eu/areas-of-work/cen-cenelec-topics/cybersecurity/>`_ —
+  overview of the EN 40000 work programme (prEN 40000-1-1 through 40000-1-4) and
+  the CEN/CLC/JTC 13 committee.
+- `CEN/CENELEC CRA webinar slides (March 2025) <https://www.cencenelec.eu/media/CEN-CENELEC/Events/Webinars/2025/2025-03-10_webinar_cyberresilience_act.pdf>`_ —
+  explains how each part of EN 40000 maps to CRA obligations, with an overview of
+  the Security Objectives (SO.*) in prEN 40000-1-4.
+- `EU Blue Guide on the implementation of EU product rules (2022) <https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX%3A52022XC0629%2804%29>`_ —
+  explains how manufacturers identify applicable requirements, choose specifications,
+  and demonstrate conformity; figure 4.1.2.2 inspired the security documentation
+  flow diagram on this page.
+- `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ —
+  dfetch's machine-readable OSCAL 1.1.2 representation of the prEN 40000-1-4 catalog,
+  derived from the CEN/CLC/JTC 13 WG 9 deep-dive session (March 2026).
+
+Threat modelling
+~~~~~~~~~~~~~~~~
+
+- `STRIDE methodology <https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats>`_ —
+  Microsoft's six-category threat classification (Spoofing, Tampering, Repudiation,
+  Information Disclosure, Denial of Service, Elevation of Privilege); used to classify
+  every entry in
+  `security/threats.json <https://github.com/dfetch-org/dfetch/blob/main/security/threats.json>`_.
+- `pytm — Pythonic Threat Modeling <https://github.com/izar/pytm>`_ —
+  the library used by ``tm_supply_chain.py`` and ``tm_usage.py`` to define model elements
+  (actors, data flows, trust boundaries) and auto-generate threat findings.
+- `BSI TR-03183-1 <https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-1.pdf>`_ —
+  provides the risk-context chapter structure used in the threat model pages.
+- `ENISA Security by Design and Default Playbook <https://www.enisa.europa.eu/sites/default/files/2026-03/ENISA_Secure_By_Design_and_Default_Playbook_v0.4_draft_for_consultation.pdf>`_ —
+  ENISA guidance on integrating security from the start; the overall model structure is
+  inspired by this playbook.
+
+OSCAL
+~~~~~
+
+`OSCAL (Open Security Controls Assessment Language) <https://pages.nist.gov/OSCAL/>`_ is a
+set of NIST-published JSON/XML schemas for machine-readable security documentation.
+dfetch uses OSCAL 1.1.2 for two artifacts:
+
+- `OSCAL Catalog model <https://pages.nist.gov/OSCAL/reference/latest/catalog/>`_ —
+  used by ``cra_pren_4000014_oscal_catalog.json`` to represent the prEN 40000-1-4
+  security objectives as a structured catalog.
+- `OSCAL Component Definition model <https://pages.nist.gov/OSCAL/reference/latest/component-definition/>`_ —
+  used by ``dfetch.component-definition.json`` to describe how dfetch implements each
+  control and maps it back to CRA essential requirements via SO.* objectives.
+
+Security assessment output formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- `SARIF 2.1.0 (OASIS standard) <https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html>`_ —
+  Static Analysis Results Interchange Format; used by ``dfetch check --output-type sarif``
+  for :ref:`GitHub code scanning integration <check-ci-github>`.
+- `CycloneDX specification <https://cyclonedx.org/specification/overview/>`_ —
+  SBOM format used by ``dfetch report --sbom``; includes SPDX licence identifiers
+  and ``dfetch:*`` custom properties for licence provenance.
+- `Code Climate test coverage spec <https://github.com/codeclimate/platform/blob/master/spec/analyzers/SPEC.md>`_ —
+  JSON format used by ``dfetch check --output-type code-climate`` for
+  :ref:`GitLab merge-request quality widgets <check-ci-gitlab>`.
