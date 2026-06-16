@@ -1,0 +1,102 @@
+@startuml
+
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam backgroundColor white
+skinparam arrowColor #333333
+skinparam packageBorderColor #333333
+skinparam componentBorderColor #555555
+skinparam componentBackgroundColor white
+
+left to right direction
+
+' ── Column 1: All requirements (legally binding) ──────────────────────────────
+
+package "All requirements\n(legally binding, given in\nlegislation and threat catalog)" as p_all #dae8fc {
+    [CRA ECR-a\ncyber-security properties]     as ecra
+    [CRA ECR-b\nno known exploitable vulns]    as ecrb
+    [CRA ECR-c\nsecure by default]             as ecrc
+    [CRA ECR-d ... ECR-l]                      as ecrd_l
+    [CRA ECR-m\ndata protection]               as ecrm
+    [STRIDE threat catalog\n(threats.json, 60+ threats)] as stride
+}
+
+' ── Column 2: Risk & threat assessment (dashed = selection / filter step) ─────
+
+package "Risk and threat assessment\n(by dfetch maintainers)" as p_assess #line.dashed;back:#d5e8d4 {
+    [tm_supply_chain.py\ntm_usage.py + pytm] as tm
+    [compliance_data.py\n+ OSCAL catalog]   as comp
+}
+
+' ── Column 3: Applicable to dfetch ───────────────────────────────────────────
+
+package "Applicable to dfetch\n(identified by maintainers)" as p_appl #fff2cc {
+    [Applicable STRIDE threats\n(mapped to dfetch elements)]     as appl_t
+    [Applicable ESRs\n→ controls C-001 to C-046]                as appl_c
+    [N/A requirements\n(documented gaps)]                        as na_c
+}
+
+' ── Column 4a: Threat-model artifacts (solid path — methodology coverage) ─────
+
+package "Covered by pytm\n+ tm_render.py" as p_tm_out #e1f0da {
+    [threat_model_supply_chain.rst\nthreat_model_usage.rst\n(DFD · sequence · STRIDE tables)] as tm_out
+}
+
+' ── Column 4b: Compliance artifacts (solid path — CRA compliance evidence) ────
+
+package "Covered by\ncompliance.py" as p_comp_out #fff2cc {
+    [compliance_track.rst\ndfetch.component-definition.json (OSCAL 1.1.2)] as comp_out
+}
+
+' ── Column 4c: Supply-chain release attestations (GitHub Actions, about dfetch) ─
+
+package "Release attestations\n(GitHub Actions, about dfetch)" as p_sc_out #e8d5f5 {
+    [GitHub Actions\nrelease workflow] as release_wf
+    [CycloneDX SBOM · SLSA Build Provenance\nVSA · in-toto Test Results] as sc_out
+    [Source Provenance\n(every push to main)] as src_prov
+    release_wf --> sc_out
+    release_wf --> src_prov
+}
+
+' ── Column 4d: Dependency-scanning outputs (dfetch check, for users) ───────────
+
+package "Dependency-scanning outputs\n(dfetch check, for users)" as p_rt_out #f8cecc {
+    [dfetch check] as dfetch_check
+    [SARIF · Code Climate JSON · Jenkins JSON] as rt_out
+    dfetch_check --> rt_out
+}
+
+' ── Arrows: Column 1 → Column 2 (dashed = assessment selects applicable items) ─
+
+ecra   ..> tm
+ecrb   ..> tm
+ecrc   ..> tm
+ecrd_l ..> tm
+ecrm   ..> comp
+stride ..> tm
+ecra   ..> comp
+
+' ── Arrows: Column 2 → Column 3 ──────────────────────────────────────────────
+
+tm   --> appl_t
+comp --> appl_c
+comp ..> na_c
+
+' ── Arrows: Column 3 → Column 4 ──────────────────────────────────────────────
+
+' Solid: covered by STRIDE threat-modelling methodology
+appl_t --> tm_out   : "Presumption of conformity\n(STRIDE methodology)"
+
+' Solid: covered by explicit CRA compliance analysis
+appl_c --> comp_out : "CRA compliance evidence"
+
+' Dashed: no harmonised standard — gap documented directly
+na_c   ..> comp_out : "No harmonised\nstandard / gap"
+
+' Dashed: threat model documents controls that require the release attestations
+tm_out  ..> release_wf : "requires\n(C-026, C-037,\nC-039, C-040)"
+
+' Dashed: applicable controls exercised by dfetch check
+appl_c  ..> dfetch_check : "Dependency\nscanning"
+
+@enduml
