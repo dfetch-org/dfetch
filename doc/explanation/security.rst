@@ -108,7 +108,8 @@ Threat Models
 
 The following pages document the two threat models in detail. Each page is
 generated from the corresponding Python module in ``security/`` — see
-``security/README.md`` for instructions on regenerating them.
+`security/README.md <https://github.com/dfetch-org/dfetch/blob/main/security/README.md>`_
+for instructions on regenerating them.
 
 .. toctree::
    :maxdepth: 1
@@ -137,14 +138,14 @@ The three-tier traceability model is::
 Three compliance-only controls address CRA requirements not independently
 surfaced by the risk models:
 
-- **C-043** (release-gate CVE check) — ECR-a / SO.VulnerabilityManagementProcess → GEC-1
-- **C-044** (data minimisation policy) — ECR-g / SO.DataMinimization → DTM-1
-- **C-046** (exploit mitigation inventory) — ECR-k / SO.ReduceImpactOfIncident → GEC-11
+- :ref:`C-043 <c-043>` (release-gate CVE check) — ECR-a / SO.VulnerabilityManagementProcess → GEC-1
+- :ref:`C-044 <c-044>` (data minimisation policy) — ECR-g / SO.DataMinimization → DTM-1
+- :ref:`C-046 <c-046>` (exploit mitigation inventory) — ECR-k / SO.ReduceImpactOfIncident → GEC-11
 
 Machine-readable OSCAL 1.1.2 artifacts are kept alongside the source:
 
-- ``security/cra_pren_4000014_oscal_catalog.json`` — prEN 40000-1-4 catalog
+- `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ — prEN 40000-1-4 catalog
   (derived from the CEN/CLC/JTC 13 WG 9 deep-dive session, March 2026)
-- ``security/dfetch.component-definition.json`` — dfetch Component Definition
+- `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_ — dfetch Component Definition
 
 The complete list of all controls is on the :doc:`control_register` page.
