@@ -225,10 +225,18 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
     SOImplementation(
         so_id="so-updateability",
         ecr_id="ecr-c",
+        not_applicable=[
+            "No dfetch-specific control required — updateability is inherent to "
+            "pip distribution (``pip install --upgrade dfetch``) and GitHub Releases. "
+            "SUM-1/SUM-2 are satisfied by the distribution mechanism, not by a "
+            "runtime dfetch feature."
+        ],
         status="implemented",
         description=(
-            "SUM-1/SUM-2: Updates distributed via PyPI (pip install --upgrade dfetch) "
-            "and GitHub Releases. pip's TLS-protected download satisfies SUM-2."
+            "SUM-1/SUM-2: Updates distributed via PyPI (``pip install --upgrade dfetch``) "
+            "and GitHub Releases. pip's TLS-protected download and version-pinning "
+            "model satisfies SUM-2. No dfetch-specific update mechanism is needed or "
+            "implemented; the package manager is the update vehicle."
         ),
     ),
     SOImplementation(
@@ -278,11 +286,11 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
     SOImplementation(
         so_id="so-access-control-report",
         ecr_id="ecr-d",
-        controls=["C-009"],
+        controls=["C-045"],
         gaps=["No persistent log of unauthorised access attempts"],
         status="partially-implemented",
         description=(
-            "GEC-13: C-009 (plaintext transport warning) alerts on unauthenticated "
+            "GEC-13: C-045 (plaintext transport warning) alerts on unauthenticated "
             "connections. No persistent security event log."
         ),
     ),
@@ -315,14 +323,14 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
     SOImplementation(
         so_id="so-data-transmitted-confidentiality",
         ecr_id="ecr-e",
-        controls=["C-005", "C-009"],
+        controls=["C-005", "C-045"],
         status="implemented",
         description=(
             "SCM-3/SCM-4: Plaintext transport (http://, git://, svn://) is accepted "
-            "by design for legacy source compatibility. C-009 detects and warns the "
+            "by design for legacy source compatibility. C-045 detects and warns the "
             "user before proceeding — 'Detection only; dfetch still proceeds with the "
             "plaintext connection; the control raises user awareness but does not "
-            "enforce scheme selection' (usage threat model, C-009 description). "
+            "enforce scheme selection' (usage threat model, C-045 description). "
             "For archive URLs over HTTP, C-005 (integrity hash) verifies that content "
             "has not been tampered with in transit; it does not encrypt or conceal the "
             "content. This is a deliberate design decision, not a residual gap."
@@ -331,14 +339,14 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
     SOImplementation(
         so_id="so-com-auth-e",
         ecr_id="ecr-e",
-        controls=["C-003", "C-004", "C-009"],
+        controls=["C-003", "C-004", "C-045"],
         status="implemented",
         description=(
             "SCM-2: HTTPS connections authenticate via TLS CA chain (C-003); SSH "
             "connections authenticate via host-key verification (C-004). Plain git:// "
             "and svn:// connections lack channel-level authentication but are accepted "
             "by design for legacy compatibility — the same rationale as "
-            "DataTransmittedConfidentiality — and C-009 warns the user. The usage "
+            "DataTransmittedConfidentiality — and C-045 warns the user. The usage "
             "threat model notes the network adversary 'cannot break correctly "
             "implemented TLS or SSH'; the residual risk for unauthenticated transports "
             "is an accepted design trade-off."
@@ -390,11 +398,11 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
     SOImplementation(
         so_id="so-integrity-report",
         ecr_id="ecr-f",
-        controls=["C-009"],
+        controls=["C-045"],
         gaps=["No persistent integrity-violation log"],
         status="partially-implemented",
         description=(
-            "GEC-13-f: dfetch surfaces transport-integrity warnings (C-009) at runtime "
+            "GEC-13-f: dfetch surfaces transport-integrity warnings (C-045) at runtime "
             "but does not maintain a persistent security event log."
         ),
     ),
@@ -530,11 +538,11 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
     SOImplementation(
         so_id="so-monitor-security-relevant-activities",
         ecr_id="ecr-l",
-        controls=["C-009"],
+        controls=["C-045"],
         not_applicable=["NMM-1 (no ambient network monitoring)"],
         status="partially-implemented",
         description=(
-            "MON-1: C-009 (plaintext transport detection) monitors for insecure "
+            "MON-1: C-045 (plaintext transport detection) monitors for insecure "
             "connections at runtime and surfaces warnings to the user."
         ),
     ),
@@ -556,13 +564,22 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
     SOImplementation(
         so_id="so-secure-data-deletion",
         ecr_id="ecr-m",
+        not_applicable=[
+            "No dfetch-specific secure-deletion control is required: dfetch stores "
+            "no personal data and no keying material. The only on-disk state is "
+            ".dfetch_data.yaml (non-sensitive metadata) and vendored source files "
+            "(third-party code, not user data). Standard OS file deletion (rm / del) "
+            "is sufficient; cryptographic wipe is not warranted. DLM-1 is satisfied "
+            "by design (no sensitive data to wipe), not by a dedicated dfetch control."
+        ],
         status="implemented",
         description=(
             "DLM-1: .dfetch_data.yaml contains only non-sensitive metadata — "
             "remote URL (credentials stripped by C-036), revision, optional content "
-            "hash, and last-fetch timestamp. Standard OS file deletion (rm / del) is "
-            "sufficient; no secure-wipe is required. Users delete the file and "
-            "vendored directories to remove all dfetch data."
+            "hash, and last-fetch timestamp. Standard OS file deletion is sufficient; "
+            "no secure-wipe is required. Users delete the file and vendored directories "
+            "to remove all dfetch data. ECR-m is satisfied by design because dfetch "
+            "collects no personal data, credentials, or keying material on disk."
         ),
     ),
     SOImplementation(

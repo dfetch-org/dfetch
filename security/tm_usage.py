@@ -966,7 +966,7 @@ CONTROLS: list[Control] = [
         ),
     ),
     Control(
-        id="C-009",
+        id="C-045",
         name="Plaintext transport detection",
         assets=["A-09", "A-22"],
         threats=["DFT-26"],
@@ -1192,10 +1192,20 @@ RESPONSES: list[ThreatResponse] = [
             "Suppressing these fetches (e.g. passing ``--no-recurse-submodules`` or "
             "``--ignore-externals``) would be a design change that removes intentional "
             "vendoring behaviour.  "
-            "Accepted based on the **Manifest under code review** assumption: the choice "
-            "to vendor an upstream that contains submodules or svn:externals is declared in "
-            "``dfetch.yaml`` and subject to code review; the decision to trust those "
-            "nested URLs is made at the manifest-review boundary."
+            "The initial decision to vendor a given upstream repository (which may "
+            "contain submodules or SVN externals) is declared in ``dfetch.yaml`` and "
+            "subject to code review.  However, the specific nested URLs in "
+            "``.gitmodules`` or ``svn:externals`` are not visible in ``dfetch.yaml`` "
+            "and are not independently reviewed; if an upstream maintainer adds a new "
+            "submodule after the initial review, dfetch will fetch it on the next "
+            "``dfetch update`` without a new ``dfetch.yaml`` change triggering review.  "
+            "Residual risk: a compromised upstream maintainer could inject a malicious "
+            "submodule URL that bypasses the manifest review boundary.  "
+            "Accepted based on the **dfetch scope boundary** assumption: the security "
+            "of fetched third-party source code and its nested dependencies is the "
+            "responsibility of the manifest author who selects and pins each upstream; "
+            "``dfetch check`` version-drift notifications prompt review before any "
+            "upstream change (including new submodules) is vendored."
         ),
         target="A-27: Git Clone (git init / fetch / checkout)",
     ),
@@ -1358,7 +1368,7 @@ RESPONSES: list[ThreatResponse] = [
         risk="High",
         stride=["Tampering", "Information Disclosure"],
         note=(
-            "C-009 emits a visible warning immediately before the VCS command when a "
+            "C-045 emits a visible warning immediately before the VCS command when a "
             "plaintext scheme (``http://``, ``git://``, ``svn://``) is detected, "
             "with credentials redacted and ``https://`` / ``svn+ssh://`` recommended.  "
             "Detection only — dfetch does not reject or upgrade plaintext URLs; "

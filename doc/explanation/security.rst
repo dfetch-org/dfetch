@@ -108,6 +108,61 @@ For an overview of how this documentation set is produced — the threat-model
 pipeline, compliance pipeline, release attestations, and the full artifact
 inventory — see :doc:`security_pipeline`.
 
+.. _risk-rating-methodology:
+
+Risk Rating Methodology
+-----------------------
+
+Both threat models use a qualitative two-axis risk framework aligned with
+`BSI TR-03183-1 §5.3 <https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-1.pdf>`_
+(Cyber Resilience Requirements for Manufacturers, Chapter 5).
+
+Each threat entry carries two independent ratings:
+
+**Severity (Sev)** — the maximum potential impact if the threat is fully
+realised, assessed without regard to likelihood or existing controls.
+Determined from the Confidentiality / Integrity / Availability ratings of
+the targeted asset and the scope of harm to downstream consumers.
+
+**Risk** — the *residual* risk after factoring in the likelihood of
+successful exploitation (attacker capability, required access, known
+exploitation evidence) and any controls already partially in place.
+Risk can therefore be lower than Severity when the attack path is
+constrained, and must be reassessed whenever the control set changes.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 12 20 68
+
+   * - Rating
+     - Label
+     - Guidance (BSI TR-03183-1 §5.3)
+
+   * - 🟢L
+     - Low
+     - Negligible impact or extremely unlikely. No mandatory control action; document and monitor.
+
+   * - 🟡M
+     - Medium
+     - Moderate impact or realistic but non-trivial exploit path. Controls advisable; track in backlog.
+
+   * - 🟠H
+     - High
+     - Significant impact or credible attack path with meaningful probability. Controls required before next release.
+
+   * - 🔴VH
+     - Very High
+     - Severe impact (system compromise, data exfiltration) or well-documented exploit path. Priority controls required.
+
+   * - 🔴C
+     - Critical
+     - Catastrophic, near-certain potential (e.g. unencrypted channel with no compensating control). Immediate mitigation required; accept decision requires explicit sign-off.
+
+The risk treatment decisions (Mitigate / Accept / Transfer) in each threat
+table follow the same vocabulary as ISO/IEC 27005 and BSI TR-03183-1: an
+**Accept** decision requires explicit rationale citing the assumption under
+which the residual risk is acceptable, documented alongside the threat entry.
+
 Threat Models
 -------------
 

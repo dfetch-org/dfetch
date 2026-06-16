@@ -17,6 +17,8 @@ Risk Context
 This report follows the risk-based approach of `BSI TR-03183-1
 <https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-1.pdf>`_
 Chapter 5.
+The Sev / Risk rating scale and treatment vocabulary (Mitigate / Accept / Transfer)
+are defined in the :ref:`Risk Rating Methodology <risk-rating-methodology>` section of the main security page.
 
 Threat model for dfetch.  Covers the post-install lifecycle: reading the manifest, fetching dependencies from VCS and archive sources, applying patches, writing vendored files, and generating reports (SBOM, SARIF, check output).  The installed dfetch package - produced by the supply chain in tm_supply_chain.py - is the entry point.
 
@@ -1013,7 +1015,7 @@ Threats
        | **Risk:** 🟠H
        | **STRIDE:** T
        | **Status:** Accept
-     - Git submodules are followed: ``git submodule update --init --recursive`` is called unconditionally during every Git fetch (``dfetch/vcs/git.py``), and each submodule is recorded as a ``Dependency`` with ``source_type='git-submodule'`` (``gitsubproject.py``).  SVN ``export`` is invoked without ``--ignore-externals``; each ``svn:externals`` entry triggers an additional fetch, and ``SvnSubProject._fetch_externals()`` records it as a ``Dependency`` with ``source_type='svn-external'`` (``svnsubproject.py``).  Both behaviours are intentional — dfetch vendors submodule and external trees and surfaces them in metadata — but the fetched URLs come from the upstream repository (``.gitmodules`` / ``svn:externals``), not from ``dfetch.yaml``, and therefore bypass manifest code review and carry no integrity hash.  Suppressing these fetches (e.g. passing ``--no-recurse-submodules`` or ``--ignore-externals``) would be a design change that removes intentional vendoring behaviour.  Accepted based on the **Manifest under code review** assumption: the choice to vendor an upstream that contains submodules or svn:externals is declared in ``dfetch.yaml`` and subject to code review; the decision to trust those nested URLs is made at the manifest-review boundary.
+     - Git submodules are followed: ``git submodule update --init --recursive`` is called unconditionally during every Git fetch (``dfetch/vcs/git.py``), and each submodule is recorded as a ``Dependency`` with ``source_type='git-submodule'`` (``gitsubproject.py``).  SVN ``export`` is invoked without ``--ignore-externals``; each ``svn:externals`` entry triggers an additional fetch, and ``SvnSubProject._fetch_externals()`` records it as a ``Dependency`` with ``source_type='svn-external'`` (``svnsubproject.py``).  Both behaviours are intentional — dfetch vendors submodule and external trees and surfaces them in metadata — but the fetched URLs come from the upstream repository (``.gitmodules`` / ``svn:externals``), not from ``dfetch.yaml``, and therefore bypass manifest code review and carry no integrity hash.  Suppressing these fetches (e.g. passing ``--no-recurse-submodules`` or ``--ignore-externals``) would be a design change that removes intentional vendoring behaviour.  The initial decision to vendor a given upstream repository (which may contain submodules or SVN externals) is declared in ``dfetch.yaml`` and subject to code review.  However, the specific nested URLs in ``.gitmodules`` or ``svn:externals`` are not visible in ``dfetch.yaml`` and are not independently reviewed; if an upstream maintainer adds a new submodule after the initial review, dfetch will fetch it on the next ``dfetch update`` without a new ``dfetch.yaml`` change triggering review.  Residual risk: a compromised upstream maintainer could inject a malicious submodule URL that bypasses the manifest review boundary.  Accepted based on the **dfetch scope boundary** assumption: the security of fetched third-party source code and its nested dependencies is the responsibility of the manifest author who selects and pins each upstream; ``dfetch check`` version-drift notifications prompt review before any upstream change (including new submodules) is vendored.
    * - DFT-16
      - Configured destination path allows writes to security-sensitive project directories
      - A-22: dfetch Process
@@ -1101,7 +1103,7 @@ Threats
        | **Risk:** 🟠H
        | **STRIDE:** T I
        | **Status:** Mitigate
-     - C-009 emits a visible warning immediately before the VCS command when a plaintext scheme (``http://``, ``git://``, ``svn://``) is detected, with credentials redacted and ``https://`` / ``svn+ssh://`` recommended.  Detection only — dfetch does not reject or upgrade plaintext URLs; scheme selection remains the manifest author's responsibility.
+     - C-045 emits a visible warning immediately before the VCS command when a plaintext scheme (``http://``, ``git://``, ``svn://``) is detected, with credentials redacted and ``https://`` / ``svn+ssh://`` recommended.  Detection only — dfetch does not reject or upgrade plaintext URLs; scheme selection remains the manifest author's responsibility.
    * - DFT-28
      - CI/CD build cache poisoned to silently substitute a malicious compiled artifact
      - A-20: Local VCS Cache (temp)
@@ -1188,7 +1190,7 @@ Controls
      - Manifest input validation
      - DFT-04, DFT-08
      - StrictYAML schema with ``SAFE_STR = Regex(r"^[^\x00-\x1F\x7F-\x9F]*$")`` rejects control characters in all string fields.  ``dfetch/manifest/schema.py``
-   * - C-009
+   * - C-045
      - Plaintext transport detection
      - DFT-26
      - ``plaintext_warning()`` (``dfetch/manifest/project.py``) inspects the resolved remote URL immediately before each VCS command is issued (inside the ``check_for_update`` and ``update`` spinners in ``subproject.py``).  If the scheme is ``http://``, ``git://``, or ``svn://``, a visible warning is emitted naming the redacted URL (credentials stripped from the userinfo component) and recommending ``https://`` or ``svn+ssh://``.  Detection only — dfetch still proceeds with the plaintext connection; the control raises user awareness but does not enforce scheme selection.  ``dfetch/manifest/project.py, dfetch/project/subproject.py``

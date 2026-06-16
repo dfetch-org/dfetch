@@ -141,7 +141,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-C** — Ensure that vulnerabilities can be addressed through security updates, including automatic updates enabled by default, with an opt-out mechanism, user notification, and the option to postpone updates.
      - SO.Updateability
      - —
-     - —
+     - Satisfied by pip distribution (``pip install --upgrade dfetch``); no dfetch-specific control required — see note below table.
      - ✓ Implemented
    * -
      - SO.AutomaticUpdates
@@ -165,7 +165,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - ⚠ Partial
    * -
      - SO.AccessControlReport
-     - :ref:`C-009 <c-009>`
+     - :ref:`C-045 <c-045>`
      - No persistent log of unauthorised access attempts
      - ⚠ Partial
    * - **ECR-E** — Protect the confidentiality of stored, transmitted or otherwise processed data by state-of-the-art mechanisms such as encryption at rest and in transit.
@@ -180,12 +180,12 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - ✓ Implemented
    * -
      - SO.DataTransmittedConfidentiality
-     - :ref:`C-005 <c-005>`, :ref:`C-009 <c-009>`
+     - :ref:`C-005 <c-005>`, :ref:`C-045 <c-045>`
      - —
      - ✓ Implemented
    * -
      - SO.ComAuth
-     - :ref:`C-003 <c-003>`, :ref:`C-004 <c-004>`, :ref:`C-009 <c-009>`
+     - :ref:`C-003 <c-003>`, :ref:`C-004 <c-004>`, :ref:`C-045 <c-045>`
      - —
      - ✓ Implemented
    * -
@@ -210,7 +210,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - ⚠ Partial
    * -
      - SO.IntegrityReport
-     - :ref:`C-009 <c-009>`
+     - :ref:`C-045 <c-045>`
      - No persistent integrity-violation log
      - ⚠ Partial
    * - **ECR-G** — Process only data, personal or other, that are adequate, relevant and limited to what is necessary in relation to the intended purpose of the product with digital elements (data minimisation).
@@ -260,7 +260,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - ⚠ Partial
    * -
      - SO.MonitorSecurityRelevantActivities
-     - :ref:`C-009 <c-009>`
+     - :ref:`C-045 <c-045>`
      - —
      - ⚠ Partial
    * -
@@ -276,7 +276,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-M** — Provide the possibility for users to securely and easily remove on a permanent basis all data and settings and, where such data can be transferred to other products or systems, ensure that this is done in a secure manner.
      - SO.SecureDataDeletion
      - —
-     - —
+     - No dfetch-specific control required — satisfied by design (no personal data stored); standard OS file deletion suffices — see note below table.
      - ✓ Implemented
    * -
      - SO.DataTransmittedConfidentiality
@@ -293,6 +293,21 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - —
      - —
      - — N/A
+
+.. rubric:: Notes on "Implemented" rows with no control listed
+
+**ECR-C SO.Updateability** — No dfetch-specific control is needed.  SUM-1/SUM-2
+are satisfied by the PyPI distribution mechanism (``pip install --upgrade dfetch``
+and GitHub Releases binary packages).  pip's TLS-protected download channel provides
+the required secure update path.  The update mechanism is the responsibility of the
+user's package manager, not of dfetch itself.
+
+**ECR-M SO.SecureDataDeletion** — No dfetch-specific control is needed.  DLM-1 is
+satisfied by design: dfetch stores no personal data, credentials, or cryptographic
+keying material on disk.  The only on-disk state is ``.dfetch_data.yaml`` (non-sensitive
+dependency metadata — credentials stripped by :ref:`C-036 <c-036>`) and vendored
+source files (third-party code).  Standard OS file deletion (``rm`` / ``del``) is
+sufficient to remove all dfetch data; no secure-wipe facility is warranted.
 
 ----
 
