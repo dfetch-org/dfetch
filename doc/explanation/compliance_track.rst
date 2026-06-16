@@ -120,9 +120,9 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - Status
    * - **ECR-A** — Be made available on the market without known exploitable vulnerabilities.
      - SO.VulnerabilityManagementProcess
-     - :ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`, :ref:`C-022 <c-022>`
-     - No CVE gate at release time (→ :ref:`C-043 <c-043>` planned)
-     - ⚠ Partial
+     - :ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`, :ref:`C-022 <c-022>`, :ref:`C-043 <c-043>`
+     - —
+     - ✓ Implemented
    * - **ECR-B** — Be made available on the market with a secure by default configuration, including the possibility to reset the product to its original state.
      - SO.SecureDefaultConfiguration
      - :ref:`C-001 <c-001>`, :ref:`C-002 <c-002>`

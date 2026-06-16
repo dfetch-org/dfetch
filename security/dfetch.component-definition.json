@@ -3,7 +3,7 @@
     "uuid": "eddc2e8c-a2ae-5a42-8d35-88f5c2af55b2",
     "metadata": {
       "title": "dfetch CRA Compliance Component Definition",
-      "last-modified": "2026-06-15T00:00:00Z",
+      "last-modified": "2026-06-16T00:00:00Z",
       "version": "0.15.0",
       "oscal-version": "1.1.2",
       "props": [
@@ -61,22 +61,18 @@
                 "props": [
                   {
                     "name": "implementation-status",
-                    "value": "partially-implemented"
-                  },
-                  {
-                    "name": "gaps",
-                    "value": "No CVE gate at release time (\u2192 C-043 planned)"
+                    "value": "implemented"
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-015, C-016, C-017, C-022"
+                    "value": "C-015, C-016, C-017, C-022, C-043"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-vulnerability-management-process-stmt",
                     "uuid": "d07ef2cb-63b5-5c7b-a70e-6530e894f633",
-                    "description": "GEC-1: C-015 (CodeQL), C-016 (dependency-review), C-017 (bandit), C-022 (SBOM) address known-vulnerability detection in CI. Gaps: No CVE gate at release time (\u2192 C-043 planned)"
+                    "description": "GEC-1: C-015 (CodeQL), C-016 (dependency-review), C-017 (bandit), C-022 (SBOM) address known-vulnerability detection in CI. C-043 (pip-audit OSV gate) blocks release if runtime dependencies carry known vulnerabilities."
                   }
                 ]
               },
@@ -488,7 +484,7 @@
                 "props": [
                   {
                     "name": "implementation-status",
-                    "value": "planned"
+                    "value": "implemented"
                   },
                   {
                     "name": "not-applicable",
@@ -503,7 +499,7 @@
                   {
                     "statement-id": "so-data-minimization-stmt",
                     "uuid": "dda2d3c4-5ef4-56bd-a2a2-923a894ae320",
-                    "description": "DTM-1: C-044 (planned) documents that .dfetch_data.yaml is limited to remote_url (stripped), revision, optional hash, and last_fetch \u2014 each justified by functional necessity. DTM-2: met by design \u2014 dfetch collects no telemetry or optional data. Not applicable: UNM-1, UNM-2 (dfetch processes no personal data requiring user notification); DTM-3 (no optional data processing to configure)"
+                    "description": "DTM-1: C-044 documents that .dfetch_data.yaml is limited to remote_url (stripped), revision, optional hash, and last_fetch \u2014 each justified by functional necessity. DTM-2: met by design \u2014 dfetch collects no telemetry or optional data. Not applicable: UNM-1, UNM-2 (dfetch processes no personal data requiring user notification); DTM-3 (no optional data processing to configure)"
                   }
                 ]
               },
@@ -655,15 +651,11 @@
                 "props": [
                   {
                     "name": "implementation-status",
-                    "value": "planned"
+                    "value": "implemented"
                   },
                   {
                     "name": "not-applicable",
                     "value": "Compile-time mitigations (CFI, sandboxing) \u2014 not applicable to pure Python"
-                  },
-                  {
-                    "name": "gaps",
-                    "value": "No documented exploit mitigation inventory (\u2192 C-046 planned)"
                   },
                   {
                     "name": "dfetch-controls",
@@ -674,7 +666,7 @@
                   {
                     "statement-id": "so-reduce-impact-of-incident-stmt",
                     "uuid": "c6e07d34-53fe-5d62-8e20-14848fc721e1",
-                    "description": "GEC-11: Python interpreter provides ASLR/DEP/stack-canaries (OS-level). dfetch: no eval/exec of remote content; constant-time comparison (C-005); shell=False (C-007); static analysis (C-015, C-017). C-046 (planned) formalises this inventory. Gaps: No documented exploit mitigation inventory (\u2192 C-046 planned) Not applicable: Compile-time mitigations (CFI, sandboxing) \u2014 not applicable to pure Python"
+                    "description": "GEC-11: Python interpreter provides ASLR/DEP/stack-canaries (OS-level). dfetch: no eval/exec of remote content; constant-time comparison (C-005); shell=False (C-007); static analysis (C-015, C-017). C-046 formalises this inventory in doc/explanation/compliance_track.rst. Not applicable: Compile-time mitigations (CFI, sandboxing) \u2014 not applicable to pure Python"
                   }
                 ]
               },

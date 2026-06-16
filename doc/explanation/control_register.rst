@@ -201,7 +201,7 @@ requirements not independently surfaced by the risk analysis.
        C-043
      - Release-gate CVE check on runtime dependencies
      - Compliance-only
-     - `.github/workflows/python-publish.yml <https://github.com/dfetch-org/dfetch/blob/main/.github/workflows/python-publish.yml>`_ (planned CI addition)
+     - `.github/workflows/python-publish.yml <https://github.com/dfetch-org/dfetch/blob/main/.github/workflows/python-publish.yml>`_ (Audit runtime dependencies for CVEs step)
    * - .. _c-044:
 
        C-044
