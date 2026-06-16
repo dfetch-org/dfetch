@@ -67,8 +67,9 @@ Product and manufacturer identification
        As of 2026-05-02, dfetch is not monetized and is not offered as part
        of a commercial service. However, CRA obligations may become applicable
        in downstream contexts where third parties integrate dfetch into commercial
-       products, in which case those manufacturers may retain due diligence
-       responsibilities under Article 13(5).
+       products, in which case those manufacturers bear their own Article 13
+       obligations to assess and document the security of components they integrate,
+       including open-source dependencies.
 
 Intended purpose, foreseeable use, and reasonably foreseeable misuse (IPFRU)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -155,7 +156,7 @@ constrained, and must be reassessed whenever the control set changes.
      - Catastrophic, near-certain potential (e.g. unencrypted channel with no compensating control). Immediate mitigation required; accept decision requires explicit sign-off.
 
 The risk treatment decisions (Mitigate / Accept / Transfer) in each threat
-table follow the same vocabulary as ISO/IEC 27005 and BSI TR-03183-1: an
+table follow the risk treatment vocabulary of BSI TR-03183-1: an
 **Accept** decision requires explicit rationale citing the assumption under
 which the residual risk is acceptable, documented alongside the threat entry.
 
@@ -196,7 +197,8 @@ surfaced by the risk models:
 - :ref:`C-044 <c-044>` (data minimisation policy) — ECR-g / SO.DataMinimization → DTM-1
 - :ref:`C-046 <c-046>` (exploit mitigation inventory) — ECR-k / SO.ReduceImpactOfIncident → GEC-11
 
-Machine-readable OSCAL 1.1.2 artifacts are kept alongside the source:
+Machine-readable artifacts are kept alongside the source, encoded in OSCAL 1.1.2
+(pinned version; NIST released 1.2.2 in April 2026 — migration not yet performed):
 
 - `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ — prEN 40000-1-4 catalog
   (derived from the CEN/CLC/JTC 13 WG 9 deep-dive session, March 2026)

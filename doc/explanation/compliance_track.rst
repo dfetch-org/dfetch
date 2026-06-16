@@ -5,11 +5,12 @@ CRA Compliance
 
 .. note::
 
-   dfetch is **non-commercial open-source software** and is exempt from
-   mandatory CRA obligations under Recital 18 of Regulation (EU) 2024/2847.
-   This document is produced voluntarily under Article 13(5) to support
+   dfetch is **non-commercial open-source software** and falls outside the
+   mandatory scope of Regulation (EU) 2024/2847 (CRA): it is not placed on the
+   market in the context of a commercial activity (CRA Article 3(1); Recital 18
+   provides interpretive context). This document is produced voluntarily to support
    downstream integrators who must account for open-source components in
-   their own conformity assessments.
+   their own Article 13 conformity assessments.
 
 This page provides three-tier traceability from the CRA Annex I essential
 requirements through the prEN 40000-1-4 Security Objectives to the
@@ -21,7 +22,7 @@ concrete dfetch controls or documented gaps::
            ↓
    dfetch control (C-001 … C-046) or documented gap
 
-Machine-readable OSCAL 1.1.2 artifacts are kept alongside the source:
+Machine-readable artifacts are kept alongside the source, encoded in OSCAL 1.1.2 (pinned version; NIST released 1.2.2 in April 2026 — migration not yet performed):
 
 - `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ — prEN 40000-1-4 catalog
 - `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_ — dfetch Component Definition
@@ -56,11 +57,11 @@ Classification Decision
    * - CRA classification
      - Non-commercial open-source software (Recital 18 exemption)
    * - Legal basis
-     - Article 3(14), Recital 18, Article 13(5) of Regulation (EU) 2024/2847
+     - CRA Article 3(1) (scope — dfetch is not placed on the market in the context of a commercial activity); Article 3(14) (definition of open-source software steward, for reference); Recital 18 (interpretive context for the treatment of non-commercial FOSS)
    * - Mandatory obligations
      - None — not a commercial product; no CE marking required
    * - Voluntary alignment
-     - This compliance document is produced voluntarily under Article 13(5) to support downstream integrators who must account for open-source components in their own CRA conformity assessments.
+     - This compliance document is produced voluntarily — dfetch has no legal obligation under the CRA — to support downstream integrators who must account for open-source components in their own Article 13 conformity assessments.
 
 ----
 
@@ -77,7 +78,7 @@ Applicable Standards
      - Scope note
      - Gap
    * - prEN 40000-1-2
-     - Cyber Resilience Principles and Risk Management
+     - Cyber Resilience Principles and Secure Development Lifecycle (working title; subject to change on publication)
      - Yes
      - Process standard covering risk-based product security across the lifecycle. The Product Security Context (§6.2) is documented in :doc:`security`. The threat models (`tm_supply_chain.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_supply_chain.py>`_, `tm_usage.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_usage.py>`_) implement §6.3–§6.6.
      - —
@@ -89,7 +90,7 @@ Applicable Standards
    * - prEN 40000-1-4
      - Generic Security Requirements (draft, indicative publication October 2027)
      - Yes
-     - Primary standard for this document. Maps CRA Annex I Part I Art. 2(a)–(m) to Security Objectives (SO.\*) and Technical Controls (GEC-\*, SUM-\*, etc.). The catalog is included as `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_.
+     - Primary standard for this document. Maps CRA Annex I Part I requirements (a)–(m) to Security Objectives (SO.\*) and Technical Controls (GEC-\*, SUM-\*, etc.). The catalog is included as `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_.
      - Standard is in draft; final clause numbering may change.
    * - EN 18031-1/2:2024
      - Common security requirements for radio equipment (basis of prEN 40000-1-4)
@@ -314,7 +315,7 @@ sufficient to remove all dfetch data; no secure-wipe facility is warranted.
 Part II — Vulnerability Handling (prEN 40000-1-3)
 -------------------------------------------------
 
-Part II requirements are addressed via prEN 40000-1-3. pii-04 is not applicable under Recital 18.
+Part II requirements are addressed via prEN 40000-1-3. Part II §4 (active vulnerability reporting to national CSIRTs and ENISA) is not applicable: this obligation falls on commercial manufacturers placing products on the market, not on non-commercial open-source software outside mandatory CRA scope.
 
 .. list-table::
    :header-rows: 1
