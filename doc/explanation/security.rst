@@ -111,23 +111,33 @@ source files and what output artifacts each pipeline produces.
 
 .. uml:: /static/uml/security_doc_flow.puml
 
-**Threat model pipeline** — ``security/tm_supply_chain.py`` and
-``security/tm_usage.py`` define the model elements (actors, data flows, trust
-boundaries) using the *pytm* library. ``security/threats.json`` provides a
-catalog of 60+ STRIDE-classified threats. ``security/tm_render.py`` drives
-*pytm*, matches threats against model elements, and combines the output with
-``security/report_template.rst`` to produce the two RST threat-model pages,
-each containing an embedded data-flow diagram, a sequence diagram, and tables
-for assets, threats, and controls.
+**Threat model pipeline** —
+`security/tm_supply_chain.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_supply_chain.py>`_
+and
+`security/tm_usage.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_usage.py>`_
+define the model elements (actors, data flows, trust boundaries) using the
+*pytm* library.
+`security/threats.json <https://github.com/dfetch-org/dfetch/blob/main/security/threats.json>`_
+provides a catalog of 60+ STRIDE-classified threats.
+`security/tm_render.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_render.py>`_
+drives *pytm*, matches threats against model elements, and combines the output
+with
+`security/report_template.rst <https://github.com/dfetch-org/dfetch/blob/main/security/report_template.rst>`_
+to produce the two RST threat-model pages (:doc:`threat_model_supply_chain` and
+:doc:`threat_model_usage`), each containing an embedded data-flow diagram, a
+sequence diagram, and tables for assets, threats, and controls.
 
-**Compliance pipeline** — ``security/compliance_data.py`` defines the 46
-dfetch controls and their mapping to CRA essential requirements and
-prEN 40000-1-4 security objectives. ``security/compliance.py`` reads those
-definitions together with the static OSCAL catalog and generates
-``doc/explanation/compliance_track.rst`` (human-readable RST mapping tables)
-and ``security/dfetch.component-definition.json`` (machine-readable OSCAL 1.1.2
-Component Definition). The :doc:`control_register` page is maintained manually
-and references controls defined in ``compliance_data.py``.
+**Compliance pipeline** —
+`security/compliance_data.py <https://github.com/dfetch-org/dfetch/blob/main/security/compliance_data.py>`_
+defines the 46 dfetch controls and their mapping to CRA essential requirements
+and prEN 40000-1-4 security objectives.
+`security/compliance.py <https://github.com/dfetch-org/dfetch/blob/main/security/compliance.py>`_
+reads those definitions together with the static OSCAL catalog and generates
+:doc:`compliance_track` (human-readable RST mapping tables) and
+`security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_
+(machine-readable OSCAL 1.1.2 Component Definition). The
+:doc:`control_register` page is maintained manually and references controls
+defined in ``compliance_data.py``.
 
 **Runtime outputs** — When users run ``dfetch check`` or ``dfetch report``,
 the reporting layer emits findings in the selected format: SARIF (for GitHub
