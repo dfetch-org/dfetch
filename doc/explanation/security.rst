@@ -104,10 +104,6 @@ threat models below.
   manifest destination path, or hostile archive entries, could write, overwrite, or
   delete files outside the intended vendoring directory on the end-user machine.
 
-For an overview of how this documentation set is produced — the threat-model
-pipeline, compliance pipeline, release attestations, and the full artifact
-inventory — see :doc:`security_pipeline`.
-
 .. _risk-rating-methodology:
 
 Risk Rating Methodology
@@ -166,19 +162,16 @@ which the residual risk is acceptable, documented alongside the threat entry.
 Threat Models
 -------------
 
-The following pages document the two threat models in detail. Each page is
-generated from the corresponding Python module in ``security/`` — see
+The two threat models below cover the full lifecycle of *dfetch*. Both are
+generated from the Python modules in ``security/``; see
 `security/README.md <https://github.com/dfetch-org/dfetch/blob/main/security/README.md>`_
-for instructions on regenerating them.
+for regeneration instructions.
 
 .. toctree::
    :maxdepth: 1
 
-   security_pipeline
    threat_model_supply_chain
    threat_model_usage
-   compliance_track
-   control_register
 
 CRA Compliance
 --------------
@@ -211,6 +204,12 @@ Machine-readable OSCAL 1.1.2 artifacts are kept alongside the source:
 
 The complete list of all controls is on the :doc:`control_register` page.
 
+.. toctree::
+   :maxdepth: 1
+
+   compliance_track
+   control_register
+
 Further Reading
 ---------------
 
@@ -221,13 +220,11 @@ Cyber Resilience Act
   the legislative text; Annex I Part I lists the 13 essential requirements (ECR-a … ECR-m)
   and Part II the seven vulnerability-handling requirements.
 - `EU Commission CRA overview <https://digital-strategy.ec.europa.eu/en/policies/cyber-resilience-act>`_ —
-  accessible summary of scope, obligations, timeline, and links to delegated and implementing acts.
+  accessible summary of scope, obligations, and timeline.
 - `CRA draft guidance, March 2026 (Ares(2026)2319816) <https://digital-strategy.ec.europa.eu/en/news/commission-publishes-feedback-draft-guidance-assist-companies-applying-cyber-resilience-act>`_ —
-  Commission guidance on applying the CRA; covers free and open-source software, remote data
-  processing, and support periods.
+  Commission guidance covering free and open-source software, remote data processing, and support periods.
 - `BSI TR-03183-1: Cyber Resilience Requirements for Manufacturers <https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-1.pdf>`_ —
-  practical risk-based guidance aligned with CRA; used as the risk-context framework in
-  dfetch's threat model pages.
+  practical risk-based guidance aligned with CRA; the risk-rating framework above is derived from this document.
 
 EN 40000 harmonised standards
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -237,35 +234,21 @@ standards under the CRA. Once published in the OJEU, compliance with them confer
 presumption of conformity with the corresponding CRA essential requirements.
 
 - `CEN/CENELEC cybersecurity standards page <https://www.cencenelec.eu/areas-of-work/cen-cenelec-topics/cybersecurity/>`_ —
-  overview of the EN 40000 work programme (prEN 40000-1-1 through 40000-1-4) and
-  the CEN/CLC/JTC 13 committee.
+  overview of the EN 40000 work programme (prEN 40000-1-1 through 40000-1-4).
 - `CEN/CENELEC CRA webinar slides (March 2025) <https://www.cencenelec.eu/media/CEN-CENELEC/Events/Webinars/2025/2025-03-10_webinar_cyberresilience_act.pdf>`_ —
-  explains how each part of EN 40000 maps to CRA obligations, with an overview of
-  the Security Objectives (SO.*) in prEN 40000-1-4.
-- `EU Blue Guide on the implementation of EU product rules (2022) <https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX%3A52022XC0629%2804%29>`_ —
-  explains how manufacturers identify applicable requirements, choose specifications,
-  and demonstrate conformity; figure 4.1.2.2 inspired the security documentation
-  flow diagram on this page.
-- `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ —
-  dfetch's machine-readable OSCAL 1.1.2 representation of the prEN 40000-1-4 catalog,
-  derived from the CEN/CLC/JTC 13 WG 9 deep-dive session (March 2026).
+  explains how each part of EN 40000 maps to CRA obligations and the Security Objectives (SO.*) in prEN 40000-1-4.
 
 Threat modelling
 ~~~~~~~~~~~~~~~~
 
 - `STRIDE methodology <https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats>`_ —
-  Microsoft's six-category threat classification (Spoofing, Tampering, Repudiation,
-  Information Disclosure, Denial of Service, Elevation of Privilege); used to classify
-  every entry in
+  Microsoft's six-category threat classification used to classify every entry in
   `security/threats.json <https://github.com/dfetch-org/dfetch/blob/main/security/threats.json>`_.
 - `pytm — Pythonic Threat Modeling <https://github.com/izar/pytm>`_ —
   the library used by ``tm_supply_chain.py`` and ``tm_usage.py`` to define model elements
-  (actors, data flows, trust boundaries) and auto-generate threat findings.
-- `BSI TR-03183-1 <https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/TechGuidelines/TR03183/BSI-TR-03183-1.pdf>`_ —
-  provides the risk-context chapter structure used in the threat model pages.
+  and auto-generate threat findings.
 - `ENISA Security by Design and Default Playbook <https://www.enisa.europa.eu/sites/default/files/2026-03/ENISA_Secure_By_Design_and_Default_Playbook_v0.4_draft_for_consultation.pdf>`_ —
-  ENISA guidance on integrating security from the start; the overall model structure is
-  inspired by this playbook.
+  ENISA guidance that inspired the overall model structure.
 
 OSCAL
 ~~~~~
@@ -281,16 +264,14 @@ dfetch uses OSCAL 1.1.2 for two artifacts:
   used by ``dfetch.component-definition.json`` to describe how dfetch implements each
   control and maps it back to CRA essential requirements via SO.* objectives.
 
-Security assessment output formats
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Security documentation pipeline
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- `SARIF 2.1.0 (OASIS standard) <https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html>`_ —
-  Static Analysis Results Interchange Format; used by ``dfetch check --output-type sarif``
-  for :ref:`GitHub code scanning integration <check-ci-github>`.
-- `CycloneDX specification <https://cyclonedx.org/specification/overview/>`_ —
-  SBOM format used for the release attestation that GitHub Actions generates
-  *about dfetch itself* on every release; verifiable with ``gh attestation verify``
-  (see :ref:`verify-integrity`).
-- `Code Climate test coverage spec <https://github.com/codeclimate/platform/blob/master/spec/analyzers/SPEC.md>`_ —
-  JSON format used by ``dfetch check --output-type code-climate`` for
-  :ref:`GitLab merge-request quality widgets <check-ci-gitlab>`.
+For an overview of how this documentation set is produced — the threat-model
+pipeline, compliance pipeline, release attestations, and the full artifact
+inventory — see :doc:`security_pipeline`.
+
+.. toctree::
+   :hidden:
+
+   security_pipeline
