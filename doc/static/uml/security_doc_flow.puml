@@ -7,6 +7,10 @@ skinparam arrowColor #333333
 skinparam packageBorderColor #333333
 skinparam componentBorderColor #555555
 skinparam componentBackgroundColor white
+skinparam package<<assess>> {
+    BackgroundColor #d5e8d4
+    BorderStyle dashed
+}
 
 left to right direction
 
@@ -23,7 +27,7 @@ package "All requirements\n(legally binding, given in\nlegislation and threat ca
 
 ' ── Column 2: Risk & threat assessment (dashed = selection / filter step) ─────
 
-package "Risk and threat assessment\n(by dfetch maintainers)" as p_assess #line.dashed;back:#d5e8d4 {
+package "Risk and threat assessment\n(by dfetch maintainers)" <<assess>> as p_assess {
     [tm_supply_chain.py\ntm_usage.py + pytm] as tm
     [compliance_data.py\n+ OSCAL catalog]   as comp
 }
