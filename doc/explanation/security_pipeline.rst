@@ -38,17 +38,19 @@ to produce the two RST threat-model pages (:doc:`threat_model_supply_chain` and
 sequence diagram, and tables for assets, threats, and controls.
 
 **Compliance pipeline** —
-`security/compliance_data.py <https://github.com/dfetch-org/dfetch/blob/main/security/compliance_data.py>`_
-defines the 46 dfetch controls and their mapping to CRA essential requirements
+`security/tm_controls_data.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_controls_data.py>`_
+defines all dfetch controls (Track A: risk-driven; Track B: compliance-only controls
+in ``compliance_data.py``) and their mapping to CRA essential requirements
 and prEN 40000-1-4 security objectives.
 `security/compliance.py <https://github.com/dfetch-org/dfetch/blob/main/security/compliance.py>`_
 reads those definitions together with the static OSCAL catalog and generates
-:doc:`compliance_track` (human-readable RST mapping tables) and
+:doc:`compliance_track` (human-readable RST mapping tables),
+:doc:`control_register` (the full control register with GitHub references), and
 `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_
-(machine-readable OSCAL 1.1.2 Component Definition; 1.1.2 is the pinned version —
-NIST released 1.2.2 in April 2026, migration not yet performed). The
-:doc:`control_register` page is maintained manually and references controls
-defined in ``compliance_data.py``.
+(machine-readable OSCAL 1.2.2 Component Definition). The Component Definition
+includes the supplier party, component purpose, and ``evidence`` links on each
+implemented-requirement pointing to the concrete code or CI file that implements
+the control — making the mapping machine-verifiable.
 
 **Release attestations** — GitHub Actions generates five cryptographic attestation
 types *about dfetch itself* during every release, signed by Sigstore and verifiable
@@ -90,16 +92,17 @@ of their choice:
      - CRA Annex I → prEN 40000-1-4 SO.* → dfetch control traceability tables
 
    * - :doc:`control_register`
-     - RST (maintained)
-     - All 46 dfetch controls (C-001 to C-046) with references and status
+     - RST (generated)
+     - All dfetch controls with type, references, and status
 
    * - `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_
-     - OSCAL 1.1.2 JSON (pinned)
-     - Machine-readable Component Definition; maps dfetch controls to CRA ECRs
+     - OSCAL 1.2.2 JSON (generated)
+     - Machine-readable Component Definition; maps dfetch controls to CRA ECRs;
+       includes supplier party, component purpose, and evidence links to code
 
    * - `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_
-     - OSCAL 1.1.2 JSON (pinned)
-     - Static prEN 40000-1-4 catalog (input to compliance pipeline, not generated)
+     - OSCAL 1.2.2 JSON (static)
+     - Static prEN 40000-1-4 catalog; includes parties, roles, and responsible-parties
 
    * - :ref:`Release attestations <verify-integrity>`
      - Sigstore-signed (GitHub Actions)
