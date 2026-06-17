@@ -27,5 +27,8 @@ We will keep you updated on our progress and let you know when the issue has bee
 
 ## Acknowledgements
 
-Thank you to everyone who helps keep Dfetch secure!
-We’re grateful for responsible disclosures and contributions from the community.
+We publicly credit every reporter by name in the security advisory and the
+release changelog entry that ships the fix. If you prefer to remain anonymous,
+let us know and we will honour that.
+
+Thank you to everyone who helps keep Dfetch secure.
