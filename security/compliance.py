@@ -15,7 +15,6 @@ Run::
 """
 
 import argparse
-import importlib
 import json
 import os
 import re
@@ -30,11 +29,10 @@ from security.compliance_data import (
     PART_II_REQUIREMENTS,
     SO_IMPLEMENTATIONS,
     STANDARDS,
-    TRACK_A_CONTROLS,
     TRACK_B_CONTROLS,
-    Control,
     SOImplementation,
 )
+from security.tm_controls_data import SC_CONTROLS, USAGE_CONTROLS, Control
 
 CATALOG_PATH = os.path.join(
     os.path.dirname(__file__), "cra_pren_4000014_oscal_catalog.json"
@@ -68,23 +66,8 @@ _GITHUB_BASE = "https://github.com/dfetch-org/dfetch"
 
 
 def _load_track_a_controls(track_b_only: bool = False) -> list[Control]:
-    """Load Track A controls from threat models if pytm is available."""
-    try:
-        tm_sc = importlib.import_module("security.tm_supply_chain")
-        tm_u = importlib.import_module("security.tm_usage")
-    except ModuleNotFoundError:
-        if not track_b_only:
-            print(
-                "Note: pytm not available — using static Track A controls.",
-                file=sys.stderr,
-            )
-        return list(TRACK_A_CONTROLS)
-    sc_controls: list[Any] = getattr(tm_sc, "CONTROLS", [])
-    u_controls: list[Any] = getattr(tm_u, "CONTROLS", [])
-    return [
-        Control(id=c.id, name=c.name, description=c.description, reference=c.reference)
-        for c in sc_controls + u_controls
-    ]
+    """Return all Track A controls from the pytm-free controls module."""
+    return list(SC_CONTROLS) + list(USAGE_CONTROLS)
 
 
 def get_all_controls(track_b_only: bool = False) -> list[Control]:

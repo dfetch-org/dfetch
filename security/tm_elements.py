@@ -11,6 +11,8 @@ from typing import Literal
 
 from pytm import Assumption, Boundary
 
+from security.tm_controls_data import Control  # noqa: F401  # re-exported
+
 THREATS_FILE = os.path.join(os.path.dirname(__file__), "threats.json")
 
 
@@ -31,22 +33,6 @@ class ThreatResponse:
     stride: list[str] = field(default_factory=list)
     note: str = ""
     target: str = ""
-
-
-@dataclass
-class Control:
-    """An implemented security control."""
-
-    id: str
-    name: str
-    description: str
-    assets: list[str] = field(default_factory=list)
-    threats: list[str] = field(default_factory=list)
-    reference: str = ""
-
-    def to_pytm(self) -> str:
-        """Return a human-readable label used in traceability comments."""
-        return f"[{self.id}] {self.name}"
 
 
 def build_asset_controls_index(
