@@ -177,34 +177,13 @@ for regeneration instructions.
 CRA Compliance
 --------------
 
-The :doc:`compliance_track` page maps all 13 CRA Annex I Part I essential
-requirements (ECR-a through ECR-m) through prEN 40000-1-4 Security Objectives
-to dfetch's implemented controls.  It also covers the seven Part II
-vulnerability-handling requirements via prEN 40000-1-3.
-
-The three-tier traceability model is::
-
-   CRA Annex I Essential Requirement (ECR-a … ECR-m)
-           ↓
-   prEN 40000-1-4 Security Objective (SO.*)
-           ↓
-   dfetch control (C-001 … C-046) or documented gap
-
-Three compliance-only controls address CRA requirements not independently
-surfaced by the risk models:
-
-- :ref:`C-043 <c-043>` (release-gate CVE check) — ECR-a / SO.VulnerabilityManagementProcess → GEC-1
-- :ref:`C-044 <c-044>` (data minimisation policy) — ECR-g / SO.DataMinimization → DTM-1
-- :ref:`C-046 <c-046>` (exploit mitigation inventory) — ECR-k / SO.ReduceImpactOfIncident → GEC-11
-
-Machine-readable artifacts are kept alongside the source, encoded in OSCAL 1.1.2
-(pinned version; NIST released 1.2.2 in April 2026 — migration not yet performed):
-
-- `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ — prEN 40000-1-4 catalog
-  (derived from the CEN/CLC/JTC 13 WG 9 deep-dive session, March 2026)
-- `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_ — dfetch Component Definition
-
-The complete list of all controls is on the :doc:`control_register` page.
+The :doc:`compliance_track` page provides full three-tier traceability from all
+13 CRA Annex I Part I essential requirements (ECR-a through ECR-m) through
+prEN 40000-1-4 Security Objectives to dfetch's implemented controls, including
+machine-readable OSCAL artifacts and the gap analysis for compliance-only
+controls.  It also covers the seven Part II vulnerability-handling requirements
+via prEN 40000-1-3.  The complete list of all controls is on the
+:doc:`control_register` page.
 
 .. toctree::
    :maxdepth: 1
