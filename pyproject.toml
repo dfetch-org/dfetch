@@ -94,7 +94,7 @@ docs = [
     'sphinx_design==0.6.1',
     'sphinx-sitemap==2.9.0',
     'sphinx-jsonschema==1.19.2',
-    'sphinxcontrib-programoutput==0.19',
+    'sphinxcontrib-programoutput==0.20',
     'sphinx-tabs==3.5.0',
     'sphinx-autoissues==0.0.1',
     'sphinx-copybutton==0.5.2',
