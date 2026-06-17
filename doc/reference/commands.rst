@@ -96,6 +96,8 @@ Update
 
 .. seealso:: :ref:`Update projects <updating-projects>` — covers the update workflow, pinning versions, and force-fetching.
 
+.. _diff:
+
 Diff
 ----
 .. argparse::
@@ -107,6 +109,8 @@ Diff
 .. asciinema:: ../asciicasts/diff.cast
 
 .. seealso:: :ref:`Patch a project <patching>` — creating, applying, and maintaining patches across upstream version bumps.
+
+.. _update-patch:
 
 Update patch
 ------------

@@ -156,6 +156,8 @@ details on working with remotes see :ref:`Remotes`.
 
 .. scenario-include:: ../features/journey-basic-usage.feature
 
+.. _first-patch:
+
 My first patch
 -----------------
 Sometimes you need to :term:`patch <Patch>` a dependency to get it working with your project.
