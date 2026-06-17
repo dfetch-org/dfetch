@@ -55,7 +55,7 @@ Product and manufacturer identification
    * - Maintainer
      - Ben Spoor
    * - Distribution channel
-     - PyPI (``pip install dfetch``); GitHub Releases (stand-alone binary)
+     - PyPI (``pip install dfetch``); GitHub Releases (stand-alone binary); winget (``winget install dfetch``)
    * - Source repository
      - https://github.com/dfetch-org/dfetch
    * - License
