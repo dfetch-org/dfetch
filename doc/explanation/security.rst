@@ -13,17 +13,14 @@ Security Model
   and dfetch itself critically, and provide feedback or contributions to enhance its accuracy and completeness.
 
 This page documents the security design of *dfetch* across its full software
-development lifecycle (SDLC): from source contribution through CI/CD,
+development lifecycle (:term:`SDLC`): from source contribution through CI/CD,
 PyPI distribution, and runtime execution in developer and build
 environments.
 
-The model is aligned with the `Cyber Resilience Act (CRA)`_ and the
-`EN 40000`_ series of cybersecurity standards, using `STRIDE`_ as the threat
+The model is aligned with the :term:`CRA` (Cyber Resilience Act) and the
+:term:`EN 40000` series of cybersecurity standards, using :term:`STRIDE` as the threat
 classification methodology. It is inspired by the `ENISA Security by Design and Default Playbook`_.
 
-.. _`Cyber Resilience Act (CRA)`: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847
-.. _`EN 40000`: https://www.cencenelec.eu/areas-of-work/cen-cenelec-topics/cybersecurity/
-.. _`STRIDE`: https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats
 .. _`ENISA Security by Design and Default Playbook`: https://www.enisa.europa.eu/sites/default/files/2026-03/ENISA_Secure_By_Design_and_Default_Playbook_v0.4_draft_for_consultation.pdf
 
 The threat model is split into two focused modules:
@@ -64,10 +61,10 @@ Product and manufacturer identification
      - `MIT <https://github.com/dfetch-org/dfetch/blob/main/LICENSE>`_
    * - CRA applicability
      - dfetch is developed and distributed as a non-commercial open-source project.
-       Under the Cyber Resilience Act, applicability depends on whether software
+       Under the :term:`CRA`, applicability depends on whether software
        is placed on the market in the context of a commercial activity.
        As of 2026-05-02, dfetch is not monetized and is not offered as part
-       of a commercial service. However, CRA obligations may become applicable
+       of a commercial service. However, :term:`CRA` obligations may become applicable
        in downstream contexts where third parties integrate dfetch into commercial
        products, in which case those manufacturers bear their own `Article 13 <https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847>`_
        obligations to assess and document the security of components they integrate,
@@ -76,11 +73,11 @@ Product and manufacturer identification
 Intended purpose, foreseeable use, and reasonably foreseeable misuse (IPFRU)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-*Intended purpose*: fetch and vendor external source-code dependencies (from
-Git repositories, SVN repositories, or plain archive URLs) as plain files into
-a project repository. dfetch reads a declarative manifest (``dfetch.yaml``),
+*Intended purpose*: fetch and :term:`vendor <Vendoring>` external source-code dependencies (from
+Git repositories, SVN repositories, or plain :term:`Archive` URLs) as plain files into
+a project repository. dfetch reads a declarative :term:`Manifest` (``dfetch.yaml``),
 resolves each declared dependency to the requested revision, copies the source
-tree to the declared destination path, and records metadata for subsequent
+tree to the declared :term:`destination <Destination>` path, and records :term:`Metadata` for subsequent
 up-to-date checks.
 
 *Foreseeable use*: invoked interactively on a developer workstation, or
@@ -96,16 +93,16 @@ threat models below.
   non-interactively in a pipeline holding registry tokens, signing keys, or cloud
   credentials, a compromised or intentionally malicious upstream source could read
   and exfiltrate those secrets.
-- **Resource exhaustion from hostile archives.** A crafted archive (for example a
+- **Resource exhaustion from hostile archives.** A crafted :term:`Archive` (for example a
   decompression bomb) can expand to an extreme size or member count on extraction,
   exhausting disk or memory and denying service to the developer or build host.
 - **Introduction of vulnerable or malicious code into the superproject.** More
   subtle than denial of service: an attacker-controlled upstream may ship source
-  carrying latent vulnerabilities or backdoors that are vendored into the consuming
-  project and propagated into downstream products.
+  carrying latent vulnerabilities or backdoors that are :term:`vendored <Vendoring>` into the consuming
+  :term:`Superproject` and propagated into downstream products.
 - **Destruction or overwrite of files outside the destination folder.** A malicious
-  manifest destination path, or hostile archive entries, could write, overwrite, or
-  delete files outside the intended vendoring directory on the end-user machine.
+  :term:`Manifest` destination path, or hostile :term:`Archive` entries, could write, overwrite, or
+  delete files outside the intended :term:`Vendoring` directory on the end-user machine.
 
 .. _risk-rating-methodology:
 
@@ -182,7 +179,7 @@ CRA Compliance
 The :doc:`compliance_track` page provides full three-tier traceability from all
 13 CRA Annex I Part I essential requirements (ECR-a through ECR-m) through
 prEN 40000-1-4 Security Objectives to dfetch's implemented controls, including
-machine-readable OSCAL artifacts and the gap analysis for compliance-only
+machine-readable :term:`OSCAL` artifacts and the gap analysis for compliance-only
 controls.  It also covers the seven Part II vulnerability-handling requirements
 via prEN 40000-1-3.  The complete list of all controls is on the
 :doc:`control_register` page.
@@ -213,7 +210,7 @@ EN 40000 harmonised standards
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The EN 40000 family is being developed by CEN/CLC/JTC 13 to provide harmonised
-standards under the CRA. Once published in the `OJEU <https://eur-lex.europa.eu/oj/direct-access.html>`_, compliance with them confers a
+standards under the :term:`CRA`. Once published in the `OJEU <https://eur-lex.europa.eu/oj/direct-access.html>`_, compliance with them confers a
 presumption of conformity with the corresponding CRA essential requirements.
 
 - `CEN/CENELEC cybersecurity standards page <https://www.cencenelec.eu/areas-of-work/cen-cenelec-topics/cybersecurity/>`_ —
@@ -236,8 +233,8 @@ Threat modelling
 OSCAL
 ~~~~~
 
-`OSCAL (Open Security Controls Assessment Language) <https://pages.nist.gov/OSCAL/>`_ is a
-set of NIST-published JSON/XML schemas for machine-readable security documentation.
+:term:`OSCAL` (Open Security Controls Assessment Language) is a set of
+NIST-published JSON/XML schemas for machine-readable security documentation.
 dfetch uses OSCAL 1.1.2 for two artifacts:
 
 - `OSCAL Catalog model <https://pages.nist.gov/OSCAL/reference/latest/catalog/>`_ —
@@ -253,6 +250,13 @@ Security documentation pipeline
 For an overview of how this documentation set is produced — the threat-model
 pipeline, compliance pipeline, release attestations, and the full artifact
 inventory — see :doc:`security_pipeline`.
+
+.. seealso::
+
+   :doc:`/reference/glossary`
+      Definitions for :term:`CRA`, :term:`EN 40000`, :term:`STRIDE`,
+      :term:`OSCAL`, :term:`SLSA`, :term:`SBOM`, :term:`Sigstore`,
+      :term:`SDLC`, :term:`ECR`, and other terms used on this page.
 
 .. toctree::
    :hidden:

@@ -25,7 +25,7 @@ concrete dfetch controls or documented gaps::
            ↓
    dfetch control (C-001 … C-046) or documented gap
 
-Machine-readable artifacts are kept alongside the source, encoded in OSCAL 1.2.2:
+Machine-readable artifacts are kept alongside the source, encoded in :term:`OSCAL` 1.2.2:
 
 - `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ — prEN 40000-1-4 catalog (includes parties, roles, and responsible-parties)
 - `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_ — dfetch Component Definition (includes supplier party, purpose, evidence links per implemented-requirement)
@@ -417,8 +417,8 @@ prEN 40000-1-4 ECR-k requires documenting applicable exploit mitigation techniqu
 OSCAL Artifacts
 ---------------
 
-`OSCAL (Open Security Controls Assessment Language) <https://pages.nist.gov/OSCAL/>`_
-is a NIST-published JSON/XML schema set for machine-readable security
+:term:`OSCAL` (Open Security Controls Assessment Language) is a
+NIST-published JSON/XML schema set for machine-readable security
 documentation. It lets GRC tools, conformity-assessment toolchains, and
 downstream integrators ingest dfetch's control evidence programmatically —
 rather than reading prose — and map it to their own compliance frameworks.

@@ -784,7 +784,7 @@ def render_rst(track_b_only: bool = False) -> None:
     )
     print(
         "Machine-readable artifacts are kept alongside the source, encoded in "
-        "OSCAL 1.2.2:\n\n"
+        ":term:`OSCAL` 1.2.2:\n\n"
         "- `security/cra_pren_4000014_oscal_catalog.json"
         " <https://github.com/dfetch-org/dfetch/blob/main/"
         "security/cra_pren_4000014_oscal_catalog.json>`_"
@@ -825,8 +825,8 @@ def render_rst(track_b_only: bool = False) -> None:
     print("----\n")
     print(_rst_title("OSCAL Artifacts", "-"))
     print(
-        "`OSCAL (Open Security Controls Assessment Language) <https://pages.nist.gov/OSCAL/>`_\n"
-        "is a NIST-published JSON/XML schema set for machine-readable security\n"
+        ":term:`OSCAL` (Open Security Controls Assessment Language) is a\n"
+        "NIST-published JSON/XML schema set for machine-readable security\n"
         "documentation. It lets GRC tools, conformity-assessment toolchains, and\n"
         "downstream integrators ingest dfetch's control evidence programmatically —\n"
         "rather than reading prose — and map it to their own compliance frameworks.\n\n"

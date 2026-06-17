@@ -118,6 +118,28 @@ Glossary
       control C-037; verifiable with ``gh attestation verify`` (see
       :ref:`verify-integrity`).
 
+   CVE
+      Common Vulnerabilities and Exposures — a public catalogue of
+      disclosed security vulnerabilities, each assigned a unique identifier
+      (e.g. ``CVE-2024-12345``).  dfetch's CI checks runtime dependencies
+      against the `OSV database <https://osv.dev/>`_ (which aggregates CVEs
+      and other advisories) as part of control :ref:`C-043 <c-043>`.
+
+   ECR
+      Essential Cybersecurity Requirement — one of the 13 product-security
+      obligations (ECR-a through ECR-m) listed in Annex I Part I of the
+      :term:`CRA`.  Each ECR maps to one or more :term:`EN 40000` Security
+      Objectives (SO.*) that specify the technical controls needed to satisfy
+      it.  dfetch's :doc:`compliance track </explanation/compliance_track>`
+      maps every ECR to the dfetch controls that implement it.
+
+   SDLC
+      Software Development Lifecycle — the full sequence of phases from
+      planning and design through development, testing, deployment, and
+      maintenance of a software product.  dfetch's :ref:`security model
+      <security>` documents controls across the complete SDLC: from source
+      contribution and CI/CD through PyPI distribution to runtime execution.
+
    CRA
       Cyber Resilience Act — Regulation (EU) 2024/2847, in force from
       10 December 2024.  It imposes cybersecurity requirements on manufacturers
