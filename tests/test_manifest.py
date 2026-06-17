@@ -6,7 +6,7 @@
 
 import os
 from typing import cast
-from unittest.mock import mock_open, patch
+from unittest.mock import Mock, mock_open, patch
 
 import pytest
 
@@ -686,3 +686,35 @@ def test_builder_blank_line_between_remotes() -> None:
         .build()
     )
     assert "\n\n  - name: gitlab" in manifest._doc.as_yaml()
+
+
+# ---------------------------------------------------------------------------
+# Manifest.find_remote_for_url – path-boundary checks
+# ---------------------------------------------------------------------------
+
+
+def _make_remote(name: str, url: str) -> Mock:
+    r = Mock(spec=Remote)
+    r.name = name
+    r.url = url
+    return r
+
+
+def test_determine_remote_requires_path_boundary():
+    """An org-scoped remote must not match a different org sharing its prefix."""
+    m = Mock()
+    m.remotes = [_make_remote("myorg", "https://github.com/myorg")]
+    result = Manifest.find_remote_for_url(
+        m, "https://github.com/myorg-private/repo.git"
+    )
+    assert result is None
+
+
+def test_determine_remote_matches_exact_and_subpath():
+    """The boundary check still matches the remote itself and any URL beneath it."""
+    m = Mock()
+    m.remotes = [_make_remote("myorg", "https://github.com/myorg")]
+    assert Manifest.find_remote_for_url(m, "https://github.com/myorg") is not None
+    assert (
+        Manifest.find_remote_for_url(m, "https://github.com/myorg/repo.git") is not None
+    )

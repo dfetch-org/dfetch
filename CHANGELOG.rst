@@ -1,21 +1,13 @@
-Release 0.15.0 (unreleased)
+Release 0.14.1 (unreleased)
 ============================
 
-* Implement C-043: add ``pip-audit`` OSV gate to the release workflow; publishing is blocked if
-  any known vulnerability is found in dfetch's runtime dependencies
-* Add CRA Compliance Track B: OSCAL 1.2.2 Component Definition mapping all CRA Annex I Part I
-  essential requirements (ECR-a–m) through prEN 40000-1-4 Security Objectives to dfetch controls;
-  covers Part II via prEN 40000-1-3; introduces controls C-043 (release-gate CVE check), C-044
-  (data minimisation policy), and C-046 (exploit mitigation inventory)
-* Upgrade OSCAL artifacts to 1.2.2: both the prEN 40000-1-4 catalog and the Component Definition
-  now declare ``oscal-version: 1.2.2``; the catalog gains ``parties``, ``roles``, and
-  ``responsible-parties`` in its metadata; the Component Definition adds a ``purpose`` field on
-  the component, a ``supplier`` party, ``document-ids`` for stable cross-referencing,
-  ``responsible-roles``, and ``evidence`` links on every implemented-requirement pointing to the
-  concrete code or CI workflow file that implements the control — turning the compliance mapping
-  into a machine-verifiable security-as-code artifact; the back-matter is enriched with references
-  to the OpenSSF Scorecard, SLSA Source Provenance, Sigstore attestation, in-toto test results,
-  CodeQL, and dependency-review workflows
+* Implement C-043: add ``pip-audit`` OSV gate to the release workflow
+* Add CRA Compliance: OSCAL 1.2.2 Component Definition
+* Fix ``dfetch import`` mangling the namespace of a generic VCS URL whose path contains ``.git`` (#1268)
+* Fix ``Version`` comparison raising ``AttributeError`` when compared against a non-``Version`` object (#1268)
+* Fix ``dfetch add`` matching remote whose base URL is only string (not path) prefix of the project URL (#1268)
+* Fix git ref resolution spuriously matching the first reference for an empty revision (#1268)
+* Strip the trailing newline from the git origin URL returned by ``get_remote_url`` (#1268)
 
 Release 0.14.0 (released 2026-06-14)
 ====================================

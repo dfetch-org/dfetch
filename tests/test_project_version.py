@@ -202,3 +202,25 @@ from dfetch.manifest.version import Version
 def test_version_comparison(name, version_1, version_2, expected_equality):
     actual_equality = version_1 == version_2
     assert actual_equality == expected_equality
+
+
+@pytest.mark.parametrize(
+    "other",
+    [
+        ("", "main", "123"),  # a plain tuple
+        "main",  # a string
+        42,  # an int
+    ],
+)
+def test_version_comparison_with_non_version(other):
+    """Comparing a Version with a non-Version must not crash."""
+    assert (Version(branch="main", revision="123") == other) is False
+
+
+def test_version_remains_hashable():
+    """Defining __eq__ must not break hashing/set membership."""
+    v1 = Version(tag="1.0")
+    v2 = Version(tag="1.0")
+    assert v1 == v2
+    assert hash(v1) == hash(v2)
+    assert v2 in {v1}
