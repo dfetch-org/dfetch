@@ -417,8 +417,20 @@ prEN 40000-1-4 ECR-k requires documenting applicable exploit mitigation techniqu
 OSCAL Artifacts
 ---------------
 
-The OSCAL 1.2.2 Component Definition references the catalog file and can be
-regenerated with:
+`OSCAL (Open Security Controls Assessment Language) <https://pages.nist.gov/OSCAL/>`_
+is a NIST-published JSON/XML schema set for machine-readable security
+documentation. It lets GRC tools, conformity-assessment toolchains, and
+downstream integrators ingest dfetch's control evidence programmatically —
+rather than reading prose — and map it to their own compliance frameworks.
+
+dfetch ships two OSCAL 1.2.2 artifacts alongside the source:
+
+- `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ — the prEN 40000-1-4 Security Objectives expressed as a structured catalog;
+  import this into your GRC tool to obtain the requirement definitions.
+- `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_ — the dfetch Component Definition; maps each implemented control back to
+  the catalog objectives with evidence links.
+
+Both files are regenerated with:
 
 .. code-block:: bash
 

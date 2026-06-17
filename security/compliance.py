@@ -825,8 +825,21 @@ def render_rst(track_b_only: bool = False) -> None:
     print("----\n")
     print(_rst_title("OSCAL Artifacts", "-"))
     print(
-        "The OSCAL 1.2.2 Component Definition references the catalog file and can be\n"
-        "regenerated with:\n\n"
+        "`OSCAL (Open Security Controls Assessment Language) <https://pages.nist.gov/OSCAL/>`_\n"
+        "is a NIST-published JSON/XML schema set for machine-readable security\n"
+        "documentation. It lets GRC tools, conformity-assessment toolchains, and\n"
+        "downstream integrators ingest dfetch's control evidence programmatically —\n"
+        "rather than reading prose — and map it to their own compliance frameworks.\n\n"
+        "dfetch ships two OSCAL 1.2.2 artifacts alongside the source:\n\n"
+        "- `security/cra_pren_4000014_oscal_catalog.json"
+        " <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_"
+        " — the prEN 40000-1-4 Security Objectives expressed as a structured catalog;\n"
+        "  import this into your GRC tool to obtain the requirement definitions.\n"
+        "- `security/dfetch.component-definition.json"
+        " <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_"
+        " — the dfetch Component Definition; maps each implemented control back to\n"
+        "  the catalog objectives with evidence links.\n\n"
+        "Both files are regenerated with:\n\n"
         ".. code-block:: bash\n\n"
         "   python -m security.compliance \\\\\n"
         "       --component security/dfetch.component-definition.json \\\\\n"
