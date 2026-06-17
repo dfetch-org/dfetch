@@ -21,6 +21,13 @@ a documented gap or compliance artefact.
 
 .. uml:: /static/uml/security_doc_flow.puml
 
+.. seealso::
+
+   :doc:`/reference/glossary`
+      Definitions for :term:`STRIDE`, :term:`OSCAL`, :term:`SBOM`,
+      :term:`SLSA`, :term:`Sigstore`, :term:`Attestation`, :term:`VSA`,
+      :term:`SARIF`, and other terms used on this page.
+
 **Threat model pipeline** —
 `security/tm_supply_chain.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_supply_chain.py>`_
 and
@@ -28,7 +35,7 @@ and
 define the model elements (actors, data flows, trust boundaries) using the
 *pytm* library.
 `security/threats.json <https://github.com/dfetch-org/dfetch/blob/main/security/threats.json>`_
-provides a catalog of 60+ STRIDE-classified threats.
+provides a catalog of 60+ :term:`STRIDE`-classified threats.
 `security/tm_render.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_render.py>`_
 drives *pytm*, matches threats against model elements, and combines the output
 with
@@ -43,27 +50,27 @@ defines all dfetch controls (Track A: risk-driven; Track B: compliance-only cont
 in ``compliance_data.py``) and their mapping to CRA essential requirements
 and prEN 40000-1-4 security objectives.
 `security/compliance.py <https://github.com/dfetch-org/dfetch/blob/main/security/compliance.py>`_
-reads those definitions together with the static OSCAL catalog and generates
+reads those definitions together with the static :term:`OSCAL` catalog and generates
 :doc:`compliance_track` (human-readable RST mapping tables),
 :doc:`control_register` (the full control register with GitHub references), and
 `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_
-(machine-readable OSCAL 1.2.2 Component Definition). The Component Definition
+(machine-readable :term:`OSCAL` 1.2.2 Component Definition). The Component Definition
 includes the supplier party, component purpose, and ``evidence`` links on each
 implemented-requirement pointing to the concrete code or CI file that implements
 the control — making the mapping machine-verifiable.
 
-**Release attestations** — GitHub Actions generates five cryptographic attestation
-types *about dfetch itself* during every release, signed by Sigstore and verifiable
-by consumers with ``gh attestation verify`` (see :ref:`verify-integrity`):
-CycloneDX SBOM (composition of the published package), SLSA Build Provenance
-(source-to-binary traceability), SLSA Source Provenance (governance controls on
-``main``), Verification Summary Attestation (VSA), and in-toto Test Results
-(CI test suite passed before any binary was produced).  These are required by
-supply-chain controls :ref:`C-026 <c-026>`, :ref:`C-037 <c-037>`,
-:ref:`C-039 <c-039>`, and :ref:`C-040 <c-040>`.
+**Release attestations** — GitHub Actions generates five cryptographic
+:term:`Attestation` types *about dfetch itself* during every release, signed by
+:term:`Sigstore` and verifiable by consumers with ``gh attestation verify``
+(see :ref:`verify-integrity`): CycloneDX :term:`SBOM` (composition of the
+published package), :term:`Build Provenance` (source-to-binary traceability),
+:term:`Source Provenance` (governance controls on ``main``), :term:`VSA`, and
+in-toto Test Results (CI test suite passed before any binary was produced).
+These are required by supply-chain controls :ref:`C-026 <c-026>`,
+:ref:`C-037 <c-037>`, :ref:`C-039 <c-039>`, and :ref:`C-040 <c-040>`.
 
 **Dependency-scanning outputs** — When users run ``dfetch check``, the reporting
-layer emits findings about outdated or missing vendored dependencies in the format
+layer emits findings about outdated or missing :term:`vendored <Vendoring>` dependencies in the format
 of their choice:
 :ref:`SARIF <check-ci-github>` (for GitHub code scanning),
 :ref:`Code Climate JSON <check-ci-gitlab>` (GitLab merge-request quality reports), or
@@ -81,7 +88,7 @@ of their choice:
 
    * - :doc:`threat_model_supply_chain`
      - RST (generated)
-     - Supply-chain threat model: DFD, sequence diagram, STRIDE tables, controls
+     - Supply-chain threat model: DFD, sequence diagram, :term:`STRIDE` tables, controls
 
    * - :doc:`threat_model_usage`
      - RST (generated)
@@ -96,18 +103,19 @@ of their choice:
      - All dfetch controls with type, references, and status
 
    * - `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_
-     - OSCAL 1.2.2 JSON (generated)
-     - Machine-readable Component Definition; maps dfetch controls to CRA ECRs;
+     - :term:`OSCAL` 1.2.2 JSON (generated)
+     - Machine-readable Component Definition; maps dfetch controls to CRA :term:`ECR`\ s;
        includes supplier party, component purpose, and evidence links to code
 
    * - `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_
-     - OSCAL 1.2.2 JSON (static)
+     - :term:`OSCAL` 1.2.2 JSON (static)
      - Static prEN 40000-1-4 catalog; includes parties, roles, and responsible-parties
 
    * - :ref:`Release attestations <verify-integrity>`
      - Sigstore-signed (GitHub Actions)
-     - Five attestation types generated *about dfetch* on every release: CycloneDX
-       SBOM, SLSA Build Provenance, SLSA Source Provenance, VSA, in-toto Test Results.
+     - Five :term:`Attestation` types generated *about dfetch* on every release:
+       CycloneDX :term:`SBOM`, :term:`Build Provenance`, :term:`Source Provenance`,
+       :term:`VSA`, in-toto Test Results.
        Required by controls :ref:`C-026 <c-026>`, :ref:`C-037 <c-037>`,
        :ref:`C-039 <c-039>`, :ref:`C-040 <c-040>`;
        verifiable with ``gh attestation verify``.

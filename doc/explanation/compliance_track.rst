@@ -25,7 +25,7 @@ concrete dfetch controls or documented gaps::
            ↓
    dfetch control (C-001 … C-046) or documented gap
 
-Machine-readable artifacts are kept alongside the source, encoded in OSCAL 1.2.2:
+Machine-readable artifacts are kept alongside the source, encoded in :term:`OSCAL` 1.2.2:
 
 - `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ — prEN 40000-1-4 catalog (includes parties, roles, and responsible-parties)
 - `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_ — dfetch Component Definition (includes supplier party, purpose, evidence links per implemented-requirement)
@@ -392,15 +392,15 @@ Gap Analysis — Compliance-Only Controls
 
 3 compliance-only controls address CRA requirements not independently covered by the Track A risk models.
 
-**:ref:`C-043 <c-043>` — Release-gate CVE check (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)**
+.. rubric:: :ref:`C-043 <c-043>` — Release-gate CVE check (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)
 
 dfetch's CI detects vulnerabilities at commit time (:ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`). :ref:`C-043 <c-043>` completes the coverage: the publish workflow runs ``pip-audit`` against the project's runtime dependencies via the OSV database and blocks the release if any known vulnerability is found.
 
-**:ref:`C-044 <c-044>` — Data minimisation policy (ECR-g, SO.DataMinimization → DTM-1)**
+.. rubric:: :ref:`C-044 <c-044>` — Data minimisation policy (ECR-g, SO.DataMinimization → DTM-1)
 
 dfetch processes dependency metadata only. The ``.dfetch_data.yaml`` file stores: ``remote_url`` (credentials stripped by :ref:`C-036 <c-036>`), ``revision``, optional ``integrity.hash``, and ``last_fetch`` timestamp. Each field is functionally necessary for ``dfetch check`` and ``dfetch freeze``. No personal data is collected; no telemetry is sent. :ref:`C-044 <c-044>` formalises this assertion as a documented policy.
 
-**:ref:`C-046 <c-046>` — Exploit mitigation inventory (ECR-k, SO.ReduceImpactOfIncident → GEC-11)**
+.. rubric:: :ref:`C-046 <c-046>` — Exploit mitigation inventory (ECR-k, SO.ReduceImpactOfIncident → GEC-11)
 
 prEN 40000-1-4 ECR-k requires documenting applicable exploit mitigation techniques. For dfetch (pure Python):
 
@@ -417,8 +417,20 @@ prEN 40000-1-4 ECR-k requires documenting applicable exploit mitigation techniqu
 OSCAL Artifacts
 ---------------
 
-The OSCAL 1.2.2 Component Definition references the catalog file and can be
-regenerated with:
+:term:`OSCAL` (Open Security Controls Assessment Language) is a
+NIST-published JSON/XML schema set for machine-readable security
+documentation. It lets GRC tools, conformity-assessment toolchains, and
+downstream integrators ingest dfetch's control evidence programmatically —
+rather than reading prose — and map it to their own compliance frameworks.
+
+dfetch ships two OSCAL 1.2.2 artifacts alongside the source:
+
+- `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ — the prEN 40000-1-4 Security Objectives expressed as a structured catalog;
+  import this into your GRC tool to obtain the requirement definitions.
+- `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_ — the dfetch Component Definition; maps each implemented control back to
+  the catalog objectives with evidence links.
+
+Both files are regenerated with:
 
 .. code-block:: bash
 
