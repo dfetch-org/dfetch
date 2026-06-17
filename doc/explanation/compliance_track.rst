@@ -5,11 +5,12 @@ CRA Compliance
 
 .. note::
 
-   dfetch is **non-commercial open-source software** and is exempt from
-   mandatory CRA obligations under Recital 18 of Regulation (EU) 2024/2847.
-   This document is produced voluntarily under Article 13(5) to support
+   dfetch is **non-commercial open-source software** and falls outside the
+   mandatory scope of Regulation (EU) 2024/2847 (CRA): it is not placed on the
+   market in the context of a commercial activity (CRA Article 3(1); Recital 18
+   provides interpretive context). This document is produced voluntarily to support
    downstream integrators who must account for open-source components in
-   their own conformity assessments.
+   their own Article 13 conformity assessments.
 
 This page provides three-tier traceability from the CRA Annex I essential
 requirements through the prEN 40000-1-4 Security Objectives to the
@@ -21,7 +22,7 @@ concrete dfetch controls or documented gaps::
            ↓
    dfetch control (C-001 … C-046) or documented gap
 
-Machine-readable OSCAL 1.1.2 artifacts are kept alongside the source:
+Machine-readable artifacts are kept alongside the source, encoded in OSCAL 1.1.2 (pinned version; NIST released 1.2.2 in April 2026 — migration not yet performed):
 
 - `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ — prEN 40000-1-4 catalog
 - `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_ — dfetch Component Definition
@@ -56,11 +57,65 @@ Classification Decision
    * - CRA classification
      - Non-commercial open-source software (Recital 18 exemption)
    * - Legal basis
-     - Article 3(14), Recital 18, Article 13(5) of Regulation (EU) 2024/2847
+     - CRA Article 3(1) (scope — dfetch is not placed on the market in the context of a commercial activity); Article 3(14) (definition of open-source software steward, for reference); Recital 18 (interpretive context for the treatment of non-commercial FOSS)
    * - Mandatory obligations
      - None — not a commercial product; no CE marking required
    * - Voluntary alignment
-     - This compliance document is produced voluntarily under Article 13(5) to support downstream integrators who must account for open-source components in their own CRA conformity assessments.
+     - This compliance document is produced voluntarily — dfetch has no legal obligation under the CRA — to support downstream integrators who must account for open-source components in their own Article 13 conformity assessments.
+
+----
+
+CRA Annex V — Technical Documentation Map
+------------------------------------------
+
+Annex V of Regulation (EU) 2024/2847 specifies the minimum content for
+a manufacturer's technical documentation. The table below maps each
+Annex V element to the corresponding dfetch artifact or section.
+Because dfetch is outside mandatory CRA scope, this mapping is provided
+as a convenience for downstream integrators conducting their own
+Article 13 conformity assessments.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - Annex V element
+     - dfetch artifact / section
+
+   * - **1. General description** — intended purpose, product name and version,
+       manufacturer address
+     - :doc:`security` § *Product and manufacturer identification*;
+       :doc:`../reference/manifest` (manifest schema and version field)
+
+   * - **2. Design and development** — software architecture; how components
+       build on or feed into each other
+     - :doc:`../explanation/architecture` (layer diagram and module overview);
+       :doc:`security_pipeline` § *Threat model pipeline* (security-relevant
+       component relationships)
+
+   * - **3. Production and monitoring** — build pipeline, dependency
+       management, CI/CD monitoring
+     - :doc:`security_pipeline` § *Compliance pipeline* and *Release
+       attestations*; CI workflows in
+       `.github/workflows/ <https://github.com/dfetch-org/dfetch/tree/main/.github/workflows>`_
+
+   * - **4. Cybersecurity risk assessment** (Article 13(2)) — asset
+       identification, threat analysis, risk treatment
+     - :doc:`threat_model_supply_chain` (pre-install lifecycle);
+       :doc:`threat_model_usage` (runtime invocation);
+       see also :doc:`security` § *Risk Rating Methodology*
+
+   * - **5. Implemented security solutions and applied standards** —
+       list of harmonised standards applied; where not applied,
+       description of how each Annex I requirement is met
+     - This page (§§ *Applicable Standards*, *Part I*, *Part II*);
+       :doc:`control_register` (all 46 controls with references);
+       OSCAL Component Definition
+       `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_
+
+   * - **6. EU Declaration of Conformity** (Annex IV)
+     - Not required. dfetch is outside mandatory CRA scope (see
+       *Classification Decision* above). No CE marking is affixed.
 
 ----
 
@@ -77,7 +132,7 @@ Applicable Standards
      - Scope note
      - Gap
    * - prEN 40000-1-2
-     - Cyber Resilience Principles and Risk Management
+     - Cyber Resilience Principles and Secure Development Lifecycle (working title; subject to change on publication)
      - Yes
      - Process standard covering risk-based product security across the lifecycle. The Product Security Context (§6.2) is documented in :doc:`security`. The threat models (`tm_supply_chain.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_supply_chain.py>`_, `tm_usage.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_usage.py>`_) implement §6.3–§6.6.
      - —
@@ -89,7 +144,7 @@ Applicable Standards
    * - prEN 40000-1-4
      - Generic Security Requirements (draft, indicative publication October 2027)
      - Yes
-     - Primary standard for this document. Maps CRA Annex I Part I Art. 2(a)–(m) to Security Objectives (SO.\*) and Technical Controls (GEC-\*, SUM-\*, etc.). The catalog is included as `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_.
+     - Primary standard for this document. Maps CRA Annex I Part I requirements (a)–(m) to Security Objectives (SO.\*) and Technical Controls (GEC-\*, SUM-\*, etc.). The catalog is included as `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_.
      - Standard is in draft; final clause numbering may change.
    * - EN 18031-1/2:2024
      - Common security requirements for radio equipment (basis of prEN 40000-1-4)
@@ -120,13 +175,13 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - Status
    * - **ECR-A** — Be made available on the market without known exploitable vulnerabilities.
      - SO.VulnerabilityManagementProcess
-     - :ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`, :ref:`C-022 <c-022>`, :ref:`C-043 <c-043>`
+     - :ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`, :ref:`C-022 <c-022>`, :ref:`C-040 <c-040>`, :ref:`C-043 <c-043>`
      - —
      - ✓ Implemented
    * - **ECR-B** — Be made available on the market with a secure by default configuration, including the possibility to reset the product to its original state.
      - SO.SecureDefaultConfiguration
      - :ref:`C-001 <c-001>`, :ref:`C-002 <c-002>`
-     - —
+     - Integrity hash verification (:ref:`C-005 <c-005>`) is opt-in; manifest entries without an ``integrity`` field are fetched without hash verification by default
      - ⚠ Partial
    * -
      - SO.SecureStartupConfig
@@ -150,8 +205,8 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - — N/A
    * -
      - SO.UserUpdateNotification
-     - :ref:`C-040 <c-040>`
-     - —
+     - `dfetch/util/github_version_check.py <https://github.com/dfetch-org/dfetch/blob/main/dfetch/util/github_version_check.py>`_
+     - ``dfetch check`` suppresses the call when ``CI`` is set (`check.py <https://github.com/dfetch-org/dfetch/blob/main/dfetch/commands/check.py>`_ line 102); ``dfetch environment`` calls it unconditionally
      - ✓ Implemented
    * -
      - SO.PostponeUpdates
@@ -161,12 +216,12 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-D** — Ensure protection from unauthorised access by appropriate control mechanisms including authentication, identity or access management systems, and report on possible unauthorised access.
      - SO.AccessControl
      - :ref:`C-006 <c-006>`, :ref:`C-036 <c-036>`
-     - —
+     - dfetch has no native authentication or authorisation layer; access control is fully delegated to the underlying VCS server and host OS. C-006 prevents interactive credential prompts (mitigating credential interception), and C-036 strips credentials from persisted metadata — both are confidentiality controls, not access control mechanisms in the authentication/authorisation sense.
      - ⚠ Partial
    * -
      - SO.AccessControlReport
      - :ref:`C-045 <c-045>`
-     - No persistent log of unauthorised access attempts
+     - No persistent log of access attempts; C-045 detects and warns on plaintext transport but does not log events
      - ⚠ Partial
    * - **ECR-E** — Protect the confidentiality of stored, transmitted or otherwise processed data by state-of-the-art mechanisms such as encryption at rest and in transit.
      - SO.DataStoredConfidentiality
@@ -180,14 +235,14 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - ✓ Implemented
    * -
      - SO.DataTransmittedConfidentiality
-     - :ref:`C-005 <c-005>`, :ref:`C-045 <c-045>`
-     - —
-     - ✓ Implemented
+     - :ref:`C-045 <c-045>`
+     - C-045 warns on plaintext-scheme URLs but does not refuse to proceed; TLS/SSH confidentiality is provided by the underlying VCS client, not enforced by dfetch itself
+     - ⚠ Partial
    * -
      - SO.ComAuth
-     - :ref:`C-003 <c-003>`, :ref:`C-004 <c-004>`, :ref:`C-045 <c-045>`
-     - —
-     - ✓ Implemented
+     - :ref:`C-045 <c-045>`
+     - Server authentication (TLS certificate verification, SSH host-key checking) is delegated to the OS trust store and VCS client; dfetch does not independently authenticate remote endpoints and cannot enforce authenticated channels when C-045's warning is overridden by the user
+     - ⚠ Partial
    * -
      - SO.SecureProvisioning
      - :ref:`C-005 <c-005>`
@@ -205,8 +260,8 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - ✓ Implemented
    * -
      - SO.DataTransmittedIntegrity
-     - :ref:`C-003 <c-003>`, :ref:`C-004 <c-004>`
-     - No end-to-end hash for git/svn transport beyond TLS/SSH channel integrity
+     - :ref:`C-005 <c-005>`
+     - C-005 provides end-to-end hash verification for archive sources only (opt-in); git and svn sources rely solely on VCS object integrity (SHA-1/SHA-256 object model) and TLS/SSH channel integrity — no dfetch-level hash verification
      - ⚠ Partial
    * -
      - SO.IntegrityReport
@@ -231,7 +286,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-I** — Minimise the negative impact by the products themselves or connected devices on the availability of services provided by other devices or networks.
      - SO.LimitExternalImpact
      - :ref:`C-001 <c-001>`, :ref:`C-007 <c-007>`
-     - —
+     - Archive HTTP operations time out at 15 s (reachability) and 60 s (download) via ``archive.py``; git and svn subprocess calls have no timeout and can stall indefinitely
      - ⚠ Partial
    * -
      - SO.PreventAttackPropagation
@@ -246,7 +301,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-J** — Be designed, developed and produced to limit attack surfaces, including external interfaces.
      - SO.ReduceAttackSurface
      - :ref:`C-001 <c-001>`, :ref:`C-003 <c-003>`, :ref:`C-004 <c-004>`, :ref:`C-007 <c-007>`, :ref:`C-008 <c-008>`
-     - —
+     - No domain or URL-scheme allowlist constrains which remote URLs the manifest may reference; git and svn subprocess calls have no timeout (archive HTTP operations time out at 15 s / 60 s)
      - ⚠ Partial
    * - **ECR-K** — Be designed, developed and produced to reduce the impact of an incident using appropriate exploitation mitigation mechanisms and techniques.
      - SO.ReduceImpactOfIncident
@@ -255,8 +310,8 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - ✓ Implemented
    * - **ECR-L** — Provide security related information by recording and monitoring relevant internal activity, including the access to or modification of data, services or functions, with an opt-out mechanism for the user.
      - SO.LogSecurityRelevantActivities
-     - :ref:`C-036 <c-036>`
-     - No persistent security event log (LGM-2/3/4 gap); No opt-out for logging — dfetch does not log by default
+     - —
+     - No persistent structured security event log (LGM-1/2/3/4 gap). dfetch prints operational output to stderr but does not retain it, does not record which credentials were used, which files were modified, or when remote access occurred. C-036 ensures credentials are excluded from the operational output but is not a logging control.
      - ⚠ Partial
    * -
      - SO.MonitorSecurityRelevantActivities
@@ -296,11 +351,20 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
 
 .. rubric:: Notes on "Implemented" rows with no control listed
 
-**ECR-C SO.Updateability** — No dfetch-specific control is needed.  SUM-1/SUM-2
-are satisfied by the PyPI distribution mechanism (``pip install --upgrade dfetch``
-and GitHub Releases binary packages).  pip's TLS-protected download channel provides
-the required secure update path.  The update mechanism is the responsibility of the
-user's package manager, not of dfetch itself.
+**ECR-C SO.Updateability** — SUM-1/SUM-2 require the manufacturer to make security
+updates available through a secure channel.  dfetch publishes every release to PyPI
+(TLS-protected, OIDC-authenticated via :ref:`C-010 <c-010>`) and GitHub Releases
+(with release attestations per :ref:`C-039 <c-039>`).  The CVE gate (:ref:`C-043 <c-043>`)
+blocks release if known vulnerabilities are present in runtime dependencies.  Providing
+the update *mechanism* is the manufacturer's obligation under SUM-1/SUM-2; delivery
+to the end user is the responsibility of the user's package manager.
+
+**ECR-C SO.UserUpdateNotification** — ``dfetch check`` and ``dfetch environment``
+both call ``newer_version_available()`` (``dfetch/util/github_version_check.py``),
+which polls the GitHub releases API and prints a notice if a newer dfetch release
+exists.  ``dfetch check`` suppresses the call when the ``CI`` environment variable
+is set (``check.py`` line 102: ``if not os.environ.get("CI")``); ``dfetch environment``
+does not apply this guard and always performs the check.
 
 **ECR-M SO.SecureDataDeletion** — No dfetch-specific control is needed.  DLM-1 is
 satisfied by design: dfetch stores no personal data, credentials, or cryptographic
@@ -314,7 +378,7 @@ sufficient to remove all dfetch data; no secure-wipe facility is warranted.
 Part II — Vulnerability Handling (prEN 40000-1-3)
 -------------------------------------------------
 
-Part II requirements are addressed via prEN 40000-1-3. pii-04 is not applicable under Recital 18.
+Part II requirements are addressed via prEN 40000-1-3. Part II §4 (active vulnerability reporting to national CSIRTs and ENISA) is not applicable: this obligation falls on commercial manufacturers placing products on the market, not on non-commercial open-source software outside mandatory CRA scope.
 
 .. list-table::
    :header-rows: 1
