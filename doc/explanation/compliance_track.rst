@@ -206,7 +206,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * -
      - SO.UserUpdateNotification
      - `dfetch/util/github_version_check.py <https://github.com/dfetch-org/dfetch/blob/main/dfetch/util/github_version_check.py>`_
-     - Check is suppressed when the ``CI`` environment variable is set (intentional: avoids spurious output in automated pipelines)
+     - ``dfetch check`` suppresses the call when ``CI`` is set (`check.py <https://github.com/dfetch-org/dfetch/blob/main/dfetch/commands/check.py>`_ line 102); ``dfetch environment`` calls it unconditionally
      - ✓ Implemented
    * -
      - SO.PostponeUpdates
@@ -286,7 +286,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-I** — Minimise the negative impact by the products themselves or connected devices on the availability of services provided by other devices or networks.
      - SO.LimitExternalImpact
      - :ref:`C-001 <c-001>`, :ref:`C-007 <c-007>`
-     - No connection timeout or rate limiting on VCS operations; a stalled or slow remote can consume resources indefinitely
+     - Archive HTTP operations time out at 15 s (reachability) and 60 s (download) via ``archive.py``; git and svn subprocess calls have no timeout and can stall indefinitely
      - ⚠ Partial
    * -
      - SO.PreventAttackPropagation
@@ -301,7 +301,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
    * - **ECR-J** — Be designed, developed and produced to limit attack surfaces, including external interfaces.
      - SO.ReduceAttackSurface
      - :ref:`C-001 <c-001>`, :ref:`C-003 <c-003>`, :ref:`C-004 <c-004>`, :ref:`C-007 <c-007>`, :ref:`C-008 <c-008>`
-     - No domain or URL-scheme allowlist constrains which remote URLs the manifest may reference; no network-operation timeout is enforced
+     - No domain or URL-scheme allowlist constrains which remote URLs the manifest may reference; git and svn subprocess calls have no timeout (archive HTTP operations time out at 15 s / 60 s)
      - ⚠ Partial
    * - **ECR-K** — Be designed, developed and produced to reduce the impact of an incident using appropriate exploitation mitigation mechanisms and techniques.
      - SO.ReduceImpactOfIncident
@@ -362,9 +362,9 @@ to the end user is the responsibility of the user's package manager.
 **ECR-C SO.UserUpdateNotification** — ``dfetch check`` and ``dfetch environment``
 both call ``newer_version_available()`` (``dfetch/util/github_version_check.py``),
 which polls the GitHub releases API and prints a notice if a newer dfetch release
-exists.  The check is skipped when the ``CI`` environment variable is set to avoid
-noise in automated pipelines; developers running dfetch interactively always receive
-the notification.
+exists.  ``dfetch check`` suppresses the call when the ``CI`` environment variable
+is set (``check.py`` line 102: ``if not os.environ.get("CI")``); ``dfetch environment``
+does not apply this guard and always performs the check.
 
 **ECR-M SO.SecureDataDeletion** — No dfetch-specific control is needed.  DLM-1 is
 satisfied by design: dfetch stores no personal data, credentials, or cryptographic
