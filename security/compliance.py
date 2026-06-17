@@ -25,10 +25,12 @@ from datetime import date
 from typing import Any
 
 from security.compliance_data import (
+    ANNEX_V_MAP,
     CLASSIFICATION_DECISION,
     PART_II_REQUIREMENTS,
     SO_IMPLEMENTATIONS,
     STANDARDS,
+    TRACK_A_CONTROLS,
     TRACK_B_CONTROLS,
     Control,
     SOImplementation,
@@ -62,26 +64,21 @@ def _so_title(so_id: str) -> str:
     return "SO." + "".join(p.capitalize() for p in parts)
 
 
-def _load_track_a_controls(track_b_only: bool = False) -> list[Control]:
-    """Load Track A controls from threat models if pytm is available.
+_GITHUB_BASE = "https://github.com/dfetch-org/dfetch"
 
-    Raises RuntimeError when pytm is unavailable and track_b_only is False,
-    so callers must explicitly opt in to Track-B-only degraded mode.
-    """
+
+def _load_track_a_controls(track_b_only: bool = False) -> list[Control]:
+    """Load Track A controls from threat models if pytm is available."""
     try:
         tm_sc = importlib.import_module("security.tm_supply_chain")
         tm_u = importlib.import_module("security.tm_usage")
-    except ModuleNotFoundError as exc:
+    except ModuleNotFoundError:
         if not track_b_only:
-            raise RuntimeError(
-                "Track A controls unavailable (pytm not installed). "
-                "Pass --track-b-only to generate a Track B only artifact."
-            ) from exc
-        print(
-            "Note: pytm not available — Track A controls omitted (--track-b-only).",
-            file=sys.stderr,
-        )
-        return []
+            print(
+                "Note: pytm not available — using static Track A controls.",
+                file=sys.stderr,
+            )
+        return list(TRACK_A_CONTROLS)
     sc_controls: list[Any] = getattr(tm_sc, "CONTROLS", [])
     u_controls: list[Any] = getattr(tm_u, "CONTROLS", [])
     return [
@@ -500,11 +497,62 @@ def _rst_list_table(
     lines.append("")
     lines.append("   * - " + "\n     - ".join(_rst_escape_star(h) for h in headers))
     for row in rows:
-        lines.append(
-            "   * - " + "\n     - ".join(_rst_escape_star(str(c)) for c in row)
-        )
+        lines.append("   * - " + "\n     - ".join(str(c) for c in row))
     lines.append("")
     return "\n".join(lines)
+
+
+def _rst_ctrl_ref(ctrl_id: str) -> str:
+    """Return an RST cross-reference for a control ID."""
+    return f":ref:`{ctrl_id} <{ctrl_id.lower()}>`"
+
+
+def _format_ref_as_rst(ref: str) -> str:
+    """Convert a control reference string to RST markup.
+
+    Handles: empty/dash, doc/ paths, glob patterns, directories, comma-separated,
+    and regular file paths — all converted to appropriate GitHub links or RST refs.
+    """
+    ref = ref.strip()
+    if not ref or ref == "—":
+        return "—"
+    # Already RST markup
+    if ref.startswith(":doc:") or ref.startswith(":ref:"):
+        return ref
+    # Handle parenthetical suffix like "path (note about it)"
+    paren_suffix = ""
+    if " (" in ref and ref.endswith(")"):
+        paren_idx = ref.rfind(" (")
+        paren_suffix = " " + ref[paren_idx + 1 :]
+        ref = ref[:paren_idx]
+    # doc/ prefix → RST :doc: reference (relative to doc/explanation/)
+    if ref.startswith("doc/howto/"):
+        slug = ref.removeprefix("doc/howto/").removesuffix(".rst")
+        return f":doc:`../howto/{slug}`"
+    if ref.startswith("doc/explanation/"):
+        slug = ref.removeprefix("doc/explanation/").removesuffix(".rst")
+        return f":doc:`{slug}`"
+    # Comma-separated → format each individually
+    if "," in ref:
+        parts = [_format_single_ref(p.strip()) for p in ref.split(",")]
+        return ",\n       ".join(parts)
+    return _format_single_ref(ref) + paren_suffix
+
+
+def _format_single_ref(ref: str) -> str:
+    """Format a single (non-comma-separated) file/dir reference as RST."""
+    ref = ref.strip()
+    if not ref:
+        return "—"
+    # Glob or directory → tree link
+    if ref.endswith("/") or "*" in ref:
+        base = ref.rstrip("/").rstrip("*").rstrip("/").rstrip(".")
+        tree_url = f"{_GITHUB_BASE}/tree/main/{base}"
+        display = ref
+        return f"`{display} <{tree_url}>`_"
+    # Regular file → blob link
+    blob_url = f"{_GITHUB_BASE}/blob/main/{ref}"
+    return f"`{ref} <{blob_url}>`_"
 
 
 def _render_classification() -> None:
@@ -561,7 +609,7 @@ def _part_i_rows(ecr_map: dict[str, str]) -> list[list[str]]:
         if so.ecr_id != current_ecr:
             current_ecr = so.ecr_id
             ecr_cell = f"**{so.ecr_id.upper()}** — {ecr_map.get(so.ecr_id, '')}"
-        ctrls = ", ".join(so.controls) if so.controls else "—"
+        ctrls = ", ".join(_rst_ctrl_ref(c) for c in so.controls) if so.controls else "—"
         gaps = "; ".join(so.gaps) if so.gaps else "—"
         rows.append(
             [
@@ -598,11 +646,19 @@ def _render_part_ii_table() -> None:
         "Part II requirements are addressed via prEN 40000-1-3. "
         "pii-04 is not applicable under Recital 18.\n"
     )
+
+    def _fmt_ctrl(c: str) -> str:
+        if re.match(r"^C-\d+$", c):
+            return _rst_ctrl_ref(c)
+        if c == "SECURITY.md":
+            return f"`SECURITY.md <{_GITHUB_BASE}/blob/main/SECURITY.md>`_"
+        return c
+
     rows = [
         [
             req.ref,
             req.text,
-            ", ".join(req.controls) if req.controls else "—",
+            ", ".join(_fmt_ctrl(c) for c in req.controls) if req.controls else "—",
             "; ".join(req.gaps) if req.gaps else "—",
             _STATUS_LABEL.get(req.status, req.status),
         ]
@@ -621,45 +677,49 @@ def _gap_entries() -> list[tuple[str, str]]:
     """Return (title, body) pairs for the gap analysis section."""
     return [
         (
-            "C-043 — Release-gate CVE check"
-            + " (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)",
+            ":ref:`C-043 <c-043>` — Release-gate CVE check"
+            " (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)",
             (
-                "dfetch's CI detects vulnerabilities at commit time (C-015, C-016, C-017) "
-                "but does not gate the release publish on a CVE scan of runtime dependencies. "
-                "C-043 (planned) adds ``pip-audit`` or ``osv-scanner`` to the publish "
-                "workflow."
+                "dfetch's CI detects vulnerabilities at commit time "
+                "(:ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`). "
+                ":ref:`C-043 <c-043>` completes the coverage: the publish workflow runs "
+                "``pip-audit`` against the project's runtime dependencies via the OSV "
+                "database and blocks the release if any known vulnerability is found."
             ),
         ),
         (
-            "C-044 — Data minimisation policy"
-            + " (ECR-g, SO.DataMinimization → DTM-1)",
+            ":ref:`C-044 <c-044>` — Data minimisation policy"
+            " (ECR-g, SO.DataMinimization → DTM-1)",
             (
-                "dfetch processes dependency metadata only. The ``.dfetch_data.yaml`` file "
-                "stores: ``remote_url`` (credentials stripped by C-036), ``revision``, "
-                "optional ``integrity.hash``, and ``last_fetch`` timestamp. Each field is "
-                "functionally necessary for ``dfetch check`` and ``dfetch freeze``. "
-                "No personal data is collected; no telemetry is sent. "
-                "C-044 formalises this assertion as a documented policy."
+                "dfetch processes dependency metadata only. The ``.dfetch_data.yaml`` "
+                "file stores: ``remote_url`` (credentials stripped by "
+                ":ref:`C-036 <c-036>`), ``revision``, optional ``integrity.hash``, "
+                "and ``last_fetch`` timestamp. Each field is functionally necessary "
+                "for ``dfetch check`` and ``dfetch freeze``. No personal data is "
+                "collected; no telemetry is sent. :ref:`C-044 <c-044>` formalises "
+                "this assertion as a documented policy."
             ),
         ),
         (
-            "C-046 — Exploit mitigation inventory"
-            + " (ECR-k, SO.ReduceImpactOfIncident → GEC-11)",
+            ":ref:`C-046 <c-046>` — Exploit mitigation inventory"
+            " (ECR-k, SO.ReduceImpactOfIncident → GEC-11)",
             (
-                "prEN 40000-1-4 ECR-k requires documenting applicable exploit mitigation "
-                "techniques. For dfetch (pure Python):\n\n"
+                "prEN 40000-1-4 ECR-k requires documenting applicable exploit "
+                "mitigation techniques. For dfetch (pure Python):\n\n"
                 "- **ASLR / DEP / stack canaries**: provided by CPython and the OS; "
                 "  not in dfetch's control but inherited.\n"
                 "- **No eval/exec of remote content**: dfetch never evaluates fetched "
                 "  content as code.\n"
-                "- **Constant-time comparison** (C-005): HMAC-based integrity hash uses "
-                "  ``hmac.compare_digest``.\n"
-                "- **No shell injection** (C-007): all subprocess calls use ``shell=False``.\n"
-                "- **Input validation** (C-008): URL scheme, path, and revision inputs "
-                "  are validated.\n"
-                "- **Static analysis** (C-015, C-017): CodeQL and bandit gate every commit.\n"
-                "- CFI, sandboxing, and signed-execution policies are not applicable to "
-                "  a pure-Python tool."
+                "- **Constant-time comparison** (:ref:`C-005 <c-005>`): HMAC-based "
+                "  integrity hash uses ``hmac.compare_digest``.\n"
+                "- **No shell injection** (:ref:`C-007 <c-007>`): all subprocess "
+                "  calls use ``shell=False``.\n"
+                "- **Input validation** (:ref:`C-008 <c-008>`): URL scheme, path, "
+                "  and revision inputs are validated.\n"
+                "- **Static analysis** (:ref:`C-015 <c-015>`, :ref:`C-017 <c-017>`): "
+                "  CodeQL and bandit gate every commit.\n"
+                "- CFI, sandboxing, and signed-execution policies are not applicable "
+                "  to a pure-Python tool."
             ),
         ),
     ]
@@ -678,46 +738,57 @@ def _render_gap_analysis() -> None:
         print(f"{body}\n")
 
 
-def _render_control_register(track_b_only: bool = False) -> None:
-    """Print the final merged control register table."""
-    print(_rst_title("Final Control Register", "-"))
+def _render_annex_v() -> None:
+    """Print the CRA Annex V technical documentation map."""
+    print(_rst_title("CRA Annex V — Technical Documentation Map", "-"))
     print(
-        "All controls from Track A (risk-driven) and Track B (regulatory) merged and "
-        "sorted. Track B controls (C-043, C-044, and C-046) are marked accordingly.\n"
+        "Annex V of Regulation (EU) 2024/2847 specifies the minimum content for "
+        "a manufacturer's technical documentation. The table below maps each "
+        "Annex V element to the corresponding dfetch artifact or section.\n"
+        "Because dfetch is outside mandatory CRA scope, this mapping is provided "
+        "as a convenience for downstream integrators conducting their own "
+        "Article 13 conformity assessments.\n"
     )
-    track_b_ids = {c.id for c in TRACK_B_CONTROLS}
-    rows = [
-        [
-            ctrl.id,
-            ctrl.name,
-            "Track B" if ctrl.id in track_b_ids else "Track A",
-            ctrl.reference or "—",
-        ]
-        for ctrl in get_all_controls(track_b_only=track_b_only)
-    ]
     print(
         _rst_list_table(
-            ["ID", "Name", "Track", "Reference"],
-            rows,
-            widths=[8, 40, 10, 42],
+            ["Annex V element", "dfetch artifact / section"],
+            [[elem, artifact] for elem, artifact in ANNEX_V_MAP],
+            widths=[45, 55],
         )
     )
 
 
+def _render_impl_notes() -> None:
+    """Print notes on 'Implemented' rows that have no control assigned."""
+    noted = [so for so in SO_IMPLEMENTATIONS if so.note]
+    if not noted:
+        return
+    print('.. rubric:: Notes on "Implemented" rows\n')
+    for so in noted:
+        print(so.note + "\n")
+
+
 def render_rst(track_b_only: bool = False) -> None:
     """Print the full compliance track RST document to stdout."""
+    print(
+        ".. This file is auto-generated by ``python -m security.compliance --rst``.\n"
+        "   Do not edit manually — edit security/compliance_data.py instead.\n"
+    )
     print(".. _compliance_track:\n")
-    print(_rst_title("CRA Compliance Track B"))
+    print(_rst_title("CRA Compliance"))
     print(
         ".. note::\n\n"
-        "   dfetch is **non-commercial open-source software** and is exempt from\n"
-        "   mandatory CRA obligations under Recital 18 of Regulation (EU) 2024/2847.\n"
-        "   This document is produced voluntarily under Article 13(5) to support\n"
-        "   downstream integrators who must account for open-source components in\n"
-        "   their own conformity assessments.\n"
+        "   dfetch is **non-commercial open-source software** and falls outside the\n"
+        "   mandatory scope of Regulation (EU) 2024/2847 (CRA): it is not placed on\n"
+        "   the market in the context of a commercial activity (CRA Article 3(1);\n"
+        "   Recital 18 provides interpretive context). This document is produced\n"
+        "   voluntarily to support downstream integrators who must account for\n"
+        "   open-source components in their own Article 13 conformity assessments.\n"
     )
     print(
-        "Three-tier traceability::\n\n"
+        "This page provides three-tier traceability from the CRA Annex I essential\n"
+        "requirements through the prEN 40000-1-4 Security Objectives to the\n"
+        "concrete dfetch controls or documented gaps::\n\n"
         "   CRA Annex I Essential Requirement (ECR-a … ECR-m)\n"
         "           ↓\n"
         "   prEN 40000-1-4 Security Objective (SO.*)\n"
@@ -725,16 +796,46 @@ def render_rst(track_b_only: bool = False) -> None:
         "   dfetch control (C-001 … C-046) or documented gap\n"
     )
     print(
-        "Machine-readable OSCAL 1.2.2 artifacts are kept alongside the source:\n\n"
-        "- ``security/cra_pren_4000014_oscal_catalog.json`` — prEN 40000-1-4 catalog\n"
-        "- ``security/dfetch.component-definition.json`` — dfetch Component Definition\n"
+        "Machine-readable artifacts are kept alongside the source, encoded in "
+        "OSCAL 1.2.2:\n\n"
+        "- `security/cra_pren_4000014_oscal_catalog.json"
+        " <https://github.com/dfetch-org/dfetch/blob/main/"
+        "security/cra_pren_4000014_oscal_catalog.json>`_"
+        " — prEN 40000-1-4 catalog (includes parties, roles, and responsible-parties)\n"
+        "- `security/dfetch.component-definition.json"
+        " <https://github.com/dfetch-org/dfetch/blob/main/"
+        "security/dfetch.component-definition.json>`_"
+        " — dfetch Component Definition (includes supplier party, purpose, evidence"
+        " links per implemented-requirement)\n"
     )
+    print(
+        "The full list of all controls is available on the :doc:`control_register` page.\n"
+    )
+    print(
+        ".. rubric:: Status key\n\n"
+        ".. list-table::\n"
+        "   :widths: 10 90\n\n"
+        "   * - ✓\n"
+        "     - Implemented — control satisfies the objective fully.\n"
+        "   * - ⚠\n"
+        "     - Partial — control exists but a gap remains (see Gaps column).\n"
+        "   * - N/A\n"
+        "     - Not applicable — the objective does not apply to dfetch.\n"
+    )
+    print("----\n")
     _render_classification()
+    print("----\n")
+    _render_annex_v()
+    print("----\n")
     _render_standards_table()
+    print("----\n")
     _render_part_i_table()
+    _render_impl_notes()
+    print("----\n")
     _render_part_ii_table()
+    print("----\n")
     _render_gap_analysis()
-    _render_control_register(track_b_only=track_b_only)
+    print("----\n")
     print(_rst_title("OSCAL Artifacts", "-"))
     print(
         "The OSCAL 1.2.2 Component Definition references the catalog file and can be\n"
@@ -742,9 +843,46 @@ def render_rst(track_b_only: bool = False) -> None:
         ".. code-block:: bash\n\n"
         "   python -m security.compliance \\\\\n"
         "       --component security/dfetch.component-definition.json \\\\\n"
-        "       --track-b-only \\\\\n"
+        "       --version 0.15.0 \\\\\n"
         "       --rst > doc/explanation/compliance_track.rst\n"
     )
+
+
+def render_control_register_rst(track_b_only: bool = False) -> None:
+    """Print the control register RST document to stdout."""
+    print(
+        ".. This file is auto-generated by ``python -m security.compliance "
+        "--control-register``.\n"
+        "   Do not edit manually — edit security/compliance_data.py or the threat "
+        "model files instead.\n"
+    )
+    print(".. _control_register:\n")
+    print(_rst_title("Control Register"))
+    print(
+        "All controls implemented by dfetch, sorted by ID. Risk-driven controls "
+        "emerge from the :doc:`threat models <security>`; compliance-only controls "
+        "address CRA requirements not independently surfaced by the risk analysis.\n"
+    )
+    track_b_ids = {c.id for c in TRACK_B_CONTROLS}
+    controls = get_all_controls(track_b_only=track_b_only)
+
+    # Build RST list-table rows with anchors inside the ID cell
+    lines = [".. list-table::", "   :header-rows: 1", "   :widths: 8 40 16 36", ""]
+    lines.append("   * - ID\n     - Name\n     - Type\n     - Reference")
+    for ctrl in controls:
+        ctrl_type = "Compliance-only" if ctrl.id in track_b_ids else "Risk-driven"
+        ref_rst = _format_ref_as_rst(ctrl.reference)
+        anchor = ctrl.id.lower()
+        # RST anchor in table cell must be followed by blank line then the cell text
+        id_cell = f".. _{anchor}:\n\n       {ctrl.id}"
+        lines.append(
+            f"   * - {id_cell}\n"
+            f"     - {ctrl.name}\n"
+            f"     - {ctrl_type}\n"
+            f"     - {ref_rst}"
+        )
+    lines.append("")
+    print("\n".join(lines))
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
@@ -758,6 +896,11 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--rst", action="store_true", help="Print RST document to stdout"
+    )
+    parser.add_argument(
+        "--control-register",
+        action="store_true",
+        help="Print control register RST document to stdout",
     )
     parser.add_argument(
         "--version", default="0.14.0", help="dfetch version (default: 0.14.0)"
@@ -780,3 +923,6 @@ if __name__ == "__main__":
 
     if args.rst:
         render_rst(track_b_only=args.track_b_only)
+
+    if args.control_register:
+        render_control_register_rst(track_b_only=args.track_b_only)
