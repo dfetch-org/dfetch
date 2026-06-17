@@ -11,6 +11,12 @@ patch file that is automatically re-applied on every :ref:`dfetch update
 into a contributor-ready unified diff that upstream maintainers can apply
 directly.
 
+.. note::
+
+   New to patching with *Dfetch*?  Start with :ref:`first-patch` in the
+   getting-started tutorial, which walks through creating and applying
+   your first patch step by step.
+
 The full lifecycle looks like this:
 
 1. :ref:`patching-create` — capture local edits as a ``.patch`` file with ``dfetch diff``
@@ -45,6 +51,8 @@ base.  You can override this:
 - Single base revision: ``dfetch diff some-project --revs 23864ef2``
 - Explicit range: ``dfetch diff some-project --revs 23864ef2:4a9cb18``
 
+See :ref:`diff` in the command reference for all options.
+
 .. tabs::
 
    .. tab:: Git
@@ -74,8 +82,24 @@ Once you have a patch file, reference it from the project entry in
           patch: some-project.patch
 
 From this point on, every ``dfetch update`` will fetch the upstream source and
-re-apply the patch on top.  See :ref:`patch` in the manifest reference for the
-full attribute syntax.
+re-apply the patch on top.
+
+**Multiple patches**
+
+You can split your changes into separate, focused patch files and list them in
+order:
+
+.. code-block:: yaml
+
+          patch:
+            - 001-fix-null-dereference.patch
+            - 002-add-missing-header.patch
+
+Patches are applied in the order listed.  A good convention is to prefix each
+file name with a zero-padded number so they sort correctly and their purpose is
+clear at a glance.
+
+See :ref:`patch` in the manifest reference for the full attribute syntax.
 
 .. _patching-update:
 
@@ -94,7 +118,14 @@ This regenerates the last patch for ``some-project`` from the current working
 tree, keeping the upstream revision unchanged.  It is safe to run repeatedly
 as you iterate on the fix.
 
+When the upstream version changes, *Dfetch* applies patches with fuzzy
+matching, so a patch can survive minor context changes without needing an
+immediate refresh.  If the patch no longer applies at all, ``dfetch update``
+will report the failure and you can refresh with ``dfetch update-patch``.
+
 .. asciinema:: ../asciicasts/update-patch.cast
+
+See :ref:`update-patch` in the command reference for all options.
 
 .. tabs::
 
@@ -121,10 +152,10 @@ for a project:
     $ dfetch format-patch some-project
 
 This writes a ``formatted-some-project.patch`` file (or one file per patch if
-there are several) that is ready to attach to a pull request or send by email.
+there are several) that is ready to share with the upstream project.
 
-
-You can verify the formatted patch applies cleanly before submitting:
+Before sending it, do a dry-run check to confirm it applies cleanly to a local
+clone of the upstream repository:
 
 .. tabs::
 
@@ -136,6 +167,16 @@ You can verify the formatted patch applies cleanly before submitting:
 
         .. scenario-include:: ../features/format-patch-in-git.feature
 
+        Once confirmed, hand the file off to the upstream project.  Upstream
+        maintainers can apply it with `git am
+        <https://git-scm.com/docs/git-am>`_:
+
+        .. code-block:: console
+
+            $ git am formatted-some-project.patch
+
+        Each patch file results in a separate commit.
+
     .. tab:: SVN
 
         .. code-block:: console
@@ -145,3 +186,5 @@ You can verify the formatted patch applies cleanly before submitting:
         .. scenario-include:: ../features/format-patch-in-svn.feature
 
 .. asciinema:: ../asciicasts/format-patch.cast
+
+See :ref:`format-patch` in the command reference for all options.
