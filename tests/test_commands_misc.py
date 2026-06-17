@@ -10,22 +10,24 @@ from unittest.mock import MagicMock, Mock, call, patch
 import pytest
 
 from dfetch.commands.environment import Environment
-from dfetch.commands.init import Init
-from dfetch.commands.validate import Validate
 from dfetch.commands.format_patch import FormatPatch, _determine_target_patch_type
+from dfetch.commands.init import Init
 from dfetch.commands.update_patch import UpdatePatch
+from dfetch.commands.validate import Validate
 from dfetch.project.superproject import NoVcsSuperProject
 from tests.manifest_mock import mock_manifest
-
 
 # ============================
 # Environment command
 # ============================
 
+
 def test_environment_prints_version():
     """Environment.__call__ logs the dfetch version."""
     env = Environment()
-    with patch("dfetch.commands.environment.newer_version_available", return_value=None):
+    with patch(
+        "dfetch.commands.environment.newer_version_available", return_value=None
+    ):
         with patch("dfetch.commands.environment.logger") as mock_logger:
             with patch("dfetch.commands.environment.SUPPORTED_SUBPROJECT_TYPES", []):
                 env(argparse.Namespace())
@@ -35,7 +37,9 @@ def test_environment_prints_version():
 def test_environment_logs_newer_version_when_available():
     """Environment logs a notice when a newer version is available."""
     env = Environment()
-    with patch("dfetch.commands.environment.newer_version_available", return_value="99.0.0"):
+    with patch(
+        "dfetch.commands.environment.newer_version_available", return_value="99.0.0"
+    ):
         with patch("dfetch.commands.environment.logger") as mock_logger:
             with patch("dfetch.commands.environment.SUPPORTED_SUBPROJECT_TYPES", []):
                 env(argparse.Namespace())
@@ -45,7 +49,9 @@ def test_environment_logs_newer_version_when_available():
 def test_environment_no_newer_version_notice():
     """When no newer version exists, print_newer_version_notice is not called."""
     env = Environment()
-    with patch("dfetch.commands.environment.newer_version_available", return_value=None):
+    with patch(
+        "dfetch.commands.environment.newer_version_available", return_value=None
+    ):
         with patch("dfetch.commands.environment.logger") as mock_logger:
             with patch("dfetch.commands.environment.SUPPORTED_SUBPROJECT_TYPES", []):
                 env(argparse.Namespace())
@@ -56,7 +62,9 @@ def test_environment_calls_list_tool_info_for_each_project_type():
     """Environment calls list_tool_info on every supported project type."""
     env = Environment()
     mock_type = Mock()
-    with patch("dfetch.commands.environment.newer_version_available", return_value=None):
+    with patch(
+        "dfetch.commands.environment.newer_version_available", return_value=None
+    ):
         with patch("dfetch.commands.environment.logger"):
             with patch(
                 "dfetch.commands.environment.SUPPORTED_SUBPROJECT_TYPES",
@@ -77,11 +85,14 @@ def test_environment_create_menu():
 # Init command
 # ============================
 
+
 def test_init_creates_manifest_when_absent():
     """Init copies the template when dfetch.yaml does not exist."""
     init = Init()
     with patch("os.path.isfile", return_value=False):
-        with patch("dfetch.commands.init.shutil.copyfile", return_value="/tmp/dfetch.yaml") as mock_copy:
+        with patch(
+            "dfetch.commands.init.shutil.copyfile", return_value="/tmp/dfetch.yaml"
+        ) as mock_copy:
             with patch("dfetch.commands.init.TEMPLATE_PATH") as mock_template:
                 mock_template.__enter__ = Mock(return_value="/path/to/template.yaml")
                 mock_template.__exit__ = Mock(return_value=False)
@@ -112,10 +123,13 @@ def test_init_create_menu():
 # Validate command
 # ============================
 
+
 def test_validate_calls_manifest_from_file():
     """Validate loads and validates the manifest without errors."""
     validate = Validate()
-    with patch("dfetch.commands.validate.find_manifest", return_value="/some/dfetch.yaml"):
+    with patch(
+        "dfetch.commands.validate.find_manifest", return_value="/some/dfetch.yaml"
+    ):
         with patch("dfetch.commands.validate.Manifest.from_file") as mock_from_file:
             with patch("dfetch.commands.validate.logger") as mock_logger:
                 with patch("os.path.relpath", return_value="dfetch.yaml"):
@@ -126,12 +140,16 @@ def test_validate_calls_manifest_from_file():
 def test_validate_prints_valid():
     """Validate logs a 'valid' report line for the manifest."""
     validate = Validate()
-    with patch("dfetch.commands.validate.find_manifest", return_value="/some/dfetch.yaml"):
+    with patch(
+        "dfetch.commands.validate.find_manifest", return_value="/some/dfetch.yaml"
+    ):
         with patch("dfetch.commands.validate.Manifest.from_file"):
             with patch("dfetch.commands.validate.logger") as mock_logger:
                 with patch("os.path.relpath", return_value="dfetch.yaml"):
                     validate(argparse.Namespace())
-                    mock_logger.print_report_line.assert_called_once_with("dfetch.yaml", "valid")
+                    mock_logger.print_report_line.assert_called_once_with(
+                        "dfetch.yaml", "valid"
+                    )
 
 
 def test_validate_create_menu():
@@ -144,6 +162,7 @@ def test_validate_create_menu():
 # ============================
 # FormatPatch helpers
 # ============================
+
 
 def test_determine_target_patch_type_git():
     """Git subprojects get PatchType.GIT."""
@@ -181,12 +200,18 @@ def test_format_patch_no_patch_logs_warning():
     superproject.manifest = manifest
     superproject.root_directory = Path("/tmp")
 
-    with patch("dfetch.commands.format_patch.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.format_patch.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.format_patch.in_directory"):
-            with patch("dfetch.commands.format_patch.dfetch.project.create_sub_project") as mock_create:
+            with patch(
+                "dfetch.commands.format_patch.dfetch.project.create_sub_project"
+            ) as mock_create:
                 with patch("dfetch.commands.format_patch.check_no_path_traversal"):
                     with patch("pathlib.Path.mkdir"):
-                        with patch("dfetch.commands.format_patch.logger") as mock_logger:
+                        with patch(
+                            "dfetch.commands.format_patch.logger"
+                        ) as mock_logger:
                             mock_sub = Mock()
                             mock_sub.patch = []  # no patch
                             mock_create.return_value = mock_sub
@@ -207,9 +232,13 @@ def test_format_patch_runtime_error_raises():
     superproject.manifest = manifest
     superproject.root_directory = Path("/tmp")
 
-    with patch("dfetch.commands.format_patch.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.format_patch.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.format_patch.in_directory"):
-            with patch("dfetch.commands.format_patch.dfetch.project.create_sub_project") as mock_create:
+            with patch(
+                "dfetch.commands.format_patch.dfetch.project.create_sub_project"
+            ) as mock_create:
                 with patch("dfetch.commands.format_patch.check_no_path_traversal"):
                     with patch("pathlib.Path.mkdir"):
                         mock_sub = Mock()
@@ -226,6 +255,7 @@ def test_format_patch_runtime_error_raises():
 # UpdatePatch command
 # ============================
 
+
 def test_update_patch_raises_for_novcs():
     """UpdatePatch raises RuntimeError immediately for NoVcsSuperProject."""
     update_patch = UpdatePatch()
@@ -233,7 +263,9 @@ def test_update_patch_raises_for_novcs():
     superproject.root_directory = Path("/tmp")
     superproject.manifest = mock_manifest([])
 
-    with patch("dfetch.commands.update_patch.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.update_patch.create_super_project", return_value=superproject
+    ):
         args = argparse.Namespace(projects=[])
         with pytest.raises(RuntimeError, match="not under version control"):
             update_patch(args)
@@ -249,9 +281,13 @@ def test_update_patch_no_patch_logs_warning():
     superproject.manifest = manifest
     superproject.root_directory = Path("/tmp")
 
-    with patch("dfetch.commands.update_patch.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.update_patch.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.update_patch.in_directory"):
-            with patch("dfetch.commands.update_patch.dfetch.project.create_sub_project") as mock_create:
+            with patch(
+                "dfetch.commands.update_patch.dfetch.project.create_sub_project"
+            ) as mock_create:
                 with patch("dfetch.commands.update_patch.logger") as mock_logger:
                     mock_sub = Mock()
                     mock_sub.patch = []  # no patch
@@ -275,9 +311,13 @@ def test_update_patch_no_on_disk_version_logs_warning():
     superproject.manifest = manifest
     superproject.root_directory = Path("/tmp")
 
-    with patch("dfetch.commands.update_patch.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.update_patch.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.update_patch.in_directory"):
-            with patch("dfetch.commands.update_patch.dfetch.project.create_sub_project") as mock_create:
+            with patch(
+                "dfetch.commands.update_patch.dfetch.project.create_sub_project"
+            ) as mock_create:
                 with patch("dfetch.commands.update_patch.logger") as mock_logger:
                     mock_sub = Mock()
                     mock_sub.patch = ["my.patch"]
@@ -304,9 +344,13 @@ def test_update_patch_uncommitted_changes_logs_warning():
     superproject.root_directory = Path("/tmp")
     superproject.has_local_changes_in_dir.return_value = True
 
-    with patch("dfetch.commands.update_patch.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.update_patch.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.update_patch.in_directory"):
-            with patch("dfetch.commands.update_patch.dfetch.project.create_sub_project") as mock_create:
+            with patch(
+                "dfetch.commands.update_patch.dfetch.project.create_sub_project"
+            ) as mock_create:
                 with patch("dfetch.commands.update_patch.logger") as mock_logger:
                     mock_sub = Mock()
                     mock_sub.patch = ["my.patch"]
@@ -332,9 +376,13 @@ def test_update_patch_runtime_error_raises_at_end():
     superproject.manifest = manifest
     superproject.root_directory = Path("/tmp")
 
-    with patch("dfetch.commands.update_patch.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.update_patch.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.update_patch.in_directory"):
-            with patch("dfetch.commands.update_patch.dfetch.project.create_sub_project") as mock_create:
+            with patch(
+                "dfetch.commands.update_patch.dfetch.project.create_sub_project"
+            ) as mock_create:
                 mock_sub = Mock()
                 mock_sub.patch = ["my.patch"]
                 mock_sub.on_disk_version.side_effect = RuntimeError("disk error")

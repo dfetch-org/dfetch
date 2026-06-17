@@ -31,7 +31,9 @@ def test_unfetched_project_logs_with_wanted():
     reporter = _make_reporter()
     project = _make_project()
     with patch("dfetch.reporting.check.stdout_reporter.logger") as mock_logger:
-        reporter.unfetched_project(project, Version(branch="main"), Version(branch="main"))
+        reporter.unfetched_project(
+            project, Version(branch="main"), Version(branch="main")
+        )
         mock_logger.print_info_line.assert_called_once()
         assert "main" in mock_logger.print_info_line.call_args[0][1]
 
@@ -64,7 +66,9 @@ def test_pinned_but_out_of_date_logs_info():
     reporter = _make_reporter()
     project = _make_project()
     with patch("dfetch.reporting.check.stdout_reporter.logger") as mock_logger:
-        reporter.pinned_but_out_of_date_project(project, Version(tag="v1.0"), Version(tag="v2.0"))
+        reporter.pinned_but_out_of_date_project(
+            project, Version(tag="v1.0"), Version(tag="v2.0")
+        )
         assert "available" in mock_logger.print_info_line.call_args[0][1]
 
 
@@ -73,7 +77,10 @@ def test_out_of_date_project_logs_info():
     project = _make_project()
     with patch("dfetch.reporting.check.stdout_reporter.logger") as mock_logger:
         reporter.out_of_date_project(
-            project, Version(branch="main"), Version(branch="main"), Version(branch="main")
+            project,
+            Version(branch="main"),
+            Version(branch="main"),
+            Version(branch="main"),
         )
         mock_logger.print_info_line.assert_called_once()
 

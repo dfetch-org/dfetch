@@ -8,7 +8,6 @@ from unittest.mock import patch
 
 from dfetch.terminal.prompt import _ghost_handle_backspace, _ghost_handle_char
 
-
 # ---------------------------------------------------------------------------
 # _ghost_handle_backspace
 # ---------------------------------------------------------------------------

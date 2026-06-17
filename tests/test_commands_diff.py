@@ -23,6 +23,7 @@ def _make_args(projects=None, revs=""):
 
 # ---------- Static helper tests (no I/O) ----------
 
+
 def test_parse_revs_empty_string():
     """Empty string returns ('', '')."""
     assert Diff._parse_revs("") == ("", "")
@@ -54,6 +55,7 @@ def test_rev_msg_without_new_rev():
 
 
 # ---------- Diff.__call__ tests ----------
+
 
 def _make_superproject(manifest, is_novcs=False):
     if is_novcs:

@@ -52,14 +52,20 @@ def _make_issue(severity=IssueSeverity.HIGH, rule_id="unfetched-project"):
 
 # ---------- Severity mapping ----------
 
+
 def test_severity_to_level_high():
     """IssueSeverity.HIGH maps to SarifResultLevel.ERROR."""
-    assert SarifReporter._severity_to_level(IssueSeverity.HIGH) is SarifResultLevel.ERROR
+    assert (
+        SarifReporter._severity_to_level(IssueSeverity.HIGH) is SarifResultLevel.ERROR
+    )
 
 
 def test_severity_to_level_normal():
     """IssueSeverity.NORMAL maps to SarifResultLevel.WARNING."""
-    assert SarifReporter._severity_to_level(IssueSeverity.NORMAL) is SarifResultLevel.WARNING
+    assert (
+        SarifReporter._severity_to_level(IssueSeverity.NORMAL)
+        is SarifResultLevel.WARNING
+    )
 
 
 def test_severity_to_level_low():
@@ -68,6 +74,7 @@ def test_severity_to_level_low():
 
 
 # ---------- add_issue ----------
+
 
 def test_add_issue_appends_result():
     """After add_issue, _run.results has exactly one item."""
@@ -95,6 +102,7 @@ def test_add_issue_result_has_rule_id():
 
 # ---------- dump_to_file ----------
 
+
 def test_dump_to_file_writes_json():
     """dump_to_file opens the report path and writes JSON content."""
     reporter = _make_reporter()
@@ -109,6 +117,7 @@ def test_dump_to_file_writes_json():
 
 
 # ---------- SarifSerializer._walk_sarif ----------
+
 
 def _bare_serializer():
     """Create a SarifSerializer instance without calling __init__."""

@@ -15,7 +15,6 @@ from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.vcs.patch import PatchType
 from tests.manifest_mock import mock_manifest
 
-
 # ---------------------------------------------------------------------------
 # _determine_target_patch_type
 # ---------------------------------------------------------------------------
@@ -25,6 +24,7 @@ def test_determine_patch_type_git():
     """Git subprojects use PatchType.GIT."""
     with patch("dfetch.project.gitsubproject.GitRemote"):
         from dfetch.manifest.project import ProjectEntry
+
         sp = MagicMock(spec=GitSubProject)
         assert _determine_target_patch_type(sp) is PatchType.GIT
 
@@ -38,6 +38,7 @@ def test_determine_patch_type_svn():
 def test_determine_patch_type_other():
     """Other subprojects (archive etc.) use PatchType.PLAIN."""
     from dfetch.project.archivesubproject import ArchiveSubProject
+
     sp = MagicMock(spec=ArchiveSubProject)
     assert _determine_target_patch_type(sp) is PatchType.PLAIN
 
@@ -56,6 +57,7 @@ def _default_args(projects=None, output_dir="."):
 
 def _make_superproject(root="/repo", projects=None):
     from dfetch.project.gitsuperproject import GitSuperProject
+
     fake_sp = MagicMock(spec=GitSuperProject)
     fake_sp.root_directory = pathlib.Path(root)
     fake_sp.manifest = mock_manifest(projects or [])
@@ -69,7 +71,9 @@ def test_format_patch_no_projects_runs_without_error(tmp_path):
     cmd = FormatPatch()
     fake_sp = _make_superproject(root=str(tmp_path), projects=[])
 
-    with patch("dfetch.commands.format_patch.create_super_project", return_value=fake_sp):
+    with patch(
+        "dfetch.commands.format_patch.create_super_project", return_value=fake_sp
+    ):
         with patch("dfetch.commands.format_patch.in_directory") as mock_indir:
             mock_indir.return_value.__enter__ = Mock(return_value=None)
             mock_indir.return_value.__exit__ = Mock(return_value=False)
@@ -85,12 +89,16 @@ def test_format_patch_warns_when_no_patch_file(tmp_path):
     mock_subproject = Mock()
     mock_subproject.patch = []
 
-    with patch("dfetch.commands.format_patch.create_super_project", return_value=fake_sp):
+    with patch(
+        "dfetch.commands.format_patch.create_super_project", return_value=fake_sp
+    ):
         with patch("dfetch.commands.format_patch.in_directory") as mock_indir:
             mock_indir.return_value.__enter__ = Mock(return_value=None)
             mock_indir.return_value.__exit__ = Mock(return_value=False)
             with patch("dfetch.commands.format_patch.check_no_path_traversal"):
-                with patch("dfetch.project.create_sub_project", return_value=mock_subproject):
+                with patch(
+                    "dfetch.project.create_sub_project", return_value=mock_subproject
+                ):
                     with patch("dfetch.commands.format_patch.logger") as mock_logger:
                         cmd(_default_args(output_dir=str(tmp_path)))
                         mock_logger.print_warning_line.assert_called_once()
@@ -105,11 +113,15 @@ def test_format_patch_runtime_error_raises_at_end(tmp_path):
     mock_subproject.patch = ["some.patch"]
     mock_subproject.on_disk_version.side_effect = RuntimeError("boom")
 
-    with patch("dfetch.commands.format_patch.create_super_project", return_value=fake_sp):
+    with patch(
+        "dfetch.commands.format_patch.create_super_project", return_value=fake_sp
+    ):
         with patch("dfetch.commands.format_patch.in_directory") as mock_indir:
             mock_indir.return_value.__enter__ = Mock(return_value=None)
             mock_indir.return_value.__exit__ = Mock(return_value=False)
             with patch("dfetch.commands.format_patch.check_no_path_traversal"):
-                with patch("dfetch.project.create_sub_project", return_value=mock_subproject):
+                with patch(
+                    "dfetch.project.create_sub_project", return_value=mock_subproject
+                ):
                     with pytest.raises(RuntimeError):
                         cmd(_default_args(output_dir=str(tmp_path)))
