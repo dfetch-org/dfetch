@@ -22,10 +22,10 @@ concrete dfetch controls or documented gaps::
            ↓
    dfetch control (C-001 … C-046) or documented gap
 
-Machine-readable artifacts are kept alongside the source, encoded in OSCAL 1.1.2 (pinned version; NIST released 1.2.2 in April 2026 — migration not yet performed):
+Machine-readable artifacts are kept alongside the source, encoded in OSCAL 1.2.2:
 
-- `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ — prEN 40000-1-4 catalog
-- `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_ — dfetch Component Definition
+- `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_ — prEN 40000-1-4 catalog (includes parties, roles, and responsible-parties)
+- `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_ — dfetch Component Definition (includes supplier party, purpose, evidence links per implemented-requirement)
 
 The full list of all controls is available on the :doc:`control_register` page.
 

@@ -1,6 +1,6 @@
 """CRA Compliance Track B for dfetch.
 
-Produces an OSCAL 1.1.2 Component Definition and a human-readable RST document
+Produces an OSCAL 1.2.2 Component Definition and a human-readable RST document
 that map the CRA Annex I essential requirements through prEN 40000-1-4 Security
 Objectives to dfetch's implemented controls.
 
@@ -111,13 +111,25 @@ def load_catalog() -> Any:
 # ── OSCAL Component Definition builder ────────────────────────────────────────
 
 
+_PARTY_UUID_DFETCH_ORG = _u("party-dfetch-org")
+
+
 def _build_metadata(version: str) -> dict[str, Any]:
-    """Return the OSCAL metadata block."""
+    """Return the OSCAL 1.2.2 metadata block with parties and roles."""
     return {
         "title": "dfetch CRA Compliance Component Definition",
         "last-modified": f"{date.today().isoformat()}T00:00:00Z",
         "version": version,
-        "oscal-version": "1.1.2",
+        "oscal-version": "1.2.2",
+        "document-ids": [
+            {
+                "scheme": "uri",
+                "identifier": (
+                    "https://github.com/dfetch-org/dfetch/blob/main/"
+                    "security/dfetch.component-definition.json"
+                ),
+            }
+        ],
         "props": [
             {
                 "name": "cra-class",
@@ -135,6 +147,49 @@ def _build_metadata(version: str) -> dict[str, Any]:
                 "value": (
                     "prEN 40000-1-4 (draft, indicative publication October 2027)"
                 ),
+            },
+            {
+                "name": "openssf-scorecard",
+                "value": "https://api.securityscorecards.dev/projects/github.com/dfetch-org/dfetch",
+            },
+        ],
+        "roles": [
+            {
+                "id": "supplier",
+                "title": "Software Supplier",
+                "description": "Organisation that develops and distributes dfetch.",
+            },
+            {
+                "id": "maintainer",
+                "title": "Maintainer",
+                "description": "Primary maintainer of the dfetch project and this compliance document.",
+            },
+        ],
+        "parties": [
+            {
+                "uuid": _PARTY_UUID_DFETCH_ORG,
+                "type": "organization",
+                "name": "dfetch-org",
+                "links": [
+                    {
+                        "href": "https://github.com/dfetch-org",
+                        "rel": "homepage",
+                    }
+                ],
+                "remarks": (
+                    "Non-commercial open-source organisation. "
+                    "dfetch is not placed on the market in the context of a commercial activity."
+                ),
+            }
+        ],
+        "responsible-parties": [
+            {
+                "role-id": "supplier",
+                "party-uuids": [_PARTY_UUID_DFETCH_ORG],
+            },
+            {
+                "role-id": "maintainer",
+                "party-uuids": [_PARTY_UUID_DFETCH_ORG],
             },
         ],
         "remarks": (
@@ -173,10 +228,19 @@ def _build_so_description(so_impl: SOImplementation) -> str:
     return " ".join(parts) if parts else _so_title(so_impl.so_id)
 
 
+def _build_evidence_links(so_impl: SOImplementation) -> list[dict[str, str]]:
+    """Return OSCAL links pointing to code or CI evidence for one SO."""
+    return [
+        {"href": href, "rel": "evidence", "text": text}
+        for href, text in so_impl.evidence_hrefs
+    ]
+
+
 def _build_implemented_requirements() -> list[dict[str, Any]]:
     """Return one implemented-requirement dict per SO."""
-    return [
-        {
+    reqs = []
+    for so_impl in SO_IMPLEMENTATIONS:
+        req: dict[str, Any] = {
             "uuid": _u(f"req-{so_impl.so_id}"),
             "control-id": so_impl.so_id,
             "props": _build_so_props(so_impl),
@@ -188,8 +252,11 @@ def _build_implemented_requirements() -> list[dict[str, Any]]:
                 }
             ],
         }
-        for so_impl in SO_IMPLEMENTATIONS
-    ]
+        links = _build_evidence_links(so_impl)
+        if links:
+            req["links"] = links
+        reqs.append(req)
+    return reqs
 
 
 def _build_component(version: str) -> dict[str, Any]:
@@ -202,7 +269,18 @@ def _build_component(version: str) -> dict[str, Any]:
             "Python CLI tool for vendoring source-code dependencies from Git, SVN, "
             "or archive files into a project as plain files."
         ),
-        "props": [{"name": "software-version", "value": version}],
+        "purpose": (
+            "Vendor source-code dependencies from Git, SVN, or archive files into a "
+            "project as plain files, enabling reproducible builds without submodules or "
+            "externals. Supports integrity hashing, plaintext-transport detection, and "
+            "credential redaction to reduce supply-chain risk."
+        ),
+        "props": [
+            {"name": "software-version", "value": version},
+            {"name": "asset-type", "value": "software.application"},
+            {"name": "vendor-name", "value": "dfetch-org"},
+            {"name": "license", "value": "MIT"},
+        ],
         "links": [
             {"href": "https://github.com/dfetch-org/dfetch", "rel": "homepage"},
             {"href": "https://pypi.org/project/dfetch/", "rel": "distribution"},
@@ -211,6 +289,17 @@ def _build_component(version: str) -> dict[str, Any]:
                 "rel": "reference",
                 "text": "prEN 40000-1-4 OSCAL Catalog",
             },
+            {
+                "href": "SECURITY.md",
+                "rel": "reference",
+                "text": "Vulnerability Disclosure Policy",
+            },
+        ],
+        "responsible-roles": [
+            {
+                "role-id": "supplier",
+                "party-uuids": [_PARTY_UUID_DFETCH_ORG],
+            }
         ],
         "control-implementations": [
             {
@@ -251,11 +340,121 @@ def _build_back_matter() -> dict[str, Any]:
             },
             {
                 "uuid": _u("res-security-md"),
-                "title": "dfetch Security Policy (SECURITY.md)",
+                "title": "dfetch Vulnerability Disclosure Policy (SECURITY.md)",
                 "rlinks": [
                     {
                         "href": (
                             "https://github.com/dfetch-org/dfetch/blob/main/SECURITY.md"
+                        )
+                    }
+                ],
+            },
+            {
+                "uuid": _u("res-scorecard"),
+                "title": "OpenSSF Scorecard — dfetch supply-chain security score",
+                "props": [
+                    {"name": "type", "value": "assessment-report"},
+                    {"name": "tool", "value": "OpenSSF Scorecard"},
+                ],
+                "rlinks": [
+                    {
+                        "href": (
+                            "https://api.securityscorecards.dev/projects/"
+                            "github.com/dfetch-org/dfetch"
+                        )
+                    }
+                ],
+            },
+            {
+                "uuid": _u("res-scorecard-workflow"),
+                "title": "OpenSSF Scorecard CI workflow",
+                "rlinks": [
+                    {
+                        "href": ".github/workflows/scorecard.yml",
+                    }
+                ],
+            },
+            {
+                "uuid": _u("res-slsa-provenance"),
+                "title": "SLSA Source Provenance Attestation workflow",
+                "props": [
+                    {"name": "type", "value": "attestation"},
+                    {"name": "framework", "value": "SLSA"},
+                ],
+                "rlinks": [
+                    {
+                        "href": ".github/workflows/source-provenance.yml",
+                    }
+                ],
+            },
+            {
+                "uuid": _u("res-sigstore-attestation"),
+                "title": "Sigstore build provenance and SBOM attestation workflow",
+                "props": [
+                    {"name": "type", "value": "attestation"},
+                    {"name": "framework", "value": "Sigstore"},
+                ],
+                "rlinks": [
+                    {
+                        "href": ".github/workflows/python-publish.yml",
+                    }
+                ],
+            },
+            {
+                "uuid": _u("res-in-toto-attestation"),
+                "title": "in-toto test-results attestation workflow",
+                "props": [
+                    {"name": "type", "value": "attestation"},
+                    {"name": "framework", "value": "in-toto"},
+                ],
+                "rlinks": [
+                    {
+                        "href": ".github/workflows/test.yml",
+                    }
+                ],
+            },
+            {
+                "uuid": _u("res-codeql"),
+                "title": "CodeQL static analysis workflow (C-015)",
+                "props": [
+                    {"name": "type", "value": "tool"},
+                    {"name": "tool", "value": "CodeQL"},
+                ],
+                "rlinks": [
+                    {
+                        "href": ".github/workflows/codeql-analysis.yml",
+                    }
+                ],
+            },
+            {
+                "uuid": _u("res-dep-review"),
+                "title": "Dependency review workflow (C-016)",
+                "props": [
+                    {"name": "type", "value": "tool"},
+                    {"name": "tool", "value": "dependency-review"},
+                ],
+                "rlinks": [
+                    {
+                        "href": ".github/workflows/dependency-review.yml",
+                    }
+                ],
+            },
+            {
+                "uuid": _u("res-releases"),
+                "title": "dfetch GitHub Releases (SBOM and attestation download)",
+                "rlinks": [
+                    {
+                        "href": "https://github.com/dfetch-org/dfetch/releases",
+                    }
+                ],
+            },
+            {
+                "uuid": _u("res-verify-integrity"),
+                "title": "How to verify dfetch integrity and attestations",
+                "rlinks": [
+                    {
+                        "href": (
+                            "https://dfetch.readthedocs.io/en/latest/howto/verify-integrity.html"
                         )
                     }
                 ],
@@ -265,7 +464,7 @@ def _build_back_matter() -> dict[str, Any]:
 
 
 def build_oscal_component_definition(version: str = "0.14.0") -> dict[str, Any]:
-    """Return a complete OSCAL 1.1.2 Component Definition for dfetch."""
+    """Return a complete OSCAL 1.2.2 Component Definition for dfetch."""
     return {
         "component-definition": {
             "uuid": _u("component-definition"),
@@ -526,7 +725,7 @@ def render_rst(track_b_only: bool = False) -> None:
         "   dfetch control (C-001 … C-046) or documented gap\n"
     )
     print(
-        "Machine-readable OSCAL 1.1.2 artifacts are kept alongside the source:\n\n"
+        "Machine-readable OSCAL 1.2.2 artifacts are kept alongside the source:\n\n"
         "- ``security/cra_pren_4000014_oscal_catalog.json`` — prEN 40000-1-4 catalog\n"
         "- ``security/dfetch.component-definition.json`` — dfetch Component Definition\n"
     )
@@ -538,7 +737,7 @@ def render_rst(track_b_only: bool = False) -> None:
     _render_control_register(track_b_only=track_b_only)
     print(_rst_title("OSCAL Artifacts", "-"))
     print(
-        "The OSCAL 1.1.2 Component Definition references the catalog file and can be\n"
+        "The OSCAL 1.2.2 Component Definition references the catalog file and can be\n"
         "regenerated with:\n\n"
         ".. code-block:: bash\n\n"
         "   python -m security.compliance \\\\\n"

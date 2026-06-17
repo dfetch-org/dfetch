@@ -3,9 +3,15 @@
     "uuid": "eddc2e8c-a2ae-5a42-8d35-88f5c2af55b2",
     "metadata": {
       "title": "dfetch CRA Compliance Component Definition",
-      "last-modified": "2026-06-16T00:00:00Z",
+      "last-modified": "2026-06-17T00:00:00Z",
       "version": "0.15.0",
-      "oscal-version": "1.1.2",
+      "oscal-version": "1.2.2",
+      "document-ids": [
+        {
+          "scheme": "uri",
+          "identifier": "https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json"
+        }
+      ],
       "props": [
         {
           "name": "cra-class",
@@ -18,6 +24,50 @@
         {
           "name": "standard",
           "value": "prEN 40000-1-4 (draft, indicative publication October 2027)"
+        },
+        {
+          "name": "openssf-scorecard",
+          "value": "https://api.securityscorecards.dev/projects/github.com/dfetch-org/dfetch"
+        }
+      ],
+      "roles": [
+        {
+          "id": "supplier",
+          "title": "Software Supplier",
+          "description": "Organisation that develops and distributes dfetch."
+        },
+        {
+          "id": "maintainer",
+          "title": "Maintainer",
+          "description": "Primary maintainer of the dfetch project and this compliance document."
+        }
+      ],
+      "parties": [
+        {
+          "uuid": "af05d1a0-4751-533e-b0d4-377d76da174b",
+          "type": "organization",
+          "name": "dfetch-org",
+          "links": [
+            {
+              "href": "https://github.com/dfetch-org",
+              "rel": "homepage"
+            }
+          ],
+          "remarks": "Non-commercial open-source organisation. dfetch is not placed on the market in the context of a commercial activity."
+        }
+      ],
+      "responsible-parties": [
+        {
+          "role-id": "supplier",
+          "party-uuids": [
+            "af05d1a0-4751-533e-b0d4-377d76da174b"
+          ]
+        },
+        {
+          "role-id": "maintainer",
+          "party-uuids": [
+            "af05d1a0-4751-533e-b0d4-377d76da174b"
+          ]
         }
       ],
       "remarks": "Produced voluntarily under Article 13(5) to support downstream integrators. dfetch is non-commercial open-source software and is not subject to mandatory CRA conformity obligations (Recital 18)."
@@ -28,10 +78,23 @@
         "type": "software",
         "title": "dfetch",
         "description": "Python CLI tool for vendoring source-code dependencies from Git, SVN, or archive files into a project as plain files.",
+        "purpose": "Vendor source-code dependencies from Git, SVN, or archive files into a project as plain files, enabling reproducible builds without submodules or externals. Supports integrity hashing, plaintext-transport detection, and credential redaction to reduce supply-chain risk.",
         "props": [
           {
             "name": "software-version",
             "value": "0.15.0"
+          },
+          {
+            "name": "asset-type",
+            "value": "software.application"
+          },
+          {
+            "name": "vendor-name",
+            "value": "dfetch-org"
+          },
+          {
+            "name": "license",
+            "value": "MIT"
           }
         ],
         "links": [
@@ -47,6 +110,19 @@
             "href": "security/cra_pren_4000014_oscal_catalog.json",
             "rel": "reference",
             "text": "prEN 40000-1-4 OSCAL Catalog"
+          },
+          {
+            "href": "SECURITY.md",
+            "rel": "reference",
+            "text": "Vulnerability Disclosure Policy"
+          }
+        ],
+        "responsible-roles": [
+          {
+            "role-id": "supplier",
+            "party-uuids": [
+              "af05d1a0-4751-533e-b0d4-377d76da174b"
+            ]
           }
         ],
         "control-implementations": [
@@ -74,6 +150,23 @@
                     "uuid": "d07ef2cb-63b5-5c7b-a70e-6530e894f633",
                     "description": "GEC-1: C-015 (CodeQL), C-016 (dependency-review), C-017 (bandit), C-022 (SBOM) address known-vulnerability detection in CI. C-043 (pip-audit OSV gate) blocks release if runtime dependencies carry known vulnerabilities."
                   }
+                ],
+                "links": [
+                  {
+                    "href": ".github/workflows/codeql-analysis.yml",
+                    "rel": "evidence",
+                    "text": "C-015 CodeQL static analysis"
+                  },
+                  {
+                    "href": ".github/workflows/dependency-review.yml",
+                    "rel": "evidence",
+                    "text": "C-016 Dependency review"
+                  },
+                  {
+                    "href": ".github/workflows/python-publish.yml",
+                    "rel": "evidence",
+                    "text": "C-022 SBOM generation; C-043 pip-audit CVE gate"
+                  }
                 ]
               },
               {
@@ -98,6 +191,18 @@
                     "statement-id": "so-secure-default-configuration-stmt",
                     "uuid": "709823d8-4d88-57af-924b-59bde9ed1e31",
                     "description": "GEC-12 (no unneeded software components): C-001 enforces minimal runtime dependencies. dfetch does not expose network services. Not applicable: GEC-2, GEC-3, GEC-4, GEC-5 (no exposed network services \u2014 CLI tool); GEC-7 (no external sensing capabilities); AUM-5 (no password or authentication mechanism)"
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/util/util.py",
+                    "rel": "evidence",
+                    "text": "C-001 Path-traversal prevention"
+                  },
+                  {
+                    "href": "dfetch/vcs/archive.py",
+                    "rel": "evidence",
+                    "text": "C-002 Decompression-bomb protection; C-003 Symlink validation; C-004 Member-type checks"
                   }
                 ]
               },
@@ -150,13 +255,17 @@
                   {
                     "name": "implementation-status",
                     "value": "implemented"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "No dfetch-specific control required \u2014 updateability is inherent to pip distribution (``pip install --upgrade dfetch``) and GitHub Releases. SUM-1/SUM-2 are satisfied by the distribution mechanism, not by a runtime dfetch feature."
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-updateability-stmt",
                     "uuid": "4619e5ae-8f33-53a0-ae99-dcb6e045d1fd",
-                    "description": "SUM-1/SUM-2: Updates distributed via PyPI (pip install --upgrade dfetch) and GitHub Releases. pip's TLS-protected download satisfies SUM-2."
+                    "description": "SUM-1/SUM-2: Updates distributed via PyPI (``pip install --upgrade dfetch``) and GitHub Releases. pip's TLS-protected download and version-pinning model satisfies SUM-2. No dfetch-specific update mechanism is needed or implemented; the package manager is the update vehicle. Not applicable: No dfetch-specific control required \u2014 updateability is inherent to pip distribution (``pip install --upgrade dfetch``) and GitHub Releases. SUM-1/SUM-2 are satisfied by the distribution mechanism, not by a runtime dfetch feature."
                   }
                 ]
               },
@@ -199,6 +308,18 @@
                     "statement-id": "so-user-update-notification-stmt",
                     "uuid": "5ecb3c34-e8a6-5998-95e1-4918aae6993a",
                     "description": "UNM-4: dfetch check and dfetch environment report when a newer dfetch version is available (C-040)."
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/commands/check.py",
+                    "rel": "evidence",
+                    "text": "C-040 Version check in dfetch check"
+                  },
+                  {
+                    "href": "dfetch/commands/environment.py",
+                    "rel": "evidence",
+                    "text": "C-040 Version check in dfetch environment"
                   }
                 ]
               },
@@ -246,6 +367,23 @@
                     "uuid": "851f2832-c17f-51e2-8fef-28d575f3ea42",
                     "description": "dfetch delegates authentication to the host VCS client (git, svn) and the OS credential store. C-006 prevents SSH command injection; C-036 strips credentials from stored metadata. Not applicable: ACM-2, AUM-2, AUM-3, AUM-4, AUM-6 (dfetch has no user-facing authentication or access control)"
                   }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/vcs/git.py",
+                    "rel": "evidence",
+                    "text": "C-006 Non-interactive git (prevents SSH injection)"
+                  },
+                  {
+                    "href": "dfetch/vcs/svn.py",
+                    "rel": "evidence",
+                    "text": "C-006 Non-interactive svn"
+                  },
+                  {
+                    "href": "dfetch/project/metadata.py",
+                    "rel": "evidence",
+                    "text": "C-036 Credential redaction from stored metadata"
+                  }
                 ]
               },
               {
@@ -262,14 +400,26 @@
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-009"
+                    "value": "C-045"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-access-control-report-stmt",
                     "uuid": "5fc0e660-93e3-57a5-ae6a-55d9b9365c55",
-                    "description": "GEC-13: C-009 (plaintext transport warning) alerts on unauthenticated connections. No persistent security event log. Gaps: No persistent log of unauthorised access attempts"
+                    "description": "GEC-13: C-045 (plaintext transport warning) alerts on unauthenticated connections. No persistent security event log. Gaps: No persistent log of unauthorised access attempts"
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/manifest/project.py",
+                    "rel": "evidence",
+                    "text": "C-045 Plaintext transport detection"
+                  },
+                  {
+                    "href": "dfetch/project/subproject.py",
+                    "rel": "evidence",
+                    "text": "C-045 Plaintext transport warning"
                   }
                 ]
               },
@@ -292,6 +442,13 @@
                     "uuid": "d6a8cfa8-3e30-5318-8ca6-59f99fb7dbff",
                     "description": "SSM-1/SSM-3: The developer workstation is a trusted boundary (as established in the usage threat model: 'Trusted at workstation invocation time'). C-036 strips all credentials from .dfetch_data.yaml before write, so the stored file contains only non-sensitive metadata (remote URL without userinfo, revision, content hash, timestamp). The threat model explicitly marks metadata_store.storesSensitiveData = False and isDestEncryptedAtRest = False as a conscious design choice; no encryption-at-rest is required."
                   }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/project/metadata.py",
+                    "rel": "evidence",
+                    "text": "C-036 Credential redaction before write"
+                  }
                 ]
               },
               {
@@ -313,6 +470,13 @@
                     "uuid": "38cff185-27ad-55b2-96f7-da88b47eedaa",
                     "description": "GEC-8: C-005 (constant-time comparison), C-034 (temp-file cleanup) protect in-process data."
                   }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/vcs/integrity_hash.py",
+                    "rel": "evidence",
+                    "text": "C-005 Constant-time HMAC comparison; C-034 SHA-256/384/512 allowlist"
+                  }
                 ]
               },
               {
@@ -325,14 +489,26 @@
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-005, C-009"
+                    "value": "C-005, C-045"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-data-transmitted-confidentiality-stmt",
                     "uuid": "4440d616-231f-51ca-a514-c5cd42a3851b",
-                    "description": "SCM-3/SCM-4: Plaintext transport (http://, git://, svn://) is accepted by design for legacy source compatibility. C-009 detects and warns the user before proceeding \u2014 'Detection only; dfetch still proceeds with the plaintext connection; the control raises user awareness but does not enforce scheme selection' (usage threat model, C-009 description). For archive URLs over HTTP, C-005 (integrity hash) verifies that content has not been tampered with in transit; it does not encrypt or conceal the content. This is a deliberate design decision, not a residual gap."
+                    "description": "SCM-3/SCM-4: Plaintext transport (http://, git://, svn://) is accepted by design for legacy source compatibility. C-045 detects and warns the user before proceeding \u2014 'Detection only; dfetch still proceeds with the plaintext connection; the control raises user awareness but does not enforce scheme selection' (usage threat model, C-045 description). For archive URLs over HTTP, C-005 (integrity hash) verifies that content has not been tampered with in transit; it does not encrypt or conceal the content. This is a deliberate design decision, not a residual gap."
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/manifest/project.py",
+                    "rel": "evidence",
+                    "text": "C-045 Plaintext transport detection"
+                  },
+                  {
+                    "href": "dfetch/vcs/integrity_hash.py",
+                    "rel": "evidence",
+                    "text": "C-005 Archive content integrity hash"
                   }
                 ]
               },
@@ -346,14 +522,26 @@
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-003, C-004, C-009"
+                    "value": "C-003, C-004, C-045"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-com-auth-e-stmt",
                     "uuid": "c083999a-6c6c-5185-a7ad-8ee203dc13a4",
-                    "description": "SCM-2: HTTPS connections authenticate via TLS CA chain (C-003); SSH connections authenticate via host-key verification (C-004). Plain git:// and svn:// connections lack channel-level authentication but are accepted by design for legacy compatibility \u2014 the same rationale as DataTransmittedConfidentiality \u2014 and C-009 warns the user. The usage threat model notes the network adversary 'cannot break correctly implemented TLS or SSH'; the residual risk for unauthenticated transports is an accepted design trade-off."
+                    "description": "SCM-2: HTTPS connections authenticate via TLS CA chain (C-003); SSH connections authenticate via host-key verification (C-004). Plain git:// and svn:// connections lack channel-level authentication but are accepted by design for legacy compatibility \u2014 the same rationale as DataTransmittedConfidentiality \u2014 and C-045 warns the user. The usage threat model notes the network adversary 'cannot break correctly implemented TLS or SSH'; the residual risk for unauthenticated transports is an accepted design trade-off."
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/vcs/archive.py",
+                    "rel": "evidence",
+                    "text": "C-003 Archive symlink validation; C-004 Archive member-type checks"
+                  },
+                  {
+                    "href": "dfetch/manifest/project.py",
+                    "rel": "evidence",
+                    "text": "C-045 Plaintext transport detection"
                   }
                 ]
               },
@@ -380,6 +568,13 @@
                     "uuid": "f337f022-b1e9-58f6-9b96-87434a022998",
                     "description": "CRY-1: C-005 uses Python's hashlib with SHA-256 for integrity hashes. No key management is required or performed by dfetch. Not applicable: CCK-1, CCK-2, CCK-3 (dfetch manages no cryptographic keys)"
                   }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/vcs/integrity_hash.py",
+                    "rel": "evidence",
+                    "text": "C-005 SHA-256 integrity hash (hashlib)"
+                  }
                 ]
               },
               {
@@ -405,6 +600,13 @@
                     "uuid": "8a522c77-b369-527f-a9ee-ef2b66e95dd4",
                     "description": "SSM-2: C-005 (integrity hash in .dfetch_data.yaml) provides optional stored-data integrity verification. Gaps: Integrity hash opt-in only; not enforced by default for git/svn"
                   }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/vcs/integrity_hash.py",
+                    "rel": "evidence",
+                    "text": "C-005 Integrity hash stored in .dfetch_data.yaml"
+                  }
                 ]
               },
               {
@@ -425,6 +627,13 @@
                     "statement-id": "so-data-processed-integrity-stmt",
                     "uuid": "5de5eb69-9db8-5b2c-9d56-cd7dc067c9e1",
                     "description": "GEC-8: C-005 and C-034 protect data integrity during processing."
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/vcs/integrity_hash.py",
+                    "rel": "evidence",
+                    "text": "C-005 Integrity hash; C-034 SHA-256/384/512 allowlist"
                   }
                 ]
               },
@@ -451,6 +660,13 @@
                     "uuid": "615addd1-b43e-5585-9bea-2a806c4f6f0e",
                     "description": "SCM-2: TLS (C-003) and SSH (C-004) provide channel-level integrity. Commit-hash pinning (rev: <sha>) provides content-level integrity for git. Gaps: No end-to-end hash for git/svn transport beyond TLS/SSH channel integrity"
                   }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/vcs/archive.py",
+                    "rel": "evidence",
+                    "text": "C-003 Archive symlink validation; C-004 Archive member-type checks"
+                  }
                 ]
               },
               {
@@ -467,14 +683,21 @@
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-009"
+                    "value": "C-045"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-integrity-report-stmt",
                     "uuid": "99d5808a-c006-5839-a3f3-acbfe9e93974",
-                    "description": "GEC-13-f: dfetch surfaces transport-integrity warnings (C-009) at runtime but does not maintain a persistent security event log. Gaps: No persistent integrity-violation log"
+                    "description": "GEC-13-f: dfetch surfaces transport-integrity warnings (C-045) at runtime but does not maintain a persistent security event log. Gaps: No persistent integrity-violation log"
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/manifest/project.py",
+                    "rel": "evidence",
+                    "text": "C-045 Plaintext transport warning at runtime"
                   }
                 ]
               },
@@ -500,6 +723,13 @@
                     "statement-id": "so-data-minimization-stmt",
                     "uuid": "dda2d3c4-5ef4-56bd-a2a2-923a894ae320",
                     "description": "DTM-1: C-044 documents that .dfetch_data.yaml is limited to remote_url (stripped), revision, optional hash, and last_fetch \u2014 each justified by functional necessity. DTM-2: met by design \u2014 dfetch collects no telemetry or optional data. Not applicable: UNM-1, UNM-2 (dfetch processes no personal data requiring user notification); DTM-3 (no optional data processing to configure)"
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/project/metadata.py",
+                    "rel": "evidence",
+                    "text": "Metadata model \u2014 only non-sensitive fields stored"
                   }
                 ]
               },
@@ -576,6 +806,18 @@
                     "uuid": "27745cea-042a-5b68-85d4-a3fc05e25645",
                     "description": "GEC-8-i: C-001 (minimal deps) and C-007 (subprocess controls) reduce the risk of dfetch being weaponised against external services. LIM-1: dfetch fetches only what is listed in the manifest. Not applicable: TCM-1 (dfetch makes targeted VCS fetch requests; no ambient outbound traffic to throttle)"
                   }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/util/util.py",
+                    "rel": "evidence",
+                    "text": "C-001 Path-traversal and dependency minimisation"
+                  },
+                  {
+                    "href": "dfetch/util/cmdline.py",
+                    "rel": "evidence",
+                    "text": "C-007 Subprocess safety (shell=False)"
+                  }
                 ]
               },
               {
@@ -596,6 +838,18 @@
                     "statement-id": "so-prevent-attack-propagation-stmt",
                     "uuid": "0841a803-efcb-56d5-9498-c0a6d2d1a49d",
                     "description": "LIM-2: Path traversal to destinations outside the project tree is prevented by C-001 (check_no_path_traversal() via realpath). The residual risk of a manifest declaring a legitimate but sensitive dst: (e.g. .github/workflows/) is accepted in the usage threat model under the 'Manifest under code review' assumption: dfetch.yaml is version-controlled and any such dst: change would be rejected at review."
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/util/util.py",
+                    "rel": "evidence",
+                    "text": "C-001 check_no_path_traversal() via realpath"
+                  },
+                  {
+                    "href": "dfetch/manifest/schema.py",
+                    "rel": "evidence",
+                    "text": "C-008 Manifest URL and path validation"
                   }
                 ]
               },
@@ -643,6 +897,28 @@
                     "uuid": "d05109ab-eb71-5788-86f4-77ee6a6005f7",
                     "description": "GEC-6: C-007 (no shell=True), C-008 (URL/path validation) implement input validation. GEC-12-j: C-001 enforces minimal runtime dependencies. Not applicable: GEC-2-j, GEC-3-j, GEC-4-j, GEC-5-j, GEC-7-j (dfetch exposes no network services)"
                   }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/util/cmdline.py",
+                    "rel": "evidence",
+                    "text": "C-007 Subprocess safety (shell=False everywhere)"
+                  },
+                  {
+                    "href": "dfetch/manifest/schema.py",
+                    "rel": "evidence",
+                    "text": "C-008 Manifest input validation"
+                  },
+                  {
+                    "href": "dfetch/util/util.py",
+                    "rel": "evidence",
+                    "text": "C-001 Minimal dependency footprint"
+                  },
+                  {
+                    "href": "dfetch/vcs/archive.py",
+                    "rel": "evidence",
+                    "text": "C-003 Symlink validation; C-004 Member-type checks"
+                  }
                 ]
               },
               {
@@ -667,6 +943,28 @@
                     "statement-id": "so-reduce-impact-of-incident-stmt",
                     "uuid": "c6e07d34-53fe-5d62-8e20-14848fc721e1",
                     "description": "GEC-11: Python interpreter provides ASLR/DEP/stack-canaries (OS-level). dfetch: no eval/exec of remote content; constant-time comparison (C-005); shell=False (C-007); static analysis (C-015, C-017). C-046 formalises this inventory in doc/explanation/compliance_track.rst. Not applicable: Compile-time mitigations (CFI, sandboxing) \u2014 not applicable to pure Python"
+                  }
+                ],
+                "links": [
+                  {
+                    "href": ".github/workflows/codeql-analysis.yml",
+                    "rel": "evidence",
+                    "text": "C-015 CodeQL static analysis"
+                  },
+                  {
+                    "href": "pyproject.toml",
+                    "rel": "evidence",
+                    "text": "C-017 bandit security linter configuration"
+                  },
+                  {
+                    "href": "dfetch/vcs/integrity_hash.py",
+                    "rel": "evidence",
+                    "text": "C-005 Constant-time HMAC comparison"
+                  },
+                  {
+                    "href": "dfetch/util/cmdline.py",
+                    "rel": "evidence",
+                    "text": "C-007 No shell=True in subprocess calls"
                   }
                 ]
               },
@@ -693,6 +991,18 @@
                     "uuid": "25624d61-2d09-5f3f-b16c-9ab4f44755bf",
                     "description": "LGM-1: dfetch logs warnings to stderr during a run but does not persist them. LGM-6: C-036 ensures credentials are not logged. Gaps: No persistent security event log (LGM-2/3/4 gap); No opt-out for logging \u2014 dfetch does not log by default"
                   }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/project/metadata.py",
+                    "rel": "evidence",
+                    "text": "C-036 Credential exclusion from stored metadata and logs"
+                  },
+                  {
+                    "href": "dfetch/log/",
+                    "rel": "evidence",
+                    "text": "Logging module \u2014 transient stderr only"
+                  }
                 ]
               },
               {
@@ -709,14 +1019,26 @@
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-009"
+                    "value": "C-045"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-monitor-security-relevant-activities-stmt",
                     "uuid": "70de7f3c-825a-520e-b8c9-e7e40d847c4a",
-                    "description": "MON-1: C-009 (plaintext transport detection) monitors for insecure connections at runtime and surfaces warnings to the user. Not applicable: NMM-1 (no ambient network monitoring)"
+                    "description": "MON-1: C-045 (plaintext transport detection) monitors for insecure connections at runtime and surfaces warnings to the user. Not applicable: NMM-1 (no ambient network monitoring)"
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "dfetch/manifest/project.py",
+                    "rel": "evidence",
+                    "text": "C-045 Plaintext transport detection"
+                  },
+                  {
+                    "href": "dfetch/project/subproject.py",
+                    "rel": "evidence",
+                    "text": "C-045 Runtime transport monitoring"
                   }
                 ]
               },
@@ -769,13 +1091,17 @@
                   {
                     "name": "implementation-status",
                     "value": "implemented"
+                  },
+                  {
+                    "name": "not-applicable",
+                    "value": "No dfetch-specific secure-deletion control is required: dfetch stores no personal data and no keying material. The only on-disk state is .dfetch_data.yaml (non-sensitive metadata) and vendored source files (third-party code, not user data). Standard OS file deletion (rm / del) is sufficient; cryptographic wipe is not warranted. DLM-1 is satisfied by design (no sensitive data to wipe), not by a dedicated dfetch control."
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-secure-data-deletion-stmt",
                     "uuid": "6fe16078-41e4-5fc5-9002-f26643b1c3ac",
-                    "description": "DLM-1: .dfetch_data.yaml contains only non-sensitive metadata \u2014 remote URL (credentials stripped by C-036), revision, optional content hash, and last-fetch timestamp. Standard OS file deletion (rm / del) is sufficient; no secure-wipe is required. Users delete the file and vendored directories to remove all dfetch data."
+                    "description": "DLM-1: .dfetch_data.yaml contains only non-sensitive metadata \u2014 remote URL (credentials stripped by C-036), revision, optional content hash, and last-fetch timestamp. Standard OS file deletion is sufficient; no secure-wipe is required. Users delete the file and vendored directories to remove all dfetch data. ECR-m is satisfied by design because dfetch collects no personal data, credentials, or keying material on disk. Not applicable: No dfetch-specific secure-deletion control is required: dfetch stores no personal data and no keying material. The only on-disk state is .dfetch_data.yaml (non-sensitive metadata) and vendored source files (third-party code, not user data). Standard OS file deletion (rm / del) is sufficient; cryptographic wipe is not warranted. DLM-1 is satisfied by design (no sensitive data to wipe), not by a dedicated dfetch control."
                   }
                 ]
               },
@@ -869,10 +1195,151 @@
         },
         {
           "uuid": "ba6fc625-58ea-5b9b-afc6-9358d247f19a",
-          "title": "dfetch Security Policy (SECURITY.md)",
+          "title": "dfetch Vulnerability Disclosure Policy (SECURITY.md)",
           "rlinks": [
             {
               "href": "https://github.com/dfetch-org/dfetch/blob/main/SECURITY.md"
+            }
+          ]
+        },
+        {
+          "uuid": "711fb72a-ef71-5747-802e-29d85afa20f9",
+          "title": "OpenSSF Scorecard \u2014 dfetch supply-chain security score",
+          "props": [
+            {
+              "name": "type",
+              "value": "assessment-report"
+            },
+            {
+              "name": "tool",
+              "value": "OpenSSF Scorecard"
+            }
+          ],
+          "rlinks": [
+            {
+              "href": "https://api.securityscorecards.dev/projects/github.com/dfetch-org/dfetch"
+            }
+          ]
+        },
+        {
+          "uuid": "0e57263f-9e36-59a0-a601-9e7e4d9f9993",
+          "title": "OpenSSF Scorecard CI workflow",
+          "rlinks": [
+            {
+              "href": ".github/workflows/scorecard.yml"
+            }
+          ]
+        },
+        {
+          "uuid": "1f24319e-2e49-5420-be93-05b1b412d53a",
+          "title": "SLSA Source Provenance Attestation workflow",
+          "props": [
+            {
+              "name": "type",
+              "value": "attestation"
+            },
+            {
+              "name": "framework",
+              "value": "SLSA"
+            }
+          ],
+          "rlinks": [
+            {
+              "href": ".github/workflows/source-provenance.yml"
+            }
+          ]
+        },
+        {
+          "uuid": "34c6113f-d968-58e0-91f4-6f5ea8ef3a82",
+          "title": "Sigstore build provenance and SBOM attestation workflow",
+          "props": [
+            {
+              "name": "type",
+              "value": "attestation"
+            },
+            {
+              "name": "framework",
+              "value": "Sigstore"
+            }
+          ],
+          "rlinks": [
+            {
+              "href": ".github/workflows/python-publish.yml"
+            }
+          ]
+        },
+        {
+          "uuid": "81831f2f-9ed7-5346-ac54-a64ebef56f71",
+          "title": "in-toto test-results attestation workflow",
+          "props": [
+            {
+              "name": "type",
+              "value": "attestation"
+            },
+            {
+              "name": "framework",
+              "value": "in-toto"
+            }
+          ],
+          "rlinks": [
+            {
+              "href": ".github/workflows/test.yml"
+            }
+          ]
+        },
+        {
+          "uuid": "d9097ed2-8e79-5d0d-ac7d-737f5ec67303",
+          "title": "CodeQL static analysis workflow (C-015)",
+          "props": [
+            {
+              "name": "type",
+              "value": "tool"
+            },
+            {
+              "name": "tool",
+              "value": "CodeQL"
+            }
+          ],
+          "rlinks": [
+            {
+              "href": ".github/workflows/codeql-analysis.yml"
+            }
+          ]
+        },
+        {
+          "uuid": "26a9d69f-f30d-513d-9489-57af4be48e46",
+          "title": "Dependency review workflow (C-016)",
+          "props": [
+            {
+              "name": "type",
+              "value": "tool"
+            },
+            {
+              "name": "tool",
+              "value": "dependency-review"
+            }
+          ],
+          "rlinks": [
+            {
+              "href": ".github/workflows/dependency-review.yml"
+            }
+          ]
+        },
+        {
+          "uuid": "39f27364-2b2a-5933-a99c-8d9edc3fe324",
+          "title": "dfetch GitHub Releases (SBOM and attestation download)",
+          "rlinks": [
+            {
+              "href": "https://github.com/dfetch-org/dfetch/releases"
+            }
+          ]
+        },
+        {
+          "uuid": "faa6b6be-8130-5409-8845-b8aeb6660c03",
+          "title": "How to verify dfetch integrity and attestations",
+          "rlinks": [
+            {
+              "href": "https://dfetch.readthedocs.io/en/latest/howto/verify-integrity.html"
             }
           ]
         }

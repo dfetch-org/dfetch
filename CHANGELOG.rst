@@ -3,10 +3,19 @@ Release 0.15.0 (unreleased)
 
 * Implement C-043: add ``pip-audit`` OSV gate to the release workflow; publishing is blocked if
   any known vulnerability is found in dfetch's runtime dependencies
-* Add CRA Compliance Track B: OSCAL 1.1.2 Component Definition mapping all CRA Annex I Part I
+* Add CRA Compliance Track B: OSCAL 1.2.2 Component Definition mapping all CRA Annex I Part I
   essential requirements (ECR-a–m) through prEN 40000-1-4 Security Objectives to dfetch controls;
   covers Part II via prEN 40000-1-3; introduces controls C-043 (release-gate CVE check), C-044
   (data minimisation policy), and C-046 (exploit mitigation inventory)
+* Upgrade OSCAL artifacts to 1.2.2: both the prEN 40000-1-4 catalog and the Component Definition
+  now declare ``oscal-version: 1.2.2``; the catalog gains ``parties``, ``roles``, and
+  ``responsible-parties`` in its metadata; the Component Definition adds a ``purpose`` field on
+  the component, a ``supplier`` party, ``document-ids`` for stable cross-referencing,
+  ``responsible-roles``, and ``evidence`` links on every implemented-requirement pointing to the
+  concrete code or CI workflow file that implements the control — turning the compliance mapping
+  into a machine-verifiable security-as-code artifact; the back-matter is enriched with references
+  to the OpenSSF Scorecard, SLSA Source Provenance, Sigstore attestation, in-toto test results,
+  CodeQL, and dependency-review workflows
 
 Release 0.14.0 (released 2026-06-14)
 ====================================

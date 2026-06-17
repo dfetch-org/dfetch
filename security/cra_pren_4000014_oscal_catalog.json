@@ -5,13 +5,52 @@
       "title": "CRA Security Controls Catalog – prEN 40000-1-4 (PT2 Generic Security Requirements)",
       "last-modified": "2026-06-15T00:00:00Z",
       "version": "draft-2026-03-05",
-      "oscal-version": "1.1.2",
+      "oscal-version": "1.2.2",
       "remarks": "Derived from the CEN/CLC/JTC 13/WG 9 PT2 deep-dive session by Angelo D'Amato (Vulnir B.V.), 5 March 2026, under STAN4CR Grant Agreement No. 101196779. Maps CRA Annex I Part I Essential Requirements (a)–(m) to security objectives and technical controls from prEN 40000-1-4, building on EN 18031:2024 with new controls for CRA scope.",
       "props": [
         { "name": "regulation", "value": "Regulation (EU) 2024/2847 – Cyber Resilience Act" },
         { "name": "standard-reference", "value": "prEN 40000-1-4" },
         { "name": "source-presentation", "value": "2026-03-05_CRA_Unlocked_DeepDive_SecurityControls_CEN-CLC-JTC-13-WG-9_PT2.pdf" },
         { "name": "status", "value": "draft – indicative publication October 2027" }
+      ],
+      "roles": [
+        {
+          "id": "catalog-maintainer",
+          "title": "Catalog Maintainer",
+          "description": "Organisation maintaining this OSCAL encoding of the prEN 40000-1-4 control catalog."
+        },
+        {
+          "id": "content-creator",
+          "title": "Content Creator",
+          "description": "Author of the original prEN 40000-1-4 control mapping presented at the CEN/CLC/JTC 13/WG 9 PT2 deep-dive session."
+        }
+      ],
+      "parties": [
+        {
+          "uuid": "d9e4f123-8a01-5b2c-9f3e-6c7d8e9f0a1b",
+          "type": "organization",
+          "name": "dfetch-org",
+          "links": [
+            { "href": "https://github.com/dfetch-org", "rel": "homepage" }
+          ],
+          "remarks": "OSCAL encoding of the catalog maintained by dfetch-org."
+        },
+        {
+          "uuid": "a2b3c4d5-e6f7-8901-bcde-f01234567890",
+          "type": "person",
+          "name": "Angelo D'Amato, Vulnir B.V.",
+          "remarks": "Author of the original prEN 40000-1-4 control mapping (STAN4CR Grant Agreement No. 101196779)."
+        }
+      ],
+      "responsible-parties": [
+        {
+          "role-id": "catalog-maintainer",
+          "party-uuids": ["d9e4f123-8a01-5b2c-9f3e-6c7d8e9f0a1b"]
+        },
+        {
+          "role-id": "content-creator",
+          "party-uuids": ["a2b3c4d5-e6f7-8901-bcde-f01234567890"]
+        }
       ]
     },
     "groups": [
