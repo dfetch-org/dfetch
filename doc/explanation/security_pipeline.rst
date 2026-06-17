@@ -104,7 +104,7 @@ of their choice:
 
    * - `security/dfetch.component-definition.json <https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_
      - :term:`OSCAL` 1.2.2 JSON (generated)
-     - Machine-readable Component Definition; maps dfetch controls to CRA :term:`ECR`\s;
+     - Machine-readable Component Definition; maps dfetch controls to CRA :term:`ECR`\ s;
        includes supplier party, component purpose, and evidence links to code
 
    * - `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_
