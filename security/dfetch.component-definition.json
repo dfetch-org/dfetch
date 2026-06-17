@@ -141,7 +141,7 @@
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-015, C-016, C-017, C-022, C-043"
+                    "value": "C-015, C-016, C-017, C-022, C-040, C-043"
                   }
                 ],
                 "statements": [
@@ -182,6 +182,10 @@
                     "value": "GEC-2, GEC-3, GEC-4, GEC-5 (no exposed network services \u2014 CLI tool); GEC-7 (no external sensing capabilities); AUM-5 (no password or authentication mechanism)"
                   },
                   {
+                    "name": "gaps",
+                    "value": "Integrity hash verification (:ref:`C-005 <c-005>`) is opt-in; manifest entries without an ``integrity`` field are fetched without hash verification by default"
+                  },
+                  {
                     "name": "dfetch-controls",
                     "value": "C-001, C-002"
                   }
@@ -190,7 +194,7 @@
                   {
                     "statement-id": "so-secure-default-configuration-stmt",
                     "uuid": "709823d8-4d88-57af-924b-59bde9ed1e31",
-                    "description": "GEC-12 (no unneeded software components): C-001 enforces minimal runtime dependencies. dfetch does not expose network services. Not applicable: GEC-2, GEC-3, GEC-4, GEC-5 (no exposed network services \u2014 CLI tool); GEC-7 (no external sensing capabilities); AUM-5 (no password or authentication mechanism)"
+                    "description": "GEC-12 (no unneeded software components): C-001 enforces minimal runtime dependencies. dfetch does not expose network services. Gaps: Integrity hash verification (:ref:`C-005 <c-005>`) is opt-in; manifest entries without an ``integrity`` field are fetched without hash verification by default Not applicable: GEC-2, GEC-3, GEC-4, GEC-5 (no exposed network services \u2014 CLI tool); GEC-7 (no external sensing capabilities); AUM-5 (no password or authentication mechanism)"
                   }
                 ],
                 "links": [
@@ -257,15 +261,15 @@
                     "value": "implemented"
                   },
                   {
-                    "name": "not-applicable",
-                    "value": "No dfetch-specific control required \u2014 updateability is inherent to pip distribution (``pip install --upgrade dfetch``) and GitHub Releases. SUM-1/SUM-2 are satisfied by the distribution mechanism, not by a runtime dfetch feature."
+                    "name": "dfetch-controls",
+                    "value": "C-010, C-039, C-043"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-updateability-stmt",
                     "uuid": "4619e5ae-8f33-53a0-ae99-dcb6e045d1fd",
-                    "description": "SUM-1/SUM-2: Updates distributed via PyPI (``pip install --upgrade dfetch``) and GitHub Releases. pip's TLS-protected download and version-pinning model satisfies SUM-2. No dfetch-specific update mechanism is needed or implemented; the package manager is the update vehicle. Not applicable: No dfetch-specific control required \u2014 updateability is inherent to pip distribution (``pip install --upgrade dfetch``) and GitHub Releases. SUM-1/SUM-2 are satisfied by the distribution mechanism, not by a runtime dfetch feature."
+                    "description": "SUM-1/SUM-2: Updates distributed via PyPI (``pip install --upgrade dfetch``) and GitHub Releases. pip's TLS-protected download and version-pinning model satisfies SUM-2. No dfetch-specific update mechanism is needed or implemented; the package manager is the update vehicle."
                   }
                 ]
               },
@@ -297,29 +301,30 @@
                   {
                     "name": "implementation-status",
                     "value": "implemented"
-                  },
-                  {
-                    "name": "dfetch-controls",
-                    "value": "C-040"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-user-update-notification-stmt",
                     "uuid": "5ecb3c34-e8a6-5998-95e1-4918aae6993a",
-                    "description": "UNM-4: dfetch check and dfetch environment report when a newer dfetch version is available (C-040)."
+                    "description": "UNM-4: ``dfetch check`` and ``dfetch environment`` both call ``newer_version_available()`` (``dfetch/util/github_version_check.py``), which polls the GitHub releases API and prints a notice if a newer dfetch release exists."
                   }
                 ],
                 "links": [
                   {
+                    "href": "dfetch/util/github_version_check.py",
+                    "rel": "evidence",
+                    "text": "Version availability check implementation"
+                  },
+                  {
                     "href": "dfetch/commands/check.py",
                     "rel": "evidence",
-                    "text": "C-040 Version check in dfetch check"
+                    "text": "Version check in dfetch check (suppressed in CI)"
                   },
                   {
                     "href": "dfetch/commands/environment.py",
                     "rel": "evidence",
-                    "text": "C-040 Version check in dfetch environment"
+                    "text": "Version check in dfetch environment"
                   }
                 ]
               },
@@ -357,6 +362,10 @@
                     "value": "ACM-2, AUM-2, AUM-3, AUM-4, AUM-6 (dfetch has no user-facing authentication or access control)"
                   },
                   {
+                    "name": "gaps",
+                    "value": "dfetch has no native authentication or authorisation layer; access control is fully delegated to the underlying VCS server and host OS. C-006 prevents interactive credential prompts, and C-036 strips credentials from persisted metadata \u2014 both are confidentiality controls, not access-control mechanisms in the authentication/authorisation sense"
+                  },
+                  {
                     "name": "dfetch-controls",
                     "value": "C-006, C-036"
                   }
@@ -365,7 +374,7 @@
                   {
                     "statement-id": "so-access-control-stmt",
                     "uuid": "851f2832-c17f-51e2-8fef-28d575f3ea42",
-                    "description": "dfetch delegates authentication to the host VCS client (git, svn) and the OS credential store. C-006 prevents SSH command injection; C-036 strips credentials from stored metadata. Not applicable: ACM-2, AUM-2, AUM-3, AUM-4, AUM-6 (dfetch has no user-facing authentication or access control)"
+                    "description": "dfetch delegates authentication to the host VCS client (git, svn) and the OS credential store. C-006 prevents SSH command injection; C-036 strips credentials from stored metadata. Gaps: dfetch has no native authentication or authorisation layer; access control is fully delegated to the underlying VCS server and host OS. C-006 prevents interactive credential prompts, and C-036 strips credentials from persisted metadata \u2014 both are confidentiality controls, not access-control mechanisms in the authentication/authorisation sense Not applicable: ACM-2, AUM-2, AUM-3, AUM-4, AUM-6 (dfetch has no user-facing authentication or access control)"
                   }
                 ],
                 "links": [
@@ -485,18 +494,22 @@
                 "props": [
                   {
                     "name": "implementation-status",
-                    "value": "implemented"
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "C-045 warns on plaintext-scheme URLs but does not refuse to proceed; TLS/SSH confidentiality is provided by the underlying VCS client, not enforced by dfetch itself"
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-005, C-045"
+                    "value": "C-045"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-data-transmitted-confidentiality-stmt",
                     "uuid": "4440d616-231f-51ca-a514-c5cd42a3851b",
-                    "description": "SCM-3/SCM-4: Plaintext transport (http://, git://, svn://) is accepted by design for legacy source compatibility. C-045 detects and warns the user before proceeding \u2014 'Detection only; dfetch still proceeds with the plaintext connection; the control raises user awareness but does not enforce scheme selection' (usage threat model, C-045 description). For archive URLs over HTTP, C-005 (integrity hash) verifies that content has not been tampered with in transit; it does not encrypt or conceal the content. This is a deliberate design decision, not a residual gap."
+                    "description": "SCM-3/SCM-4: Plaintext transport (http://, git://, svn://) is accepted by design for legacy source compatibility. C-045 detects and warns the user before proceeding \u2014 'Detection only; dfetch still proceeds with the plaintext connection; the control raises user awareness but does not enforce scheme selection' (usage threat model, C-045 description). For archive URLs over HTTP, C-005 (integrity hash) verifies that content has not been tampered with in transit; it does not encrypt or conceal the content. This is a deliberate design decision, not a residual gap. Gaps: C-045 warns on plaintext-scheme URLs but does not refuse to proceed; TLS/SSH confidentiality is provided by the underlying VCS client, not enforced by dfetch itself"
                   }
                 ],
                 "links": [
@@ -518,18 +531,22 @@
                 "props": [
                   {
                     "name": "implementation-status",
-                    "value": "implemented"
+                    "value": "partially-implemented"
+                  },
+                  {
+                    "name": "gaps",
+                    "value": "Server authentication (TLS certificate verification, SSH host-key checking) is delegated to the OS trust store and VCS client; dfetch does not independently authenticate remote endpoints and cannot enforce authenticated channels when C-045's warning is overridden by the user"
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-003, C-004, C-045"
+                    "value": "C-045"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-com-auth-e-stmt",
                     "uuid": "c083999a-6c6c-5185-a7ad-8ee203dc13a4",
-                    "description": "SCM-2: HTTPS connections authenticate via TLS CA chain (C-003); SSH connections authenticate via host-key verification (C-004). Plain git:// and svn:// connections lack channel-level authentication but are accepted by design for legacy compatibility \u2014 the same rationale as DataTransmittedConfidentiality \u2014 and C-045 warns the user. The usage threat model notes the network adversary 'cannot break correctly implemented TLS or SSH'; the residual risk for unauthenticated transports is an accepted design trade-off."
+                    "description": "SCM-2: HTTPS connections authenticate via TLS CA chain (C-003); SSH connections authenticate via host-key verification (C-004). Plain git:// and svn:// connections lack channel-level authentication but are accepted by design for legacy compatibility \u2014 the same rationale as DataTransmittedConfidentiality \u2014 and C-045 warns the user. The usage threat model notes the network adversary 'cannot break correctly implemented TLS or SSH'; the residual risk for unauthenticated transports is an accepted design trade-off. Gaps: Server authentication (TLS certificate verification, SSH host-key checking) is delegated to the OS trust store and VCS client; dfetch does not independently authenticate remote endpoints and cannot enforce authenticated channels when C-045's warning is overridden by the user"
                   }
                 ],
                 "links": [
@@ -647,18 +664,18 @@
                   },
                   {
                     "name": "gaps",
-                    "value": "No end-to-end hash for git/svn transport beyond TLS/SSH channel integrity"
+                    "value": "C-005 provides end-to-end hash verification for archive sources only (opt-in); git and svn sources rely solely on VCS object integrity (SHA-1/SHA-256 object model) and TLS/SSH channel integrity \u2014 no dfetch-level hash verification"
                   },
                   {
                     "name": "dfetch-controls",
-                    "value": "C-003, C-004"
+                    "value": "C-005"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-data-transmitted-integrity-stmt",
                     "uuid": "615addd1-b43e-5585-9bea-2a806c4f6f0e",
-                    "description": "SCM-2: TLS (C-003) and SSH (C-004) provide channel-level integrity. Commit-hash pinning (rev: <sha>) provides content-level integrity for git. Gaps: No end-to-end hash for git/svn transport beyond TLS/SSH channel integrity"
+                    "description": "SCM-2: TLS (C-003) and SSH (C-004) provide channel-level integrity. Commit-hash pinning (rev: <sha>) provides content-level integrity for git. Gaps: C-005 provides end-to-end hash verification for archive sources only (opt-in); git and svn sources rely solely on VCS object integrity (SHA-1/SHA-256 object model) and TLS/SSH channel integrity \u2014 no dfetch-level hash verification"
                   }
                 ],
                 "links": [
@@ -796,6 +813,10 @@
                     "value": "TCM-1 (dfetch makes targeted VCS fetch requests; no ambient outbound traffic to throttle)"
                   },
                   {
+                    "name": "gaps",
+                    "value": "Archive HTTP operations time out at 15 s (reachability) and 60 s (download) via ``archive.py``; git and svn subprocess calls have no timeout and can stall indefinitely"
+                  },
+                  {
                     "name": "dfetch-controls",
                     "value": "C-001, C-007"
                   }
@@ -804,7 +825,7 @@
                   {
                     "statement-id": "so-limit-external-impact-stmt",
                     "uuid": "27745cea-042a-5b68-85d4-a3fc05e25645",
-                    "description": "GEC-8-i: C-001 (minimal deps) and C-007 (subprocess controls) reduce the risk of dfetch being weaponised against external services. LIM-1: dfetch fetches only what is listed in the manifest. Not applicable: TCM-1 (dfetch makes targeted VCS fetch requests; no ambient outbound traffic to throttle)"
+                    "description": "GEC-8-i: C-001 (minimal deps) and C-007 (subprocess controls) reduce the risk of dfetch being weaponised against external services. LIM-1: dfetch fetches only what is listed in the manifest. Gaps: Archive HTTP operations time out at 15 s (reachability) and 60 s (download) via ``archive.py``; git and svn subprocess calls have no timeout and can stall indefinitely Not applicable: TCM-1 (dfetch makes targeted VCS fetch requests; no ambient outbound traffic to throttle)"
                   }
                 ],
                 "links": [
@@ -887,6 +908,10 @@
                     "value": "GEC-2-j, GEC-3-j, GEC-4-j, GEC-5-j, GEC-7-j (dfetch exposes no network services)"
                   },
                   {
+                    "name": "gaps",
+                    "value": "No domain or URL-scheme allowlist constrains which remote URLs the manifest may reference; git and svn subprocess calls have no timeout (archive HTTP operations time out at 15 s / 60 s)"
+                  },
+                  {
                     "name": "dfetch-controls",
                     "value": "C-001, C-003, C-004, C-007, C-008"
                   }
@@ -895,7 +920,7 @@
                   {
                     "statement-id": "so-reduce-attack-surface-stmt",
                     "uuid": "d05109ab-eb71-5788-86f4-77ee6a6005f7",
-                    "description": "GEC-6: C-007 (no shell=True), C-008 (URL/path validation) implement input validation. GEC-12-j: C-001 enforces minimal runtime dependencies. Not applicable: GEC-2-j, GEC-3-j, GEC-4-j, GEC-5-j, GEC-7-j (dfetch exposes no network services)"
+                    "description": "GEC-6: C-007 (no shell=True), C-008 (URL/path validation) implement input validation. GEC-12-j: C-001 enforces minimal runtime dependencies. Gaps: No domain or URL-scheme allowlist constrains which remote URLs the manifest may reference; git and svn subprocess calls have no timeout (archive HTTP operations time out at 15 s / 60 s) Not applicable: GEC-2-j, GEC-3-j, GEC-4-j, GEC-5-j, GEC-7-j (dfetch exposes no network services)"
                   }
                 ],
                 "links": [
@@ -978,18 +1003,14 @@
                   },
                   {
                     "name": "gaps",
-                    "value": "No persistent security event log (LGM-2/3/4 gap); No opt-out for logging \u2014 dfetch does not log by default"
-                  },
-                  {
-                    "name": "dfetch-controls",
-                    "value": "C-036"
+                    "value": "No persistent structured security event log (LGM-1/2/3/4 gap). dfetch prints operational output to stderr but does not retain it, does not record which credentials were used, which files were modified, or when remote access occurred. C-036 ensures credentials are excluded from operational output but is not a logging control"
                   }
                 ],
                 "statements": [
                   {
                     "statement-id": "so-log-security-relevant-activities-stmt",
                     "uuid": "25624d61-2d09-5f3f-b16c-9ab4f44755bf",
-                    "description": "LGM-1: dfetch logs warnings to stderr during a run but does not persist them. LGM-6: C-036 ensures credentials are not logged. Gaps: No persistent security event log (LGM-2/3/4 gap); No opt-out for logging \u2014 dfetch does not log by default"
+                    "description": "LGM-1: dfetch logs warnings to stderr during a run but does not persist them. LGM-6: C-036 ensures credentials are not logged. Gaps: No persistent structured security event log (LGM-1/2/3/4 gap). dfetch prints operational output to stderr but does not retain it, does not record which credentials were used, which files were modified, or when remote access occurred. C-036 ensures credentials are excluded from operational output but is not a logging control"
                   }
                 ],
                 "links": [

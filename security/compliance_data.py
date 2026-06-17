@@ -288,12 +288,7 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
     SOImplementation(
         so_id="so-updateability",
         ecr_id="ecr-c",
-        not_applicable=[
-            "No dfetch-specific control required — updateability is inherent to "
-            "pip distribution (``pip install --upgrade dfetch``) and GitHub Releases. "
-            "SUM-1/SUM-2 are satisfied by the distribution mechanism, not by a "
-            "runtime dfetch feature."
-        ],
+        controls=["C-010", "C-039", "C-043"],
         status="implemented",
         description=(
             "SUM-1/SUM-2: Updates distributed via PyPI (``pip install --upgrade dfetch``) "

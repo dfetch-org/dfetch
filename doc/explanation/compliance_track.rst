@@ -171,7 +171,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - — N/A
    * - **ECR-C** — Ensure that vulnerabilities can be addressed through security updates, including automatic updates enabled by default, with an opt-out mechanism, user notification, and the option to postpone updates.
      - SO.Updateability
-     - —
+     - :ref:`C-010 <c-010>`, :ref:`C-039 <c-039>`, :ref:`C-043 <c-043>`
      - —
      - ✓ Implemented
    * - 

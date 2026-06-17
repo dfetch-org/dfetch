@@ -70,7 +70,7 @@ All controls implemented by dfetch, sorted by ID. Risk-driven controls emerge fr
        C-009
      - Actions commit-SHA pinning
      - Risk-driven
-     - `.github/workflows/*.yml <https://github.com/dfetch-org/dfetch/tree/main/.github/workflows/*.yml>`_
+     - `.github/workflows/*.yml <https://github.com/dfetch-org/dfetch/tree/main/.github/workflows>`_
    * - .. _c-010:
 
        C-010
@@ -82,19 +82,19 @@ All controls implemented by dfetch, sorted by ID. Risk-driven controls emerge fr
        C-011
      - Minimal workflow permissions
      - Risk-driven
-     - `.github/workflows/*.yml <https://github.com/dfetch-org/dfetch/tree/main/.github/workflows/*.yml>`_
+     - `.github/workflows/*.yml <https://github.com/dfetch-org/dfetch/tree/main/.github/workflows>`_
    * - .. _c-012:
 
        C-012
      - persist-credentials: false
      - Risk-driven
-     - `.github/workflows/*.yml <https://github.com/dfetch-org/dfetch/tree/main/.github/workflows/*.yml>`_
+     - `.github/workflows/*.yml <https://github.com/dfetch-org/dfetch/tree/main/.github/workflows>`_
    * - .. _c-013:
 
        C-013
      - Harden-runner (egress block)
      - Risk-driven
-     - `.github/workflows/*.yml <https://github.com/dfetch-org/dfetch/tree/main/.github/workflows/*.yml>`_
+     - `.github/workflows/*.yml <https://github.com/dfetch-org/dfetch/tree/main/.github/workflows>`_
    * - .. _c-015:
 
        C-015

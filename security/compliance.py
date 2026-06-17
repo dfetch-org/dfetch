@@ -66,7 +66,9 @@ _GITHUB_BASE = "https://github.com/dfetch-org/dfetch"
 
 
 def _load_track_a_controls(track_b_only: bool = False) -> list[Control]:
-    """Return all Track A controls from the pytm-free controls module."""
+    """Return all Track A controls, or an empty list when track_b_only is set."""
+    if track_b_only:
+        return []
     return list(SC_CONTROLS) + list(USAGE_CONTROLS)
 
 
@@ -527,12 +529,14 @@ def _format_single_ref(ref: str) -> str:
     ref = ref.strip()
     if not ref:
         return "—"
-    # Glob or directory → tree link
+    # Glob or directory → tree link; strip any glob portion from the URL path
     if ref.endswith("/") or "*" in ref:
-        base = ref.rstrip("/").rstrip("*").rstrip("/").rstrip(".")
-        tree_url = f"{_GITHUB_BASE}/tree/main/{base}"
-        display = ref
-        return f"`{display} <{tree_url}>`_"
+        if "*" in ref:
+            dir_part = ref[: ref.index("*")].rstrip("/")
+        else:
+            dir_part = ref.rstrip("/")
+        tree_url = f"{_GITHUB_BASE}/tree/main/{dir_part}"
+        return f"`{ref} <{tree_url}>`_"
     # Regular file → blob link
     blob_url = f"{_GITHUB_BASE}/blob/main/{ref}"
     return f"`{ref} <{blob_url}>`_"
