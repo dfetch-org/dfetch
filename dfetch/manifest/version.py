@@ -25,8 +25,10 @@ class Version(NamedTuple):
         return bool(self.branch == other.branch and self.revision == other.revision)
 
     def __hash__(self) -> int:
-        """Hash based on the underlying tuple value."""
-        return tuple.__hash__(self)
+        """Hash only fields that determine equality."""
+        if self.tag:
+            return hash(self.tag)
+        return hash((self.branch, self.revision))
 
     @property
     def field(self) -> tuple[str, str]:

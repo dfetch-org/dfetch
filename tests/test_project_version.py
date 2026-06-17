@@ -219,5 +219,8 @@ def test_version_comparison_with_non_version(other):
 
 def test_version_remains_hashable():
     """Defining __eq__ must not break hashing/set membership."""
-    version = Version(tag="1.0")
-    assert version in {version}
+    v1 = Version(tag="1.0")
+    v2 = Version(tag="1.0")
+    assert v1 == v2
+    assert hash(v1) == hash(v2)
+    assert v2 in {v1}
