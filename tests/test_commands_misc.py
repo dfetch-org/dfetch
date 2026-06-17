@@ -52,6 +52,20 @@ def test_environment_no_newer_version_notice():
                 mock_logger.print_newer_version_notice.assert_not_called()
 
 
+def test_environment_calls_list_tool_info_for_each_project_type():
+    """Environment calls list_tool_info on every supported project type."""
+    env = Environment()
+    mock_type = Mock()
+    with patch("dfetch.commands.environment.newer_version_available", return_value=None):
+        with patch("dfetch.commands.environment.logger"):
+            with patch(
+                "dfetch.commands.environment.SUPPORTED_SUBPROJECT_TYPES",
+                [mock_type],
+            ):
+                env(argparse.Namespace())
+    mock_type.list_tool_info.assert_called_once()
+
+
 def test_environment_create_menu():
     """Environment.create_menu registers the 'environment' subcommand."""
     subparsers = argparse.ArgumentParser().add_subparsers()
