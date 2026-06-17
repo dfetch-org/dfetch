@@ -61,7 +61,7 @@ Product and manufacturer identification
    * - Source repository
      - https://github.com/dfetch-org/dfetch
    * - License
-     - MIT
+     - `MIT <https://github.com/dfetch-org/dfetch/blob/main/LICENSE>`_
    * - CRA applicability
      - dfetch is developed and distributed as a non-commercial open-source project.
        Under the Cyber Resilience Act, applicability depends on whether software
@@ -69,7 +69,7 @@ Product and manufacturer identification
        As of 2026-05-02, dfetch is not monetized and is not offered as part
        of a commercial service. However, CRA obligations may become applicable
        in downstream contexts where third parties integrate dfetch into commercial
-       products, in which case those manufacturers bear their own Article 13
+       products, in which case those manufacturers bear their own `Article 13 <https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R2847>`_
        obligations to assess and document the security of components they integrate,
        including open-source dependencies.
 
@@ -84,7 +84,7 @@ tree to the declared destination path, and records metadata for subsequent
 up-to-date checks.
 
 *Foreseeable use*: invoked interactively on a developer workstation, or
-non-interactively inside CI/CD pipelines (GitHub Actions, GitLab CI, Jenkins, etc.)
+non-interactively inside CI/CD pipelines (`GitHub Actions <https://github.com/features/actions>`_, `GitLab CI <https://docs.gitlab.com/ee/ci/>`_, `Jenkins <https://www.jenkins.io/>`_, etc.)
 to reproduce a deterministic dependency state.
 
 *Reasonably foreseeable misuse*: the following are the principal harms *dfetch*
@@ -213,7 +213,7 @@ EN 40000 harmonised standards
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The EN 40000 family is being developed by CEN/CLC/JTC 13 to provide harmonised
-standards under the CRA. Once published in the OJEU, compliance with them confers a
+standards under the CRA. Once published in the `OJEU <https://eur-lex.europa.eu/oj/direct-access.html>`_, compliance with them confers a
 presumption of conformity with the corresponding CRA essential requirements.
 
 - `CEN/CENELEC cybersecurity standards page <https://www.cencenelec.eu/areas-of-work/cen-cenelec-topics/cybersecurity/>`_ —
