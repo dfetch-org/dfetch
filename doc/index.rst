@@ -86,6 +86,7 @@ upstream. See :ref:`vendoring` for background on the problem this solves.
    reference/glossary
    reference/cli_cheatsheet
    reference/changelog
+   reference/roadmap
    reference/legal
 
 .. only:: latex
