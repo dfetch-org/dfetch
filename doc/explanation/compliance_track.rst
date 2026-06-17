@@ -392,15 +392,15 @@ Gap Analysis — Compliance-Only Controls
 
 3 compliance-only controls address CRA requirements not independently covered by the Track A risk models.
 
-**:ref:`C-043 <c-043>` — Release-gate CVE check (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)**
+.. rubric:: :ref:`C-043 <c-043>` — Release-gate CVE check (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)
 
 dfetch's CI detects vulnerabilities at commit time (:ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`). :ref:`C-043 <c-043>` completes the coverage: the publish workflow runs ``pip-audit`` against the project's runtime dependencies via the OSV database and blocks the release if any known vulnerability is found.
 
-**:ref:`C-044 <c-044>` — Data minimisation policy (ECR-g, SO.DataMinimization → DTM-1)**
+.. rubric:: :ref:`C-044 <c-044>` — Data minimisation policy (ECR-g, SO.DataMinimization → DTM-1)
 
 dfetch processes dependency metadata only. The ``.dfetch_data.yaml`` file stores: ``remote_url`` (credentials stripped by :ref:`C-036 <c-036>`), ``revision``, optional ``integrity.hash``, and ``last_fetch`` timestamp. Each field is functionally necessary for ``dfetch check`` and ``dfetch freeze``. No personal data is collected; no telemetry is sent. :ref:`C-044 <c-044>` formalises this assertion as a documented policy.
 
-**:ref:`C-046 <c-046>` — Exploit mitigation inventory (ECR-k, SO.ReduceImpactOfIncident → GEC-11)**
+.. rubric:: :ref:`C-046 <c-046>` — Exploit mitigation inventory (ECR-k, SO.ReduceImpactOfIncident → GEC-11)
 
 prEN 40000-1-4 ECR-k requires documenting applicable exploit mitigation techniques. For dfetch (pure Python):
 

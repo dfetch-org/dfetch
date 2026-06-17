@@ -721,7 +721,7 @@ def _render_gap_analysis() -> None:
         "independently covered by the Track A risk models.\n"
     )
     for title, body in entries:
-        print(f"**{title}**\n")
+        print(f".. rubric:: {title}\n")
         print(f"{body}\n")
 
 
