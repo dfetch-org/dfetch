@@ -201,7 +201,9 @@ def test_add_project_with_dependencies_logs_path_and_url():
         }
     ]
 
-    with patch("dfetch.reporting.stdout_reporter.Metadata.from_file", return_value=meta):
+    with patch(
+        "dfetch.reporting.stdout_reporter.Metadata.from_file", return_value=meta
+    ):
         with patch(
             "dfetch.reporting.stdout_reporter.Metadata.from_project_entry",
             return_value=MagicMock(path="/tmp/.dfetch_data.yaml"),
@@ -235,15 +237,17 @@ def test_add_project_dependencies_header_logged():
         }
     ]
 
-    with patch("dfetch.reporting.stdout_reporter.Metadata.from_file", return_value=meta):
+    with patch(
+        "dfetch.reporting.stdout_reporter.Metadata.from_file", return_value=meta
+    ):
         with patch(
             "dfetch.reporting.stdout_reporter.Metadata.from_project_entry",
             return_value=MagicMock(path="/tmp/.dfetch_data.yaml"),
         ):
-            with patch(
-                "dfetch.reporting.stdout_reporter.logger"
-            ) as mock_logger:
+            with patch("dfetch.reporting.stdout_reporter.logger") as mock_logger:
                 reporter.add_project(project=project, license_scan=scan, version="1.0")
 
-    report_line_calls = [call[0][0] for call in mock_logger.print_report_line.call_args_list]
+    report_line_calls = [
+        call[0][0] for call in mock_logger.print_report_line.call_args_list
+    ]
     assert "  dependencies" in report_line_calls

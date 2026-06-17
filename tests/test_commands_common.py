@@ -38,7 +38,9 @@ def _make_submanifest_mock(path: str, project_urls: list) -> Mock:
 
 def test_check_sub_manifests_no_submanifests():
     """When get_submanifests returns an empty list, no warning is logged."""
-    manifest = _make_manifest_mock("/parent/dfetch.yaml", ["http://example.com/repo.git"])
+    manifest = _make_manifest_mock(
+        "/parent/dfetch.yaml", ["http://example.com/repo.git"]
+    )
     parent_project = Mock(spec=ProjectEntry)
     parent_project.name = "parent"
 
@@ -102,7 +104,10 @@ def test_make_recommendation_logs_warning():
     project.name = "my_project"
 
     recommendation = Mock(spec=ProjectEntry)
-    recommendation.as_yaml.return_value = {"name": "dep", "url": "http://example.com/dep.git"}
+    recommendation.as_yaml.return_value = {
+        "name": "dep",
+        "url": "http://example.com/dep.git",
+    }
 
     with patch("dfetch.commands.common.logger") as mock_logger:
         _make_recommendation(project, [recommendation], "sub/dfetch.yaml")

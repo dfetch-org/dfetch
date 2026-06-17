@@ -10,12 +10,12 @@ import pytest
 
 from dfetch.manifest.manifest import Manifest, ManifestEntryLocation
 from dfetch.manifest.project import ProjectEntry
-from dfetch.reporting.check.reporter import Issue, IssueSeverity
-from dfetch.reporting.check.jenkins_reporter import JenkinsReporter
 from dfetch.reporting.check.code_climate_reporter import (
     CodeClimateReporter,
     CodeClimateSeverity,
 )
+from dfetch.reporting.check.jenkins_reporter import JenkinsReporter
+from dfetch.reporting.check.reporter import Issue, IssueSeverity
 
 
 def _make_manifest():
@@ -33,7 +33,9 @@ def _make_project(name="myproject"):
     return project
 
 
-def _make_issue(severity=IssueSeverity.HIGH, rule_id="unfetched-project", message="never fetched"):
+def _make_issue(
+    severity=IssueSeverity.HIGH, rule_id="unfetched-project", message="never fetched"
+):
     return Issue(
         severity=severity,
         rule_id=rule_id,
@@ -45,6 +47,7 @@ def _make_issue(severity=IssueSeverity.HIGH, rule_id="unfetched-project", messag
 # ==================
 # JenkinsReporter
 # ==================
+
 
 def test_jenkins_reporter_init_creates_empty_issues():
     """JenkinsReporter starts with an empty issues list."""
@@ -67,7 +70,9 @@ def test_jenkins_add_issue_contains_severity():
     with patch("os.path.relpath", return_value="dfetch.yaml"):
         reporter = JenkinsReporter(_make_manifest(), "/tmp/jenkins.json")
     with patch("os.path.relpath", return_value="dfetch.yaml"):
-        reporter.add_issue(_make_project("mymod"), _make_issue(severity=IssueSeverity.HIGH))
+        reporter.add_issue(
+            _make_project("mymod"), _make_issue(severity=IssueSeverity.HIGH)
+        )
     entry = reporter._report["issues"][0]
     assert entry["severity"] == "High"
 
@@ -99,19 +104,29 @@ def test_jenkins_dump_to_file_writes_json():
 # CodeClimateReporter
 # ==================
 
+
 def test_code_climate_severity_high_maps_to_major():
     """HIGH severity maps to CodeClimateSeverity.MAJOR."""
-    assert CodeClimateReporter._determine_severity(IssueSeverity.HIGH) == CodeClimateSeverity.MAJOR
+    assert (
+        CodeClimateReporter._determine_severity(IssueSeverity.HIGH)
+        == CodeClimateSeverity.MAJOR
+    )
 
 
 def test_code_climate_severity_normal_maps_to_minor():
     """NORMAL severity maps to CodeClimateSeverity.MINOR."""
-    assert CodeClimateReporter._determine_severity(IssueSeverity.NORMAL) == CodeClimateSeverity.MINOR
+    assert (
+        CodeClimateReporter._determine_severity(IssueSeverity.NORMAL)
+        == CodeClimateSeverity.MINOR
+    )
 
 
 def test_code_climate_severity_low_maps_to_info():
     """LOW severity maps to CodeClimateSeverity.INFO."""
-    assert CodeClimateReporter._determine_severity(IssueSeverity.LOW) == CodeClimateSeverity.INFO
+    assert (
+        CodeClimateReporter._determine_severity(IssueSeverity.LOW)
+        == CodeClimateSeverity.INFO
+    )
 
 
 def test_code_climate_add_issue_appends_entry():

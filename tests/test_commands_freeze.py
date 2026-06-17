@@ -38,7 +38,9 @@ def test_freeze_no_projects():
     manifest = mock_manifest([])
     superproject = _make_superproject(manifest)
 
-    with patch("dfetch.commands.freeze.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.freeze.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.freeze.in_directory"):
             freeze(_make_args())
 
@@ -51,9 +53,13 @@ def test_freeze_project_returns_version_dumps_manifest():
     manifest = mock_manifest([{"name": "mymod"}])
     superproject = _make_superproject(manifest)
 
-    with patch("dfetch.commands.freeze.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.freeze.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.freeze.in_directory"):
-            with patch("dfetch.commands.freeze.dfetch.project.create_sub_project") as mock_create:
+            with patch(
+                "dfetch.commands.freeze.dfetch.project.create_sub_project"
+            ) as mock_create:
                 mock_sub = Mock()
                 mock_sub.freeze_project.return_value = "v1.0"
                 mock_sub.on_disk_version.return_value = "v1.0"
@@ -70,9 +76,13 @@ def test_freeze_project_already_pinned_logs_info():
     manifest = mock_manifest([{"name": "pinned_mod"}])
     superproject = _make_superproject(manifest)
 
-    with patch("dfetch.commands.freeze.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.freeze.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.freeze.in_directory"):
-            with patch("dfetch.commands.freeze.dfetch.project.create_sub_project") as mock_create:
+            with patch(
+                "dfetch.commands.freeze.dfetch.project.create_sub_project"
+            ) as mock_create:
                 with patch("dfetch.commands.freeze.logger") as mock_logger:
                     mock_sub = Mock()
                     mock_sub.freeze_project.return_value = None
@@ -92,9 +102,13 @@ def test_freeze_project_no_version_on_disk_logs_warning():
     manifest = mock_manifest([{"name": "unfetched_mod"}])
     superproject = _make_superproject(manifest)
 
-    with patch("dfetch.commands.freeze.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.freeze.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.freeze.in_directory"):
-            with patch("dfetch.commands.freeze.dfetch.project.create_sub_project") as mock_create:
+            with patch(
+                "dfetch.commands.freeze.dfetch.project.create_sub_project"
+            ) as mock_create:
                 with patch("dfetch.commands.freeze.logger") as mock_logger:
                     mock_sub = Mock()
                     mock_sub.freeze_project.return_value = None
@@ -114,9 +128,13 @@ def test_freeze_runtime_error_raises_at_end():
     manifest = mock_manifest([{"name": "bad_mod"}])
     superproject = _make_superproject(manifest)
 
-    with patch("dfetch.commands.freeze.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.freeze.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.freeze.in_directory"):
-            with patch("dfetch.commands.freeze.dfetch.project.create_sub_project") as mock_create:
+            with patch(
+                "dfetch.commands.freeze.dfetch.project.create_sub_project"
+            ) as mock_create:
                 mock_sub = Mock()
                 mock_sub.freeze_project.side_effect = RuntimeError("fetch failed")
                 mock_create.return_value = mock_sub
@@ -131,7 +149,9 @@ def test_freeze_novcs_creates_backup():
     manifest = mock_manifest([], path="/some/dfetch.yaml")
     superproject = _make_superproject(manifest, is_novcs=True)
 
-    with patch("dfetch.commands.freeze.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.freeze.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.freeze.in_directory"):
             with patch("dfetch.commands.freeze.shutil.copyfile") as mock_copy:
                 freeze(_make_args())
@@ -150,7 +170,9 @@ def test_freeze_vcs_no_backup():
     superproject.manifest = manifest
     superproject.root_directory = Path("/tmp")
 
-    with patch("dfetch.commands.freeze.create_super_project", return_value=superproject):
+    with patch(
+        "dfetch.commands.freeze.create_super_project", return_value=superproject
+    ):
         with patch("dfetch.commands.freeze.in_directory"):
             with patch("dfetch.commands.freeze.shutil.copyfile") as mock_copy:
                 freeze(_make_args())

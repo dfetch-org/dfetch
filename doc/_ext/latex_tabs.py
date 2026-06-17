@@ -137,7 +137,10 @@ class LatexTabsTransform(SphinxTransform):
             else:
                 # Non-HTML fallback: plain container outer_nodes with [tab, panel] children.
                 for outer in children:
-                    if not isinstance(outer, nodes.container) or len(outer.children) < 2:
+                    if (
+                        not isinstance(outer, nodes.container)
+                        or len(outer.children) < 2
+                    ):
                         continue
                     tab_container = outer.children[0]
                     panel = outer.children[1]

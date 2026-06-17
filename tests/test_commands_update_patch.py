@@ -58,7 +58,9 @@ def test_raises_for_novcs_superproject():
     cmd = UpdatePatch()
     fake_sp = _make_novcs_superproject()
 
-    with patch("dfetch.commands.update_patch.create_super_project", return_value=fake_sp):
+    with patch(
+        "dfetch.commands.update_patch.create_super_project", return_value=fake_sp
+    ):
         with patch("dfetch.commands.update_patch.in_directory"):
             with pytest.raises(RuntimeError, match="not under version control"):
                 cmd(_default_args())
@@ -69,7 +71,9 @@ def test_warns_when_not_git_superproject():
     cmd = UpdatePatch()
     fake_sp = _make_svn_superproject(projects=[])
 
-    with patch("dfetch.commands.update_patch.create_super_project", return_value=fake_sp):
+    with patch(
+        "dfetch.commands.update_patch.create_super_project", return_value=fake_sp
+    ):
         with patch("dfetch.commands.update_patch.in_directory") as mock_indir:
             mock_indir.return_value.__enter__ = Mock(return_value=None)
             mock_indir.return_value.__exit__ = Mock(return_value=False)
@@ -83,7 +87,9 @@ def test_error_during_process_raises_at_end():
     cmd = UpdatePatch()
     fake_sp = _make_git_superproject(projects=[{"name": "mylib"}])
 
-    with patch("dfetch.commands.update_patch.create_super_project", return_value=fake_sp):
+    with patch(
+        "dfetch.commands.update_patch.create_super_project", return_value=fake_sp
+    ):
         with patch("dfetch.commands.update_patch.in_directory") as mock_indir:
             mock_indir.return_value.__enter__ = Mock(return_value=None)
             mock_indir.return_value.__exit__ = Mock(return_value=False)
@@ -99,7 +105,9 @@ def test_no_projects_runs_without_error():
     cmd = UpdatePatch()
     fake_sp = _make_git_superproject(projects=[])
 
-    with patch("dfetch.commands.update_patch.create_super_project", return_value=fake_sp):
+    with patch(
+        "dfetch.commands.update_patch.create_super_project", return_value=fake_sp
+    ):
         with patch("dfetch.commands.update_patch.in_directory") as mock_indir:
             mock_indir.return_value.__enter__ = Mock(return_value=None)
             mock_indir.return_value.__exit__ = Mock(return_value=False)

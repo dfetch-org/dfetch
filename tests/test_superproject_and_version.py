@@ -8,14 +8,14 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from dfetch.manifest.version import Version
 from dfetch.manifest.manifest import Manifest
+from dfetch.manifest.version import Version
 from dfetch.project.superproject import NoVcsSuperProject, RevisionRange
-
 
 # =====================
 # Version.field property
 # =====================
+
 
 def test_version_field_returns_tag_when_set():
     """Version.field returns ('tag', value) when a tag is set."""
@@ -38,6 +38,7 @@ def test_version_field_returns_branch_when_only_branch():
 # =====================
 # NoVcsSuperProject
 # =====================
+
 
 def _make_novcs(root=Path("/tmp")):
     """Create a NoVcsSuperProject with a mocked manifest."""

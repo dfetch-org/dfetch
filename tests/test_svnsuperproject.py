@@ -171,7 +171,10 @@ def test_diff_without_new_revision_extends_with_untracked():
         with patch("dfetch.project.svnsuperproject.in_directory") as mock_indir:
             mock_indir.return_value.__enter__ = Mock(return_value=None)
             mock_indir.return_value.__exit__ = Mock(return_value=False)
-            with patch("dfetch.project.svnsuperproject.Patch.for_new_files", return_value=Mock()):
+            with patch(
+                "dfetch.project.svnsuperproject.Patch.for_new_files",
+                return_value=Mock(),
+            ):
                 result = superproject.diff(
                     "some/path",
                     revisions=RevisionRange(old="10", new=""),

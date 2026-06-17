@@ -85,4 +85,7 @@ def test_dump_to_file_writes_json():
 def test_report_has_correct_class_key():
     reporter = _make_reporter()
     assert "_class" in reporter._report
-    assert "issues" in reporter._report["_class"] or "jenkins" in reporter._report["_class"]
+    assert (
+        reporter._report["_class"]
+        == "io.jenkins.plugins.analysis.core.restapi.ReportApi"
+    )

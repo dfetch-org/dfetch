@@ -3,8 +3,9 @@
 # mypy: ignore-errors
 # flake8: noqa
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
