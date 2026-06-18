@@ -63,16 +63,14 @@ def test_review_all_patches_calls_update_add_path_update():
                     cmd(_make_args())
 
     update_calls = fake_sub.update.call_args_list
+    assert len(update_calls) == 2, "all-patches case must only fetch twice (no redundant restore fetch)"
     assert update_calls[0] == call(
         force=True, ignored_files_callback=ANY, patch_count=0, eol_preferences_callback=ANY
     ), "first call must fetch clean upstream"
     fake_super.add_path.assert_called_once_with("my_project")
     assert update_calls[1] == call(
         force=True, ignored_files_callback=ANY, patch_count=-1, eol_preferences_callback=ANY
-    ), "second call (inside try) applies all patches"
-    assert update_calls[2] == call(
-        force=True, ignored_files_callback=ANY, patch_count=-1, eol_preferences_callback=ANY
-    ), "third call (finally) restores all patches"
+    ), "second call applies all patches; working tree is already restored so no third fetch"
     fake_super.restore_staged.assert_called_once_with("my_project")
 
 
@@ -116,7 +114,7 @@ def test_svn_superproject_warns_and_skips_staging():
     mock_log.warning.assert_called_once()
     fake_super.add_path.assert_not_called()
     fake_super.restore_staged.assert_not_called()
-    assert fake_sub.update.call_count == 3
+    assert fake_sub.update.call_count == 2
 
 
 # ---------------------------------------------------------------------------
