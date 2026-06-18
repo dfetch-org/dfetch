@@ -36,14 +36,12 @@ from collections.abc import Callable, Sequence
 
 import dfetch.commands.command
 import dfetch.manifest.project
-import dfetch.project
 from dfetch.log import get_logger
-from dfetch.project import create_super_project
+from dfetch.project import create_sub_project, create_super_project
 from dfetch.project.gitsuperproject import GitSuperProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import NoVcsSuperProject, SuperProject
 from dfetch.terminal import BOLD, DIM, RESET, Screen, is_tty, read_key
-from dfetch.util.util import in_directory
 
 logger = get_logger(__name__)
 
@@ -90,8 +88,6 @@ class ReviewPatch(dfetch.commands.command.Command):
         """Perform the review patch."""
         superproject = create_super_project()
 
-        had_errors: bool = False
-
         if isinstance(superproject, NoVcsSuperProject):
             raise RuntimeError(
                 "The project containing the manifest is not under version control,"
@@ -106,18 +102,13 @@ class ReviewPatch(dfetch.commands.command.Command):
         if args.interactive and not is_tty():
             raise RuntimeError("--interactive requires an interactive terminal")
 
-        with in_directory(superproject.root_directory):
-            for project in superproject.manifest.selected_projects(args.projects):
-                try:
-                    self._review_project(
-                        superproject, project, args.count, args.interactive
-                    )
-                except RuntimeError as exc:
-                    logger.print_error_line(project.name, str(exc))
-                    had_errors = True
-
-        if had_errors:
-            raise RuntimeError()
+        self._iter_projects(
+            superproject,
+            args.projects,
+            lambda project: self._review_project(
+                superproject, project, args.count, args.interactive
+            ),
+        )
 
     def _review_project(
         self,
@@ -127,11 +118,11 @@ class ReviewPatch(dfetch.commands.command.Command):
         interactive: bool,
     ) -> None:
         """Set up review state for a single project, then restore."""
-        subproject = dfetch.project.create_sub_project(project)
-        destination = project.destination
+        subproject = create_sub_project(project)
+        is_git = isinstance(superproject, GitSuperProject)
 
-        def _ignored(dst: str = destination) -> list[str]:
-            return list(superproject.ignored_files(dst))
+        def _ignored() -> list[str]:
+            return list(superproject.ignored_files(project.destination))
 
         if not subproject.patch:
             logger.print_warning_line(
@@ -156,7 +147,6 @@ class ReviewPatch(dfetch.commands.command.Command):
             )
             return
 
-        is_git = isinstance(superproject, GitSuperProject)
         total_patches = len(list(subproject.patch))
 
         subproject.update(

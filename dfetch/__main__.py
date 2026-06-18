@@ -19,8 +19,8 @@ import dfetch.commands.import_
 import dfetch.commands.init
 import dfetch.commands.remove
 import dfetch.commands.report
-import dfetch.commands.update
 import dfetch.commands.review_patch
+import dfetch.commands.update
 import dfetch.commands.update_patch
 import dfetch.commands.validate
 import dfetch.log
