@@ -316,6 +316,8 @@ so your editor always reflects the current position in the stack:
 
 Press **Enter** to finish and restore the original state.
 
+.. asciinema:: ../asciicasts/review-patch.cast
+
 .. tabs::
 
    .. tab:: Git
