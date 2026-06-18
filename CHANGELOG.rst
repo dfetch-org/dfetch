@@ -12,6 +12,7 @@ Release 0.14.2 (released 2026-06-21)
 Release 0.14.1 (released 2026-06-19)
 ====================================
 
+* Add ``review-patch`` command to inspect patch contributions interactively without making permanent changes (#review-patch)
 * Implement C-043: add ``pip-audit`` OSV gate to the release workflow
 * Add CRA Compliance: OSCAL 1.2.2 Component Definition
 * Fix ``dfetch import`` mangling the namespace of a generic VCS URL whose path contains ``.git`` (#1268)

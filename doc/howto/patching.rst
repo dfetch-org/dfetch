@@ -276,6 +276,56 @@ files, then use ``dfetch update-patch`` to record the resolved state:
           $ dfetch update-patch some-project
           $ svn commit some-project.patch -m "patches: update some-project.patch for v1.3.0"
 
+.. _patching-review:
+
+Reviewing a patch
+-----------------
+
+When you want to understand what a patch (or a set of patches) actually
+contributes to a vendored project, ``review-patch`` sets up your working tree
+so that any diff-aware editor shows the answer immediately.
+
+.. code-block:: console
+
+    $ dfetch review-patch some-project
+
+In a Git superproject this stages the clean upstream source in the git index
+and applies the selected patches to the working tree.  Running ``git diff``
+inside the project directory then shows exactly what the patches change.  When
+you are done reviewing, the command restores the original state — both the
+working tree and the git index are left clean.
+
+**Reviewing a specific number of patches**
+
+Use ``--count`` to stop at a particular patch in the stack.  For example, to
+see only what the first patch contributes, with the rest still un-applied:
+
+.. code-block:: console
+
+    $ dfetch review-patch --count 1 some-project
+
+**Stepping through the stack interactively**
+
+Use ``--interactive`` (or ``-i``) to step through the patch stack one patch at
+a time using the ← and → arrow keys.  As you step, the working tree is updated
+so your editor always reflects the current position in the stack:
+
+.. code-block:: console
+
+    $ dfetch review-patch --interactive some-project
+
+Press **Enter** to finish and restore the original state.
+
+.. tabs::
+
+   .. tab:: Git
+
+      .. scenario-include:: ../features/review-patch-in-git.feature
+
+   .. tab:: SVN
+
+      .. scenario-include:: ../features/review-patch-in-svn.feature
+
 .. _patching-upstream:
 
 Contributing the patch upstream
