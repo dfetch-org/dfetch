@@ -5,7 +5,13 @@ import re
 import sys
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser  # pylint: disable=unused-import
+from collections.abc import Callable
 from typing import TYPE_CHECKING, TypeVar
+
+from dfetch.log import get_logger
+from dfetch.manifest.project import ProjectEntry
+from dfetch.project.superproject import SuperProject
+from dfetch.util.util import in_directory
 
 if TYPE_CHECKING and sys.version_info >= (3, 10):
     from typing import TypeAlias
@@ -17,6 +23,8 @@ else:
     SubparserActionType = (
         argparse._SubParsersAction  # pyright: ignore[reportPrivateUsage] #pylint: disable=protected-access
     )
+
+_command_logger = get_logger(__name__)
 
 
 def pascal_to_kebab(name: str) -> str:
@@ -59,6 +67,24 @@ class Command(ABC):
         Raises:
             NotImplementedError: This is an abstract method that should be implemented by a subclass.
         """
+
+    @staticmethod
+    def _iter_projects(
+        superproject: SuperProject,
+        project_names: list[str],
+        process: Callable[[ProjectEntry], None],
+    ) -> None:
+        """Iterate over selected projects, log per-project errors, re-raise if any failed."""
+        had_errors = False
+        with in_directory(superproject.root_directory):
+            for project in superproject.manifest.selected_projects(project_names):
+                try:
+                    process(project)
+                except RuntimeError as exc:
+                    _command_logger.print_error_line(project.name, str(exc))
+                    had_errors = True
+        if had_errors:
+            raise RuntimeError()
 
     @staticmethod
     def parser(

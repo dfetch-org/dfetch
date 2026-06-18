@@ -5,7 +5,7 @@
 
 import argparse
 from pathlib import Path
-from unittest.mock import ANY, MagicMock, Mock, call, patch
+from unittest.mock import ANY, Mock, call, patch
 
 import pytest
 
@@ -57,8 +57,8 @@ def test_review_all_patches_calls_update_add_path_update():
     fake_sub = _make_subproject()
 
     with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
-        with patch("dfetch.commands.review_patch.in_directory"):
-            with patch("dfetch.project.create_sub_project", return_value=fake_sub):
+        with patch("dfetch.commands.command.in_directory"):
+            with patch("dfetch.commands.review_patch.create_sub_project", return_value=fake_sub):
                 with patch("dfetch.commands.review_patch.is_tty", return_value=False):
                     cmd(_make_args())
 
@@ -82,8 +82,8 @@ def test_review_count_1_uses_patch_count_1():
     fake_sub = _make_subproject()
 
     with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
-        with patch("dfetch.commands.review_patch.in_directory"):
-            with patch("dfetch.project.create_sub_project", return_value=fake_sub):
+        with patch("dfetch.commands.command.in_directory"):
+            with patch("dfetch.commands.review_patch.create_sub_project", return_value=fake_sub):
                 with patch("dfetch.commands.review_patch.is_tty", return_value=False):
                     cmd(_make_args(count=1))
 
@@ -107,8 +107,8 @@ def test_svn_superproject_warns_and_skips_staging():
     fake_sub = _make_subproject()
 
     with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
-        with patch("dfetch.commands.review_patch.in_directory"):
-            with patch("dfetch.project.create_sub_project", return_value=fake_sub):
+        with patch("dfetch.commands.command.in_directory"):
+            with patch("dfetch.commands.review_patch.create_sub_project", return_value=fake_sub):
                 with patch("dfetch.commands.review_patch.is_tty", return_value=False):
                     with patch("dfetch.commands.review_patch.logger") as mock_log:
                         cmd(_make_args())
@@ -130,8 +130,8 @@ def test_no_patches_logs_warning_and_skips():
     fake_sub = _make_subproject(patches=[])
 
     with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
-        with patch("dfetch.commands.review_patch.in_directory"):
-            with patch("dfetch.project.create_sub_project", return_value=fake_sub):
+        with patch("dfetch.commands.command.in_directory"):
+            with patch("dfetch.commands.review_patch.create_sub_project", return_value=fake_sub):
                 cmd(_make_args())
 
     fake_sub.update.assert_not_called()
@@ -144,8 +144,8 @@ def test_never_fetched_logs_warning_and_skips():
     fake_sub = _make_subproject(on_disk_version=None)
 
     with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
-        with patch("dfetch.commands.review_patch.in_directory"):
-            with patch("dfetch.project.create_sub_project", return_value=fake_sub):
+        with patch("dfetch.commands.command.in_directory"):
+            with patch("dfetch.commands.review_patch.create_sub_project", return_value=fake_sub):
                 cmd(_make_args())
 
     fake_sub.update.assert_not_called()
@@ -158,8 +158,8 @@ def test_local_changes_logs_warning_and_skips():
     fake_sub = _make_subproject()
 
     with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
-        with patch("dfetch.commands.review_patch.in_directory"):
-            with patch("dfetch.project.create_sub_project", return_value=fake_sub):
+        with patch("dfetch.commands.command.in_directory"):
+            with patch("dfetch.commands.review_patch.create_sub_project", return_value=fake_sub):
                 cmd(_make_args())
 
     fake_sub.update.assert_not_called()
