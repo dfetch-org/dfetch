@@ -1,0 +1,191 @@
+"""Test the review-patch command."""
+
+# mypy: ignore-errors
+# flake8: noqa
+
+import argparse
+from pathlib import Path
+from unittest.mock import ANY, MagicMock, Mock, call, patch
+
+import pytest
+
+from dfetch.commands.review_patch import ReviewPatch
+from dfetch.project.gitsuperproject import GitSuperProject
+from dfetch.project.superproject import NoVcsSuperProject
+from tests.manifest_mock import mock_manifest
+
+_PATCH_FILES = ["patches/first.patch", "patches/second.patch"]
+
+
+def _make_args(projects=None, count=None, interactive=False):
+    args = argparse.Namespace(
+        projects=projects or [],
+        count=count,
+        interactive=interactive,
+    )
+    return args
+
+
+def _make_superproject(is_git=True, has_local_changes=False):
+    sp = Mock()
+    sp.manifest = mock_manifest([{"name": "my_project"}])
+    sp.root_directory = Path("/tmp")
+    sp.ignored_files.return_value = []
+    sp.eol_preferences = Mock(return_value={})
+    sp.has_local_changes_in_dir.return_value = has_local_changes
+    if is_git:
+        sp.__class__ = GitSuperProject
+    return sp
+
+
+def _make_subproject(patches=None, on_disk_version="v1"):
+    sub = Mock()
+    sub.patch = patches if patches is not None else _PATCH_FILES
+    sub.local_path = "my_project"
+    sub.on_disk_version.return_value = on_disk_version
+    return sub
+
+
+# ---------------------------------------------------------------------------
+# Git happy path
+# ---------------------------------------------------------------------------
+
+
+def test_review_all_patches_calls_update_add_path_update():
+    cmd = ReviewPatch()
+    fake_super = _make_superproject(is_git=True)
+    fake_sub = _make_subproject()
+
+    with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
+        with patch("dfetch.commands.review_patch.in_directory"):
+            with patch("dfetch.project.create_sub_project", return_value=fake_sub):
+                with patch("dfetch.commands.review_patch.is_tty", return_value=False):
+                    cmd(_make_args())
+
+    update_calls = fake_sub.update.call_args_list
+    assert update_calls[0] == call(
+        force=True, ignored_files_callback=ANY, patch_count=0, eol_preferences_callback=ANY
+    ), "first call must fetch clean upstream"
+    fake_super.add_path.assert_called_once_with("my_project")
+    assert update_calls[1] == call(
+        force=True, ignored_files_callback=ANY, patch_count=-1, eol_preferences_callback=ANY
+    ), "second call (inside try) applies all patches"
+    assert update_calls[2] == call(
+        force=True, ignored_files_callback=ANY, patch_count=-1, eol_preferences_callback=ANY
+    ), "third call (finally) restores all patches"
+    fake_super.restore_staged.assert_called_once_with("my_project")
+
+
+def test_review_count_1_uses_patch_count_1():
+    cmd = ReviewPatch()
+    fake_super = _make_superproject(is_git=True)
+    fake_sub = _make_subproject()
+
+    with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
+        with patch("dfetch.commands.review_patch.in_directory"):
+            with patch("dfetch.project.create_sub_project", return_value=fake_sub):
+                with patch("dfetch.commands.review_patch.is_tty", return_value=False):
+                    cmd(_make_args(count=1))
+
+    update_calls = fake_sub.update.call_args_list
+    assert update_calls[1] == call(
+        force=True, ignored_files_callback=ANY, patch_count=1, eol_preferences_callback=ANY
+    ), "second call must apply exactly 1 patch"
+    assert update_calls[2] == call(
+        force=True, ignored_files_callback=ANY, patch_count=-1, eol_preferences_callback=ANY
+    ), "finally must restore all patches"
+
+
+# ---------------------------------------------------------------------------
+# SVN path (no add_path / restore_staged)
+# ---------------------------------------------------------------------------
+
+
+def test_svn_superproject_warns_and_skips_staging():
+    cmd = ReviewPatch()
+    fake_super = _make_superproject(is_git=False)  # not GitSuperProject
+    fake_sub = _make_subproject()
+
+    with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
+        with patch("dfetch.commands.review_patch.in_directory"):
+            with patch("dfetch.project.create_sub_project", return_value=fake_sub):
+                with patch("dfetch.commands.review_patch.is_tty", return_value=False):
+                    with patch("dfetch.commands.review_patch.logger") as mock_log:
+                        cmd(_make_args())
+
+    mock_log.warning.assert_called_once()
+    fake_super.add_path.assert_not_called()
+    fake_super.restore_staged.assert_not_called()
+    assert fake_sub.update.call_count == 3
+
+
+# ---------------------------------------------------------------------------
+# Skip scenarios
+# ---------------------------------------------------------------------------
+
+
+def test_no_patches_logs_warning_and_skips():
+    cmd = ReviewPatch()
+    fake_super = _make_superproject(is_git=True)
+    fake_sub = _make_subproject(patches=[])
+
+    with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
+        with patch("dfetch.commands.review_patch.in_directory"):
+            with patch("dfetch.project.create_sub_project", return_value=fake_sub):
+                cmd(_make_args())
+
+    fake_sub.update.assert_not_called()
+    fake_super.add_path.assert_not_called()
+
+
+def test_never_fetched_logs_warning_and_skips():
+    cmd = ReviewPatch()
+    fake_super = _make_superproject(is_git=True)
+    fake_sub = _make_subproject(on_disk_version=None)
+
+    with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
+        with patch("dfetch.commands.review_patch.in_directory"):
+            with patch("dfetch.project.create_sub_project", return_value=fake_sub):
+                cmd(_make_args())
+
+    fake_sub.update.assert_not_called()
+    fake_super.add_path.assert_not_called()
+
+
+def test_local_changes_logs_warning_and_skips():
+    cmd = ReviewPatch()
+    fake_super = _make_superproject(is_git=True, has_local_changes=True)
+    fake_sub = _make_subproject()
+
+    with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
+        with patch("dfetch.commands.review_patch.in_directory"):
+            with patch("dfetch.project.create_sub_project", return_value=fake_sub):
+                cmd(_make_args())
+
+    fake_sub.update.assert_not_called()
+    fake_super.add_path.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Error scenarios
+# ---------------------------------------------------------------------------
+
+
+def test_no_vcs_superproject_raises():
+    cmd = ReviewPatch()
+    fake_super = Mock()
+    fake_super.__class__ = NoVcsSuperProject
+
+    with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
+        with pytest.raises(RuntimeError):
+            cmd(_make_args())
+
+
+def test_interactive_without_tty_raises():
+    cmd = ReviewPatch()
+    fake_super = _make_superproject(is_git=True)
+
+    with patch("dfetch.commands.review_patch.create_super_project", return_value=fake_super):
+        with patch("dfetch.commands.review_patch.is_tty", return_value=False):
+            with pytest.raises(RuntimeError, match="interactive"):
+                cmd(_make_args(interactive=True))

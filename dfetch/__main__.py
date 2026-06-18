@@ -20,6 +20,7 @@ import dfetch.commands.init
 import dfetch.commands.remove
 import dfetch.commands.report
 import dfetch.commands.update
+import dfetch.commands.review_patch
 import dfetch.commands.update_patch
 import dfetch.commands.validate
 import dfetch.log
@@ -56,6 +57,7 @@ def create_parser() -> argparse.ArgumentParser:
     dfetch.commands.remove.Remove.create_menu(subparsers)
     dfetch.commands.report.Report.create_menu(subparsers)
     dfetch.commands.update.Update.create_menu(subparsers)
+    dfetch.commands.review_patch.ReviewPatch.create_menu(subparsers)
     dfetch.commands.update_patch.UpdatePatch.create_menu(subparsers)
     dfetch.commands.validate.Validate.create_menu(subparsers)
 
