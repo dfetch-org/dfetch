@@ -51,6 +51,14 @@ class GitSuperProject(SuperProject):
         """Check if the superproject has local changes."""
         return GitLocalRepo(path).any_changes_or_untracked()
 
+    def add_path(self, path: str) -> None:
+        """Stage the given path in the superproject's git index."""
+        self._repo.add_path(path)
+
+    def restore_staged(self, path: str) -> None:
+        """Unstage the given path in the superproject's git index."""
+        self._repo.restore_staged(path)
+
     def get_username(self) -> str:
         """Get the username of the superproject VCS."""
         username = self._repo.get_username()
