@@ -32,16 +32,15 @@ no permanent changes are made.
 """
 
 import argparse
-from collections.abc import Callable, Sequence
 
 import dfetch.commands.command
 import dfetch.manifest.project
 from dfetch.log import get_logger
 from dfetch.project import create_sub_project, create_super_project
 from dfetch.project.gitsuperproject import GitSuperProject
-from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import NoVcsSuperProject, SuperProject
 from dfetch.terminal import BOLD, DIM, RESET, Screen, is_tty, read_key
+from dfetch.vcs.patch import Patch
 
 logger = get_logger(__name__)
 
@@ -163,21 +162,10 @@ class ReviewPatch(dfetch.commands.command.Command):
         worktree_fully_patched = False
         try:
             if interactive:
-                _step_tui(
-                    list(subproject.patch),
-                    subproject,
-                    superproject,
-                    _ignored,
-                    project.name,
-                )
+                _step_tui(list(subproject.patch), subproject.local_path, project.name)
             else:
                 chosen_count = count if count is not None else -1
-                subproject.update(
-                    force=True,
-                    ignored_files_callback=_ignored,
-                    patch_count=chosen_count,
-                    eol_preferences_callback=superproject.eol_preferences,
-                )
+                subproject.apply_patches(chosen_count)
                 worktree_fully_patched = chosen_count == -1
                 patch_label = (
                     str(total_patches) if chosen_count == -1 else str(chosen_count)
@@ -191,30 +179,30 @@ class ReviewPatch(dfetch.commands.command.Command):
                     input("Press Enter to restore...")
         finally:
             if not worktree_fully_patched:
-                subproject.update(
-                    force=True,
-                    ignored_files_callback=_ignored,
-                    patch_count=-1,
-                    eol_preferences_callback=superproject.eol_preferences,
-                )
+                if is_git:
+                    assert isinstance(superproject, GitSuperProject)
+                    superproject.restore_worktree(subproject.local_path)
+                else:
+                    subproject.update(
+                        force=True,
+                        ignored_files_callback=_ignored,
+                        patch_count=0,
+                        eol_preferences_callback=superproject.eol_preferences,
+                    )
+                subproject.apply_patches()
             if is_git:
                 assert isinstance(superproject, GitSuperProject)
                 superproject.restore_staged(subproject.local_path)
             logger.print_info_line(project.name, "restored")
 
 
-def _step_tui(
-    patches: list[str],
-    subproject: SubProject,
-    superproject: SuperProject,
-    ignored_callback: Callable[[], Sequence[str]],
-    project_name: str,
-) -> None:
+def _step_tui(patches: list[str], local_path: str, project_name: str) -> None:
     """Interactive patch-stack stepper using arrow keys.
 
     The git index is staged once (clean upstream) before this function is
     called.  Only the working tree is updated on each step so that
     ``git diff`` always shows the contribution of the currently applied patches.
+    Patches are applied or reversed directly — no VCS fetch per step.
     """
     total = len(patches)
     current = 0
@@ -239,22 +227,11 @@ def _step_tui(
             return
 
         if key == "LEFT" and current > 0:
+            Patch.from_file(patches[current - 1]).reverse().apply(root=local_path)
             current -= 1
-            subproject.update(
-                force=True,
-                ignored_files_callback=ignored_callback,
-                patch_count=current,
-                eol_preferences_callback=superproject.eol_preferences,
-            )
         elif key == "RIGHT" and current < total:
+            Patch.from_file(patches[current]).apply(root=local_path)
             current += 1
-            patch_count = -1 if current == total else current
-            subproject.update(
-                force=True,
-                ignored_files_callback=ignored_callback,
-                patch_count=patch_count,
-                eol_preferences_callback=superproject.eol_preferences,
-            )
         elif key in ("ENTER", "ESC"):
             screen.clear()
             return

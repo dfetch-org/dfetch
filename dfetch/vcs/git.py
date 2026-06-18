@@ -827,6 +827,11 @@ class GitLocalRepo:
         with in_directory(self._path):
             run_on_cmdline(logger, ["git", "restore", "--staged", path])
 
+    def restore_worktree(self, path: str) -> None:
+        """Restore working-tree files for path from the staged index."""
+        with in_directory(self._path):
+            run_on_cmdline(logger, ["git", "restore", path])
+
     def untracked_files_patch(self, ignore: Sequence[str] | None = None) -> Patch:
         """Create a diff for untracked files."""
         with in_directory(self._path):
