@@ -62,15 +62,12 @@ def test_review_all_patches_calls_update_add_path_update():
                 with patch("dfetch.commands.review_patch.is_tty", return_value=False):
                     cmd(_make_args())
 
-    update_calls = fake_sub.update.call_args_list
-    assert len(update_calls) == 2, "all-patches case must only fetch twice (no redundant restore fetch)"
-    assert update_calls[0] == call(
+    fake_sub.update.assert_called_once_with(
         force=True, ignored_files_callback=ANY, patch_count=0, eol_preferences_callback=ANY
-    ), "first call must fetch clean upstream"
+    )
     fake_super.add_path.assert_called_once_with("my_project")
-    assert update_calls[1] == call(
-        force=True, ignored_files_callback=ANY, patch_count=-1, eol_preferences_callback=ANY
-    ), "second call applies all patches; working tree is already restored so no third fetch"
+    fake_sub.apply_patches.assert_called_once_with(-1)
+    fake_super.restore_worktree.assert_not_called()
     fake_super.restore_staged.assert_called_once_with("my_project")
 
 
@@ -85,13 +82,13 @@ def test_review_count_1_uses_patch_count_1():
                 with patch("dfetch.commands.review_patch.is_tty", return_value=False):
                     cmd(_make_args(count=1))
 
-    update_calls = fake_sub.update.call_args_list
-    assert update_calls[1] == call(
-        force=True, ignored_files_callback=ANY, patch_count=1, eol_preferences_callback=ANY
-    ), "second call must apply exactly 1 patch"
-    assert update_calls[2] == call(
-        force=True, ignored_files_callback=ANY, patch_count=-1, eol_preferences_callback=ANY
-    ), "finally must restore all patches"
+    fake_sub.update.assert_called_once_with(
+        force=True, ignored_files_callback=ANY, patch_count=0, eol_preferences_callback=ANY
+    )
+    apply_calls = fake_sub.apply_patches.call_args_list
+    assert apply_calls[0] == call(1), "first apply must apply exactly 1 patch"
+    assert apply_calls[1] == call(), "finally must restore all patches via apply_patches()"
+    fake_super.restore_worktree.assert_called_once_with("my_project")
 
 
 # ---------------------------------------------------------------------------
@@ -114,7 +111,10 @@ def test_svn_superproject_warns_and_skips_staging():
     mock_log.warning.assert_called_once()
     fake_super.add_path.assert_not_called()
     fake_super.restore_staged.assert_not_called()
-    assert fake_sub.update.call_count == 2
+    fake_sub.update.assert_called_once_with(
+        force=True, ignored_files_callback=ANY, patch_count=0, eol_preferences_callback=ANY
+    )
+    fake_sub.apply_patches.assert_called_once_with(-1)
 
 
 # ---------------------------------------------------------------------------

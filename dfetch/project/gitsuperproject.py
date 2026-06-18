@@ -59,6 +59,10 @@ class GitSuperProject(SuperProject):
         """Unstage the given path in the superproject's git index."""
         self._repo.restore_staged(path)
 
+    def restore_worktree(self, path: str) -> None:
+        """Restore working-tree files for path from the staged index."""
+        self._repo.restore_worktree(path)
+
     def get_username(self) -> str:
         """Get the username of the superproject VCS."""
         username = self._repo.get_username()

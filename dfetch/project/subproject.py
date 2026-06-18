@@ -87,6 +87,14 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
         logger.debug(f"{self.__project.name} Current ({current}), Available ({wanted})")
         return wanted
 
+    def apply_patches(self, count: int = -1) -> None:
+        """Apply patches to the already-fetched working tree without fetching from remote.
+
+        Args:
+            count: Number of patches to apply (-1 means all).
+        """
+        self._apply_patches(count)
+
     def update(
         self,
         force: bool = False,
