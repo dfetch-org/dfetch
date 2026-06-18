@@ -160,6 +160,7 @@ class ReviewPatch(dfetch.commands.command.Command):
             assert isinstance(superproject, GitSuperProject)
             superproject.add_path(subproject.local_path)
 
+        worktree_fully_patched = False
         try:
             if interactive:
                 _step_tui(
@@ -177,6 +178,7 @@ class ReviewPatch(dfetch.commands.command.Command):
                     patch_count=chosen_count,
                     eol_preferences_callback=superproject.eol_preferences,
                 )
+                worktree_fully_patched = chosen_count == -1
                 patch_label = (
                     str(total_patches) if chosen_count == -1 else str(chosen_count)
                 )
@@ -188,12 +190,13 @@ class ReviewPatch(dfetch.commands.command.Command):
                 if is_tty():
                     input("Press Enter to restore...")
         finally:
-            subproject.update(
-                force=True,
-                ignored_files_callback=_ignored,
-                patch_count=-1,
-                eol_preferences_callback=superproject.eol_preferences,
-            )
+            if not worktree_fully_patched:
+                subproject.update(
+                    force=True,
+                    ignored_files_callback=_ignored,
+                    patch_count=-1,
+                    eol_preferences_callback=superproject.eol_preferences,
+                )
             if is_git:
                 assert isinstance(superproject, GitSuperProject)
                 superproject.restore_staged(subproject.local_path)
