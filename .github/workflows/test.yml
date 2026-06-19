@@ -96,7 +96,7 @@ jobs:
         run: pytest --cov=dfetch  tests                                # Run tests
       - id: behave
         run: coverage run --source=dfetch --append -m behave features  # Run features tests
-      - run: coverage report --fail-under=80                           # Enforce 80% coverage gate
+      - run: coverage report --fail-under=88                           # Enforce 88% coverage gate
       - run: coverage xml -o coverage.xml                              # Create XML report
       - run: pyroma --directory --min=10 .                             # Check pyproject
       - run: find dfetch -name "*.py" | xargs pyupgrade --py310-plus   # Check syntax
