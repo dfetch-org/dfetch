@@ -4,53 +4,13 @@ Contains all data classes and constants used by compliance.py.
 Kept in a separate module to stay within the 1000-line limit per file.
 """
 
-from dataclasses import dataclass, field
-from typing import Literal
-
+from security.compliance_types import (  # noqa: F401  # re-exported
+    ApplicableStandard,
+    PartIIRequirement,
+    SODocumentation,
+    SOImplementation,
+)
 from security.tm_controls_data import Control  # noqa: F401  # re-exported
-
-
-@dataclass
-class ApplicableStandard:
-    """One standard assessed for applicability to dfetch."""
-
-    name: str
-    reference: str
-    applies: bool
-    scope_note: str
-    gap_note: str = ""
-
-
-@dataclass
-class SOImplementation:
-    """Dfetch's implementation of one prEN 40000-1-4 Security Objective."""
-
-    so_id: str
-    ecr_id: str
-    controls: list[str] = field(default_factory=list)
-    not_applicable: list[str] = field(default_factory=list)
-    gaps: list[str] = field(default_factory=list)
-    status: Literal[
-        "implemented", "partially-implemented", "planned", "not-applicable"
-    ] = "partially-implemented"
-    description: str = ""
-    evidence_hrefs: list[tuple[str, str]] = field(default_factory=list)
-    note: str = ""
-
-
-@dataclass
-class PartIIRequirement:
-    """One CRA Annex I Part II requirement (covered by prEN 40000-1-3)."""
-
-    id: str
-    ref: str
-    text: str
-    controls: list[str] = field(default_factory=list)
-    gaps: list[str] = field(default_factory=list)
-    status: Literal[
-        "implemented", "partially-implemented", "planned", "not-applicable"
-    ] = "partially-implemented"
-
 
 # ── Classification decision ───────────────────────────────────────────────────
 
@@ -76,13 +36,18 @@ CLASSIFICATION_DECISION: dict[str, str] = {
 STANDARDS: list[ApplicableStandard] = [
     ApplicableStandard(
         name="prEN 40000-1-2",
-        reference="Cyber Resilience Principles and Secure Development Lifecycle (working title; subject to change on publication)",
+        reference=(
+            "Cyber Resilience Principles and Secure Development Lifecycle "
+            "(working title; subject to change on publication)"
+        ),
         applies=True,
         scope_note=(
             "Process standard covering risk-based product security across the lifecycle. "
             "The Product Security Context (§6.2) is documented in :doc:`security`. "
-            "Track A threat models (`tm_supply_chain.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_supply_chain.py>`_, "
-            "`tm_usage.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_usage.py>`_) implement §6.3–§6.6."
+            "Track A threat models (`tm_supply_chain.py"
+            " <https://github.com/dfetch-org/dfetch/blob/main/security/tm_supply_chain.py>`_, "
+            "`tm_usage.py <https://github.com/dfetch-org/dfetch/blob/main/security/tm_usage.py>`_)"
+            " implement §6.3–§6.6."
         ),
     ),
     ApplicableStandard(
@@ -91,7 +56,9 @@ STANDARDS: list[ApplicableStandard] = [
         applies=True,
         scope_note=(
             "Covers CRA Annex I Part II vulnerability handling obligations. "
-            "Addressed in the Part II table below via `SECURITY.md <https://github.com/dfetch-org/dfetch/blob/main/SECURITY.md>`_, SBOM (:ref:`C-022 <c-022>`), "
+            "Addressed in the Part II table below via `SECURITY.md"
+            " <https://github.com/dfetch-org/dfetch/blob/main/SECURITY.md>`_,"
+            " SBOM (:ref:`C-022 <c-022>`), "
             "and dependency-review CI (:ref:`C-016 <c-016>`)."
         ),
         gap_note="No formal patch SLA or LTS backport policy defined.",
@@ -103,7 +70,10 @@ STANDARDS: list[ApplicableStandard] = [
         scope_note=(
             "Primary standard for this document. Maps CRA Annex I Part I Art. 2(a)–(m) "
             "to Security Objectives (SO.*) and Technical Controls (GEC-*, SUM-*, etc.). "
-            "The catalog is included as `security/cra_pren_4000014_oscal_catalog.json <https://github.com/dfetch-org/dfetch/blob/main/security/cra_pren_4000014_oscal_catalog.json>`_."
+            "The catalog is included as "
+            "`security/cra_pren_4000014_oscal_catalog.json"
+            " <https://github.com/dfetch-org/dfetch/blob/main/"
+            "security/cra_pren_4000014_oscal_catalog.json>`_."
         ),
         gap_note="Standard is in draft; final clause numbering may change.",
     ),
@@ -225,20 +195,25 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         ecr_id="ecr-a",
         controls=["C-015", "C-016", "C-017", "C-022", "C-040", "C-043"],
         status="implemented",
-        description=(
-            "GEC-1: C-015 (CodeQL), C-016 (dependency-review), C-017 (bandit), "
-            "C-022 (SBOM) address known-vulnerability detection in CI. "
-            "C-043 (pip-audit OSV gate) blocks release if runtime dependencies "
-            "carry known vulnerabilities."
-        ),
-        evidence_hrefs=[
-            (".github/workflows/codeql-analysis.yml", "C-015 CodeQL static analysis"),
-            (".github/workflows/dependency-review.yml", "C-016 Dependency review"),
-            (
-                ".github/workflows/python-publish.yml",
-                "C-022 SBOM generation; C-043 pip-audit CVE gate",
+        doc=SODocumentation(
+            description=(
+                "GEC-1: C-015 (CodeQL), C-016 (dependency-review), C-017 (bandit), "
+                "C-022 (SBOM) address known-vulnerability detection in CI. "
+                "C-043 (pip-audit OSV gate) blocks release if runtime dependencies "
+                "carry known vulnerabilities."
             ),
-        ],
+            evidence_hrefs=[
+                (
+                    ".github/workflows/codeql-analysis.yml",
+                    "C-015 CodeQL static analysis",
+                ),
+                (".github/workflows/dependency-review.yml", "C-016 Dependency review"),
+                (
+                    ".github/workflows/python-publish.yml",
+                    "C-022 SBOM generation; C-043 pip-audit CVE gate",
+                ),
+            ],
+        ),
     ),
     # ECR-b: Secure Configuration
     SOImplementation(
@@ -251,20 +226,23 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "AUM-5 (no password or authentication mechanism)",
         ],
         gaps=[
-            "Integrity hash verification (:ref:`C-005 <c-005>`) is opt-in; manifest entries without an ``integrity`` field are fetched without hash verification by default"
+            "Integrity hash verification (:ref:`C-005 <c-005>`) is opt-in; manifest entries"
+            " without an ``integrity`` field are fetched without hash verification by default"
         ],
         status="partially-implemented",
-        description=(
-            "GEC-12 (no unneeded software components): C-001 enforces minimal "
-            "runtime dependencies. dfetch does not expose network services."
-        ),
-        evidence_hrefs=[
-            ("dfetch/util/util.py", "C-001 Path-traversal prevention"),
-            (
-                "dfetch/vcs/archive.py",
-                "C-002 Decompression-bomb protection; C-003 Symlink validation; C-004 Member-type checks",
+        doc=SODocumentation(
+            description=(
+                "GEC-12 (no unneeded software components): C-001 enforces minimal "
+                "runtime dependencies. dfetch does not expose network services."
             ),
-        ],
+            evidence_hrefs=[
+                ("dfetch/util/util.py", "C-001 Path-traversal prevention"),
+                (
+                    "dfetch/vcs/archive.py",
+                    "C-002 Decompression-bomb protection; C-003 Symlink validation; C-004 Member-type checks",
+                ),
+            ],
+        ),
     ),
     SOImplementation(
         so_id="so-secure-startup-config",
@@ -273,7 +251,9 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "GEC-9 (no security-relevant startup configuration state in dfetch)"
         ],
         status="not-applicable",
-        description="dfetch reads only its manifest at startup; no security-sensitive config initialisation.",
+        doc=SODocumentation(
+            description="dfetch reads only its manifest at startup; no security-sensitive config initialisation.",
+        ),
     ),
     SOImplementation(
         so_id="so-factory-reset",
@@ -282,7 +262,9 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "DLM-1-b, GEC-10 (no persistent device state requiring factory reset — CLI tool)"
         ],
         status="not-applicable",
-        description="dfetch is a stateless CLI tool; no factory-reset concept applies.",
+        doc=SODocumentation(
+            description="dfetch is a stateless CLI tool; no factory-reset concept applies.",
+        ),
     ),
     # ECR-c: Security Updates
     SOImplementation(
@@ -290,21 +272,23 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         ecr_id="ecr-c",
         controls=["C-010", "C-039", "C-043"],
         status="implemented",
-        description=(
-            "SUM-1/SUM-2: Updates distributed via PyPI (``pip install --upgrade dfetch``) "
-            "and GitHub Releases. pip's TLS-protected download and version-pinning "
-            "model satisfies SUM-2. No dfetch-specific update mechanism is needed or "
-            "implemented; the package manager is the update vehicle."
-        ),
-        note=(
-            "**ECR-C SO.Updateability** — SUM-1/SUM-2 require the manufacturer to make "
-            "security updates available through a secure channel. dfetch publishes every "
-            "release to PyPI (TLS-protected, OIDC-authenticated via :ref:`C-010 <c-010>`) "
-            "and GitHub Releases (with release attestations per :ref:`C-039 <c-039>`). "
-            "The CVE gate (:ref:`C-043 <c-043>`) blocks release if known vulnerabilities "
-            "are present in runtime dependencies. Providing the update *mechanism* is the "
-            "manufacturer's obligation under SUM-1/SUM-2; delivery to the end user is the "
-            "responsibility of the user's package manager."
+        doc=SODocumentation(
+            description=(
+                "SUM-1/SUM-2: Updates distributed via PyPI (``pip install --upgrade dfetch``) "
+                "and GitHub Releases. pip's TLS-protected download and version-pinning "
+                "model satisfies SUM-2. No dfetch-specific update mechanism is needed or "
+                "implemented; the package manager is the update vehicle."
+            ),
+            note=(
+                "**ECR-C SO.Updateability** — SUM-1/SUM-2 require the manufacturer to make "
+                "security updates available through a secure channel. dfetch publishes every "
+                "release to PyPI (TLS-protected, OIDC-authenticated via :ref:`C-010 <c-010>`) "
+                "and GitHub Releases (with release attestations per :ref:`C-039 <c-039>`). "
+                "The CVE gate (:ref:`C-043 <c-043>`) blocks release if known vulnerabilities "
+                "are present in runtime dependencies. Providing the update *mechanism* is the "
+                "manufacturer's obligation under SUM-1/SUM-2; delivery to the end user is the "
+                "responsibility of the user's package manager."
+            ),
         ),
     ),
     SOImplementation(
@@ -314,37 +298,44 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "SUM-3 (automatic updates managed by pip/pipenv/poetry — not dfetch itself)"
         ],
         status="not-applicable",
-        description="Update automation is the responsibility of the user's package manager.",
+        doc=SODocumentation(
+            description="Update automation is the responsibility of the user's package manager.",
+        ),
     ),
     SOImplementation(
         so_id="so-user-update-notification",
         ecr_id="ecr-c",
         controls=[],
         status="implemented",
-        description=(
-            "UNM-4: ``dfetch check`` and ``dfetch environment`` both call "
-            "``newer_version_available()`` (``dfetch/util/github_version_check.py``), "
-            "which polls the GitHub releases API and prints a notice if a newer dfetch "
-            "release exists."
-        ),
-        evidence_hrefs=[
-            (
-                "dfetch/util/github_version_check.py",
-                "Version availability check implementation",
+        doc=SODocumentation(
+            description=(
+                "UNM-4: ``dfetch check`` and ``dfetch environment`` both call "
+                "``newer_version_available()`` (``dfetch/util/github_version_check.py``), "
+                "which polls the GitHub releases API and prints a notice if a newer dfetch "
+                "release exists."
             ),
-            (
-                "dfetch/commands/check.py",
-                "Version check in dfetch check (suppressed in CI)",
+            evidence_hrefs=[
+                (
+                    "dfetch/util/github_version_check.py",
+                    "Version availability check implementation",
+                ),
+                (
+                    "dfetch/commands/check.py",
+                    "Version check in dfetch check (suppressed in CI)",
+                ),
+                (
+                    "dfetch/commands/environment.py",
+                    "Version check in dfetch environment",
+                ),
+            ],
+            note=(
+                "**ECR-C SO.UserUpdateNotification** — ``dfetch check`` and ``dfetch environment`` "
+                "both call ``newer_version_available()`` (``dfetch/util/github_version_check.py``), "
+                "which polls the GitHub releases API and prints a notice if a newer dfetch release "
+                "exists. ``dfetch check`` suppresses the call when the ``CI`` environment variable "
+                'is set (``check.py`` line 102: ``if not os.environ.get("CI")``); '
+                "``dfetch environment`` does not apply this guard and always performs the check."
             ),
-            ("dfetch/commands/environment.py", "Version check in dfetch environment"),
-        ],
-        note=(
-            "**ECR-C SO.UserUpdateNotification** — ``dfetch check`` and ``dfetch environment`` "
-            "both call ``newer_version_available()`` (``dfetch/util/github_version_check.py``), "
-            "which polls the GitHub releases API and prints a notice if a newer dfetch release "
-            "exists. ``dfetch check`` suppresses the call when the ``CI`` environment variable "
-            'is set (``check.py`` line 102: ``if not os.environ.get("CI")``); '
-            "``dfetch environment`` does not apply this guard and always performs the check."
         ),
     ),
     SOImplementation(
@@ -354,7 +345,9 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "SUM-4 (update scheduling controlled by pip/pipenv — not dfetch)"
         ],
         status="not-applicable",
-        description="Postponement is handled by the user's package manager.",
+        doc=SODocumentation(
+            description="Postponement is handled by the user's package manager.",
+        ),
     ),
     # ECR-d: Access Control
     SOImplementation(
@@ -373,19 +366,24 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "in the authentication/authorisation sense"
         ],
         status="partially-implemented",
-        description=(
-            "dfetch delegates authentication to the host VCS client (git, svn) and "
-            "the OS credential store. C-006 prevents SSH command injection; "
-            "C-036 strips credentials from stored metadata."
-        ),
-        evidence_hrefs=[
-            ("dfetch/vcs/git.py", "C-006 Non-interactive git (prevents SSH injection)"),
-            ("dfetch/vcs/svn.py", "C-006 Non-interactive svn"),
-            (
-                "dfetch/project/metadata.py",
-                "C-036 Credential redaction from stored metadata",
+        doc=SODocumentation(
+            description=(
+                "dfetch delegates authentication to the host VCS client (git, svn) and "
+                "the OS credential store. C-006 prevents SSH command injection; "
+                "C-036 strips credentials from stored metadata."
             ),
-        ],
+            evidence_hrefs=[
+                (
+                    "dfetch/vcs/git.py",
+                    "C-006 Non-interactive git (prevents SSH injection)",
+                ),
+                ("dfetch/vcs/svn.py", "C-006 Non-interactive svn"),
+                (
+                    "dfetch/project/metadata.py",
+                    "C-036 Credential redaction from stored metadata",
+                ),
+            ],
+        ),
     ),
     SOImplementation(
         so_id="so-access-control-report",
@@ -393,14 +391,16 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         controls=["C-045"],
         gaps=["No persistent log of unauthorised access attempts"],
         status="partially-implemented",
-        description=(
-            "GEC-13: C-045 (plaintext transport warning) alerts on unauthenticated "
-            "connections. No persistent security event log."
+        doc=SODocumentation(
+            description=(
+                "GEC-13: C-045 (plaintext transport warning) alerts on unauthenticated "
+                "connections. No persistent security event log."
+            ),
+            evidence_hrefs=[
+                ("dfetch/manifest/project.py", "C-045 Plaintext transport detection"),
+                ("dfetch/project/subproject.py", "C-045 Plaintext transport warning"),
+            ],
         ),
-        evidence_hrefs=[
-            ("dfetch/manifest/project.py", "C-045 Plaintext transport detection"),
-            ("dfetch/project/subproject.py", "C-045 Plaintext transport warning"),
-        ],
     ),
     # ECR-e: Confidentiality
     SOImplementation(
@@ -408,34 +408,41 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         ecr_id="ecr-e",
         controls=["C-036"],
         status="implemented",
-        description=(
-            "SSM-1/SSM-3: The developer workstation is a trusted boundary (as established "
-            "in the usage threat model: 'Trusted at workstation invocation time'). "
-            "C-036 strips all credentials from .dfetch_data.yaml before write, so the "
-            "stored file contains only non-sensitive metadata (remote URL without userinfo, "
-            "revision, content hash, timestamp). The threat model explicitly marks "
-            "metadata_store.storesSensitiveData = False and isDestEncryptedAtRest = False "
-            "as a conscious design choice; no encryption-at-rest is required."
+        doc=SODocumentation(
+            description=(
+                "SSM-1/SSM-3: The developer workstation is a trusted boundary (as established "
+                "in the usage threat model: 'Trusted at workstation invocation time'). "
+                "C-036 strips all credentials from .dfetch_data.yaml before write, so the "
+                "stored file contains only non-sensitive metadata (remote URL without userinfo, "
+                "revision, content hash, timestamp). The threat model explicitly marks "
+                "metadata_store.storesSensitiveData = False and isDestEncryptedAtRest = False "
+                "as a conscious design choice; no encryption-at-rest is required."
+            ),
+            evidence_hrefs=[
+                (
+                    "dfetch/project/metadata.py",
+                    "C-036 Credential redaction before write",
+                ),
+            ],
         ),
-        evidence_hrefs=[
-            ("dfetch/project/metadata.py", "C-036 Credential redaction before write"),
-        ],
     ),
     SOImplementation(
         so_id="so-data-processed-confidentiality",
         ecr_id="ecr-e",
         controls=["C-005", "C-034"],
         status="implemented",
-        description=(
-            "GEC-8: C-005 (constant-time comparison), C-034 (temp-file cleanup) "
-            "protect in-process data."
-        ),
-        evidence_hrefs=[
-            (
-                "dfetch/vcs/integrity_hash.py",
-                "C-005 Constant-time HMAC comparison; C-034 SHA-256/384/512 allowlist",
+        doc=SODocumentation(
+            description=(
+                "GEC-8: C-005 (constant-time comparison), C-034 (temp-file cleanup) "
+                "protect in-process data."
             ),
-        ],
+            evidence_hrefs=[
+                (
+                    "dfetch/vcs/integrity_hash.py",
+                    "C-005 Constant-time HMAC comparison; C-034 SHA-256/384/512 allowlist",
+                ),
+            ],
+        ),
     ),
     SOImplementation(
         so_id="so-data-transmitted-confidentiality",
@@ -447,20 +454,25 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "enforced by dfetch itself"
         ],
         status="partially-implemented",
-        description=(
-            "SCM-3/SCM-4: Plaintext transport (http://, git://, svn://) is accepted "
-            "by design for legacy source compatibility. C-045 detects and warns the "
-            "user before proceeding — 'Detection only; dfetch still proceeds with the "
-            "plaintext connection; the control raises user awareness but does not "
-            "enforce scheme selection' (usage threat model, C-045 description). "
-            "For archive URLs over HTTP, C-005 (integrity hash) verifies that content "
-            "has not been tampered with in transit; it does not encrypt or conceal the "
-            "content. This is a deliberate design decision, not a residual gap."
+        doc=SODocumentation(
+            description=(
+                "SCM-3/SCM-4: Plaintext transport (http://, git://, svn://) is accepted "
+                "by design for legacy source compatibility. C-045 detects and warns the "
+                "user before proceeding — 'Detection only; dfetch still proceeds with the "
+                "plaintext connection; the control raises user awareness but does not "
+                "enforce scheme selection' (usage threat model, C-045 description). "
+                "For archive URLs over HTTP, C-005 (integrity hash) verifies that content "
+                "has not been tampered with in transit; it does not encrypt or conceal the "
+                "content. This is a deliberate design decision, not a residual gap."
+            ),
+            evidence_hrefs=[
+                ("dfetch/manifest/project.py", "C-045 Plaintext transport detection"),
+                (
+                    "dfetch/vcs/integrity_hash.py",
+                    "C-005 Archive content integrity hash",
+                ),
+            ],
         ),
-        evidence_hrefs=[
-            ("dfetch/manifest/project.py", "C-045 Plaintext transport detection"),
-            ("dfetch/vcs/integrity_hash.py", "C-005 Archive content integrity hash"),
-        ],
     ),
     SOImplementation(
         so_id="so-com-auth-e",
@@ -473,23 +485,25 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "channels when C-045's warning is overridden by the user"
         ],
         status="partially-implemented",
-        description=(
-            "SCM-2: HTTPS connections authenticate via TLS CA chain (C-003); SSH "
-            "connections authenticate via host-key verification (C-004). Plain git:// "
-            "and svn:// connections lack channel-level authentication but are accepted "
-            "by design for legacy compatibility — the same rationale as "
-            "DataTransmittedConfidentiality — and C-045 warns the user. The usage "
-            "threat model notes the network adversary 'cannot break correctly "
-            "implemented TLS or SSH'; the residual risk for unauthenticated transports "
-            "is an accepted design trade-off."
-        ),
-        evidence_hrefs=[
-            (
-                "dfetch/vcs/archive.py",
-                "C-003 Archive symlink validation; C-004 Archive member-type checks",
+        doc=SODocumentation(
+            description=(
+                "SCM-2: HTTPS connections authenticate via TLS CA chain (C-003); SSH "
+                "connections authenticate via host-key verification (C-004). Plain git:// "
+                "and svn:// connections lack channel-level authentication but are accepted "
+                "by design for legacy compatibility — the same rationale as "
+                "DataTransmittedConfidentiality — and C-045 warns the user. The usage "
+                "threat model notes the network adversary 'cannot break correctly "
+                "implemented TLS or SSH'; the residual risk for unauthenticated transports "
+                "is an accepted design trade-off."
             ),
-            ("dfetch/manifest/project.py", "C-045 Plaintext transport detection"),
-        ],
+            evidence_hrefs=[
+                (
+                    "dfetch/vcs/archive.py",
+                    "C-003 Archive symlink validation; C-004 Archive member-type checks",
+                ),
+                ("dfetch/manifest/project.py", "C-045 Plaintext transport detection"),
+            ],
+        ),
     ),
     SOImplementation(
         so_id="so-secure-provisioning",
@@ -497,13 +511,18 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         controls=["C-005"],
         not_applicable=["CCK-1, CCK-2, CCK-3 (dfetch manages no cryptographic keys)"],
         status="partially-implemented",
-        description=(
-            "CRY-1: C-005 uses Python's hashlib with SHA-256 for integrity hashes. "
-            "No key management is required or performed by dfetch."
+        doc=SODocumentation(
+            description=(
+                "CRY-1: C-005 uses Python's hashlib with SHA-256 for integrity hashes. "
+                "No key management is required or performed by dfetch."
+            ),
+            evidence_hrefs=[
+                (
+                    "dfetch/vcs/integrity_hash.py",
+                    "C-005 SHA-256 integrity hash (hashlib)",
+                ),
+            ],
         ),
-        evidence_hrefs=[
-            ("dfetch/vcs/integrity_hash.py", "C-005 SHA-256 integrity hash (hashlib)"),
-        ],
     ),
     # ECR-f: Integrity
     SOImplementation(
@@ -512,29 +531,33 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         controls=["C-005"],
         gaps=["Integrity hash opt-in only; not enforced by default for git/svn"],
         status="partially-implemented",
-        description=(
-            "SSM-2: C-005 (integrity hash in .dfetch_data.yaml) provides optional "
-            "stored-data integrity verification."
-        ),
-        evidence_hrefs=[
-            (
-                "dfetch/vcs/integrity_hash.py",
-                "C-005 Integrity hash stored in .dfetch_data.yaml",
+        doc=SODocumentation(
+            description=(
+                "SSM-2: C-005 (integrity hash in .dfetch_data.yaml) provides optional "
+                "stored-data integrity verification."
             ),
-        ],
+            evidence_hrefs=[
+                (
+                    "dfetch/vcs/integrity_hash.py",
+                    "C-005 Integrity hash stored in .dfetch_data.yaml",
+                ),
+            ],
+        ),
     ),
     SOImplementation(
         so_id="so-data-processed-integrity",
         ecr_id="ecr-f",
         controls=["C-005", "C-034"],
         status="implemented",
-        description="GEC-8: C-005 and C-034 protect data integrity during processing.",
-        evidence_hrefs=[
-            (
-                "dfetch/vcs/integrity_hash.py",
-                "C-005 Integrity hash; C-034 SHA-256/384/512 allowlist",
-            ),
-        ],
+        doc=SODocumentation(
+            description="GEC-8: C-005 and C-034 protect data integrity during processing.",
+            evidence_hrefs=[
+                (
+                    "dfetch/vcs/integrity_hash.py",
+                    "C-005 Integrity hash; C-034 SHA-256/384/512 allowlist",
+                ),
+            ],
+        ),
     ),
     SOImplementation(
         so_id="so-data-transmitted-integrity",
@@ -546,16 +569,18 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "model) and TLS/SSH channel integrity — no dfetch-level hash verification"
         ],
         status="partially-implemented",
-        description=(
-            "SCM-2: TLS (C-003) and SSH (C-004) provide channel-level integrity. "
-            "Commit-hash pinning (rev: <sha>) provides content-level integrity for git."
-        ),
-        evidence_hrefs=[
-            (
-                "dfetch/vcs/archive.py",
-                "C-003 Archive symlink validation; C-004 Archive member-type checks",
+        doc=SODocumentation(
+            description=(
+                "SCM-2: TLS (C-003) and SSH (C-004) provide channel-level integrity. "
+                "Commit-hash pinning (rev: <sha>) provides content-level integrity for git."
             ),
-        ],
+            evidence_hrefs=[
+                (
+                    "dfetch/vcs/archive.py",
+                    "C-003 Archive symlink validation; C-004 Archive member-type checks",
+                ),
+            ],
+        ),
     ),
     SOImplementation(
         so_id="so-integrity-report",
@@ -563,16 +588,18 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         controls=["C-045"],
         gaps=["No persistent integrity-violation log"],
         status="partially-implemented",
-        description=(
-            "GEC-13-f: dfetch surfaces transport-integrity warnings (C-045) at runtime "
-            "but does not maintain a persistent security event log."
-        ),
-        evidence_hrefs=[
-            (
-                "dfetch/manifest/project.py",
-                "C-045 Plaintext transport warning at runtime",
+        doc=SODocumentation(
+            description=(
+                "GEC-13-f: dfetch surfaces transport-integrity warnings (C-045) at runtime "
+                "but does not maintain a persistent security event log."
             ),
-        ],
+            evidence_hrefs=[
+                (
+                    "dfetch/manifest/project.py",
+                    "C-045 Plaintext transport warning at runtime",
+                ),
+            ],
+        ),
     ),
     # ECR-g: Data Minimisation
     SOImplementation(
@@ -584,18 +611,20 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "DTM-3 (no optional data processing to configure)",
         ],
         status="implemented",
-        description=(
-            "DTM-1: C-044 documents that .dfetch_data.yaml is limited to "
-            "remote_url (stripped), revision, optional hash, and last_fetch — each "
-            "justified by functional necessity. "
-            "DTM-2: met by design — dfetch collects no telemetry or optional data."
-        ),
-        evidence_hrefs=[
-            (
-                "dfetch/project/metadata.py",
-                "Metadata model — only non-sensitive fields stored",
+        doc=SODocumentation(
+            description=(
+                "DTM-1: C-044 documents that .dfetch_data.yaml is limited to "
+                "remote_url (stripped), revision, optional hash, and last_fetch — each "
+                "justified by functional necessity. "
+                "DTM-2: met by design — dfetch collects no telemetry or optional data."
             ),
-        ],
+            evidence_hrefs=[
+                (
+                    "dfetch/project/metadata.py",
+                    "Metadata model — only non-sensitive fields stored",
+                ),
+            ],
+        ),
     ),
     # ECR-h: Availability
     SOImplementation(
@@ -605,9 +634,11 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "RLM-2, RLM-6 (CLI tool; no persistent device state or control-system backup needed)"
         ],
         status="not-applicable",
-        description=(
-            "dfetch is a stateless CLI tool. Recovery consists of re-running "
-            "dfetch update, which re-fetches all dependencies."
+        doc=SODocumentation(
+            description=(
+                "dfetch is a stateless CLI tool. Recovery consists of re-running "
+                "dfetch update, which re-fetches all dependencies."
+            ),
         ),
     ),
     SOImplementation(
@@ -619,9 +650,11 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         ],
         gaps=["No timeout on VCS operations (potential resource exhaustion)"],
         status="partially-implemented",
-        description=(
-            "RLM-1: C-002 (no background daemon) and C-007 (subprocess controls) "
-            "reduce exposure. DoS resilience applies only to the transient fetch operation."
+        doc=SODocumentation(
+            description=(
+                "RLM-1: C-002 (no background daemon) and C-007 (subprocess controls) "
+                "reduce exposure. DoS resilience applies only to the transient fetch operation."
+            ),
         ),
     ),
     # ECR-i: Minimize Negative Impact
@@ -639,33 +672,40 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "stall indefinitely"
         ],
         status="partially-implemented",
-        description=(
-            "GEC-8-i: C-001 (minimal deps) and C-007 (subprocess controls) reduce "
-            "the risk of dfetch being weaponised against external services. "
-            "LIM-1: dfetch fetches only what is listed in the manifest."
+        doc=SODocumentation(
+            description=(
+                "GEC-8-i: C-001 (minimal deps) and C-007 (subprocess controls) reduce "
+                "the risk of dfetch being weaponised against external services. "
+                "LIM-1: dfetch fetches only what is listed in the manifest."
+            ),
+            evidence_hrefs=[
+                (
+                    "dfetch/util/util.py",
+                    "C-001 Path-traversal and dependency minimisation",
+                ),
+                ("dfetch/util/cmdline.py", "C-007 Subprocess safety (shell=False)"),
+            ],
         ),
-        evidence_hrefs=[
-            ("dfetch/util/util.py", "C-001 Path-traversal and dependency minimisation"),
-            ("dfetch/util/cmdline.py", "C-007 Subprocess safety (shell=False)"),
-        ],
     ),
     SOImplementation(
         so_id="so-prevent-attack-propagation",
         ecr_id="ecr-i",
         controls=["C-001", "C-008"],
         status="implemented",
-        description=(
-            "LIM-2: Path traversal to destinations outside the project tree is "
-            "prevented by C-001 (check_no_path_traversal() via realpath). "
-            "The residual risk of a manifest declaring a legitimate but sensitive "
-            "dst: (e.g. .github/workflows/) is accepted in the usage threat model "
-            "under the 'Manifest under code review' assumption: dfetch.yaml is "
-            "version-controlled and any such dst: change would be rejected at review."
+        doc=SODocumentation(
+            description=(
+                "LIM-2: Path traversal to destinations outside the project tree is "
+                "prevented by C-001 (check_no_path_traversal() via realpath). "
+                "The residual risk of a manifest declaring a legitimate but sensitive "
+                "dst: (e.g. .github/workflows/) is accepted in the usage threat model "
+                "under the 'Manifest under code review' assumption: dfetch.yaml is "
+                "version-controlled and any such dst: change would be rejected at review."
+            ),
+            evidence_hrefs=[
+                ("dfetch/util/util.py", "C-001 check_no_path_traversal() via realpath"),
+                ("dfetch/manifest/schema.py", "C-008 Manifest URL and path validation"),
+            ],
         ),
-        evidence_hrefs=[
-            ("dfetch/util/util.py", "C-001 check_no_path_traversal() via realpath"),
-            ("dfetch/manifest/schema.py", "C-008 Manifest URL and path validation"),
-        ],
     ),
     SOImplementation(
         so_id="so-monitor-external-impact",
@@ -674,7 +714,9 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "NMM-1 (dfetch makes no ambient outbound network traffic to monitor)"
         ],
         status="not-applicable",
-        description="dfetch makes targeted, user-initiated VCS requests only.",
+        doc=SODocumentation(
+            description="dfetch makes targeted, user-initiated VCS requests only.",
+        ),
     ),
     # ECR-j: Attack Surface Minimization
     SOImplementation(
@@ -691,22 +733,24 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "operations time out at 15 s / 60 s)"
         ],
         status="partially-implemented",
-        description=(
-            "GEC-6: C-007 (no shell=True), C-008 (URL/path validation) implement "
-            "input validation. GEC-12-j: C-001 enforces minimal runtime dependencies."
+        doc=SODocumentation(
+            description=(
+                "GEC-6: C-007 (no shell=True), C-008 (URL/path validation) implement "
+                "input validation. GEC-12-j: C-001 enforces minimal runtime dependencies."
+            ),
+            evidence_hrefs=[
+                (
+                    "dfetch/util/cmdline.py",
+                    "C-007 Subprocess safety (shell=False everywhere)",
+                ),
+                ("dfetch/manifest/schema.py", "C-008 Manifest input validation"),
+                ("dfetch/util/util.py", "C-001 Minimal dependency footprint"),
+                (
+                    "dfetch/vcs/archive.py",
+                    "C-003 Symlink validation; C-004 Member-type checks",
+                ),
+            ],
         ),
-        evidence_hrefs=[
-            (
-                "dfetch/util/cmdline.py",
-                "C-007 Subprocess safety (shell=False everywhere)",
-            ),
-            ("dfetch/manifest/schema.py", "C-008 Manifest input validation"),
-            ("dfetch/util/util.py", "C-001 Minimal dependency footprint"),
-            (
-                "dfetch/vcs/archive.py",
-                "C-003 Symlink validation; C-004 Member-type checks",
-            ),
-        ],
     ),
     # ECR-k: Exploit Mitigation
     SOImplementation(
@@ -717,18 +761,23 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "Compile-time mitigations (CFI, sandboxing) — not applicable to pure Python"
         ],
         status="implemented",
-        description=(
-            "GEC-11: Python interpreter provides ASLR/DEP/stack-canaries (OS-level). "
-            "dfetch: no eval/exec of remote content; constant-time comparison (C-005); "
-            "shell=False (C-007); static analysis (C-015, C-017). "
-            "C-046 formalises this inventory in doc/explanation/compliance_track.rst."
+        doc=SODocumentation(
+            description=(
+                "GEC-11: Python interpreter provides ASLR/DEP/stack-canaries (OS-level). "
+                "dfetch: no eval/exec of remote content; constant-time comparison (C-005); "
+                "shell=False (C-007); static analysis (C-015, C-017). "
+                "C-046 formalises this inventory in doc/explanation/compliance_track.rst."
+            ),
+            evidence_hrefs=[
+                (
+                    ".github/workflows/codeql-analysis.yml",
+                    "C-015 CodeQL static analysis",
+                ),
+                ("pyproject.toml", "C-017 bandit security linter configuration"),
+                ("dfetch/vcs/integrity_hash.py", "C-005 Constant-time HMAC comparison"),
+                ("dfetch/util/cmdline.py", "C-007 No shell=True in subprocess calls"),
+            ],
         ),
-        evidence_hrefs=[
-            (".github/workflows/codeql-analysis.yml", "C-015 CodeQL static analysis"),
-            ("pyproject.toml", "C-017 bandit security linter configuration"),
-            ("dfetch/vcs/integrity_hash.py", "C-005 Constant-time HMAC comparison"),
-            ("dfetch/util/cmdline.py", "C-007 No shell=True in subprocess calls"),
-        ],
     ),
     # ECR-l: Monitoring and Logging
     SOImplementation(
@@ -743,17 +792,19 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "logging control"
         ],
         status="partially-implemented",
-        description=(
-            "LGM-1: dfetch logs warnings to stderr during a run but does not persist "
-            "them. LGM-6: C-036 ensures credentials are not logged."
-        ),
-        evidence_hrefs=[
-            (
-                "dfetch/project/metadata.py",
-                "C-036 Credential exclusion from stored metadata and logs",
+        doc=SODocumentation(
+            description=(
+                "LGM-1: dfetch logs warnings to stderr during a run but does not persist "
+                "them. LGM-6: C-036 ensures credentials are not logged."
             ),
-            ("dfetch/log/", "Logging module — transient stderr only"),
-        ],
+            evidence_hrefs=[
+                (
+                    "dfetch/project/metadata.py",
+                    "C-036 Credential exclusion from stored metadata and logs",
+                ),
+                ("dfetch/log/", "Logging module — transient stderr only"),
+            ],
+        ),
     ),
     SOImplementation(
         so_id="so-monitor-security-relevant-activities",
@@ -761,28 +812,34 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         controls=["C-045"],
         not_applicable=["NMM-1 (no ambient network monitoring)"],
         status="partially-implemented",
-        description=(
-            "MON-1: C-045 (plaintext transport detection) monitors for insecure "
-            "connections at runtime and surfaces warnings to the user."
+        doc=SODocumentation(
+            description=(
+                "MON-1: C-045 (plaintext transport detection) monitors for insecure "
+                "connections at runtime and surfaces warnings to the user."
+            ),
+            evidence_hrefs=[
+                ("dfetch/manifest/project.py", "C-045 Plaintext transport detection"),
+                ("dfetch/project/subproject.py", "C-045 Runtime transport monitoring"),
+            ],
         ),
-        evidence_hrefs=[
-            ("dfetch/manifest/project.py", "C-045 Plaintext transport detection"),
-            ("dfetch/project/subproject.py", "C-045 Runtime transport monitoring"),
-        ],
     ),
     SOImplementation(
         so_id="so-option-disable-data-logging",
         ecr_id="ecr-l",
         not_applicable=["LGM-5 (dfetch does not persist logs; nothing to disable)"],
         status="not-applicable",
-        description="dfetch emits transient stderr warnings only; no persistent log to opt out of.",
+        doc=SODocumentation(
+            description="dfetch emits transient stderr warnings only; no persistent log to opt out of.",
+        ),
     ),
     SOImplementation(
         so_id="so-option-disable-data-monitoring",
         ecr_id="ecr-l",
         not_applicable=["MON-2 (no persistent monitoring to disable)"],
         status="not-applicable",
-        description="dfetch performs no ongoing monitoring between invocations.",
+        doc=SODocumentation(
+            description="dfetch performs no ongoing monitoring between invocations.",
+        ),
     ),
     # ECR-m: Data Deletion
     SOImplementation(
@@ -797,22 +854,24 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "by design (no sensitive data to wipe), not by a dedicated dfetch control."
         ],
         status="implemented",
-        description=(
-            "DLM-1: .dfetch_data.yaml contains only non-sensitive metadata — "
-            "remote URL (credentials stripped by C-036), revision, optional content "
-            "hash, and last-fetch timestamp. Standard OS file deletion is sufficient; "
-            "no secure-wipe is required. Users delete the file and vendored directories "
-            "to remove all dfetch data. ECR-m is satisfied by design because dfetch "
-            "collects no personal data, credentials, or keying material on disk."
-        ),
-        note=(
-            "**ECR-M SO.SecureDataDeletion** — No dfetch-specific control is needed. "
-            "DLM-1 is satisfied by design: dfetch stores no personal data, credentials, "
-            "or cryptographic keying material on disk. The only on-disk state is "
-            "``.dfetch_data.yaml`` (non-sensitive dependency metadata — credentials "
-            "stripped by :ref:`C-036 <c-036>`) and vendored source files (third-party "
-            "code). Standard OS file deletion (``rm`` / ``del``) is sufficient to remove "
-            "all dfetch data; no secure-wipe facility is warranted."
+        doc=SODocumentation(
+            description=(
+                "DLM-1: .dfetch_data.yaml contains only non-sensitive metadata — "
+                "remote URL (credentials stripped by C-036), revision, optional content "
+                "hash, and last-fetch timestamp. Standard OS file deletion is sufficient; "
+                "no secure-wipe is required. Users delete the file and vendored directories "
+                "to remove all dfetch data. ECR-m is satisfied by design because dfetch "
+                "collects no personal data, credentials, or keying material on disk."
+            ),
+            note=(
+                "**ECR-M SO.SecureDataDeletion** — No dfetch-specific control is needed. "
+                "DLM-1 is satisfied by design: dfetch stores no personal data, credentials, "
+                "or cryptographic keying material on disk. The only on-disk state is "
+                "``.dfetch_data.yaml`` (non-sensitive dependency metadata — credentials "
+                "stripped by :ref:`C-036 <c-036>`) and vendored source files (third-party "
+                "code). Standard OS file deletion (``rm`` / ``del``) is sufficient to remove "
+                "all dfetch data; no secure-wipe facility is warranted."
+            ),
         ),
     ),
     SOImplementation(
@@ -822,21 +881,27 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "DLM-2, DLM-3, DLM-4 (dfetch does not export user data to external systems)"
         ],
         status="not-applicable",
-        description="dfetch does not provide data export or transfer functionality.",
+        doc=SODocumentation(
+            description="dfetch does not provide data export or transfer functionality.",
+        ),
     ),
     SOImplementation(
         so_id="so-data-transmitted-integrity-m",
         ecr_id="ecr-m",
         not_applicable=["DLM-3 (no data export)"],
         status="not-applicable",
-        description="Not applicable — see SO.DataTransmittedConfidentiality (data export context).",
+        doc=SODocumentation(
+            description="Not applicable — see SO.DataTransmittedConfidentiality (data export context).",
+        ),
     ),
     SOImplementation(
         so_id="so-com-auth-m",
         ecr_id="ecr-m",
         not_applicable=["DLM-4 (no data export)"],
         status="not-applicable",
-        description="Not applicable — see SO.DataTransmittedConfidentiality (data export context).",
+        doc=SODocumentation(
+            description="Not applicable — see SO.DataTransmittedConfidentiality (data export context).",
+        ),
     ),
 ]
 

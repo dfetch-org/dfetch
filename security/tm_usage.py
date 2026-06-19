@@ -44,7 +44,9 @@ from pytm import (  # noqa: E402  # pylint: disable=wrong-import-position
     Process,
 )
 
-from security.tm_controls_data import USAGE_CONTROLS as CONTROLS  # noqa: E402  # pylint: disable=wrong-import-position
+from security.tm_controls_data import (  # noqa: E402  # pylint: disable=wrong-import-position
+    USAGE_CONTROLS as CONTROLS,
+)
 from security.tm_elements import (  # noqa: E402  # pylint: disable=wrong-import-position
     THREATS_FILE,
     Control,

@@ -222,4 +222,3 @@ All controls implemented by dfetch, sorted by ID. Risk-driven controls emerge fr
      - Exploit mitigation inventory
      - Compliance-only
      - :doc:`compliance_track`
-
