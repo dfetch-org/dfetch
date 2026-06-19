@@ -31,6 +31,7 @@ jobs:
             api.github.com:443
             release-assets.githubusercontent.com:443
             uploads.github.com:443
+            index.crates.io:443
 
       - name: Publish to WinGet
         # Requires WINGET_TOKEN secret in the 'winget' environment.
