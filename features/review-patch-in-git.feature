@@ -41,13 +41,9 @@ Feature: Review patches in git
             Dfetch (0.14.0)
               SomeProject:
               > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
-              > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
               > Applying patch "patches/SomeProject.patch"
                 successfully patched 1/1:    b'README.md'
               > stage = upstream, working tree = 1 patch(es) applied — open your editor and run `git diff` to inspect
-              > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
-              > Applying patch "patches/SomeProject.patch"
-                successfully patched 1/1:    b'README.md'
               > restored
             """
         And the patched 'MyProject/SomeProject/README.md' is
@@ -62,9 +58,7 @@ Feature: Review patches in git
             Dfetch (0.14.0)
               SomeProject:
               > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
-              > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
               > stage = upstream, working tree = 0 patch(es) applied — open your editor and run `git diff` to inspect
-              > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
               > Applying patch "patches/SomeProject.patch"
                 successfully patched 1/1:    b'README.md'
               > restored
