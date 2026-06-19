@@ -33,6 +33,7 @@ no permanent changes are made.
 
 import argparse
 from collections.abc import Callable
+from pathlib import Path
 
 import dfetch.commands.command
 import dfetch.manifest.project
@@ -131,6 +132,7 @@ class ReviewPatch(dfetch.commands.command.Command):
         if not _can_review_project(superproject, subproject, project.name):
             return
 
+        saved_metadata = Path(subproject.metadata_path).read_bytes()
         total_patches = len(list(subproject.patch))
         subproject.update(
             force=True,
@@ -165,6 +167,7 @@ class ReviewPatch(dfetch.commands.command.Command):
                 worktree_fully_patched,
                 _ignored,
             )
+            Path(subproject.metadata_path).write_bytes(saved_metadata)
 
 
 def _can_review_project(
