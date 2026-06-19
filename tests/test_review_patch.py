@@ -4,6 +4,7 @@
 # flake8: noqa
 
 import argparse
+import tempfile
 from pathlib import Path
 from unittest.mock import ANY, Mock, call, patch
 
@@ -41,6 +42,9 @@ def _make_subproject(patches=None, on_disk_version: str | None = "v1"):
     sub.patch = patches if patches is not None else _PATCH_FILES
     sub.local_path = "my_project"
     sub.on_disk_version.return_value = on_disk_version
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".yaml", mode="wb") as f:
+        f.write(b"dfetch:\n  patch: patches/first.patch\n")
+        sub.metadata_path = f.name
     return sub
 
 
