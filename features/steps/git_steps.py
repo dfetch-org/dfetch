@@ -309,3 +309,12 @@ index 62248b7..32d9fad 100644
     generate_file(os.path.join(os.getcwd(), "002-diff.patch"), patch_file2)
 
     call_command(context, ["update"])
+
+
+@then("the git superproject '{superproject}' reports no changes to '{path}'")
+def step_impl(_, superproject, path):
+    with in_directory(superproject):
+        result = subprocess.check_output(
+            ["git", "status", "--porcelain", path], text=True
+        )
+    assert result.strip() == "", f"Unexpected changes in {path!r}:\n{result}"
