@@ -63,6 +63,10 @@ class GitSuperProject(SuperProject):
         """Restore working-tree files for path from the staged index."""
         self._repo.restore_worktree(path)
 
+    def restore_from_head(self, path: str) -> None:
+        """Restore both working tree and index for path from HEAD."""
+        self._repo.restore_from_head(path)
+
     def get_username(self) -> str:
         """Get the username of the superproject VCS."""
         username = self._repo.get_username()

@@ -162,15 +162,17 @@ class ReviewPatch(dfetch.commands.command.Command):
                 subproject, project.name, chosen_count, interactive, info_msg
             )
         finally:
-            _restore_project(
-                superproject,
-                git_super,
-                subproject,
-                project.name,
-                worktree_fully_patched,
-                _ignored,
-            )
-            Path(subproject.metadata_path).write_bytes(saved_metadata)
+            try:
+                _restore_project(
+                    superproject,
+                    git_super,
+                    subproject,
+                    project.name,
+                    worktree_fully_patched,
+                    _ignored,
+                )
+            finally:
+                Path(subproject.metadata_path).write_bytes(saved_metadata)
 
 
 def _can_review_project(
@@ -229,19 +231,20 @@ def _restore_project(
     ignored_callback: Callable[[], list[str]],
 ) -> None:
     """Restore the project to the fully-patched state and un-stage the index."""
-    if not worktree_fully_patched:
-        if git_super is not None:
-            git_super.restore_worktree(subproject.local_path)
+    if git_super is not None:
+        if worktree_fully_patched:
+            git_super.restore_staged(subproject.local_path)
         else:
+            git_super.restore_from_head(subproject.local_path)
+    else:
+        if not worktree_fully_patched:
             subproject.update(
                 force=True,
                 ignored_files_callback=ignored_callback,
                 patch_count=0,
                 eol_preferences_callback=superproject.eol_preferences,
             )
-        subproject.apply_patches()
-    if git_super is not None:
-        git_super.restore_staged(subproject.local_path)
+            subproject.apply_patches()
     logger.print_info_line(project_name, "restored")
 
 
