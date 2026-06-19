@@ -317,7 +317,11 @@ def _step_tui(patches: list[str], local_path: str, project_name: str) -> None:
         except KeyboardInterrupt:
             screen.clear()
             return
-        current, done = _apply_step(key, current, total, patches, local_path)
+        try:
+            current, done = _apply_step(key, current, total, patches, local_path)
+        except RuntimeError:
+            screen.clear()
+            raise
         if done:
             screen.clear()
             return
