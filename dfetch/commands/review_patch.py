@@ -123,7 +123,7 @@ class ReviewPatch(dfetch.commands.command.Command):
     ) -> None:
         """Set up review state for a single project, then restore."""
         subproject = create_sub_project(project)
-        is_git = isinstance(superproject, GitSuperProject)
+        git_super = superproject if isinstance(superproject, GitSuperProject) else None
 
         def _ignored() -> list[str]:
             return list(superproject.ignored_files(project.destination))
@@ -139,15 +139,14 @@ class ReviewPatch(dfetch.commands.command.Command):
             eol_preferences_callback=superproject.eol_preferences,
         )
 
-        if is_git:
-            assert isinstance(superproject, GitSuperProject)
-            superproject.add_path(subproject.local_path)
+        if git_super is not None:
+            git_super.add_path(subproject.local_path)
 
         chosen_count = count if count is not None else -1
         effective = (
             total_patches if chosen_count == -1 else min(chosen_count, total_patches)
         )
-        diff_cmd = "`git diff`" if is_git else "`svn diff`"
+        diff_cmd = "`git diff`" if git_super is not None else "`svn diff`"
         info_msg = (
             f"stage = upstream, working tree = {effective} patch(es) applied"
             f" — open your editor and run {diff_cmd} to inspect"
@@ -160,9 +159,9 @@ class ReviewPatch(dfetch.commands.command.Command):
         finally:
             _restore_project(
                 superproject,
+                git_super,
                 subproject,
                 project.name,
-                is_git,
                 worktree_fully_patched,
                 _ignored,
             )
@@ -217,17 +216,16 @@ def _apply_review(
 
 def _restore_project(
     superproject: SuperProject,
+    git_super: GitSuperProject | None,
     subproject: SubProject,
     project_name: str,
-    is_git: bool,
     worktree_fully_patched: bool,
     ignored_callback: Callable[[], list[str]],
 ) -> None:
     """Restore the project to the fully-patched state and un-stage the index."""
     if not worktree_fully_patched:
-        if is_git:
-            assert isinstance(superproject, GitSuperProject)
-            superproject.restore_worktree(subproject.local_path)
+        if git_super is not None:
+            git_super.restore_worktree(subproject.local_path)
         else:
             subproject.update(
                 force=True,
@@ -236,9 +234,8 @@ def _restore_project(
                 eol_preferences_callback=superproject.eol_preferences,
             )
         subproject.apply_patches()
-    if is_git:
-        assert isinstance(superproject, GitSuperProject)
-        superproject.restore_staged(subproject.local_path)
+    if git_super is not None:
+        git_super.restore_staged(subproject.local_path)
     logger.print_info_line(project_name, "restored")
 
 
