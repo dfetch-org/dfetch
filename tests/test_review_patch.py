@@ -226,3 +226,14 @@ def test_interactive_without_tty_raises():
         with patch("dfetch.commands.review_patch.is_tty", return_value=False):
             with pytest.raises(RuntimeError, match="interactive"):
                 cmd(_make_args(interactive=True))
+
+
+def test_negative_count_raises():
+    cmd = ReviewPatch()
+    fake_super = _make_superproject(is_git=True)
+
+    with patch(
+        "dfetch.commands.review_patch.create_super_project", return_value=fake_super
+    ):
+        with pytest.raises(RuntimeError, match="--count must be >= 0"):
+            cmd(_make_args(count=-1))
