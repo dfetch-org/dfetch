@@ -32,8 +32,11 @@ no permanent changes are made.
 """
 
 import argparse
+import logging
 from collections.abc import Callable
+from contextlib import contextmanager
 from pathlib import Path
+from typing import Generator
 
 import dfetch.commands.command
 import dfetch.manifest.project
@@ -262,6 +265,18 @@ def _draw_tui_frame(
     screen.draw(lines)
 
 
+@contextmanager
+def _silent_patch_ng() -> Generator[None, None, None]:
+    """Suppress patch_ng info logs so they don't corrupt the TUI frame."""
+    patch_logger = logging.getLogger("patch_ng")
+    prev = patch_logger.level
+    patch_logger.setLevel(logging.CRITICAL)
+    try:
+        yield
+    finally:
+        patch_logger.setLevel(prev)
+
+
 def _apply_step(
     key: str,
     current: int,
@@ -271,10 +286,12 @@ def _apply_step(
 ) -> tuple[int, bool]:
     """Handle one keypress; return (new_current, done)."""
     if key == "LEFT" and current > 0:
-        Patch.from_file(patches[current - 1]).reverse().apply(root=local_path)
+        with _silent_patch_ng():
+            Patch.from_file(patches[current - 1]).reverse().apply(root=local_path)
         return current - 1, False
     if key == "RIGHT" and current < total:
-        Patch.from_file(patches[current]).apply(root=local_path)
+        with _silent_patch_ng():
+            Patch.from_file(patches[current]).apply(root=local_path)
         return current + 1, False
     if key in ("ENTER", "ESC"):
         return current, True
