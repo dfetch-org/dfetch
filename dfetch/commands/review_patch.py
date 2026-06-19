@@ -33,10 +33,9 @@ no permanent changes are made.
 
 import argparse
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator
 
 import dfetch.commands.command
 import dfetch.manifest.project

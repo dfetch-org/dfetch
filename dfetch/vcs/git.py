@@ -837,7 +837,15 @@ class GitLocalRepo:
         with in_directory(self._path):
             run_on_cmdline(
                 logger,
-                ["git", "restore", "--source=HEAD", "--staged", "--worktree", "--", path],
+                [
+                    "git",
+                    "restore",
+                    "--source=HEAD",
+                    "--staged",
+                    "--worktree",
+                    "--",
+                    path,
+                ],
             )
 
     def untracked_files_patch(self, ignore: Sequence[str] | None = None) -> Patch:
