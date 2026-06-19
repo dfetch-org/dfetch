@@ -1,5 +1,5 @@
-Release 0.14.1 (unreleased)
-============================
+Release 0.14.1 (released 2026-06-19)
+====================================
 
 * Implement C-043: add ``pip-audit`` OSV gate to the release workflow
 * Add CRA Compliance: OSCAL 1.2.2 Component Definition

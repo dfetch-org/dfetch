@@ -123,7 +123,7 @@ Feature: Create an CycloneDX sbom
                     "tools": {
                         "components": [
                             {
-                                "bom-ref": "dfetch-0.14.0",
+                                "bom-ref": "dfetch-0.14.1",
                                 "externalReferences": [
                                     {
                                         "type": "build-system",
@@ -171,7 +171,7 @@ Feature: Create an CycloneDX sbom
                                     "name": "dfetch-org"
                                 },
                                 "type": "application",
-                                "version": "0.14.0"
+                                "version": "0.14.1"
                             },
                             {
                                 "description": "Python library for CycloneDX",
@@ -277,7 +277,7 @@ Feature: Create an CycloneDX sbom
         When I run "dfetch report -t sbom"
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.14.1)
             Generated SBoM report: report.cdx.json
             """
         And the 'report.cdx.json' json file includes
