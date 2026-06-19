@@ -60,8 +60,6 @@ Feature: Review patches in git
               SomeProject:
               > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
               > stage = upstream, working tree = 0 patch(es) applied — open your editor and run `git diff` to inspect
-              > Applying patch "patches/SomeProject.patch"
-                successfully patched 1/1:    b'README.md'
               > restored
             """
         And the patched 'MyProject/SomeProject/README.md' is

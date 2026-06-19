@@ -101,12 +101,10 @@ def test_review_count_1_uses_patch_count_1():
         patch_count=0,
         eol_preferences_callback=ANY,
     )
-    apply_calls = fake_sub.apply_patches.call_args_list
-    assert apply_calls[0] == call(1), "first apply must apply exactly 1 patch"
-    assert (
-        apply_calls[1] == call()
-    ), "finally must restore all patches via apply_patches()"
-    fake_super.restore_worktree.assert_called_once_with("my_project")
+    fake_sub.apply_patches.assert_called_once_with(1)
+    fake_super.restore_from_head.assert_called_once_with("my_project")
+    fake_super.restore_worktree.assert_not_called()
+    fake_super.restore_staged.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
