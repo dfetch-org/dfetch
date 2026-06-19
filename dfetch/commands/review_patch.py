@@ -32,12 +32,14 @@ no permanent changes are made.
 """
 
 import argparse
+from collections.abc import Callable
 
 import dfetch.commands.command
 import dfetch.manifest.project
 from dfetch.log import get_logger
 from dfetch.project import create_sub_project, create_super_project
 from dfetch.project.gitsuperproject import GitSuperProject
+from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import NoVcsSuperProject, SuperProject
 from dfetch.terminal import BOLD, DIM, RESET, Screen, is_tty, read_key
 from dfetch.vcs.patch import Patch
@@ -123,31 +125,10 @@ class ReviewPatch(dfetch.commands.command.Command):
         def _ignored() -> list[str]:
             return list(superproject.ignored_files(project.destination))
 
-        if not subproject.patch:
-            logger.print_warning_line(
-                project.name,
-                'skipped - there is no patch file, use "dfetch diff"'
-                f" {project.name} to create one",
-            )
-            return
-
-        on_disk_version = subproject.on_disk_version()
-        if not on_disk_version:
-            logger.print_warning_line(
-                project.name,
-                f'skipped - the project was never fetched, use "dfetch update {project.name}"',
-            )
-            return
-
-        if superproject.has_local_changes_in_dir(subproject.local_path):
-            logger.print_warning_line(
-                project.name,
-                f"skipped - uncommitted changes in {subproject.local_path}",
-            )
+        if not _can_review_project(superproject, subproject, project.name):
             return
 
         total_patches = len(list(subproject.patch))
-
         subproject.update(
             force=True,
             ignored_files_callback=_ignored,
@@ -161,39 +142,137 @@ class ReviewPatch(dfetch.commands.command.Command):
 
         worktree_fully_patched = False
         try:
-            if interactive:
-                _step_tui(list(subproject.patch), subproject.local_path, project.name)
-            else:
-                chosen_count = count if count is not None else -1
-                subproject.apply_patches(chosen_count)
-                worktree_fully_patched = chosen_count == -1
-                patch_label = (
-                    str(total_patches) if chosen_count == -1 else str(chosen_count)
-                )
-                logger.print_info_line(
-                    project.name,
-                    f"stage = upstream, working tree = {patch_label} patch(es) applied"
-                    " — open your editor and run `git diff` to inspect",
-                )
-                if is_tty():
-                    input("Press Enter to restore...")
+            worktree_fully_patched = _apply_review(
+                subproject, project.name, count, interactive, total_patches
+            )
         finally:
-            if not worktree_fully_patched:
-                if is_git:
-                    assert isinstance(superproject, GitSuperProject)
-                    superproject.restore_worktree(subproject.local_path)
-                else:
-                    subproject.update(
-                        force=True,
-                        ignored_files_callback=_ignored,
-                        patch_count=0,
-                        eol_preferences_callback=superproject.eol_preferences,
-                    )
-                subproject.apply_patches()
-            if is_git:
-                assert isinstance(superproject, GitSuperProject)
-                superproject.restore_staged(subproject.local_path)
-            logger.print_info_line(project.name, "restored")
+            _restore_project(
+                superproject,
+                subproject,
+                project.name,
+                is_git,
+                worktree_fully_patched,
+                _ignored,
+            )
+
+
+def _can_review_project(
+    superproject: SuperProject,
+    subproject: SubProject,
+    project_name: str,
+) -> bool:
+    """Return False and log a warning when the project cannot be reviewed."""
+    if not subproject.patch:
+        logger.print_warning_line(
+            project_name,
+            'skipped - there is no patch file, use "dfetch diff"'
+            f" {project_name} to create one",
+        )
+        return False
+    if not subproject.on_disk_version():
+        logger.print_warning_line(
+            project_name,
+            f'skipped - the project was never fetched, use "dfetch update {project_name}"',
+        )
+        return False
+    if superproject.has_local_changes_in_dir(subproject.local_path):
+        logger.print_warning_line(
+            project_name,
+            f"skipped - uncommitted changes in {subproject.local_path}",
+        )
+        return False
+    return True
+
+
+def _apply_review(
+    subproject: SubProject,
+    project_name: str,
+    count: int | None,
+    interactive: bool,
+    total_patches: int,
+) -> bool:
+    """Run the review session; return True when the worktree is already fully patched."""
+    if interactive:
+        _step_tui(list(subproject.patch), subproject.local_path, project_name)
+        return False
+
+    chosen_count = count if count is not None else -1
+    subproject.apply_patches(chosen_count)
+    patch_label = str(total_patches) if chosen_count == -1 else str(chosen_count)
+    logger.print_info_line(
+        project_name,
+        f"stage = upstream, working tree = {patch_label} patch(es) applied"
+        " — open your editor and run `git diff` to inspect",
+    )
+    if is_tty():
+        input("Press Enter to restore...")
+    return chosen_count == -1
+
+
+def _restore_project(
+    superproject: SuperProject,
+    subproject: SubProject,
+    project_name: str,
+    is_git: bool,
+    worktree_fully_patched: bool,
+    ignored_callback: Callable[[], list[str]],
+) -> None:
+    """Restore the project to the fully-patched state and un-stage the index."""
+    if not worktree_fully_patched:
+        if is_git:
+            assert isinstance(superproject, GitSuperProject)
+            superproject.restore_worktree(subproject.local_path)
+        else:
+            subproject.update(
+                force=True,
+                ignored_files_callback=ignored_callback,
+                patch_count=0,
+                eol_preferences_callback=superproject.eol_preferences,
+            )
+        subproject.apply_patches()
+    if is_git:
+        assert isinstance(superproject, GitSuperProject)
+        superproject.restore_staged(subproject.local_path)
+    logger.print_info_line(project_name, "restored")
+
+
+def _draw_tui_frame(
+    screen: Screen,
+    patches: list[str],
+    current: int,
+    total: int,
+    project_name: str,
+) -> None:
+    """Render the current patch-stack state to the screen."""
+    count_label = str(current) if current < total else "all"
+    lines: list[str] = [
+        f"  {DIM}← → step    Enter restore and exit    Ctrl-C abort{RESET}",
+        "  " + "─" * 54,
+        f"  {project_name}  [{count_label}/{total} patches applied]",
+    ]
+    for idx, patch_name in enumerate(patches):
+        marker = f"{BOLD}[x]{RESET}" if idx < current else f"{DIM}[ ]{RESET}"
+        lines.append(f"    {marker} {patch_name}")
+    screen.draw(lines)
+
+
+def _apply_step(
+    key: str,
+    current: int,
+    total: int,
+    patches: list[str],
+    local_path: str,
+) -> tuple[int, bool]:
+    """Handle one keypress; return (new_current, done)."""
+    if key == "LEFT" and current > 0:
+        Patch.from_file(patches[current - 1]).reverse().apply(root=local_path)
+        return current - 1, False
+    if key == "RIGHT" and current < total:
+        Patch.from_file(patches[current]).apply(root=local_path)
+        return current + 1, False
+    if key in ("ENTER", "ESC"):
+        return current, True
+    return current, False
 
 
 def _step_tui(patches: list[str], local_path: str, project_name: str) -> None:
@@ -209,29 +288,13 @@ def _step_tui(patches: list[str], local_path: str, project_name: str) -> None:
     screen = Screen()
 
     while True:
-        count_label = str(current) if current < total else "all"
-        lines: list[str] = [
-            f"  {DIM}← → step    Enter restore and exit    Ctrl-C abort{RESET}",
-            "  " + "─" * 54,
-            f"  {project_name}  [{count_label}/{total} patches applied]",
-        ]
-        for idx, patch_name in enumerate(patches):
-            marker = f"{BOLD}[x]{RESET}" if idx < current else f"{DIM}[ ]{RESET}"
-            lines.append(f"    {marker} {patch_name}")
-        screen.draw(lines)
-
+        _draw_tui_frame(screen, patches, current, total, project_name)
         try:
             key = read_key()
         except KeyboardInterrupt:
             screen.clear()
             return
-
-        if key == "LEFT" and current > 0:
-            Patch.from_file(patches[current - 1]).reverse().apply(root=local_path)
-            current -= 1
-        elif key == "RIGHT" and current < total:
-            Patch.from_file(patches[current]).apply(root=local_path)
-            current += 1
-        elif key in ("ENTER", "ESC"):
+        current, done = _apply_step(key, current, total, patches, local_path)
+        if done:
             screen.clear()
             return
