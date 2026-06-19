@@ -27,18 +27,16 @@ def _make_args(projects=None, count=None, interactive=False):
 
 
 def _make_superproject(is_git=True, has_local_changes=False):
-    sp = Mock()
+    sp = Mock(spec=GitSuperProject) if is_git else Mock()
     sp.manifest = mock_manifest([{"name": "my_project"}])
     sp.root_directory = Path("/tmp")
     sp.ignored_files.return_value = []
     sp.eol_preferences = Mock(return_value={})
     sp.has_local_changes_in_dir.return_value = has_local_changes
-    if is_git:
-        sp.__class__ = GitSuperProject
     return sp
 
 
-def _make_subproject(patches=None, on_disk_version="v1"):
+def _make_subproject(patches=None, on_disk_version: str | None = "v1"):
     sub = Mock()
     sub.patch = patches if patches is not None else _PATCH_FILES
     sub.local_path = "my_project"
@@ -206,8 +204,7 @@ def test_local_changes_logs_warning_and_skips():
 
 def test_no_vcs_superproject_raises():
     cmd = ReviewPatch()
-    fake_super = Mock()
-    fake_super.__class__ = NoVcsSuperProject
+    fake_super = Mock(spec=NoVcsSuperProject)
 
     with patch(
         "dfetch.commands.review_patch.create_super_project", return_value=fake_super
