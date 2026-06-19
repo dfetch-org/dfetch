@@ -50,6 +50,7 @@ Feature: Review patches in git
             """
             Patched file for SomeProject.git
             """
+        And the metadata of 'SomeProject' in 'MyProject' lists patch 'patches/SomeProject.patch'
 
     Scenario: Only the first N patches are applied with --count
         When I run "dfetch review-patch --count 0 SomeProject" in MyProject
@@ -67,6 +68,7 @@ Feature: Review patches in git
             """
             Patched file for SomeProject.git
             """
+        And the metadata of 'SomeProject' in 'MyProject' lists patch 'patches/SomeProject.patch'
 
     Scenario: A warning is shown when no patch is defined in the manifest
         Given a fetched and committed MyProject with the manifest

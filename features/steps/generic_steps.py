@@ -9,6 +9,8 @@ import os
 import pathlib
 import re
 import shutil
+
+import yaml
 from contextlib import contextmanager
 from itertools import zip_longest
 from typing import Iterable, List, Optional, Pattern, Tuple, Union
@@ -378,6 +380,17 @@ def step_impl(context, name):
         check_json(name, context.text, context)
     else:
         check_file(name, context.text)
+
+
+@then("the metadata of '{project}' in '{superproject}' lists patch '{patch}'")
+def step_impl(_, project, superproject, patch):
+    metadata_path = os.path.join(superproject, project, ".dfetch_data.yaml")
+    with open(metadata_path, encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    actual = data["dfetch"]["patch"]
+    if isinstance(actual, list):
+        actual = actual[0] if len(actual) == 1 else actual
+    assert actual == patch, f"Expected patch {patch!r}, got {actual!r}"
 
 
 @then("'{name}' exists")

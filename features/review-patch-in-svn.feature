@@ -47,6 +47,7 @@ Feature: Review patches in svn
             """
             Patched file for SomeProject
             """
+        And the metadata of 'SomeProject' in 'MySvnProject' lists patch 'patches/SomeProject.patch'
 
     Scenario: Only the first N patches are applied with --count
         When I run "dfetch review-patch --count 0 SomeProject" in MySvnProject
@@ -66,3 +67,4 @@ Feature: Review patches in svn
             """
             Patched file for SomeProject
             """
+        And the metadata of 'SomeProject' in 'MySvnProject' lists patch 'patches/SomeProject.patch'
