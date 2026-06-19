@@ -41,7 +41,7 @@ Feature: Updated project has dependencies
         When I run "dfetch update" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.14.1)
               SomeProjectWithManifest:
               > Fetched v1
               > "SomeProjectWithManifest" depends on the following project(s) which are not part of your manifest:
@@ -89,7 +89,7 @@ Feature: Updated project has dependencies
         When I run "dfetch update" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.14.1)
               SomeProject:
               > Fetched v1
               > SomeProject/dfetch.yaml: Schema validation failed:
