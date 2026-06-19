@@ -87,6 +87,9 @@ class ReviewPatch(dfetch.commands.command.Command):
 
     def __call__(self, args: argparse.Namespace) -> None:
         """Perform the review patch."""
+        if args.count is not None and args.count < 0:
+            raise RuntimeError("--count must be >= 0")
+
         superproject = create_super_project()
 
         if isinstance(superproject, NoVcsSuperProject):
@@ -140,10 +143,19 @@ class ReviewPatch(dfetch.commands.command.Command):
             assert isinstance(superproject, GitSuperProject)
             superproject.add_path(subproject.local_path)
 
+        chosen_count = count if count is not None else -1
+        effective = (
+            total_patches if chosen_count == -1 else min(chosen_count, total_patches)
+        )
+        diff_cmd = "`git diff`" if is_git else "`svn diff`"
+        info_msg = (
+            f"stage = upstream, working tree = {effective} patch(es) applied"
+            f" — open your editor and run {diff_cmd} to inspect"
+        )
         worktree_fully_patched = False
         try:
             worktree_fully_patched = _apply_review(
-                subproject, project.name, count, interactive, total_patches
+                subproject, project.name, chosen_count, interactive, info_msg
             )
         finally:
             _restore_project(
@@ -187,23 +199,17 @@ def _can_review_project(
 def _apply_review(
     subproject: SubProject,
     project_name: str,
-    count: int | None,
+    chosen_count: int,
     interactive: bool,
-    total_patches: int,
+    info_msg: str,
 ) -> bool:
     """Run the review session; return True when the worktree is already fully patched."""
     if interactive:
         _step_tui(list(subproject.patch), subproject.local_path, project_name)
         return False
 
-    chosen_count = count if count is not None else -1
     subproject.apply_patches(chosen_count)
-    patch_label = str(total_patches) if chosen_count == -1 else str(chosen_count)
-    logger.print_info_line(
-        project_name,
-        f"stage = upstream, working tree = {patch_label} patch(es) applied"
-        " — open your editor and run `git diff` to inspect",
-    )
+    logger.print_info_line(project_name, info_msg)
     if is_tty():
         input("Press Enter to restore...")
     return chosen_count == -1

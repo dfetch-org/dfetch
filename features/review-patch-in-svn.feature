@@ -40,7 +40,7 @@ Feature: Review patches in svn
               > Fetched trunk - 1
               > Applying patch "patches/SomeProject.patch"
                 successfully patched 1/1:    b'README.md'
-              > stage = upstream, working tree = 1 patch(es) applied — open your editor and run `git diff` to inspect
+              > stage = upstream, working tree = 1 patch(es) applied — open your editor and run `svn diff` to inspect
               > restored
             """
         And the patched 'MySvnProject/SomeProject/README.md' is
@@ -56,7 +56,7 @@ Feature: Review patches in svn
             review-patch has limited support in SVN superprojects (no staging area — use `svn diff` to inspect changes)
               SomeProject:
               > Fetched trunk - 1
-              > stage = upstream, working tree = 0 patch(es) applied — open your editor and run `git diff` to inspect
+              > stage = upstream, working tree = 0 patch(es) applied — open your editor and run `svn diff` to inspect
               > Fetched trunk - 1
               > Applying patch "patches/SomeProject.patch"
                 successfully patched 1/1:    b'README.md'
