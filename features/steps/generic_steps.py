@@ -9,7 +9,6 @@ import os
 import pathlib
 import re
 import shutil
-
 from contextlib import contextmanager
 from itertools import zip_longest
 from typing import Iterable, List, Optional, Pattern, Tuple, Union
