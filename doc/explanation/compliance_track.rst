@@ -159,12 +159,12 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - :ref:`C-001 <c-001>`, :ref:`C-002 <c-002>`
      - Integrity hash verification (:ref:`C-005 <c-005>`) is opt-in; manifest entries without an ``integrity`` field are fetched without hash verification by default
      - ⚠ Partial
-   * - 
+   * -
      - SO.SecureStartupConfig
      - —
      - —
      - — N/A
-   * - 
+   * -
      - SO.FactoryReset
      - —
      - —
@@ -174,17 +174,17 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - :ref:`C-010 <c-010>`, :ref:`C-039 <c-039>`, :ref:`C-043 <c-043>`
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.AutomaticUpdates
      - —
      - —
      - — N/A
-   * - 
+   * -
      - SO.UserUpdateNotification
      - —
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.PostponeUpdates
      - —
      - —
@@ -194,7 +194,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - :ref:`C-006 <c-006>`, :ref:`C-036 <c-036>`
      - dfetch has no native authentication or authorisation layer; access control is fully delegated to the underlying VCS server and host OS. C-006 prevents interactive credential prompts, and C-036 strips credentials from persisted metadata — both are confidentiality controls, not access-control mechanisms in the authentication/authorisation sense
      - ⚠ Partial
-   * - 
+   * -
      - SO.AccessControlReport
      - :ref:`C-045 <c-045>`
      - No persistent log of unauthorised access attempts
@@ -204,22 +204,22 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - :ref:`C-036 <c-036>`
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.DataProcessedConfidentiality
      - :ref:`C-005 <c-005>`, :ref:`C-034 <c-034>`
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.DataTransmittedConfidentiality
      - :ref:`C-045 <c-045>`
      - C-045 warns on plaintext-scheme URLs but does not refuse to proceed; TLS/SSH confidentiality is provided by the underlying VCS client, not enforced by dfetch itself
      - ⚠ Partial
-   * - 
+   * -
      - SO.ComAuth
      - :ref:`C-045 <c-045>`
      - Server authentication (TLS certificate verification, SSH host-key checking) is delegated to the OS trust store and VCS client; dfetch does not independently authenticate remote endpoints and cannot enforce authenticated channels when C-045's warning is overridden by the user
      - ⚠ Partial
-   * - 
+   * -
      - SO.SecureProvisioning
      - :ref:`C-005 <c-005>`
      - —
@@ -229,17 +229,17 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - :ref:`C-005 <c-005>`
      - Integrity hash opt-in only; not enforced by default for git/svn
      - ⚠ Partial
-   * - 
+   * -
      - SO.DataProcessedIntegrity
      - :ref:`C-005 <c-005>`, :ref:`C-034 <c-034>`
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.DataTransmittedIntegrity
      - :ref:`C-005 <c-005>`
      - C-005 provides end-to-end hash verification for archive sources only (opt-in); git and svn sources rely solely on VCS object integrity (SHA-1/SHA-256 object model) and TLS/SSH channel integrity — no dfetch-level hash verification
      - ⚠ Partial
-   * - 
+   * -
      - SO.IntegrityReport
      - :ref:`C-045 <c-045>`
      - No persistent integrity-violation log
@@ -254,7 +254,7 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - —
      - —
      - — N/A
-   * - 
+   * -
      - SO.IncidentResilience
      - :ref:`C-002 <c-002>`, :ref:`C-007 <c-007>`
      - No timeout on VCS operations (potential resource exhaustion)
@@ -264,12 +264,12 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - :ref:`C-001 <c-001>`, :ref:`C-007 <c-007>`
      - Archive HTTP operations time out at 15 s (reachability) and 60 s (download) via ``archive.py``; git and svn subprocess calls have no timeout and can stall indefinitely
      - ⚠ Partial
-   * - 
+   * -
      - SO.PreventAttackPropagation
      - :ref:`C-001 <c-001>`, :ref:`C-008 <c-008>`
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.MonitorExternalImpact
      - —
      - —
@@ -289,17 +289,17 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - —
      - No persistent structured security event log (LGM-1/2/3/4 gap). dfetch prints operational output to stderr but does not retain it, does not record which credentials were used, which files were modified, or when remote access occurred. C-036 ensures credentials are excluded from operational output but is not a logging control
      - ⚠ Partial
-   * - 
+   * -
      - SO.MonitorSecurityRelevantActivities
      - :ref:`C-045 <c-045>`
      - —
      - ⚠ Partial
-   * - 
+   * -
      - SO.OptionDisableDataLogging
      - —
      - —
      - — N/A
-   * - 
+   * -
      - SO.OptionDisableDataMonitoring
      - —
      - —
@@ -309,17 +309,17 @@ The table below summarises dfetch's implementation of each prEN 40000-1-4 Securi
      - —
      - —
      - ✓ Implemented
-   * - 
+   * -
      - SO.DataTransmittedConfidentiality
      - —
      - —
      - — N/A
-   * - 
+   * -
      - SO.DataTransmittedIntegrity
      - —
      - —
      - — N/A
-   * - 
+   * -
      - SO.ComAuth
      - —
      - —
@@ -438,4 +438,3 @@ Both files are regenerated with:
        --component security/dfetch.component-definition.json \\
        --version 0.15.0 \\
        --rst > doc/explanation/compliance_track.rst
-
