@@ -27,7 +27,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
               ext/test-repo-rev-only:
               > wanted (e1fda19a57b873eb8e6ae37780594cbb77b70f1a), available (e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
               ext/test-rev-and-branch:
@@ -53,7 +53,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
               ext/test-repo-tag-v1:
               > wanted (v1), available (v2.0)
             """
@@ -83,7 +83,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
               ext/test-repo-rev-only:
               > up-to-date (e1fda19a57b873eb8e6ae37780594cbb77b70f1a)
               ext/test-rev-and-branch:
@@ -117,7 +117,7 @@ Feature: Checking dependencies from a git repository
         And I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
               ext/test-repo-tag:
               > wanted (v2.0), current (v1), available (v2.0)
             """
@@ -139,7 +139,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check SomeProject"
         Then the output shows
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
               SomeProject:
               > Local changes were detected, please generate a patch using 'dfetch diff SomeProject' and add it to your manifest using 'patch:'. Alternatively overwrite the local changes with 'dfetch update --force SomeProject'
               > up-to-date (master - 90be799b58b10971691715bdc751fbe5237848a0)
@@ -160,7 +160,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check SomeProject"
         Then the output shows
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
               SomeProject:
               > up-to-date (master - 90be799b58b10971691715bdc751fbe5237848a0)
             """
@@ -180,7 +180,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
               non-existent-url:
               > >>>git ls-remote --heads https://giiiiiidhub.com/i-do-not-exist/broken<<< failed!
                 'https://giiiiiidhub.com/i-do-not-exist/broken' is not a valid URL or unreachable:
@@ -210,7 +210,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
               SomeProjectMissingTag:
               > wanted (i-dont-exist), but not available at the upstream.
               SomeProjectNonExistentBranch:
@@ -232,7 +232,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output starts with:
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
             >>>git ls-remote --heads --tags https://github.com/dfetch-org/test-repo-private.git<<< returned 128:
             """
 
@@ -249,7 +249,7 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output starts with:
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
             >>>git ls-remote --heads --tags git@github.com:dfetch-org/test-repo-private.git<<< returned 128:
             """
 
@@ -262,5 +262,5 @@ Feature: Checking dependencies from a git repository
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
             """
