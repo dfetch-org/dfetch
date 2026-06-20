@@ -114,18 +114,23 @@ class GitRemote:
             if "unable to update url base from redirection" in exc.stderr:
                 redirect_match = re.search(r"redirect:\s+(\S+)", exc.stderr)
                 redirect_url = redirect_match.group(1) if redirect_match else "unknown"
-                raise RuntimeError(
-                    f"'{self._remote}' requires authentication"
-                    f" — git was redirected to '{redirect_url}'.\n"
-                    "Check your credentials or VPN access before running dfetch."
-                ) from exc
+                logger.debug(
+                    "'%s' appears to be a git remote but was redirected to '%s' — "
+                    "authentication may be required",
+                    self._remote,
+                    redirect_url,
+                )
+                return True
             # git/git:credential.c — emitted when GIT_TERMINAL_PROMPT=0 and server returns 401
-            if "terminal prompts disabled" in exc.stderr or "could not read Username" in exc.stderr:
-                raise RuntimeError(
-                    f"'{self._remote}' requires authentication but no credentials are available.\n"
-                    "Configure git credentials (e.g. via a git credential helper or SSH key)"
-                    " before running dfetch."
-                ) from exc
+            if (
+                "terminal prompts disabled" in exc.stderr
+                or "could not read Username" in exc.stderr
+            ):
+                logger.debug(
+                    "'%s' appears to be a git remote but requires credentials",
+                    self._remote,
+                )
+                return True
             return False
         except RuntimeError:
             return False

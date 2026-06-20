@@ -253,15 +253,16 @@ def test_remote_check(name, cmd_result, expectation):
         ),
     ],
 )
-def test_remote_check_raises_on_auth_error(name, stderr):
-    """Auth-related git errors must surface as RuntimeError, not silent False."""
-    os.environ["GIT_SSH_COMMAND"] = "ssh"  # prevents additional subprocess call
+def test_remote_check_returns_true_on_auth_error(name, stderr, monkeypatch):
+    """Auth-related git errors still mean the URL is a git remote — return True."""
+    monkeypatch.setenv("GIT_SSH_COMMAND", "ssh")  # prevents additional subprocess call
 
     with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
-        run_on_cmdline_mock.side_effect = [SubprocessCommandError(stderr=stderr, returncode=128)]
+        run_on_cmdline_mock.side_effect = [
+            SubprocessCommandError(stderr=stderr, returncode=128)
+        ]
 
-        with pytest.raises(RuntimeError, match="requires authentication"):
-            GitRemote("http://git.example.com/repo").is_git()
+        assert GitRemote("http://git.example.com/repo").is_git() is True
 
 
 @pytest.mark.parametrize(
