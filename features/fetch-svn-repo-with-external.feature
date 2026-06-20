@@ -29,7 +29,7 @@ Feature: Fetch projects with nested SVN dependencies
         When I run "dfetch update" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.2)
+            Dfetch (0.14.1)
               svn-project-with-external:
               > Found & fetched external "./ext" (some-remote-server/ExternalLib @ trunk)
               > Fetched trunk - 2
@@ -58,7 +58,7 @@ Feature: Fetch projects with nested SVN dependencies
         When I run "dfetch report" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.2)
+            Dfetch (0.14.1)
               svn-project-with-external:
               - remote            : <none>
                 remote url        : some-remote-server/ParentProject

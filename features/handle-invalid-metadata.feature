@@ -23,7 +23,7 @@ Feature: Handle invalid metadata files
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.14.2)
+            Dfetch (0.14.1)
               ext/test-repo-tag:
               > ext/test-repo-tag/.dfetch_data.yaml is an invalid metadata file, not checking on disk version!
               > ext/test-repo-tag/.dfetch_data.yaml is an invalid metadata file, not checking local hash!
@@ -48,7 +48,7 @@ Feature: Handle invalid metadata files
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.2)
+            Dfetch (0.14.1)
               ext/test-repo-tag:
               > ext/test-repo-tag/.dfetch_data.yaml is an invalid metadata file, not checking on disk version!
               > wanted (v1), available (v2.0)
@@ -72,7 +72,7 @@ Feature: Handle invalid metadata files
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.14.2)
+            Dfetch (0.14.1)
               ext/test-repo-tag:
               > ext/test-repo-tag/.dfetch_data.yaml is an invalid metadata file, not checking on disk version!
               > ext/test-repo-tag/.dfetch_data.yaml is an invalid metadata file, not checking local hash!
