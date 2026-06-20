@@ -69,7 +69,7 @@ Feature: Patch after fetching from svn repo
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
               cutter:
               > Fetched 1.1.7
               > Applying patch "diff.patch"
