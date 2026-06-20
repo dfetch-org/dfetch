@@ -1,7 +1,8 @@
 Release 0.14.2 (unreleased)
-===========================
+====================================
 
 * Fix git auth/redirect errors being silently misidentified as non-git (#1138)
+* Fix WinGet publish workflow blocked on ``static.crates.io`` and ``objects.githubusercontent.com`` egress endpoints (#1298)
 
 Release 0.14.1 (released 2026-06-19)
 ====================================
