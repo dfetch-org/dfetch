@@ -239,6 +239,32 @@ def test_remote_check(name, cmd_result, expectation):
 
 
 @pytest.mark.parametrize(
+    "name, stderr",
+    [
+        (
+            "redirect to sign-in page",
+            "fatal: unable to update url base from redirection:\n"
+            "  asked for: http://git.example.com/repo/info/refs?service=git-upload-pack\n"
+            "   redirect: http://git.example.com/users/sign_in",
+        ),
+        (
+            "terminal prompts disabled (HTTP 401)",
+            "fatal: could not read Username for 'https://git.example.com': terminal prompts disabled",
+        ),
+    ],
+)
+def test_remote_check_raises_on_auth_error(name, stderr):
+    """Auth-related git errors must surface as RuntimeError, not silent False."""
+    os.environ["GIT_SSH_COMMAND"] = "ssh"  # prevents additional subprocess call
+
+    with patch("dfetch.vcs.git.run_on_cmdline") as run_on_cmdline_mock:
+        run_on_cmdline_mock.side_effect = [SubprocessCommandError(stderr=stderr, returncode=128)]
+
+        with pytest.raises(RuntimeError, match="requires authentication"):
+            GitRemote("http://git.example.com/repo").is_git()
+
+
+@pytest.mark.parametrize(
     "name, project, cmd_result, expectation",
     [
         ("SSH url", "sshProject", [1], True),

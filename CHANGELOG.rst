@@ -1,3 +1,10 @@
+Release 0.14.2 (unreleased)
+===========================
+
+* Surface an actionable error when a Git remote redirects to a sign-in page or
+  requires credentials that are unavailable, instead of silently treating the URL
+  as non-Git (#1138)
+
 Release 0.14.1 (released 2026-06-19)
 ====================================
 
