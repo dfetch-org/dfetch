@@ -52,7 +52,7 @@ Feature: Update an existing patch in svn
             """
         And the output shows
             """
-            Dfetch (0.14.2)
+            Dfetch (0.14.1)
             Update patch is only fully supported in git superprojects!
               SomeProject:
               > Fetched trunk - 1
