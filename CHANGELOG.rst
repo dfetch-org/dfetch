@@ -1,4 +1,4 @@
-Release 0.14.2 (unreleased)
+Release 0.14.2 (released 2026-06-21)
 ====================================
 
 * Fix git auth/redirect errors being silently misidentified as non-git (#1138)

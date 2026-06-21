@@ -28,7 +28,7 @@ Feature: Fetch projects with non-standard-layout SVN externals
         When I run "dfetch update" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
               svn-project-with-nonstd-external:
               > Found & fetched external "./nonstd-ext" (some-remote-server/NonstdLib @ )
               > Fetched trunk - 2
@@ -57,7 +57,7 @@ Feature: Fetch projects with non-standard-layout SVN externals
         When I run "dfetch report" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.1)
+            Dfetch (0.14.2)
               svn-project-with-nonstd-external:
               - remote            : <none>
                 remote url        : some-remote-server/ParentProject
