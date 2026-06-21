@@ -574,7 +574,7 @@ Asset Identification
      - ExternalEntity
      - High / High / —
    * - A-10: WINGET_TOKEN PAT
-     - Long-lived GitHub Personal Access Token with ``public_repo`` scope, stored as a GitHub Actions environment secret in the ``winget`` environment.  Used by ``winget-publish.yml`` to fork ``microsoft/winget-pkgs`` and submit manifest update PRs.  Unlike the PyPI OIDC token (A-05) which is short-lived and not stored, this PAT persists indefinitely until rotated.  If exfiltrated from the CI environment, an attacker could submit fraudulent manifest PRs from outside the project's pipeline.
+     - Long-lived classic GitHub Personal Access Token (fine-grained PATs are not supported by the ``vedantmgoyal9/winget-releaser`` action) with ``public_repo`` scope, stored as a GitHub Actions environment secret in the ``winget`` environment.  Used by ``winget-publish.yml`` to push a manifest branch to the pre-existing fork ``dfetch-org/winget-pkgs`` and open a PR against ``microsoft/winget-pkgs``.  Unlike the PyPI OIDC token (A-05) which is short-lived and not stored, this PAT persists indefinitely until rotated.  If exfiltrated from the CI environment, an attacker could submit fraudulent manifest PRs from outside the project's pipeline.
      - Data
      - High / High / —
 
