@@ -44,37 +44,26 @@ jobs:
             index.crates.io:443
             static.crates.io:443
 
-      - name: Resolve WinGet fork owner from token
-        # komac forks microsoft/winget-pkgs into the fork-owner's account and
-        # opens a PR from there.  Fine-grained PATs scoped to an *organisation*
-        # cannot create org-level forks, so we always fork into the *personal*
-        # account that owns the token (typically the maintainer's account).
-        id: winget-fork-owner
-        run: |
-          OWNER=$(curl -sf \
-            -H "Authorization: Bearer ${{ secrets.WINGET_TOKEN }}" \
-            https://api.github.com/user \
-            | python3 -c "import sys, json; print(json.load(sys.stdin)['login'])")
-          echo "fork-user=${OWNER}" >> "$GITHUB_OUTPUT"
-
       - name: Publish to WinGet
         # Requires WINGET_TOKEN secret in the 'winget' environment.
         #
         # Setup — create a fine-grained PAT:
         #   1. GitHub → Settings → Developer settings → Personal access tokens
         #      → Fine-grained tokens → Generate new token
-        #   2. Resource owner: YOUR PERSONAL GitHub account (not the org —
-        #      org-scoped tokens cannot create the required winget-pkgs fork)
+        #   2. Resource owner: DFetch-org
         #   3. Repository access: All repositories
-        #      (needed to fork microsoft/winget-pkgs and push the manifest branch)
+        #      (needed to push the manifest branch to dfetch-org/winget-pkgs)
         #   4. Permissions:
         #        Contents      → Read and write
         #        Pull requests → Read and write
         #   5. Store the token as secret WINGET_TOKEN in:
         #      Repo → Settings → Environments → winget → Environment secrets
+        #
+        # Prerequisites: dfetch-org/winget-pkgs must exist as a fork of
+        # microsoft/winget-pkgs (create it once manually on GitHub).
         uses: vedantmgoyal9/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e # v2
         with:
           identifier: DFetch-org.DFetch
           release-tag: ${{ github.event.release.tag_name || inputs.release-tag }}
           token: ${{ secrets.WINGET_TOKEN }}
-          fork-user: ${{ steps.winget-fork-owner.outputs.fork-user }}
+          fork-user: dfetch-org
