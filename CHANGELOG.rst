@@ -1,10 +1,7 @@
 Release 0.14.2 (unreleased)
 ===========================
 
-* When ``git ls-remote`` fails due to a redirect to a sign-in page or missing
-  credentials, dfetch now correctly identifies the URL as a Git remote instead
-  of silently falling through to SVN detection; the auth error surfaces on the
-  subsequent fetch (#1138)
+* Fix git auth/redirect errors being silently misidentified as non-git (#1138)
 
 Release 0.14.1 (released 2026-06-19)
 ====================================

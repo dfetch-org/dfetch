@@ -106,7 +106,9 @@ Every change must be reflected in the documentation. Depending on the nature of 
 - **Notable change to the dfetch product/program** (feature, fix, behaviour change) → add an entry to the changelog (`doc/changelog/`)
 - **Architecture change** → update `doc/explanation/architecture.rst`
 
-The changelog tracks the dfetch product/program only. Documentation-only changes (wording, structure, new explanatory pages) do not require a changelog entry.
+The changelog tracks the dfetch product/program only. Documentation-only changes (wording, structure, new explanatory pages) and internal refactors (complexity reduction, test cleanup, CI wiring) do not require a changelog entry.
+
+Each entry is a single bullet line, max 100 characters including the issue/PR reference, with no continuation lines. Use one bullet per logical user-visible change. Format: `* <Fix|Add|Update|Remove> <short description> (#NNNN)`
 
 Documentation lives in `doc/` and is built with Sphinx.
 
