@@ -47,16 +47,17 @@ jobs:
       - name: Publish to WinGet
         # Requires WINGET_TOKEN secret in the 'winget' environment.
         #
-        # Setup — create a fine-grained PAT:
+        # NOTE: fine-grained PATs are NOT supported by this action — use a
+        # classic PAT only. See https://github.com/vedantmgoyal9/winget-releaser/issues/172
+        #
+        # Setup — create a classic PAT:
         #   1. GitHub → Settings → Developer settings → Personal access tokens
-        #      → Fine-grained tokens → Generate new token
-        #   2. Resource owner: DFetch-org
-        #   3. Repository access: All repositories
-        #      (needed to push the manifest branch to dfetch-org/winget-pkgs)
-        #   4. Permissions:
-        #        Contents      → Read and write
-        #        Pull requests → Read and write
-        #   5. Store the token as secret WINGET_TOKEN in:
+        #      → Tokens (classic) → Generate new token
+        #   2. Select scope: public_repo
+        #   3. The PAT must belong to a GitHub account that has write access to
+        #      dfetch-org/winget-pkgs (i.e. an org member with Triage or higher,
+        #      or the org owner).
+        #   4. Store the token as secret WINGET_TOKEN in:
         #      Repo → Settings → Environments → winget → Environment secrets
         #
         # Prerequisites: dfetch-org/winget-pkgs must exist as a fork of
