@@ -105,35 +105,44 @@ class GitRemote:
             )
             return True
         except SubprocessCommandError as exc:
-            if exc.returncode == 128 and "Could not resolve host" in exc.stderr:
-                raise RuntimeError(
-                    f">>>{exc.cmd}<<< failed!\n"
-                    + f"'{self._remote}' is not a valid URL or unreachable:\n{exc.stderr or exc.stdout}"
-                ) from exc
-            # git/git:http.c — emitted when the server redirects to a login page
-            if "unable to update url base from redirection" in exc.stderr:
-                redirect_match = re.search(r"redirect:\s+(\S+)", exc.stderr)
-                redirect_url = redirect_match.group(1) if redirect_match else "unknown"
-                logger.debug(
-                    "'%s' appears to be a git remote but was redirected to '%s' — "
-                    "authentication may be required",
-                    self._remote,
-                    redirect_url,
-                )
-                return True
-            # git/git:credential.c — emitted when GIT_TERMINAL_PROMPT=0 and server returns 401
-            if (
-                "terminal prompts disabled" in exc.stderr
-                or "could not read Username" in exc.stderr
-            ):
-                logger.debug(
-                    "'%s' appears to be a git remote but requires credentials",
-                    self._remote,
-                )
-                return True
-            return False
+            return self._handle_ls_remote_error(exc)
         except RuntimeError:
             return False
+
+    def _handle_ls_remote_error(self, exc: SubprocessCommandError) -> bool:
+        """Determine whether a failed git ls-remote still implies a git remote.
+
+        Raises RuntimeError for unrecoverable errors (host unreachable).
+        Returns True when the server responded but auth is needed.
+        Returns False when the failure is unrelated to git.
+        """
+        if exc.returncode == 128 and "Could not resolve host" in exc.stderr:
+            raise RuntimeError(
+                f">>>{exc.cmd}<<< failed!\n"
+                + f"'{self._remote}' is not a valid URL or unreachable:\n{exc.stderr or exc.stdout}"
+            ) from exc
+        # git/git:http.c — emitted when the server redirects to a login page
+        if "unable to update url base from redirection" in exc.stderr:
+            redirect_match = re.search(r"redirect:\s+(\S+)", exc.stderr)
+            redirect_url = redirect_match.group(1) if redirect_match else "unknown"
+            logger.debug(
+                "'%s' appears to be a git remote but was redirected to '%s' — "
+                "authentication may be required",
+                self._remote,
+                redirect_url,
+            )
+            return True
+        # git/git:credential.c — emitted when GIT_TERMINAL_PROMPT=0 and server returns 401
+        if (
+            "terminal prompts disabled" in exc.stderr
+            or "could not read Username" in exc.stderr
+        ):
+            logger.debug(
+                "'%s' appears to be a git remote but requires credentials",
+                self._remote,
+            )
+            return True
+        return False
 
     def last_sha_on_branch(self, branch: str) -> str:
         """Get the last sha of a branch."""
