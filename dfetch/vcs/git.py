@@ -9,6 +9,7 @@ import shutil
 import tempfile
 from collections.abc import Callable, Generator, Sequence
 from pathlib import Path
+from urllib.parse import urlparse, urlunparse
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
@@ -124,12 +125,16 @@ class GitRemote:
         # git/git:http.c — emitted when the server redirects to a login page
         if "unable to update url base from redirection" in exc.stderr:
             redirect_match = re.search(r"redirect:\s+(\S+)", exc.stderr)
-            redirect_url = redirect_match.group(1) if redirect_match else "unknown"
+            raw_url = redirect_match.group(1) if redirect_match else ""
+            parsed = urlparse(raw_url)
+            safe_url = urlunparse(
+                (parsed.scheme, parsed.netloc, parsed.path, "", "", "")
+            )
             logger.debug(
                 "'%s' appears to be a git remote but was redirected to '%s' — "
                 "authentication may be required",
                 self._remote,
-                redirect_url,
+                safe_url or "unknown",
             )
             return True
         # git/git:credential.c — emitted when GIT_TERMINAL_PROMPT=0 and server returns 401
