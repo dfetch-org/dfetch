@@ -3,6 +3,12 @@ name: Publish to WinGet
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      release-tag:
+        description: 'Release tag to publish (e.g. 0.14.2)'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -10,11 +16,14 @@ permissions:
 jobs:
   publish:
     name: Publish to WinGet
-    # Only publish versioned releases — skip the rolling 'latest' tag on main
-    if: github.event.release.tag_name != 'latest'
+    # For releases: skip the rolling 'latest' tag on main.
+    # For manual dispatch: always run (the operator knows what they're doing).
+    if: >-
+      github.event_name != 'release' ||
+      github.event.release.tag_name != 'latest'
     runs-on: ubuntu-latest
     concurrency:
-      group: winget-publish-${{ github.event.release.tag_name }}
+      group: winget-publish-${{ github.event.release.tag_name || inputs.release-tag }}
       cancel-in-progress: true
 
     environment:
@@ -35,13 +44,27 @@ jobs:
             index.crates.io:443
             static.crates.io:443
 
+      - name: Resolve WinGet fork owner from token
+        # komac forks microsoft/winget-pkgs into the fork-owner's account and
+        # opens a PR from there.  Fine-grained PATs scoped to an *organisation*
+        # cannot create org-level forks, so we always fork into the *personal*
+        # account that owns the token (typically the maintainer's account).
+        id: winget-fork-owner
+        run: |
+          OWNER=$(curl -sf \
+            -H "Authorization: Bearer ${{ secrets.WINGET_TOKEN }}" \
+            https://api.github.com/user \
+            | python3 -c "import sys, json; print(json.load(sys.stdin)['login'])")
+          echo "fork-user=${OWNER}" >> "$GITHUB_OUTPUT"
+
       - name: Publish to WinGet
         # Requires WINGET_TOKEN secret in the 'winget' environment.
         #
         # Setup — create a fine-grained PAT:
         #   1. GitHub → Settings → Developer settings → Personal access tokens
         #      → Fine-grained tokens → Generate new token
-        #   2. Resource owner: DFetch-org (or your user)
+        #   2. Resource owner: YOUR PERSONAL GitHub account (not the org —
+        #      org-scoped tokens cannot create the required winget-pkgs fork)
         #   3. Repository access: All repositories
         #      (needed to fork microsoft/winget-pkgs and push the manifest branch)
         #   4. Permissions:
@@ -52,5 +75,6 @@ jobs:
         uses: vedantmgoyal9/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e # v2
         with:
           identifier: DFetch-org.DFetch
-          release-tag: ${{ github.event.release.tag_name }}
+          release-tag: ${{ github.event.release.tag_name || inputs.release-tag }}
           token: ${{ secrets.WINGET_TOKEN }}
+          fork-user: ${{ steps.winget-fork-owner.outputs.fork-user }}
