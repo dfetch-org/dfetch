@@ -14,7 +14,8 @@ import pytest
 
 from dfetch.manifest.project import ProjectEntry
 from dfetch.manifest.version import Version
-from dfetch.project.archivesubproject import ArchiveSubProject, _suffix_for_url
+from dfetch.project.archivesubproject import ArchiveFetcher, _suffix_for_url
+from dfetch.project.subproject import SubProject
 from dfetch.vcs.archive import (
     ARCHIVE_EXTENSIONS,
     ArchiveLocalRepo,
@@ -619,9 +620,14 @@ def _file_url(path: str) -> str:
     return pathlib.Path(path).as_uri()
 
 
-def _make_subproject(url: str) -> ArchiveSubProject:
-    return ArchiveSubProject(
-        ProjectEntry({"name": "pkg", "url": url, "vcs": "archive"})
+def _make_fetcher(url: str) -> ArchiveFetcher:
+    return ArchiveFetcher(url)
+
+
+def _make_subproject(url: str) -> SubProject:
+    return SubProject(
+        ProjectEntry({"name": "pkg", "url": url, "vcs": "archive"}),
+        ArchiveFetcher(url),
     )
 
 
@@ -636,9 +642,9 @@ def test_download_and_compute_hash_default_uses_remote_repo():
         archive = os.path.join(tmp, "pkg.tar.gz")
         _make_tar_gz(archive)
         url = _file_url(archive)
-        sp = _make_subproject(url)
+        fetcher = _make_fetcher(url)
 
-        result = sp._download_and_compute_hash("sha256")
+        result = fetcher._download_and_compute_hash("sha256")
 
         assert result.algorithm == "sha256"
         assert result.hex_digest == _sha256_file(archive)
@@ -659,11 +665,11 @@ def test_download_and_compute_hash_explicit_url_overrides_remote_repo():
         url_a = _file_url(archive_a)
         url_b = _file_url(archive_b)
 
-        # SubProject points to archive_b (current manifest URL).
-        sp = _make_subproject(url_b)
+        # Fetcher points to archive_b (current manifest URL).
+        fetcher = _make_fetcher(url_b)
 
         # Passing url=url_a must use archive_a's content.
-        result = sp._download_and_compute_hash("sha256", url=url_a)
+        result = fetcher._download_and_compute_hash("sha256", url=url_a)
 
         assert result.hex_digest == _sha256_file(archive_a)
         assert result.hex_digest != _sha256_file(archive_b)
