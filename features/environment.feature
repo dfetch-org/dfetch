@@ -19,6 +19,5 @@ Feature: Display environment information
         Then the output starts with:
             """
             Dfetch (0.14.2)
-              dfetch              : 0.13.0
-              dfetch 1.99.0 available — https://github.com/dfetch-org/dfetch/releases
+              dfetch              : 0.13.0 (1.99.0 available see https://github.com/dfetch-org/dfetch/releases)
             """
