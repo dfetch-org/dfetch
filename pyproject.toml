@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm==10.0.5", "wheel"]
+requires = ["setuptools", "setuptools-scm==10.1.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -104,7 +104,7 @@ casts = ['asciinema==2.4.0']
 build = [
     'nuitka==4.1.2',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml]
-    "setuptools-scm==10.0.5", # For determining version
+    "setuptools-scm==10.1.2", # For determining version
 ]
 sbom = ["cyclonedx-bom==7.3.0"]
 wheel = ["build==1.5.0"]
