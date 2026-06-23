@@ -282,18 +282,26 @@ Reviewing a patch
 -----------------
 
 When you want to understand what a patch (or a set of patches) actually
-contributes to a vendored project, ``review-patch`` sets up your working tree
-so that any diff-aware editor shows the answer immediately.
+contributes to a vendored project, run:
 
 .. code-block:: console
 
     $ dfetch review-patch some-project
 
-In a Git superproject this stages the clean upstream source in the git index
-and applies the selected patches to the working tree.  Running ``git diff``
-inside the project directory then shows exactly what the patches change.  When
-you are done reviewing, the command restores the original state — both the
-working tree and the git index are left clean.
+*Dfetch* puts the clean upstream source in the git index and applies the
+patches to the working tree.  You can now see exactly what the patches change
+using any diff tool you prefer — for example:
+
+.. code-block:: console
+
+    $ git diff some-project/
+
+Or open the project in VS Code and browse the **Changes** view in the Source
+Control panel.  (The **Staged Changes** view shows something different and
+unrelated to your patches — use **Changes**.)
+
+When you are done, press **Enter** and *dfetch* restores everything to its
+original state.
 
 **Reviewing a specific number of patches**
 
