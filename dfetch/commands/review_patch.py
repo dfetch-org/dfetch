@@ -136,16 +136,6 @@ class ReviewPatch(dfetch.commands.command.Command):
 
         saved_metadata = Path(subproject.metadata_path).read_bytes()
         total_patches = len(list(subproject.patch))
-        subproject.update(
-            force=True,
-            ignored_files_callback=_ignored,
-            patch_count=0,
-            eol_preferences_callback=superproject.eol_preferences,
-        )
-
-        if git_super is not None:
-            git_super.add_path(subproject.local_path)
-
         chosen_count = count if count is not None else -1
         effective = (
             total_patches if chosen_count == -1 else min(chosen_count, total_patches)
@@ -157,6 +147,14 @@ class ReviewPatch(dfetch.commands.command.Command):
         )
         worktree_fully_patched = False
         try:
+            subproject.update(
+                force=True,
+                ignored_files_callback=_ignored,
+                patch_count=0,
+                eol_preferences_callback=superproject.eol_preferences,
+            )
+            if git_super is not None:
+                git_super.add_path(subproject.local_path)
             worktree_fully_patched = _apply_review(
                 subproject, project.name, chosen_count, interactive, info_msg
             )
@@ -318,7 +316,7 @@ def _step_tui(patches: list[str], local_path: str, project_name: str) -> None:
             key = read_key()
         except KeyboardInterrupt:
             screen.clear()
-            return
+            raise
         try:
             current, done = _apply_step(key, current, total, patches, local_path)
         except RuntimeError:
