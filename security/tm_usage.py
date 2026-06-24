@@ -164,11 +164,11 @@ def _make_usage_processes(b_dev: Boundary) -> tuple[Process, Process]:
     dfetch_cli.classification = Classification.RESTRICTED
     dfetch_cli.description = (
         "Python CLI entry point dispatching to: update, check, diff, add, remove, "
-        "update-patch, format-patch, review-patch, freeze, import, init, report, "
+        "update-patch, format-patch, replay-patches, freeze, import, init, report, "
         "validate, environment.  "
         "Invokes Git and SVN as subprocesses (``shell=False``, list args).  "
         "Extracts archives with decompression-bomb limits and path-traversal checks.  "
-        "``review-patch`` transiently stages the clean upstream in the git index "
+        "``replay-patches`` transiently stages the clean upstream in the git index "
         "(``git add -- <path>``) and restores it on exit (``git restore --staged -- <path>``); "
         "interruption before the finally block completes may leave the index temporarily "
         "modified, which is visible to concurrent git operations in the same working tree."
