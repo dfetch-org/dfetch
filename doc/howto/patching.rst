@@ -278,7 +278,7 @@ files, then use ``dfetch update-patch`` to record the resolved state:
 
 .. _patching-review:
 
-Reviewing a patch
+Replaying patches
 -----------------
 
 When you want to understand what a patch (or a set of patches) actually
@@ -286,7 +286,7 @@ contributes to a vendored project, run:
 
 .. code-block:: console
 
-    $ dfetch review-patch some-project
+    $ dfetch replay-patches some-project
 
 *Dfetch* puts the clean upstream source in the git index and applies the
 patches to the working tree.  You can now see exactly what the patches change
@@ -303,14 +303,14 @@ unrelated to your patches — use **Changes**.)
 When you are done, press **Enter** and *dfetch* restores everything to its
 original state.
 
-**Reviewing a specific number of patches**
+**Replaying a specific number of patches**
 
 Use ``--count`` to stop at a particular patch in the stack.  For example, to
 see only what the first patch contributes, with the rest still un-applied:
 
 .. code-block:: console
 
-    $ dfetch review-patch --count 1 some-project
+    $ dfetch replay-patches --count 1 some-project
 
 **Stepping through the stack interactively**
 
@@ -320,21 +320,21 @@ so your editor always reflects the current position in the stack:
 
 .. code-block:: console
 
-    $ dfetch review-patch --interactive some-project
+    $ dfetch replay-patches --interactive some-project
 
 Press **Enter** to finish and restore the original state.
 
-.. asciinema:: ../asciicasts/review-patch.cast
+.. asciinema:: ../asciicasts/replay-patches.cast
 
 .. tabs::
 
    .. tab:: Git
 
-      .. scenario-include:: ../features/review-patch-in-git.feature
+      .. scenario-include:: ../features/replay-patches-in-git.feature
 
    .. tab:: SVN
 
-      .. scenario-include:: ../features/review-patch-in-svn.feature
+      .. scenario-include:: ../features/replay-patches-in-svn.feature
 
 .. _patching-upstream:
 

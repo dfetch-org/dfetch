@@ -1,10 +1,10 @@
-@review-patch
-Feature: Review patches in git
+@replay-patches
+Feature: Replay patches in git
 
     When working with external projects that have patch files, it is useful to
     be able to inspect what a patch (or a set of patches) contributes to the
     project without permanently modifying the working tree.  *Dfetch* provides
-    the ``review-patch`` command for this purpose.
+    the ``replay-patches`` command for this purpose.
 
     The command stages the clean upstream source in the git index and applies
     the selected patches to the working tree.  Running ``git diff`` inside the
@@ -35,7 +35,7 @@ Feature: Review patches in git
             """
 
     Scenario: All patches are set up for review and state is restored afterwards
-        When I run "dfetch review-patch SomeProject" in MyProject
+        When I run "dfetch replay-patches SomeProject" in MyProject
         Then the output shows
             """
             Dfetch (0.14.0)
@@ -53,7 +53,7 @@ Feature: Review patches in git
         And the git superproject 'MyProject' reports no changes to 'SomeProject'
 
     Scenario: Only the first N patches are applied with --count
-        When I run "dfetch review-patch --count 0 SomeProject" in MyProject
+        When I run "dfetch replay-patches --count 0 SomeProject" in MyProject
         Then the output shows
             """
             Dfetch (0.14.0)
@@ -77,7 +77,7 @@ Feature: Review patches in git
                   - name: SomeProject
                     url: some-remote-server/SomeProject.git
             """
-        When I run "dfetch review-patch SomeProject" in MyProject
+        When I run "dfetch replay-patches SomeProject" in MyProject
         Then the output shows
             """
             Dfetch (0.14.0)
@@ -87,7 +87,7 @@ Feature: Review patches in git
 
     Scenario: A warning is shown when the project has uncommitted local changes
         Given "SomeProject/README.md" in MyProject is changed locally
-        When I run "dfetch review-patch SomeProject" in MyProject
+        When I run "dfetch replay-patches SomeProject" in MyProject
         Then the output shows
             """
             Dfetch (0.14.0)

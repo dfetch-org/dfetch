@@ -1,7 +1,7 @@
-"""Reviewing patches interactively.
+"""Replaying patches interactively.
 
 *Dfetch* allows you to keep local changes to external projects in the form of
-patch files.  The ``review-patch`` command lets you inspect what each patch
+patch files.  The ``replay-patches`` command lets you inspect what each patch
 contributes by staging the clean upstream source in the git index and
 optionally stepping the working tree through each patch in turn.
 
@@ -9,11 +9,11 @@ Because ``git diff`` always compares the working tree against the index, any
 diff-aware editor will immediately show what the applied patches change
 relative to the upstream source — no manual setup needed.
 
-Run without arguments to review all patches at once:
+Run without arguments to replay all patches at once:
 
 .. code-block:: console
 
-   $ dfetch review-patch some-project
+   $ dfetch replay-patches some-project
 
 Use ``--count`` to stop at a specific patch number, or ``--interactive`` to
 step through the stack with the ← and → arrow keys.  In either case the
@@ -24,11 +24,11 @@ no permanent changes are made.
 
    .. tab:: Git
 
-      .. scenario-include:: ../features/review-patch-in-git.feature
+      .. scenario-include:: ../features/replay-patches-in-git.feature
 
    .. tab:: SVN
 
-      .. scenario-include:: ../features/review-patch-in-svn.feature
+      .. scenario-include:: ../features/replay-patches-in-svn.feature
 """
 
 import argparse
@@ -50,10 +50,10 @@ from dfetch.vcs.patch import Patch
 logger = get_logger(__name__)
 
 
-class ReviewPatch(dfetch.commands.command.Command):
-    """Review what patches contribute to a project.
+class ReplayPatches(dfetch.commands.command.Command):
+    """Replay what patches contribute to a project.
 
-    The ``review-patch`` command stages the clean upstream source in the git
+    The ``replay-patches`` command stages the clean upstream source in the git
     index and applies the selected patches to the working tree, so ``git diff``
     shows exactly what the patches change relative to upstream.  Use
     ``--interactive`` to step through the stack patch-by-patch with ← and →.
@@ -62,8 +62,8 @@ class ReviewPatch(dfetch.commands.command.Command):
 
     @staticmethod
     def create_menu(subparsers: dfetch.commands.command.SubparserActionType) -> None:
-        """Add the menu for the review-patch action."""
-        parser = dfetch.commands.command.Command.parser(subparsers, ReviewPatch)
+        """Add the menu for the replay-patches action."""
+        parser = dfetch.commands.command.Command.parser(subparsers, ReplayPatches)
         parser.add_argument(
             "projects",
             metavar="<project>",
@@ -89,7 +89,7 @@ class ReviewPatch(dfetch.commands.command.Command):
         )
 
     def __call__(self, args: argparse.Namespace) -> None:
-        """Perform the review patch."""
+        """Perform the replay patches."""
         if args.count is not None and args.count < 0:
             raise RuntimeError("--count must be >= 0")
 
@@ -102,7 +102,7 @@ class ReviewPatch(dfetch.commands.command.Command):
             )
         if not isinstance(superproject, GitSuperProject):
             logger.warning(
-                "review-patch has limited support in SVN superprojects"
+                "replay-patches has limited support in SVN superprojects"
                 " (no staging area — use `svn diff` to inspect changes)"
             )
 
