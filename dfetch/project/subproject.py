@@ -93,6 +93,8 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
         Args:
             count: Number of patches to apply (-1 means all).
         """
+        if count < -1:
+            raise ValueError(f"count must be -1 (all) or >= 0, got {count}")
         self._apply_patches(count)
 
     def update(
