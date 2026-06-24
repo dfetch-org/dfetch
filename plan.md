@@ -1,8 +1,8 @@
-# Plan: Combined multi-project review-patch
+# Plan: Combined multi-project replay-patches
 
 ## Context
 
-`review-patch` currently processes projects one at a time, each with its own
+`replay-patches` currently processes projects one at a time, each with its own
 pause/restore cycle. When a user wants to see several vendored patch stacks at
 once (e.g. in VS Code's Changes view), they must review them sequentially.
 
@@ -22,21 +22,21 @@ Per-project patch counts in non-interactive combined mode use an optional
 
 ```bash
 # Single project — unchanged behaviour
-dfetch review-patch proj-a
-dfetch review-patch --count 2 proj-a
-dfetch review-patch --interactive proj-a
+dfetch replay-patches proj-a
+dfetch replay-patches --count 2 proj-a
+dfetch replay-patches --interactive proj-a
 
 # Single project with :N shorthand (equivalent to --count N)
-dfetch review-patch proj-a:2
+dfetch replay-patches proj-a:2
 
 # Combined non-interactive (2+ projects, pause once)
-dfetch review-patch                          # all projects, all patches
-dfetch review-patch proj-a proj-b            # two projects, all patches
-dfetch review-patch proj-a:0 proj-b proj-c:1 # 0 / all / 1 patches
+dfetch replay-patches                          # all projects, all patches
+dfetch replay-patches proj-a proj-b            # two projects, all patches
+dfetch replay-patches proj-a:0 proj-b proj-c:1 # 0 / all / 1 patches
 
 # Combined interactive tree TUI
-dfetch review-patch --interactive            # all projects, tree TUI
-dfetch review-patch --interactive proj-a proj-b
+dfetch replay-patches --interactive            # all projects, tree TUI
+dfetch replay-patches --interactive proj-a proj-b
 ```
 
 **Rejected combinations** (raise `RuntimeError`):
@@ -156,9 +156,9 @@ class _ProjectState:
 
 | File | Change |
 |------|--------|
-| `dfetch/commands/review_patch.py` | Add `dataclasses` + `in_directory` imports; `_ProjectState`; `_parse_project_spec`; modify `__call__`; add `_review_projects_combined`, `_draw_tui_tree`, `_step_tui_multi` |
-| `tests/test_review_patch.py` | Unit tests for combined path |
-| `features/review-patch-in-git.feature` | BDD scenario: combined non-interactive pass |
+| `dfetch/commands/replay_patches.py` | Add `dataclasses` + `in_directory` imports; `_ProjectState`; `_parse_project_spec`; modify `__call__`; add `_review_projects_combined`, `_draw_tui_tree`, `_step_tui_multi` |
+| `tests/test_replay_patches.py` | Unit tests for combined path |
+| `features/replay-patches-in-git.feature` | BDD scenario: combined non-interactive pass |
 | `doc/howto/patching.rst` | Document automatic combined mode + `project:N` syntax |
 | `CHANGELOG.rst` | One bullet |
 
