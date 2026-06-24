@@ -32,6 +32,7 @@ no permanent changes are made.
 """
 
 import argparse
+import dataclasses
 import logging
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
@@ -45,9 +46,69 @@ from dfetch.project.gitsuperproject import GitSuperProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import NoVcsSuperProject, SuperProject
 from dfetch.terminal import BOLD, DIM, RESET, Screen, is_tty, read_key
+from dfetch.util.util import in_directory
 from dfetch.vcs.patch import Patch
 
 logger = get_logger(__name__)
+
+
+@dataclasses.dataclass
+class _ProjectState:
+    """Tracks the current patch position for one project during a combined review."""
+
+    name: str
+    local_path: str
+    patches: list[str]
+    current: int = 0
+
+    @property
+    def fully_patched(self) -> bool:
+        """Return True when all patches have been applied."""
+        return self.current == len(self.patches)
+
+
+def _parse_project_spec(spec: str) -> tuple[str, int | None]:
+    """Split 'name:N' into (name, N); a bare name returns (name, None)."""
+    if ":" not in spec:
+        return spec, None
+    name, _, tail = spec.rpartition(":")
+    try:
+        return name, int(tail)
+    except ValueError as exc:
+        raise RuntimeError(
+            f"invalid project spec {spec!r}; expected name or name:N"
+        ) from exc
+
+
+def _validate_superproject(superproject: SuperProject) -> None:
+    if isinstance(superproject, NoVcsSuperProject):
+        raise RuntimeError(
+            "The project containing the manifest is not under version control,"
+            " reviewing patches is not supported"
+        )
+    if not isinstance(superproject, GitSuperProject):
+        logger.warning(
+            "replay-patches has limited support in SVN superprojects"
+            " (no staging area — use `svn diff` to inspect changes)"
+        )
+
+
+def _check_count_conflicts(
+    count: int | None, per_project_counts: dict[str, int]
+) -> None:
+    if count is not None and per_project_counts:
+        raise RuntimeError("use either --count or project:N, not both")
+
+
+def _effective_count(
+    count: int | None,
+    selected: list[dfetch.manifest.project.ProjectEntry],
+    per_project_counts: dict[str, int],
+) -> int | None:
+    """Return the effective patch count for single-project mode."""
+    if count is not None or not selected:
+        return count
+    return per_project_counts.get(selected[0].name)
 
 
 class ReplayPatches(dfetch.commands.command.Command):
@@ -69,7 +130,7 @@ class ReplayPatches(dfetch.commands.command.Command):
             metavar="<project>",
             type=str,
             nargs="*",
-            help="Specific project(s) to review",
+            help="Specific project(s) to review; append :N to limit patches (e.g. proj:2)",
         )
         group = parser.add_mutually_exclusive_group()
         group.add_argument(
@@ -78,7 +139,7 @@ class ReplayPatches(dfetch.commands.command.Command):
             metavar="N",
             type=int,
             default=None,
-            help="Number of patches to apply (default: all)",
+            help="Number of patches to apply, single project only (default: all)",
         )
         group.add_argument(
             "--interactive",
@@ -94,28 +155,37 @@ class ReplayPatches(dfetch.commands.command.Command):
             raise RuntimeError("--count must be >= 0")
 
         superproject = create_super_project()
-
-        if isinstance(superproject, NoVcsSuperProject):
-            raise RuntimeError(
-                "The project containing the manifest is not under version control,"
-                " reviewing patches is not supported"
-            )
-        if not isinstance(superproject, GitSuperProject):
-            logger.warning(
-                "replay-patches has limited support in SVN superprojects"
-                " (no staging area — use `svn diff` to inspect changes)"
-            )
+        _validate_superproject(superproject)
 
         if args.interactive and not is_tty():
             raise RuntimeError("--interactive requires an interactive terminal")
 
-        self._iter_projects(
-            superproject,
-            args.projects,
-            lambda project: self._review_project(
-                superproject, project, args.count, args.interactive
-            ),
-        )
+        parsed = [_parse_project_spec(s) for s in args.projects]
+        project_names = [name for name, _ in parsed]
+        per_project_counts: dict[str, int] = {
+            name: n for name, n in parsed if n is not None
+        }
+        _check_count_conflicts(args.count, per_project_counts)
+
+        selected = list(superproject.manifest.selected_projects(project_names))
+        if len(selected) >= 2:
+            with in_directory(superproject.root_directory):
+                _review_projects_combined(
+                    superproject,
+                    selected,
+                    per_project_counts,
+                    args.count,
+                    args.interactive,
+                )
+        else:
+            count = _effective_count(args.count, selected, per_project_counts)
+            self._iter_projects(
+                superproject,
+                project_names,
+                lambda project: self._review_project(
+                    superproject, project, count, args.interactive
+                ),
+            )
 
     def _review_project(
         self,
@@ -245,6 +315,131 @@ def _restore_project(
     logger.print_info_line(project_name, "restored")
 
 
+# ---------------------------------------------------------------------------
+# Combined multi-project path
+# ---------------------------------------------------------------------------
+
+_StagedEntry = tuple[SubProject, _ProjectState, bytes, Callable[[], list[str]]]
+
+
+def _collect_reviewable(
+    superproject: SuperProject,
+    selected: list[dfetch.manifest.project.ProjectEntry],
+) -> list[tuple[dfetch.manifest.project.ProjectEntry, SubProject]]:
+    """Return (project, subproject) pairs that pass the can-review check."""
+    result = []
+    for project in selected:
+        subproject = create_sub_project(project)
+        if _can_review_project(superproject, subproject, project.name):
+            result.append((project, subproject))
+    return result
+
+
+def _stage_one(
+    superproject: SuperProject,
+    git_super: GitSuperProject | None,
+    project: dfetch.manifest.project.ProjectEntry,
+    subproject: SubProject,
+) -> _StagedEntry:
+    """Fetch upstream into the worktree and stage it; return a restore tuple."""
+    saved_metadata = Path(subproject.metadata_path).read_bytes()
+
+    def _ignored() -> list[str]:
+        return list(superproject.ignored_files(project.destination))
+
+    subproject.update(
+        force=True,
+        ignored_files_callback=_ignored,
+        patch_count=0,
+        eol_preferences_callback=superproject.eol_preferences,
+    )
+    if git_super is not None:
+        git_super.add_path(subproject.local_path)
+    state = _ProjectState(
+        name=project.name,
+        local_path=subproject.local_path,
+        patches=list(subproject.patch),
+    )
+    return subproject, state, saved_metadata, _ignored
+
+
+def _run_combined_review(
+    staged: list[_StagedEntry],
+    git_super: GitSuperProject | None,
+    per_project_counts: dict[str, int],
+    interactive: bool,
+) -> None:
+    """Apply patches and pause (non-interactive) or launch tree TUI (interactive)."""
+    if interactive:
+        _step_tui_multi([state for _, state, _, _ in staged])
+        return
+    diff_cmd = "`git diff`" if git_super is not None else "`svn diff`"
+    for subproject, state, _, _ in staged:
+        count = per_project_counts.get(state.name, -1)
+        subproject.apply_patches(count)
+        state.current = (
+            len(state.patches) if count == -1 else min(count, len(state.patches))
+        )
+        logger.print_info_line(
+            state.name,
+            f"stage = upstream, working tree = {state.current} patch(es) applied"
+            f" — open your editor and run {diff_cmd} to inspect",
+        )
+    if is_tty():
+        input("Press Enter to restore...")
+
+
+def _restore_one_combined(
+    superproject: SuperProject,
+    git_super: GitSuperProject | None,
+    entry: _StagedEntry,
+) -> None:
+    """Restore a single staged project and write back its saved metadata."""
+    subproject, state, saved_meta, ignored = entry
+    try:
+        _restore_project(
+            superproject,
+            git_super,
+            subproject,
+            state.name,
+            state.fully_patched,
+            ignored,
+        )
+    finally:
+        Path(subproject.metadata_path).write_bytes(saved_meta)
+
+
+def _review_projects_combined(
+    superproject: SuperProject,
+    selected: list[dfetch.manifest.project.ProjectEntry],
+    per_project_counts: dict[str, int],
+    count: int | None,
+    interactive: bool,
+) -> None:
+    """Fetch + stage all projects, pause for review, then restore all."""
+    if count is not None:
+        raise RuntimeError(
+            "--count is for single-project use; use project:N syntax for per-project counts"
+        )
+    git_super = superproject if isinstance(superproject, GitSuperProject) else None
+    reviewable = _collect_reviewable(superproject, selected)
+    if not reviewable:
+        return
+    staged: list[_StagedEntry] = []
+    try:
+        for project, subproject in reviewable:
+            staged.append(_stage_one(superproject, git_super, project, subproject))
+        _run_combined_review(staged, git_super, per_project_counts, interactive)
+    finally:
+        for entry in staged:
+            _restore_one_combined(superproject, git_super, entry)
+
+
+# ---------------------------------------------------------------------------
+# Single-project TUI
+# ---------------------------------------------------------------------------
+
+
 def _draw_tui_frame(
     screen: Screen,
     patches: list[str],
@@ -319,6 +514,72 @@ def _step_tui(patches: list[str], local_path: str, project_name: str) -> None:
             raise
         try:
             current, done = _apply_step(key, current, total, patches, local_path)
+        except RuntimeError:
+            screen.clear()
+            raise
+        if done:
+            screen.clear()
+            return
+
+
+# ---------------------------------------------------------------------------
+# Multi-project TUI
+# ---------------------------------------------------------------------------
+
+
+def _draw_tui_tree(
+    screen: Screen,
+    states: list[_ProjectState],
+    focused: int,
+) -> None:
+    """Render the multi-project patch-stack tree to the screen."""
+    lines: list[str] = [
+        f"  {DIM}← → step    ↑ ↓ switch project    Enter restore and exit    Ctrl-C abort{RESET}",
+        "  " + "─" * 71,
+    ]
+    for idx, state in enumerate(states):
+        total = len(state.patches)
+        count_label = str(state.current) if state.current < total else "all"
+        prefix = ">" if idx == focused else " "
+        lines.append(
+            f"  {prefix} {state.name}  [{count_label}/{total} patches applied]"
+        )
+        for pidx, patch_name in enumerate(state.patches):
+            marker = f"{BOLD}[x]{RESET}" if pidx < state.current else f"{DIM}[ ]{RESET}"
+            lines.append(f"      {marker} {patch_name}")
+    screen.draw(lines)
+
+
+def _handle_tui_multi_key(
+    key: str,
+    focused: int,
+    states: list[_ProjectState],
+) -> tuple[int, bool]:
+    """Handle one keypress in the multi-project TUI; return (new_focused, done)."""
+    if key == "UP" and focused > 0:
+        return focused - 1, False
+    if key == "DOWN" and focused < len(states) - 1:
+        return focused + 1, False
+    state = states[focused]
+    state.current, done = _apply_step(
+        key, state.current, len(state.patches), state.patches, state.local_path
+    )
+    return focused, done
+
+
+def _step_tui_multi(states: list[_ProjectState]) -> None:
+    """Multi-project interactive TUI: ↑/↓ switch focus, ←/→ step patches."""
+    focused = 0
+    screen = Screen()
+    while True:
+        _draw_tui_tree(screen, states, focused)
+        try:
+            key = read_key()
+        except KeyboardInterrupt:
+            screen.clear()
+            raise
+        try:
+            focused, done = _handle_tui_multi_key(key, focused, states)
         except RuntimeError:
             screen.clear()
             raise

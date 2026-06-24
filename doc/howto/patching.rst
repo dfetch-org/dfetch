@@ -305,12 +305,26 @@ original state.
 
 **Replaying a specific number of patches**
 
-Use ``--count`` to stop at a particular patch in the stack.  For example, to
-see only what the first patch contributes, with the rest still un-applied:
+Use ``--count`` to stop at a particular patch in the stack (single-project only).
+For example, to see only what the first patch contributes, with the rest still
+un-applied:
 
 .. code-block:: console
 
     $ dfetch replay-patches --count 1 some-project
+
+**Replaying multiple projects at once**
+
+When you call ``replay-patches`` with two or more project names (or with no
+names to select all), *dfetch* stages all of them together and presents a single
+pause.  You can limit the patches applied to a specific project with the
+``name:N`` shorthand:
+
+.. code-block:: console
+
+    $ dfetch replay-patches                          # all projects, all patches
+    $ dfetch replay-patches proj-a proj-b            # two named projects
+    $ dfetch replay-patches proj-a:0 proj-b proj-c:1 # 0 / all / 1 patches
 
 **Stepping through the stack interactively**
 
@@ -321,6 +335,9 @@ so your editor always reflects the current position in the stack:
 .. code-block:: console
 
     $ dfetch replay-patches --interactive some-project
+
+With multiple projects, use ↑ and ↓ to switch focus between project stacks while
+← and → continue to step that project's patches.
 
 Press **Enter** to finish and restore the original state.
 
