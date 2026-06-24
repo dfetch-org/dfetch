@@ -1,13 +1,13 @@
 """Steps for features tests."""
 
-# pylint: disable=function-redefined, missing-function-docstring, import-error, not-callable
+# pylint: disable=function-redefined, missing-function-docstring, import-error, not-callable, no-name-in-module
 # pyright: reportRedeclaration=false, reportAttributeAccessIssue=false, reportCallIssue=false
 
 import os
 import pathlib
 import subprocess
 
-from behave import given, then, when  # pylint: disable=no-name-in-module
+from behave import given, then, when
 
 from dfetch.util.util import in_directory
 from features.steps.generic_steps import (
@@ -262,6 +262,6 @@ index 62248b7..32d9fad 100644
 def step_impl(_, superproject, path):
     with in_directory(superproject):
         result = subprocess.check_output(
-            ["git", "status", "--porcelain", path], text=True
+            ["git", "status", "--porcelain", "--", path], text=True
         )
     assert result.strip() == "", f"Unexpected changes in {path!r}:\n{result}"
