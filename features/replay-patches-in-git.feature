@@ -94,3 +94,55 @@ Feature: Replay patches in git
               SomeProject:
               > skipped - uncommitted changes in SomeProject
             """
+
+    Scenario: Two projects are staged together and both restored in combined mode
+        Given a git repository "OtherProject.git"
+        And the patch file 'MyProject/patches/OtherProject.patch'
+            """
+            diff --git a/README.md b/README.md
+            index 32d9fad..62248b7 100644
+            --- a/README.md
+            +++ b/README.md
+            @@ -1,1 +1,1 @@
+            -Generated file for OtherProject.git
+            +Patched file for OtherProject.git
+            """
+        And a fetched and committed MyProject with the manifest
+            """
+            manifest:
+                version: 0.0
+                projects:
+                  - name: SomeProject
+                    url: some-remote-server/SomeProject.git
+                    patch: patches/SomeProject.patch
+                  - name: OtherProject
+                    url: some-remote-server/OtherProject.git
+                    patch: patches/OtherProject.patch
+            """
+        When I run "dfetch replay-patches" in MyProject
+        Then the output shows
+            """
+            Dfetch (0.14.0)
+              SomeProject:
+              > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
+              OtherProject:
+              > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
+              > Applying patch "patches/SomeProject.patch"
+                successfully patched 1/1:    b'README.md'
+              > stage = upstream, working tree = 1 patch(es) applied — open your editor and run `git diff` to inspect
+              > Applying patch "patches/OtherProject.patch"
+                successfully patched 1/1:    b'README.md'
+              > stage = upstream, working tree = 1 patch(es) applied — open your editor and run `git diff` to inspect
+              > restored
+              > restored
+            """
+        And the patched 'MyProject/SomeProject/README.md' is
+            """
+            Patched file for SomeProject.git
+            """
+        And the patched 'MyProject/OtherProject/README.md' is
+            """
+            Patched file for OtherProject.git
+            """
+        And the git superproject 'MyProject' reports no changes to 'SomeProject'
+        And the git superproject 'MyProject' reports no changes to 'OtherProject'
