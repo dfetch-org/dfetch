@@ -22,7 +22,7 @@ Feature: Fetch file pattern from svn repo
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.14.2)
+            Dfetch (0.14.3)
               SomeProjectWithAnInterestingFile:
               > Fetched trunk - 1
             """

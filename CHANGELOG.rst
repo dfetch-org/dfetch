@@ -1,4 +1,4 @@
-Release 0.14.3 (unreleased)
+Release 0.14.3 (released 2026-06-25)
 ====================================
 
 * Update ``dfetch environment`` to show newer version inline (#1310)
