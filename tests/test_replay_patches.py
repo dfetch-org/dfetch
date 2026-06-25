@@ -54,6 +54,7 @@ def _make_subproject(patches=None, on_disk_version: str | None = "v1"):
 
 
 def test_review_all_patches_calls_update_add_path_update():
+    """All patches are applied and the staging area is restored for a git superproject."""
     cmd = ReplayPatches()
     fake_super = _make_superproject(is_git=True)
     fake_sub = _make_subproject()
@@ -82,6 +83,7 @@ def test_review_all_patches_calls_update_add_path_update():
 
 
 def test_review_count_1_uses_patch_count_1():
+    """--count 1 limits apply_patches to exactly one patch."""
     cmd = ReplayPatches()
     fake_super = _make_superproject(is_git=True)
     fake_sub = _make_subproject()
@@ -115,6 +117,7 @@ def test_review_count_1_uses_patch_count_1():
 
 
 def test_svn_superproject_warns_and_skips_staging():
+    """SVN superproject emits a warning and skips git staging operations."""
     cmd = ReplayPatches()
     fake_super = _make_superproject(is_git=False)  # not GitSuperProject
     fake_sub = _make_subproject()
@@ -149,6 +152,7 @@ def test_svn_superproject_warns_and_skips_staging():
 
 
 def test_no_patches_logs_warning_and_skips():
+    """Projects with no patches log a warning and skip update/staging."""
     cmd = ReplayPatches()
     fake_super = _make_superproject(is_git=True)
     fake_sub = _make_subproject(patches=[])
@@ -168,6 +172,7 @@ def test_no_patches_logs_warning_and_skips():
 
 
 def test_never_fetched_logs_warning_and_skips():
+    """Projects that have never been fetched log a warning and are skipped."""
     cmd = ReplayPatches()
     fake_super = _make_superproject(is_git=True)
     fake_sub = _make_subproject(on_disk_version=None)
@@ -187,6 +192,7 @@ def test_never_fetched_logs_warning_and_skips():
 
 
 def test_local_changes_logs_warning_and_skips():
+    """Projects with local working-tree changes log a warning and are skipped."""
     cmd = ReplayPatches()
     fake_super = _make_superproject(is_git=True, has_local_changes=True)
     fake_sub = _make_subproject()
@@ -211,6 +217,7 @@ def test_local_changes_logs_warning_and_skips():
 
 
 def test_no_vcs_superproject_raises():
+    """A superproject with no VCS raises RuntimeError."""
     cmd = ReplayPatches()
     fake_super = Mock(spec=NoVcsSuperProject)
 
@@ -222,6 +229,7 @@ def test_no_vcs_superproject_raises():
 
 
 def test_interactive_without_tty_raises():
+    """--interactive without a TTY raises RuntimeError."""
     cmd = ReplayPatches()
     fake_super = _make_superproject(is_git=True)
 
@@ -234,6 +242,7 @@ def test_interactive_without_tty_raises():
 
 
 def test_negative_count_raises():
+    """--count with a negative value raises RuntimeError."""
     cmd = ReplayPatches()
     fake_super = _make_superproject(is_git=True)
 
@@ -250,6 +259,7 @@ def test_negative_count_raises():
 
 
 def test_single_project_suffix_becomes_count():
+    """project:N suffix is parsed and forwarded as the patch count."""
     cmd = ReplayPatches()
     fake_super = _make_superproject(is_git=True)
     fake_sub = _make_subproject()
@@ -269,6 +279,7 @@ def test_single_project_suffix_becomes_count():
 
 
 def test_count_and_suffix_raises():
+    """Combining --count and project:N suffix raises RuntimeError."""
     cmd = ReplayPatches()
     fake_super = _make_superproject(is_git=True)
 
@@ -277,6 +288,18 @@ def test_count_and_suffix_raises():
     ):
         with pytest.raises(RuntimeError, match="not both"):
             cmd(_make_args(projects=["my_project:2"], count=1))
+
+
+def test_negative_project_suffix_raises():
+    """project:-N suffix raises RuntimeError with a clear message."""
+    cmd = ReplayPatches()
+    fake_super = _make_superproject(is_git=True)
+
+    with patch(
+        "dfetch.commands.replay_patches.create_super_project", return_value=fake_super
+    ):
+        with pytest.raises(RuntimeError, match=">= 0"):
+            cmd(_make_args(projects=["my_project:-1"]))
 
 
 # ---------------------------------------------------------------------------
@@ -306,6 +329,7 @@ def _make_named_subproject(name, patches=None):
 
 
 def test_combined_two_projects_all_patches():
+    """Combined mode applies all patches for each of two projects."""
     cmd = ReplayPatches()
     fake_super = _make_multi_superproject(["proj_a", "proj_b"])
     sub_a = _make_named_subproject("proj_a")
@@ -331,6 +355,7 @@ def test_combined_two_projects_all_patches():
 
 
 def test_combined_per_project_counts():
+    """Combined mode respects per-project patch counts specified with project:N."""
     cmd = ReplayPatches()
     fake_super = _make_multi_superproject(["proj_a", "proj_b"])
     sub_a = _make_named_subproject("proj_a")
@@ -354,6 +379,7 @@ def test_combined_per_project_counts():
 
 
 def test_combined_count_flag_raises():
+    """--count in combined multi-project mode raises RuntimeError."""
     cmd = ReplayPatches()
     fake_super = _make_multi_superproject(["proj_a", "proj_b"])
 
@@ -366,6 +392,7 @@ def test_combined_count_flag_raises():
 
 
 def test_combined_interactive_launches_tui():
+    """Combined interactive mode launches the multi-project TUI."""
     cmd = ReplayPatches()
     fake_super = _make_multi_superproject(["proj_a", "proj_b"])
     sub_a = _make_named_subproject("proj_a")
