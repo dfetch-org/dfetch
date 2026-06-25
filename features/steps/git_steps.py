@@ -260,6 +260,12 @@ index 62248b7..32d9fad 100644
 
 @then("the git superproject '{superproject}' reports no changes to '{path}'")
 def step_impl(_, superproject, path):
+    """Verify git superproject reports no changes to path.
+
+    Args:
+        superproject: directory name of the git superproject.
+        path: path inside the superproject to check for changes.
+    """
     with in_directory(superproject):
         result = subprocess.check_output(
             ["git", "status", "--porcelain", "--", path], text=True

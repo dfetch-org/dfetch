@@ -24,15 +24,7 @@ Run::
     python -m security.tm_usage --report REPORT
 """
 
-import os
-import sys
-
-# Ensure the security package is importable when loaded by Sphinx directive
-_repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _repo_root not in sys.path:
-    sys.path.insert(0, _repo_root)
-
-from pytm import (  # noqa: E402  # pylint: disable=wrong-import-position
+from pytm import (
     TM,
     Actor,
     Boundary,
@@ -44,10 +36,8 @@ from pytm import (  # noqa: E402  # pylint: disable=wrong-import-position
     Process,
 )
 
-from security.tm_controls_data import (  # noqa: E402  # pylint: disable=wrong-import-position
-    USAGE_CONTROLS as CONTROLS,
-)
-from security.tm_elements import (  # noqa: E402  # pylint: disable=wrong-import-position
+from security.tm_controls_data import USAGE_CONTROLS as CONTROLS
+from security.tm_elements import (
     THREATS_FILE,
     Control,
     ThreatResponse,
@@ -56,7 +46,7 @@ from security.tm_elements import (  # noqa: E402  # pylint: disable=wrong-import
     make_network_boundary,
     make_usage_assumptions,
 )
-from security.tm_render import (  # noqa: E402  # pylint: disable=wrong-import-position
+from security.tm_render import (
     apply_report_utils_patch,
     run_model,
 )
