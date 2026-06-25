@@ -44,7 +44,7 @@ clear
 pe "cat dfetch.yaml"
 pe "cat patches/cpputest.patch"
 # Pipe stdin to avoid blocking on "Press Enter to restore..."
-pe "echo '' | dfetch review-patch cpputest"
+pe "echo '' | dfetch replay-patches cpputest"
 
 PROMPT_TIMEOUT=3
 wait

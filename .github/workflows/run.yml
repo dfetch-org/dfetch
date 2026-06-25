@@ -66,7 +66,7 @@ jobs:
       - run: dfetch update
       - run: dfetch update
       - run: dfetch update-patch
-      - run: dfetch review-patch
+      - run: dfetch replay-patches
       - run: dfetch format-patch
       - run: dfetch report -t sbom
       - run: dfetch remove test-repo
@@ -212,7 +212,7 @@ jobs:
       - run: dfetch update
       - run: dfetch update
       - run: dfetch update-patch
-      - run: dfetch review-patch
+      - run: dfetch replay-patches
       - run: dfetch format-patch
       - run: dfetch report -t sbom
       - run: dfetch remove test-repo

@@ -46,6 +46,7 @@ from dfetch.project.gitsuperproject import GitSuperProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import NoVcsSuperProject, SuperProject
 from dfetch.terminal import BOLD, DIM, RESET, Screen, is_tty, read_key
+from dfetch.util.cmdline import SubprocessCommandError
 from dfetch.util.util import in_directory
 from dfetch.vcs.patch import Patch
 
@@ -73,11 +74,14 @@ def _parse_project_spec(spec: str) -> tuple[str, int | None]:
         return spec, None
     name, _, tail = spec.rpartition(":")
     try:
-        return name, int(tail)
+        n = int(tail)
     except ValueError as exc:
         raise RuntimeError(
             f"invalid project spec {spec!r}; expected name or name:N"
         ) from exc
+    if n < 0:
+        raise RuntimeError(f"invalid project spec {spec!r}; patch count must be >= 0")
+    return name, n
 
 
 def _validate_superproject(superproject: SuperProject) -> None:
@@ -160,11 +164,7 @@ class ReplayPatches(dfetch.commands.command.Command):
         if args.interactive and not is_tty():
             raise RuntimeError("--interactive requires an interactive terminal")
 
-        parsed = [_parse_project_spec(s) for s in args.projects]
-        project_names = [name for name, _ in parsed]
-        per_project_counts: dict[str, int] = {
-            name: n for name, n in parsed if n is not None
-        }
+        project_names, per_project_counts = self._parse_project_args(args.projects)
         _check_count_conflicts(args.count, per_project_counts)
 
         selected = list(superproject.manifest.selected_projects(project_names))
@@ -186,6 +186,18 @@ class ReplayPatches(dfetch.commands.command.Command):
                     superproject, project, count, args.interactive
                 ),
             )
+
+    @staticmethod
+    def _parse_project_args(
+        projects: list[str],
+    ) -> tuple[list[str], dict[str, int]]:
+        """Parse raw project arguments into names and per-project patch counts."""
+        parsed = [_parse_project_spec(s) for s in projects]
+        project_names = [name for name, _ in parsed]
+        per_project_counts: dict[str, int] = {
+            name: n for name, n in parsed if n is not None
+        }
+        return project_names, per_project_counts
 
     def _review_project(
         self,
@@ -347,14 +359,18 @@ def _stage_one(
     def _ignored() -> list[str]:
         return list(superproject.ignored_files(project.destination))
 
-    subproject.update(
-        force=True,
-        ignored_files_callback=_ignored,
-        patch_count=0,
-        eol_preferences_callback=superproject.eol_preferences,
-    )
-    if git_super is not None:
-        git_super.add_path(subproject.local_path)
+    try:
+        subproject.update(
+            force=True,
+            ignored_files_callback=_ignored,
+            patch_count=0,
+            eol_preferences_callback=superproject.eol_preferences,
+        )
+        if git_super is not None:
+            git_super.add_path(subproject.local_path)
+    except Exception:
+        Path(subproject.metadata_path).write_bytes(saved_metadata)
+        raise
     state = _ProjectState(
         name=project.name,
         local_path=subproject.local_path,
@@ -432,7 +448,10 @@ def _review_projects_combined(
         _run_combined_review(staged, git_super, per_project_counts, interactive)
     finally:
         for entry in staged:
-            _restore_one_combined(superproject, git_super, entry)
+            try:
+                _restore_one_combined(superproject, git_super, entry)
+            except (RuntimeError, SubprocessCommandError, OSError) as exc:
+                logger.print_error_line(entry[1].name, str(exc))
 
 
 # ---------------------------------------------------------------------------
