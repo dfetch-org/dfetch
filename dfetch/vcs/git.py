@@ -817,6 +817,27 @@ class GitLocalRepo:
                 .splitlines()
             )
 
+    def add_path(self, path: str) -> None:
+        """Stage the given path in the git index."""
+        with in_directory(self._path):
+            run_on_cmdline(logger, ["git", "add", "--", path])
+
+    def _git_restore(self, *flags: str, path: str) -> None:
+        with in_directory(self._path):
+            run_on_cmdline(logger, ["git", "restore", *flags, "--", path])
+
+    def restore_staged(self, path: str) -> None:
+        """Unstage the given path, restoring the index to HEAD."""
+        self._git_restore("--staged", path=path)
+
+    def restore_worktree(self, path: str) -> None:
+        """Restore working-tree files for path from the staged index."""
+        self._git_restore(path=path)
+
+    def restore_from_head(self, path: str) -> None:
+        """Restore both working tree and index for path from HEAD."""
+        self._git_restore("--source=HEAD", "--staged", "--worktree", path=path)
+
     def untracked_files_patch(self, ignore: Sequence[str] | None = None) -> Patch:
         """Create a diff for untracked files."""
         with in_directory(self._path):

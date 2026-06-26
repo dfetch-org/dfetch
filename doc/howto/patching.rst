@@ -276,6 +276,83 @@ files, then use ``dfetch update-patch`` to record the resolved state:
           $ dfetch update-patch some-project
           $ svn commit some-project.patch -m "patches: update some-project.patch for v1.3.0"
 
+.. _patching-review:
+
+Replaying patches
+-----------------
+
+When you want to understand what a patch (or a set of patches) actually
+contributes to a vendored project, run:
+
+.. code-block:: console
+
+    $ dfetch replay-patches some-project
+
+*Dfetch* puts the clean upstream source in the git index and applies the
+patches to the working tree.  You can now see exactly what the patches change
+using any diff tool you prefer — for example:
+
+.. code-block:: console
+
+    $ git diff some-project/
+
+Or open the project in VS Code and browse the **Changes** view in the Source
+Control panel.  (The **Staged Changes** view shows something different and
+unrelated to your patches — use **Changes**.)
+
+When you are done, press **Enter** and *dfetch* restores everything to its
+original state.
+
+**Replaying a specific number of patches**
+
+Use ``--count`` to stop at a particular patch in the stack (single-project only).
+For example, to see only what the first patch contributes, with the rest still
+un-applied:
+
+.. code-block:: console
+
+    $ dfetch replay-patches --count 1 some-project
+
+**Replaying multiple projects at once**
+
+When you call ``replay-patches`` with two or more project names (or with no
+names to select all), *dfetch* stages all of them together and presents a single
+pause.  You can limit the patches applied to a specific project with the
+``name:N`` shorthand:
+
+.. code-block:: console
+
+    $ dfetch replay-patches                          # all projects, all patches
+    $ dfetch replay-patches proj-a proj-b            # two named projects
+    $ dfetch replay-patches proj-a:0 proj-b proj-c:1 # 0 / all / 1 patches
+
+**Stepping through the stack interactively**
+
+Use ``--interactive`` (or ``-i``) to step through the patch stack one patch at
+a time using the ← and → arrow keys.  As you step, the working tree is updated
+so your editor always reflects the current position in the stack:
+
+.. code-block:: console
+
+    $ dfetch replay-patches --interactive some-project
+
+With multiple projects, use ↑ and ↓ to switch focus between project stacks while
+← and → continue to step that project's patches.
+
+Press **Enter** to finish and restore the original state.
+
+.. asciinema:: ../asciicasts/replay-patches.cast
+
+.. tabs::
+
+   .. tab:: Git
+
+      .. scenario-include:: ../features/replay-patches-in-git.feature
+
+   .. tab:: SVN
+
+      .. scenario-include:: ../features/replay-patches-in-svn.feature
+
 .. _patching-upstream:
 
 Contributing the patch upstream
