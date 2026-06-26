@@ -498,8 +498,6 @@ def test_externals_from_url_normalizes_url_prefix_and_parses():
         assert result[0].url == "http://svn.example.com/repos/libs"
 
 
-
-
 def test_fetch_externals_returns_empty_when_no_externals():
     with patch("dfetch.project.svnsubproject.SvnRepo.externals_from_url") as mock_ext:
         mock_ext.return_value = []
