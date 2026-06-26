@@ -152,7 +152,7 @@ jobs:
           SBOM=$(find build/dfetch-package -name '*.cdx.json' -maxdepth 1 | head -1)
           echo "path=$SBOM" >> "$GITHUB_OUTPUT"
       - name: Attest binary packages with SBOM
-        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4.1.1
         with:
           subject-path: |
             build/dfetch-package/*.deb
@@ -215,7 +215,7 @@ jobs:
             }' > vsa-predicate.json
       - name: Attest build artifacts with VSA
         if: steps.verify-source.outcome == 'success'
-        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4.1.1
         with:
           subject-path: |
             build/dfetch-package/*.deb
@@ -374,7 +374,7 @@ jobs:
         SBOM=$(find dist -name '*.cdx.json' -maxdepth 1 | head -1)
         echo "path=$SBOM" >> "$GITHUB_OUTPUT"
     - name: Attest Python packages with SBOM
-      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+      uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4.1.1
       with:
         subject-path: |
           dist/*.whl
