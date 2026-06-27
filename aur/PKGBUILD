@@ -1,0 +1,16 @@
+# Maintainer: dfetch-org <https://github.com/dfetch-org>
+pkgname=dfetch-bin
+pkgver=0.14.3
+pkgrel=1
+pkgdesc="Vendor tool for fetching external dependencies"
+arch=('x86_64')
+url="https://github.com/dfetch-org/dfetch"
+license=('MIT')
+provides=('dfetch')
+conflicts=('dfetch')
+source=("https://github.com/dfetch-org/dfetch/releases/download/${pkgver}/dfetch-${pkgver}-nix.tar.gz")
+sha256sums=('SKIP')    # replaced by CI with real checksum
+
+package() {
+  install -Dm755 dfetch "$pkgdir/usr/bin/dfetch"
+}

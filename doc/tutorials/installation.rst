@@ -53,6 +53,14 @@ The version is automatically determined from the project and used to name the in
             # or
             $ sudo rpm -i dfetch-<version>-nix.rpm
 
+        Arch Linux (via AUR):
+
+        .. code-block:: bash
+
+            $ yay -S dfetch-bin
+            # or with any other AUR helper, e.g.
+            $ paru -S dfetch-bin
+
     .. tab:: macOS
 
         Download the ``.pkg`` package from the releases page and install it.
