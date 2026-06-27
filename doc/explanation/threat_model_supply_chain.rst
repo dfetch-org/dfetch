@@ -941,7 +941,7 @@ Threats
        | **Risk:** 🟠H
        | **STRIDE:** T S
        | **Status:** Mitigate
-     - C-044, C-046
+     - C-044, C-046, C-047
 
 
 Controls
@@ -1044,3 +1044,7 @@ Controls
      - AUR PKGBUILD uses real SHA256 checksum of release tarball
      - DFT-36
      - The ``aur-publish.yml`` workflow computes the SHA256 checksum of the release tarball at publish time and embeds it in the PKGBUILD, replacing the placeholder ``SKIP``.  AUR helpers (``yay``, ``paru``) verify this checksum when building the package, so a tampered tarball would be rejected before installation.  Residual risk: a compromised AUR_SSH_KEY (A-12) allows pushing a PKGBUILD with a fraudulent checksum — the review gate present in Winget (C-041) does not exist for AUR direct pushes.  ``.github/workflows/distribution/aur-publish.yml``
+   * - C-047
+     - AUR release tarball build-provenance verified before PKGBUILD update
+     - DFT-36
+     - Before computing the SHA256 to embed in the PKGBUILD, ``aur-publish.yml`` runs ``gh attestation verify`` against the downloaded release tarball.  This confirms the tarball's Sigstore SLSA build-provenance attestation chain: the artifact was produced by the trusted ``build.yml`` workflow from a signed release tag, not tampered with in transit or substituted by a compromised release asset.  If attestation fails the workflow aborts before any PKGBUILD update or AUR push.  ``.github/workflows/distribution/aur-publish.yml``

@@ -196,18 +196,34 @@ jobs:
             uploads.github.com:443
             aur.archlinux.org:443
             aur.archlinux.org:22
+            fulcio.sigstore.dev:443
+            rekor.sigstore.dev:443
+            tuf-repo-cdn.sigstore.dev:443
 
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
-      - name: Update pkgver and checksums
+      - name: Download and verify release tarball
+        # Verifies Sigstore build-provenance attestation before trusting the tarball.
         # Requires AUR_SSH_KEY secret — see one-time setup instructions at the top of this file.
         env:
+          GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name || inputs.release-tag }}
         run: |
           URL="https://github.com/dfetch-org/dfetch/releases/download/${TAG}/dfetch-${TAG}-nix.tar.gz"
-          SHA256=$(curl -fsSL "$URL" | sha256sum | awk '{print $1}')
+          curl -fsSL "$URL" -o dfetch-nix.tar.gz
+          gh attestation verify dfetch-nix.tar.gz \
+            --repo "${{ github.repository }}" \
+            --predicate-type https://slsa.dev/provenance/v1 \
+            --cert-identity-regex "^https://github\.com/${{ github.repository }}/\.github/workflows/build\.yml@refs/tags/[0-9]+\.[0-9]+\.[0-9]+$" \
+            --cert-oidc-issuer https://token.actions.githubusercontent.com
+
+      - name: Update pkgver and checksums
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.release-tag }}
+        run: |
+          SHA256=$(sha256sum dfetch-nix.tar.gz | awk '{print $1}')
           sed -i "s/^pkgver=.*/pkgver=${TAG}/" aur/PKGBUILD
           sed -i "s/^sha256sums=.*/sha256sums=('${SHA256}')/" aur/PKGBUILD
 

@@ -2,7 +2,7 @@
 
 All implemented security controls for dfetch, split by threat model scope:
 
-* ``SC_CONTROLS``    — supply-chain controls (C-009 … C-042)
+* ``SC_CONTROLS``    — supply-chain controls (C-009 … C-047)
 * ``USAGE_CONTROLS`` — runtime-usage controls (C-001 … C-045)
 
 This module is intentionally pytm-free so that ``compliance.py`` and other
@@ -30,7 +30,7 @@ class Control:
         return f"[{self.id}] {self.name}"
 
 
-# ── Supply-chain controls (C-009 … C-046) ────────────────────────────────────
+# ── Supply-chain controls (C-009 … C-047) ────────────────────────────────────
 
 SC_CONTROLS: list[Control] = [
     Control(
@@ -366,6 +366,23 @@ SC_CONTROLS: list[Control] = [
             "Residual risk: a compromised AUR_SSH_KEY (A-12) allows pushing a "
             "PKGBUILD with a fraudulent checksum — the review gate present in Winget "
             "(C-041) does not exist for AUR direct pushes."
+        ),
+    ),
+    Control(
+        id="C-047",
+        name="AUR release tarball build-provenance verified before PKGBUILD update",
+        assets=["A-11", "A-12"],
+        threats=["DFT-36"],
+        reference=".github/workflows/distribution/aur-publish.yml",
+        description=(
+            "Before computing the SHA256 to embed in the PKGBUILD, ``aur-publish.yml`` "
+            "runs ``gh attestation verify`` against the downloaded release tarball.  "
+            "This confirms the tarball's Sigstore SLSA build-provenance attestation "
+            "chain: the artifact was produced by the trusted "
+            "``build.yml`` workflow from a signed release tag, not tampered with "
+            "in transit or substituted by a compromised release asset.  "
+            "If attestation fails the workflow aborts before any PKGBUILD update or "
+            "AUR push."
         ),
     ),
 ]

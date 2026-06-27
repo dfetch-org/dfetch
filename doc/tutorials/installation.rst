@@ -55,11 +55,19 @@ The version is automatically determined from the project and used to name the in
 
         Arch Linux (via AUR):
 
+        ``dfetch-bin`` is a pre-built binary — no Python installation or
+        compilation required on your machine.
+
         .. code-block:: bash
 
             $ yay -S dfetch-bin
             # or with any other AUR helper, e.g.
             $ paru -S dfetch-bin
+
+        The AUR helper verifies the SHA256 checksum of the downloaded binary
+        before installing.  You can also verify the release tarball's build
+        provenance independently using the `GitHub attestation tool
+        <https://cli.github.com/manual/gh_attestation_verify>`_.
 
     .. tab:: macOS
 

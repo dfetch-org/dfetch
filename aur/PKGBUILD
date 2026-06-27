@@ -9,7 +9,10 @@ license=('MIT')
 provides=('dfetch')
 conflicts=('dfetch')
 source=("https://github.com/dfetch-org/dfetch/releases/download/${pkgver}/dfetch-${pkgver}-nix.tar.gz")
-sha256sums=('SKIP')    # replaced by CI with real checksum
+sha256sums=('SKIP')
+# ^ CI replaces SKIP with the real SHA256 before pushing to AUR.
+# Do NOT run makepkg manually from this repository copy — use the AUR package
+# at https://aur.archlinux.org/packages/dfetch-bin where the real checksum is set.
 
 package() {
   install -dm755 "$pkgdir/opt/dfetch"
