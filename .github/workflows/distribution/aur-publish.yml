@@ -70,11 +70,57 @@ on:
         description: 'Release tag (e.g. 0.14.2)'
         required: true
         type: string
+  push:
+    paths:
+      - 'aur/**'
+      - '.github/workflows/distribution/aur-publish.yml'
+  pull_request:
+    paths:
+      - 'aur/**'
+      - '.github/workflows/distribution/aur-publish.yml'
 
 permissions:
   contents: read
 
 jobs:
+  test:
+    name: Test PKGBUILD
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Install build dependencies
+        run: |
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Syu --noconfirm base-devel curl python
+
+      - name: Resolve latest release tag and update checksums
+        run: |
+          TAG=$(curl -fsSL "https://api.github.com/repos/dfetch-org/dfetch/releases/latest" \
+                | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
+          URL="https://github.com/dfetch-org/dfetch/releases/download/${TAG}/dfetch-${TAG}-nix.tar.gz"
+          SHA256=$(curl -fsSL "$URL" | sha256sum | awk '{print $1}')
+          sed -i "s/^pkgver=.*/pkgver=${TAG}/" aur/PKGBUILD
+          sed -i "s/^sha256sums=.*/sha256sums=('${SHA256}')/" aur/PKGBUILD
+
+      - name: Build package with makepkg
+        run: |
+          useradd -m builder
+          chown -R builder:builder aur/
+          su builder -c "cd aur && makepkg --noconfirm"
+
+      - name: Install package and verify
+        run: |
+          pacman -U --noconfirm aur/dfetch-bin-*.pkg.tar.zst
+          dfetch --version
+
   publish:
     name: Publish to AUR
     # For releases: skip the rolling 'latest' tag on main.
