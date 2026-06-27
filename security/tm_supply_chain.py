@@ -196,13 +196,16 @@ def _make_sc_processes(b_github: Boundary) -> tuple[Process, Process, Process]:
     gh_actions_workflow.inBoundary = b_github
     gh_actions_workflow.description = (
         "CI/CD pipelines: test, build (wheel/msi/deb/rpm), lint, CodeQL, Scorecard, "
-        "dependency-review, docs, release, winget-publish.  "
+        "dependency-review, docs, release, distribution/winget-publish, "
+        "distribution/python-publish, distribution/aur-publish.  "
         "All actions pinned by commit SHA.  "
         "harden-runner used in every workflow that executes steps on a runner "
         "(egress: block with endpoint allowlist); ci.yml is a dispatcher-only workflow "
         "with no runner steps and does not include harden-runner.  "
-        "winget-publish.yml uses a stored PAT (WINGET_TOKEN, A-10) to submit manifest "
-        "PRs to the Winget Community Repository (A-09)."
+        "distribution/winget-publish.yml uses a stored PAT (WINGET_TOKEN, A-10) to "
+        "submit manifest PRs to the Winget Community Repository (A-09).  "
+        "distribution/aur-publish.yml uses an SSH key (AUR_SSH_KEY, A-12) to push "
+        "PKGBUILDs directly to the AUR repository (A-11)."
     )
     gh_actions_workflow.controls.isHardened = (
         True  # SHA-pinned actions, harden-runner egress:block on all runner workflows
@@ -557,6 +560,110 @@ def _make_sc_consumer_install_flows(
     df26.controls.isNetworkFlow = True
 
 
+def _make_sc_aur_elements_and_flows(
+    gh_actions_runner: ExternalEntity,
+    consumer: Actor,
+) -> None:
+    """Create AUR assets and publishing/installation flows (DF-30 through DF-32)."""
+    b_aur = Boundary("AUR Repository")
+    b_aur.description = (
+        "The Arch Linux User Repository (https://aur.archlinux.org) where the "
+        "``dfetch-bin`` PKGBUILD is hosted.  "
+        "CI pushes updated PKGBUILDs directly to the AUR git repository using "
+        "``aur-publish.yml`` and the AUR_SSH_KEY (A-12).  "
+        "Unlike Winget (which goes through a community PR review), AUR accepts "
+        "direct git pushes from authenticated maintainers — there is no "
+        "intermediate PR review gate."
+    )
+
+    Data(
+        "A-12: AUR_SSH_KEY",
+        description=(
+            "Ed25519 SSH private key used to authenticate git pushes to the dfetch-bin "
+            "AUR repository.  Stored as a GitHub Actions environment secret in the "
+            "``aur`` environment.  "
+            "Used by ``aur-publish.yml`` to push updated PKGBUILDs directly to AUR.  "
+            "Unlike the PyPI OIDC token (A-05) which is short-lived and not stored, "
+            "this key persists indefinitely until rotated.  "
+            "If exfiltrated from the CI environment, an attacker could push a malicious "
+            "PKGBUILD directly to AUR without any review gate (DFT-36)."
+        ),
+        classification=Classification.SECRET,
+        isCredentials=True,
+        isPII=False,
+        isStored=True,
+        isDestEncryptedAtRest=True,
+        isSourceEncryptedAtRest=True,
+    )
+
+    aur_repo = ExternalEntity("A-11: AUR Repository (aur.archlinux.org/dfetch-bin)")
+    aur_repo.inBoundary = b_aur
+    aur_repo.classification = Classification.SENSITIVE
+    aur_repo.description = (
+        "The Arch Linux User Repository entry for the ``dfetch-bin`` package "
+        "(https://aur.archlinux.org/packages/dfetch-bin).  "
+        "CI pushes updated PKGBUILDs directly via git using the AUR_SSH_KEY (A-12); "
+        "there is no PR review step — the push goes live immediately.  "
+        "PKGBUILDs contain the SHA256 checksum of the release tarball; AUR helpers "
+        "such as ``yay`` download and verify the tarball before installing.  "
+        "A compromised SSH key or a malicious PKGBUILD push could redirect consumers "
+        "to a tampered binary (DFT-36)."
+    )
+    aur_repo.controls.hasAccessControl = True
+    aur_repo.controls.providesIntegrity = True
+    aur_repo.controls.usesCodeSigning = False
+    aur_repo.controls.isHardened = False
+
+    df30 = Dataflow(
+        gh_actions_runner,
+        aur_repo,
+        "DF-30: AUR PKGBUILD push",
+    )
+    df30.description = (
+        "On release event, ``aur-publish.yml`` updates the PKGBUILD in ``aur/`` with "
+        "the new version and the real SHA256 checksum of the release tarball, then "
+        "pushes directly to the AUR git repository using the AUR_SSH_KEY (A-12).  "
+        "Unlike Winget (DF-27), this push goes live immediately without a review gate.  "
+        "Mitigated by: harden-runner egress block (C-013), SHA-pinned action (C-009), "
+        "AUR environment secret scoping (C-044), and real checksum in PKGBUILD (C-046)."
+    )
+    df30.protocol = "SSH"
+    df30.controls.isEncrypted = True
+    df30.controls.isHardened = True
+    df30.controls.hasAccessControl = True
+    df30.controls.providesIntegrity = True
+    df30.controls.isNetworkFlow = True
+
+    df31 = Dataflow(consumer, aur_repo, "DF-31: yay install dfetch-bin")
+    df31.description = (
+        "Consumer runs ``yay -S dfetch-bin`` or equivalent AUR helper command.  "
+        "The AUR helper clones the PKGBUILD from AUR (A-11), builds the package, "
+        "and installs it.  "
+        "The PKGBUILD downloads the release tarball from GitHub Releases and verifies "
+        "its SHA256 checksum (C-046) before installing.  "
+        "The consumer can additionally verify the binary attestations using "
+        "``gh attestation verify`` as documented in C-026 and C-039."
+    )
+    df31.protocol = "HTTPS"
+    df31.controls.isEncrypted = True
+    df31.controls.isNetworkFlow = True
+    df31.controls.providesIntegrity = True
+
+    df32 = Dataflow(aur_repo, consumer, "DF-32: Consumer downloads tarball via AUR")
+    df32.description = (
+        "The AUR helper resolves the source URL from the PKGBUILD in A-11 and "
+        "downloads the tarball from GitHub Releases (A-01).  "
+        "The SHA256 checksum declared in the PKGBUILD (C-046) is verified against "
+        "the downloaded archive before the binary is installed.  "
+        "The consumer can additionally verify SLSA build provenance, SBOM, and VSA "
+        "attestations using ``gh attestation verify`` as documented in C-026 and C-039."
+    )
+    df32.protocol = "HTTPS"
+    df32.controls.isEncrypted = True
+    df32.controls.providesIntegrity = True
+    df32.controls.isNetworkFlow = True
+
+
 def _make_sc_winget_elements_and_flows(
     gh_actions_runner: ExternalEntity,
     consumer: Actor,
@@ -687,6 +794,7 @@ def _make_sc_elements_and_flows(
     _make_sc_publish_flow(gh_actions_runner, pypi)
     _make_sc_consumer_install_flows(consumer, pypi)
     _make_sc_winget_elements_and_flows(gh_actions_runner, consumer)
+    _make_sc_aur_elements_and_flows(gh_actions_runner, consumer)
 
 
 def build_model() -> TM:
@@ -699,6 +807,7 @@ def build_model() -> TM:
             "Threat model for dfetch.  "
             "Covers the pre-install lifecycle: code contribution, CI/CD, "
             "build (wheel / sdist), PyPI distribution, Winget manifest submission, "
+            "AUR PKGBUILD publication, "
             "and consumer installation.  "
             "The installed dfetch package is the handoff point to tm_usage.py."
         ),
@@ -725,6 +834,8 @@ _SUPPLY_CHAIN_ASSET_IDS = {
     "A-08b",
     "A-09",
     "A-10",
+    "A-11",
+    "A-12",
 }
 ASSET_CONTROLS: dict[str, list[Control]] = build_asset_controls_index(
     CONTROLS, _SUPPLY_CHAIN_ASSET_IDS
@@ -929,6 +1040,13 @@ RESPONSES: list[ThreatResponse] = [
         risk="High",
         stride=["Tampering", "Spoofing"],
         target="A-09: Winget Community Repository (microsoft/winget-pkgs)",
+    ),
+    ThreatResponse(
+        "DFT-36",
+        "mitigate",
+        risk="High",
+        stride=["Tampering", "Spoofing"],
+        target="A-11: AUR Repository (aur.archlinux.org/dfetch-bin)",
     ),
 ]
 

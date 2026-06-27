@@ -1,6 +1,7 @@
 Release 0.14.3 (released 2026-06-25)
 ====================================
 
+* Add AUR (Arch Linux User Repository) package and automated publish workflow (#1319)
 * Update ``dfetch environment`` to show newer version inline (#1310)
 
 Release 0.14.2 (released 2026-06-21)
