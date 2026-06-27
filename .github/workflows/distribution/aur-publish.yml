@@ -71,10 +71,8 @@ on:
         required: true
         type: string
   push:
-    paths:
-      - 'aur/**'
-      - '.github/workflows/distribution/aur-publish.yml'
-  pull_request:
+    branches:
+      - main
     paths:
       - 'aur/**'
       - '.github/workflows/distribution/aur-publish.yml'
@@ -83,9 +81,51 @@ permissions:
   contents: read
 
 jobs:
+  build-binary:
+    name: Build Linux binary from source
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          allowed-endpoints: >+
+            github.com:443
+            api.github.com:443
+            pypi.org:443
+            files.pythonhosted.org:443
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Build binary with Nuitka
+        run: |
+          pip install .[build]
+          python script/build.py
+
+      - name: Create tarball from build output
+        run: |
+          VERSION=$(git describe --tags --abbrev=0)
+          tar czf "dfetch-${VERSION}-nix.tar.gz" -C build/dfetch.dist .
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dfetch-nix-tarball
+          path: dfetch-*-nix.tar.gz
+
   test:
     name: Test PKGBUILD
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    needs: build-binary
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
@@ -95,20 +135,26 @@ jobs:
         with:
           persist-credentials: false
 
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dfetch-nix-tarball
+
       - name: Install build dependencies
         run: |
           pacman-key --init
           pacman-key --populate archlinux
-          pacman -Syu --noconfirm base-devel curl python
+          pacman -Syu --noconfirm base-devel
 
-      - name: Resolve latest release tag and update checksums
+      - name: Patch PKGBUILD to use local tarball
         run: |
-          TAG=$(curl -fsSL "https://api.github.com/repos/dfetch-org/dfetch/releases/latest" \
-                | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
-          URL="https://github.com/dfetch-org/dfetch/releases/download/${TAG}/dfetch-${TAG}-nix.tar.gz"
-          SHA256=$(curl -fsSL "$URL" | sha256sum | awk '{print $1}')
-          sed -i "s/^pkgver=.*/pkgver=${TAG}/" aur/PKGBUILD
-          sed -i "s/^sha256sums=.*/sha256sums=('${SHA256}')/" aur/PKGBUILD
+          TARBALL=$(ls dfetch-*-nix.tar.gz)
+          VERSION=${TARBALL#dfetch-}
+          VERSION=${VERSION%-nix.tar.gz}
+          SHA256=$(sha256sum "$TARBALL" | awk '{print $1}')
+          cp "$TARBALL" aur/
+          sed -i "s|^pkgver=.*|pkgver=${VERSION}|" aur/PKGBUILD
+          sed -i "s|^source=.*|source=(\"${TARBALL}\")|" aur/PKGBUILD
+          sed -i "s|^sha256sums=.*|sha256sums=('${SHA256}')|" aur/PKGBUILD
 
       - name: Build package with makepkg
         run: |
@@ -123,11 +169,11 @@ jobs:
 
   publish:
     name: Publish to AUR
-    # For releases: skip the rolling 'latest' tag on main.
-    # For manual dispatch: always run (the operator knows what they're doing).
+    # Only on a real versioned release or a manual dispatch; skip the rolling
+    # 'latest' tag that main pushes create.
     if: >-
-      github.event_name != 'release' ||
-      github.event.release.tag_name != 'latest'
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'release' && github.event.release.tag_name != 'latest')
     runs-on: ubuntu-latest
     concurrency:
       group: aur-publish-${{ github.event.release.tag_name || inputs.release-tag }}

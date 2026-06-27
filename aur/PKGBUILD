@@ -12,5 +12,8 @@ source=("https://github.com/dfetch-org/dfetch/releases/download/${pkgver}/dfetch
 sha256sums=('SKIP')    # replaced by CI with real checksum
 
 package() {
-  install -Dm755 dfetch "$pkgdir/usr/bin/dfetch"
+  install -dm755 "$pkgdir/opt/dfetch"
+  cp -a . "$pkgdir/opt/dfetch/"
+  install -dm755 "$pkgdir/usr/bin"
+  ln -sf /opt/dfetch/dfetch "$pkgdir/usr/bin/dfetch"
 }
