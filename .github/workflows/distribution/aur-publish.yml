@@ -1,3 +1,58 @@
+# Publish to AUR (Arch Linux User Repository)
+#
+# Pushes an updated PKGBUILD for dfetch-bin to AUR on every GitHub release.
+# AUR uses a plain git repository — there is no PR or review gate; every push
+# is immediately visible to users who run `yay -S dfetch-bin` or equivalent.
+#
+# ─── ONE-TIME SETUP ──────────────────────────────────────────────────────────
+#
+# 1. Create an AUR account
+#    Register at https://aur.archlinux.org/register/ if you do not already have
+#    one.  Choose a bot username (e.g. "dfetch-bot") that clearly signals it is
+#    a machine account.
+#
+# 2. Generate a dedicated SSH key pair (do NOT reuse an existing key)
+#
+#    ssh-keygen -t ed25519 -C "dfetch-aur-bot" -f aur_key
+#
+#    This creates two files: aur_key (private) and aur_key.pub (public).
+#    Never commit either file; delete them from disk once the secrets are stored.
+#
+# 3. Register the public key with AUR
+#    Log in to https://aur.archlinux.org, go to My Account → SSH Public Keys,
+#    and paste the contents of aur_key.pub.
+#
+# 4. Create the GitHub 'aur' environment and store the private key as a secret
+#    a. Go to: Repository → Settings → Environments → New environment
+#    b. Name it exactly "aur".
+#    c. Recommended: add "Required reviewers" so every push is approved by a
+#       human before it reaches AUR users.
+#    d. Under "Environment secrets", click "Add secret":
+#         Name:  AUR_SSH_KEY
+#         Value: paste the full contents of the aur_key *private* key file
+#                (including the -----BEGIN/END OPENSSH PRIVATE KEY----- lines).
+#
+# 5. Create or claim the dfetch-bin AUR package (first time only)
+#    Either submit a new package at https://aur.archlinux.org/submit/ or ask an
+#    existing maintainer to add the bot account as a co-maintainer.
+#    If creating fresh:
+#      git clone ssh://aur@aur.archlinux.org/dfetch-bin.git
+#      cp aur/PKGBUILD aur/.SRCINFO dfetch-bin/
+#      cd dfetch-bin
+#      git add PKGBUILD .SRCINFO
+#      git commit -m "Initial import"
+#      git push
+#    The package page will appear at https://aur.archlinux.org/packages/dfetch-bin
+#    within seconds of the first push.
+#
+# 6. Test locally before triggering CI (optional but recommended)
+#    On an Arch Linux system (or in the archlinux Docker image):
+#      cd aur/
+#      makepkg -si      # builds and installs the package from source
+#    Verify `dfetch --version` matches the expected release.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
 name: Publish to AUR
 
 on:
@@ -49,14 +104,7 @@ jobs:
           persist-credentials: false
 
       - name: Update pkgver and checksums
-        # Requires AUR_SSH_KEY secret in the 'aur' environment.
-        #
-        # Setup — create an SSH key pair:
-        #   1. ssh-keygen -t ed25519 -C "dfetch-aur-bot" -f aur_key
-        #   2. Add the public key (aur_key.pub) to your AUR account at
-        #      https://aur.archlinux.org/account/<username>/
-        #   3. Store the private key as secret AUR_SSH_KEY in:
-        #      Repo → Settings → Environments → aur → Environment secrets
+        # Requires AUR_SSH_KEY secret — see one-time setup instructions at the top of this file.
         env:
           TAG: ${{ github.event.release.tag_name || inputs.release-tag }}
         run: |
