@@ -39,10 +39,22 @@
 # 5. Create or claim the dfetch-bin AUR package (first time only)
 #    Either submit a new package at https://aur.archlinux.org/submit/ or ask an
 #    existing maintainer to add the bot account as a co-maintainer.
-#    If creating fresh:
+#    If creating fresh, replace the SKIP placeholder with the real checksum
+#    *before* the first push — AUR users rely on it for integrity verification:
+#
 #      git clone ssh://aur@aur.archlinux.org/dfetch-bin.git
-#      cp aur/PKGBUILD aur/.SRCINFO dfetch-bin/
+#      cp aur/PKGBUILD dfetch-bin/
 #      cd dfetch-bin
+#
+#      # Compute the real SHA256 for the existing release tarball:
+#      VERSION=<current-release-tag>   # e.g. 0.14.3
+#      URL="https://github.com/dfetch-org/dfetch/releases/download/${VERSION}/dfetch-${VERSION}-nix.tar.gz"
+#      SHA256=$(curl -fsSL "$URL" | sha256sum | awk '{print $1}')
+#      sed -i "s|pkgver=.*|pkgver=${VERSION}|" PKGBUILD
+#      sed -i "s|sha256sums=.*|sha256sums=('${SHA256}')|" PKGBUILD
+#      # Regenerate .SRCINFO from the updated PKGBUILD (requires makepkg):
+#      makepkg --printsrcinfo > .SRCINFO
+#
 #      git add PKGBUILD .SRCINFO
 #      git commit -m "Initial import"
 #      git push
@@ -76,6 +88,10 @@ on:
     paths:
       - 'aur/**'
       - '.github/workflows/distribution/aur-publish.yml'
+  pull_request:
+    paths:
+      - 'aur/**'
+      - '.github/workflows/distribution/aur-publish.yml'
 
 permissions:
   contents: read
@@ -83,7 +99,7 @@ permissions:
 jobs:
   build-binary:
     name: Build Linux binary from source
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
@@ -125,10 +141,10 @@ jobs:
   test:
     name: Test PKGBUILD
     needs: build-binary
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     container:
-      image: archlinux:latest
+      image: archlinux:latest@sha256:cc54f12fae7c81bd0d1a38f1694b4c28ffc708b358dd5876ab77dde49d37925a
 
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0

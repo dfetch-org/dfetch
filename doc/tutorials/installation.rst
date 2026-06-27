@@ -64,9 +64,9 @@ The version is automatically determined from the project and used to name the in
             # or with any other AUR helper, e.g.
             $ paru -S dfetch-bin
 
-        The AUR helper verifies the SHA256 checksum of the downloaded binary
-        before installing.  You can also verify the release tarball's build
-        provenance independently using the `GitHub attestation tool
+        The AUR helper verifies the SHA256 checksum of the release tarball
+        before installing.  You can also verify that tarball's build provenance
+        independently using the `GitHub attestation tool
         <https://cli.github.com/manual/gh_attestation_verify>`_.
 
     .. tab:: macOS

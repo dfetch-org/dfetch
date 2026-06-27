@@ -138,11 +138,10 @@ jobs:
           python script/build.py
           python script/package.py
 
-      - name: Create AUR tarball (Linux only)
-        if: runner.os == 'Linux'
+      - name: Create AUR tarball (Linux, versioned releases only)
+        if: runner.os == 'Linux' && inputs.release_id != 'latest' && inputs.release_id != ''
         run: |
-          VERSION=$(python -c "from dfetch import __version__; print(__version__)")
-          tar czf "build/dfetch-package/dfetch-${VERSION}-nix.tar.gz" \
+          tar czf "build/dfetch-package/dfetch-${{ inputs.release_id }}-nix.tar.gz" \
             -C build/dfetch.dist .
 
       - name: Save cache for clcache
