@@ -10,6 +10,7 @@
 #    Register at https://aur.archlinux.org/register/ if you do not already have
 #    one.  Choose a bot username (e.g. "dfetch-bot") that clearly signals it is
 #    a machine account.
+#    Ref: https://wiki.archlinux.org/title/AUR_submission_guidelines#Creating_a_new_package
 #
 # 2. Generate a dedicated SSH key pair (do NOT reuse an existing key)
 #
@@ -17,6 +18,7 @@
 #
 #    This creates two files: aur_key (private) and aur_key.pub (public).
 #    Never commit either file; delete them from disk once the secrets are stored.
+#    Ref: https://wiki.archlinux.org/title/AUR_submission_guidelines#Authentication
 #
 # 3. Register the public key with AUR
 #    Log in to https://aur.archlinux.org, go to My Account → SSH Public Keys,
@@ -27,10 +29,12 @@
 #    b. Name it exactly "aur".
 #    c. Recommended: add "Required reviewers" so every push is approved by a
 #       human before it reaches AUR users.
+#       Ref: https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment#required-reviewers
 #    d. Under "Environment secrets", click "Add secret":
 #         Name:  AUR_SSH_KEY
 #         Value: paste the full contents of the aur_key *private* key file
 #                (including the -----BEGIN/END OPENSSH PRIVATE KEY----- lines).
+#       Ref: https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-an-environment
 #
 # 5. Create or claim the dfetch-bin AUR package (first time only)
 #    Either submit a new package at https://aur.archlinux.org/submit/ or ask an
@@ -44,12 +48,14 @@
 #      git push
 #    The package page will appear at https://aur.archlinux.org/packages/dfetch-bin
 #    within seconds of the first push.
+#    Ref: https://wiki.archlinux.org/title/AUR_submission_guidelines#Submitting_packages
 #
 # 6. Test locally before triggering CI (optional but recommended)
 #    On an Arch Linux system (or in the archlinux Docker image):
 #      cd aur/
 #      makepkg -si      # builds and installs the package from source
 #    Verify `dfetch --version` matches the expected release.
+#    Ref: https://wiki.archlinux.org/title/Makepkg
 #
 # ─────────────────────────────────────────────────────────────────────────────
 
