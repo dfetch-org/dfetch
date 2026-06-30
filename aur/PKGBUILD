@@ -1,0 +1,22 @@
+# Maintainer: dfetch-org <https://github.com/dfetch-org>
+pkgname=dfetch-bin
+pkgver=0.14.3
+pkgrel=1
+pkgdesc="Vendor tool for fetching external dependencies"
+arch=('x86_64')
+url="https://github.com/dfetch-org/dfetch"
+license=('MIT')
+provides=('dfetch')
+conflicts=('dfetch')
+source=("https://github.com/dfetch-org/dfetch/releases/download/${pkgver}/dfetch-${pkgver}-nix.tar.gz")
+sha256sums=('SKIP')
+# ^ CI replaces SKIP with the real SHA256 before pushing to AUR.
+# Do NOT run makepkg manually from this repository copy — use the AUR package
+# at https://aur.archlinux.org/packages/dfetch-bin where the real checksum is set.
+
+package() {
+  install -dm755 "$pkgdir/opt/dfetch"
+  cp -a . "$pkgdir/opt/dfetch/"
+  install -dm755 "$pkgdir/usr/bin"
+  ln -sf /opt/dfetch/dfetch "$pkgdir/usr/bin/dfetch"
+}

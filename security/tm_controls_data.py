@@ -2,7 +2,7 @@
 
 All implemented security controls for dfetch, split by threat model scope:
 
-* ``SC_CONTROLS``    — supply-chain controls (C-009 … C-042)
+* ``SC_CONTROLS``    — supply-chain controls (C-009 … C-047)
 * ``USAGE_CONTROLS`` — runtime-usage controls (C-001 … C-045)
 
 This module is intentionally pytm-free so that ``compliance.py`` and other
@@ -30,7 +30,7 @@ class Control:
         return f"[{self.id}] {self.name}"
 
 
-# ── Supply-chain controls (C-009 … C-042) ────────────────────────────────────
+# ── Supply-chain controls (C-009 … C-047) ────────────────────────────────────
 
 SC_CONTROLS: list[Control] = [
     Control(
@@ -49,7 +49,7 @@ SC_CONTROLS: list[Control] = [
         name="OIDC trusted publishing",
         assets=["A-05", "A-03"],
         threats=["DFT-07"],
-        reference=".github/workflows/python-publish.yml",
+        reference=".github/workflows/distribution/python-publish.yml",
         description=(
             "PyPI publishes via ``pypa/gh-action-pypi-publish`` with "
             "``id-token: write`` and no stored long-lived API token."
@@ -303,7 +303,7 @@ SC_CONTROLS: list[Control] = [
         name="Winget manifest PRs reviewed by community maintainers",
         assets=["A-09"],
         threats=["DFT-35"],
-        reference=".github/workflows/winget-publish.yml",
+        reference=".github/workflows/distribution/winget-publish.yml",
         description=(
             "Manifest update PRs submitted to ``microsoft/winget-pkgs`` by "
             "``winget-publish.yml`` go through the standard Winget community review "
@@ -321,7 +321,7 @@ SC_CONTROLS: list[Control] = [
         name="WINGET_TOKEN scoped to dedicated Winget environment",
         assets=["A-10"],
         threats=["DFT-34"],
-        reference=".github/workflows/winget-publish.yml",
+        reference=".github/workflows/distribution/winget-publish.yml",
         description=(
             "``WINGET_TOKEN`` is stored in the ``winget`` GitHub Actions deployment "
             "environment, limiting its exposure: the PAT is only injected into "
@@ -331,6 +331,58 @@ SC_CONTROLS: list[Control] = [
             "Residual risk: unlike PyPI which uses OIDC (A-05, no stored long-lived "
             "token), Winget does not support OIDC trusted publishing; the PAT must "
             "be stored and rotated manually (DFT-34)."
+        ),
+    ),
+    Control(
+        id="C-044",
+        name="AUR_SSH_KEY scoped to dedicated AUR environment",
+        assets=["A-12", "A-11"],
+        threats=["DFT-36"],
+        reference=".github/workflows/distribution/aur-publish.yml",
+        description=(
+            "``AUR_SSH_KEY`` is stored in the ``aur`` GitHub Actions deployment "
+            "environment, limiting its exposure: the SSH key is only injected into "
+            "workflows that explicitly reference that environment.  "
+            "Only ``aur-publish.yml`` references the ``aur`` environment, so the "
+            "key is not available to other workflows.  "
+            "Unlike PyPI which uses OIDC (A-05, no stored long-lived token) or "
+            "Winget which uses a PAT (A-10), AUR authentication requires an SSH key "
+            "for git push access; the key must be stored and rotated manually.  "
+            "A compromised key enables direct (no review gate) PKGBUILD pushes to AUR."
+        ),
+    ),
+    Control(
+        id="C-046",
+        name="AUR PKGBUILD uses real SHA256 checksum of release tarball",
+        assets=["A-11"],
+        threats=["DFT-36"],
+        reference=".github/workflows/distribution/aur-publish.yml",
+        description=(
+            "The ``aur-publish.yml`` workflow computes the SHA256 checksum of the "
+            "release tarball at publish time and embeds it in the PKGBUILD, replacing "
+            "the placeholder ``SKIP``.  "
+            "AUR helpers (``yay``, ``paru``) verify this checksum when building the "
+            "package, so a tampered tarball would be rejected before installation.  "
+            "Residual risk: a compromised AUR_SSH_KEY (A-12) allows pushing a "
+            "PKGBUILD with a fraudulent checksum — the review gate present in Winget "
+            "(C-041) does not exist for AUR direct pushes."
+        ),
+    ),
+    Control(
+        id="C-047",
+        name="AUR release tarball build-provenance verified before PKGBUILD update",
+        assets=["A-11", "A-12"],
+        threats=["DFT-36"],
+        reference=".github/workflows/distribution/aur-publish.yml",
+        description=(
+            "Before computing the SHA256 to embed in the PKGBUILD, ``aur-publish.yml`` "
+            "runs ``gh attestation verify`` against the downloaded release tarball.  "
+            "This confirms the tarball's Sigstore SLSA build-provenance attestation "
+            "chain: the artifact was produced by the trusted "
+            "``build.yml`` workflow from a signed release tag, not tampered with "
+            "in transit or substituted by a compromised release asset.  "
+            "If attestation fails the workflow aborts before any PKGBUILD update or "
+            "AUR push."
         ),
     ),
 ]
