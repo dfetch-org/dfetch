@@ -173,6 +173,46 @@ for regeneration instructions.
    threat_model_supply_chain
    threat_model_usage
 
+.. _identified-gaps:
+
+Identified Gaps (Reserved Control IDs)
+--------------------------------------
+
+The runtime-usage threat model references four control IDs that are reserved
+for improvements not yet implemented. Reserving the IDs keeps the control
+numbering stable and makes each gap a first-class part of the risk analysis —
+you can trace every "gap C-0xx" mention in the threat models back to this
+table:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 10 90
+
+   * - ID
+     - Planned control
+   * - C-018
+     - Integrity-hash enforcement for archive dependencies. The
+       ``integrity.hash`` manifest field is optional today; when it is absent no
+       content verification occurs. You can bootstrap the hash for an existing
+       manifest with ``dfetch freeze``.
+   * - C-019
+     - End-to-end content integrity for Git and SVN dependencies. Authenticity
+       currently relies on transport security (TLS / SSH) and the integrity of
+       the upstream repository; pinning to an immutable commit SHA is the
+       strongest mitigation available today.
+   * - C-020
+     - Patch-file integrity verification. ``patch:`` files referenced by the
+       manifest carry no hash, and the destination paths inside a patch are
+       validated by ``patch-ng`` rather than independently by dfetch.
+   * - C-035
+     - Upstream source-attestation verification. dfetch has no mechanism yet to
+       request or verify SLSA Source Provenance Attestations (:term:`VSA`) for
+       fetched repositories, and the manifest schema has no field to declare an
+       expected SLSA source level.
+
+When one of these controls is implemented, it moves to the
+:doc:`control_register` under its reserved ID.
+
 CRA Compliance
 --------------
 
@@ -235,7 +275,7 @@ OSCAL
 
 :term:`OSCAL` (Open Security Controls Assessment Language) is a set of
 NIST-published JSON/XML schemas for machine-readable security documentation.
-dfetch uses OSCAL 1.1.2 for two artifacts:
+dfetch uses OSCAL 1.2.2 for two artifacts:
 
 - `OSCAL Catalog model <https://pages.nist.gov/OSCAL/reference/latest/catalog/>`_ —
   used by ``cra_pren_4000014_oscal_catalog.json`` to represent the prEN 40000-1-4

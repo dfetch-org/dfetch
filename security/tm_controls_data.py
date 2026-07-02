@@ -301,7 +301,7 @@ SC_CONTROLS: list[Control] = [
     Control(
         id="C-041",
         name="Winget manifest PRs reviewed by community maintainers",
-        assets=["A-09"],
+        assets=["A-28"],
         threats=["DFT-35"],
         reference=".github/workflows/winget-publish.yml",
         description=(
@@ -319,7 +319,7 @@ SC_CONTROLS: list[Control] = [
     Control(
         id="C-042",
         name="WINGET_TOKEN scoped to dedicated Winget environment",
-        assets=["A-10"],
+        assets=["A-29"],
         threats=["DFT-34"],
         reference=".github/workflows/winget-publish.yml",
         description=(

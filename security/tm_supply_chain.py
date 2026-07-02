@@ -201,8 +201,8 @@ def _make_sc_processes(b_github: Boundary) -> tuple[Process, Process, Process]:
         "harden-runner used in every workflow that executes steps on a runner "
         "(egress: block with endpoint allowlist); ci.yml is a dispatcher-only workflow "
         "with no runner steps and does not include harden-runner.  "
-        "winget-publish.yml uses a stored PAT (WINGET_TOKEN, A-10) to submit manifest "
-        "PRs to the Winget Community Repository (A-09)."
+        "winget-publish.yml uses a stored PAT (WINGET_TOKEN, A-29) to submit manifest "
+        "PRs to the Winget Community Repository (A-28)."
     )
     gh_actions_workflow.controls.isHardened = (
         True  # SHA-pinned actions, harden-runner egress:block on all runner workflows
@@ -232,7 +232,7 @@ def _make_sc_processes(b_github: Boundary) -> tuple[Process, Process, Process]:
 def _make_sc_datastores(b_github: Boundary) -> tuple[Datastore, Datastore]:
     """Create data assets; return all for use in dataflows."""
     Data(
-        "A-10: WINGET_TOKEN PAT",
+        "A-29: WINGET_TOKEN PAT",
         description=(
             "Long-lived classic GitHub Personal Access Token (fine-grained PATs are not "
             "supported by the ``vedantmgoyal9/winget-releaser`` action) with ``public_repo`` "
@@ -568,14 +568,14 @@ def _make_sc_winget_elements_and_flows(
         "(https://github.com/microsoft/winget-pkgs) where dfetch's Winget manifest "
         "is hosted.  "
         "Manifest PRs are submitted automatically by the CI release pipeline "
-        "(winget-publish.yml) using the stored WINGET_TOKEN PAT (A-10).  "
+        "(winget-publish.yml) using the stored WINGET_TOKEN PAT (A-29).  "
         "Consumer installations resolve manifests from this repository; winget "
         "downloads the MSI installer from the URL declared in the manifest "
         "(pointing to GitHub Releases, A-01) and verifies its SHA256 hash."
     )
 
     winget_repo = ExternalEntity(
-        "A-09: Winget Community Repository (microsoft/winget-pkgs)"
+        "A-28: Winget Community Repository (microsoft/winget-pkgs)"
     )
     winget_repo.inBoundary = b_winget
     winget_repo.classification = Classification.SENSITIVE
@@ -584,7 +584,7 @@ def _make_sc_winget_elements_and_flows(
         "``DFetch-org.DFetch`` manifest is hosted "
         "(https://github.com/microsoft/winget-pkgs).  "
         "CI submits manifest update PRs via ``vedantmgoyal9/winget-releaser`` using "
-        "a stored PAT (A-10); PRs are reviewed by ``microsoft/winget-pkgs`` "
+        "a stored PAT (A-29); PRs are reviewed by ``microsoft/winget-pkgs`` "
         "maintainers before merging (C-041).  "
         "Manifests contain SHA256 hashes of the installer binary; winget verifies "
         "the hash before installation.  "
@@ -610,8 +610,8 @@ def _make_sc_winget_elements_and_flows(
     df27.description = (
         "On release event, ``winget-publish.yml`` uses ``vedantmgoyal9/winget-releaser`` "
         "to discover the MSI asset in the GitHub release, compute its SHA256 hash, "
-        "generate updated Winget manifests, and submit a PR to A-09 "
-        "(``microsoft/winget-pkgs``) authenticated via the WINGET_TOKEN PAT (A-10).  "
+        "generate updated Winget manifests, and submit a PR to A-28 "
+        "(``microsoft/winget-pkgs``) authenticated via the WINGET_TOKEN PAT (A-29).  "
         "The PR is reviewed by ``microsoft/winget-pkgs`` maintainers before merging "
         "(C-041).  "
         "Residual risk: a compromised PAT (DFT-34) or a fraudulent submission that "
@@ -629,7 +629,7 @@ def _make_sc_winget_elements_and_flows(
     df28 = Dataflow(consumer, winget_repo, "DF-28: winget install dfetch")
     df28.description = (
         "Consumer runs ``winget install -e --id DFetch-org.DFetch``.  "
-        "The winget client resolves the manifest from A-09 (``microsoft/winget-pkgs``).  "
+        "The winget client resolves the manifest from A-28 (``microsoft/winget-pkgs``).  "
         "The manifest contains the installer URL (pointing to GitHub Releases, A-01) "
         "and the SHA256 hash of the MSI.  "
         "The consumer can verify the MSI attestations using ``gh attestation verify`` "
@@ -642,7 +642,7 @@ def _make_sc_winget_elements_and_flows(
 
     df29 = Dataflow(winget_repo, consumer, "DF-29: Consumer downloads MSI via winget")
     df29.description = (
-        "winget resolves the installer URL from the manifest in A-09 and downloads "
+        "winget resolves the installer URL from the manifest in A-28 and downloads "
         "the MSI directly from GitHub Releases (A-01).  "
         "The SHA256 hash declared in the manifest is verified against the downloaded "
         "binary before installation begins.  "
@@ -723,8 +723,8 @@ _SUPPLY_CHAIN_ASSET_IDS = {
     "A-07",
     "A-08",
     "A-08b",
-    "A-09",
-    "A-10",
+    "A-28",
+    "A-29",
 }
 ASSET_CONTROLS: dict[str, list[Control]] = build_asset_controls_index(
     CONTROLS, _SUPPLY_CHAIN_ASSET_IDS
@@ -761,6 +761,7 @@ RESPONSES: list[ThreatResponse] = [
             "C-015 (CodeQL) and C-017 (bandit) perform static analysis that detects "
             "command injection patterns before code reaches production."
         ),
+        target="A-01: GitHub Repository (main / protected)",
     ),
     ThreatResponse(
         "DFT-07",
@@ -921,14 +922,14 @@ RESPONSES: list[ThreatResponse] = [
         "mitigate",
         risk="High",
         stride=["Information Disclosure", "Tampering"],
-        target="A-10: WINGET_TOKEN PAT",
+        target="A-29: WINGET_TOKEN PAT",
     ),
     ThreatResponse(
         "DFT-35",
         "mitigate",
         risk="High",
         stride=["Tampering", "Spoofing"],
-        target="A-09: Winget Community Repository (microsoft/winget-pkgs)",
+        target="A-28: Winget Community Repository (microsoft/winget-pkgs)",
     ),
 ]
 

@@ -257,7 +257,7 @@ def _make_usage_datastores_a(
         "Enumerates vendored components with PURL, license, and hash.  "
         "Falsification hides actual dependencies from downstream CVE scanners.  "
         "NOTE: this SBOM covers vendored deps only - dfetch itself has a separate "
-        "machine-readable SBOM published on PyPI (see A-04 in tm_supply_chain.py)."
+        "machine-readable SBOM published on PyPI (see A-03 in tm_supply_chain.py)."
     )
     sbom_output.storesSensitiveData = False
     sbom_output.hasWriteAccess = True
@@ -930,6 +930,7 @@ RESPONSES: list[ThreatResponse] = [
             "C-007 invokes all external commands with ``shell=False`` and list-form arguments, "
             "eliminating the shell-injection vector for non-interactive VCS operations."
         ),
+        target="A-22: dfetch Process",
     ),
     ThreatResponse(
         "DFT-07",
