@@ -82,7 +82,7 @@ Boundaries
      - Python Package Index and its staging registry.  dfetch publishes via OIDC trusted publishing - no long-lived API token stored.
 
    * - Winget Community Repository
-     - The Windows Package Manager Community Repository (https://github.com/microsoft/winget-pkgs) where dfetch's Winget manifest is hosted.  Manifest PRs are submitted automatically by the CI release pipeline (winget-publish.yml) using the stored WINGET_TOKEN PAT (A-10).  Consumer installations resolve manifests from this repository; winget downloads the MSI installer from the URL declared in the manifest (pointing to GitHub Releases, A-01) and verifies its SHA256 hash.
+     - The Windows Package Manager Community Repository (https://github.com/microsoft/winget-pkgs) where dfetch's Winget manifest is hosted.  Manifest PRs are submitted automatically by the CI release pipeline (winget-publish.yml) using the stored WINGET_TOKEN PAT (A-29).  Consumer installations resolve manifests from this repository; winget downloads the MSI installer from the URL declared in the manifest (pointing to GitHub Releases, A-01) and verifies its SHA256 hash.
 
 
 Data Flow Diagram
@@ -258,7 +258,7 @@ Data Flow Diagram
                shape = square;
                color = black;
                fontcolor = black;
-               label = "A-09: Winget\nCommunity\nRepository\n(microsoft/winget-\npkgs)";
+               label = "A-28: Winget\nCommunity\nRepository\n(microsoft/winget-\npkgs)";
                margin = 0.02;
            ]
 
@@ -458,7 +458,7 @@ Sequence Diagram
    entity process_APythonBuildwheelsdist_b2e5892d06 as "A-08: Python\nBuild (wheel\n/ sdist)"
    database datastore_AdfetchBuildDevDependencies_990b886585 as "A-07: dfetch\nBuild / Dev\nDependencies"
    database datastore_AbGitHubActionsBuildCache_9df04f8dae as "A-08b:\nGitHub\nActions\nBuild Cache"
-   entity externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48 as "A-09: Winget\nCommunity\nRepository\n(microsoft/winget-pkgs)"
+   entity externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48 as "A-28: Winget\nCommunity\nRepository\n(microsoft/winget-pkgs)"
 
    actor_DeveloperContributor_d2006ce1bb -> externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72: DF-11: Push commits / open PR
    externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72 -> process_AReleaseGateCodeReview_9345ab4c19: DF-22: PR enters code review
@@ -554,7 +554,7 @@ Asset Identification
      - Data
      - High / High / High
    * - A-06: GitHub Actions Workflow
-     - CI/CD pipelines: test, build (wheel/msi/deb/rpm), lint, CodeQL, Scorecard, dependency-review, docs, release, winget-publish.  All actions pinned by commit SHA.  harden-runner used in every workflow that executes steps on a runner (egress: block with endpoint allowlist); ci.yml is a dispatcher-only workflow with no runner steps and does not include harden-runner.  winget-publish.yml uses a stored PAT (WINGET_TOKEN, A-10) to submit manifest PRs to the Winget Community Repository (A-09).
+     - CI/CD pipelines: test, build (wheel/msi/deb/rpm), lint, CodeQL, Scorecard, dependency-review, docs, release, winget-publish.  All actions pinned by commit SHA.  harden-runner used in every workflow that executes steps on a runner (egress: block with endpoint allowlist); ci.yml is a dispatcher-only workflow with no runner steps and does not include harden-runner.  winget-publish.yml uses a stored PAT (WINGET_TOKEN, A-29) to submit manifest PRs to the Winget Community Repository (A-28).
      - Process
      - Medium / Medium / Medium
    * - A-07: dfetch Build / Dev Dependencies
@@ -569,11 +569,11 @@ Asset Identification
      - GitHub Actions cache entries written and restored across pipeline runs.  Used to speed up dependency installation (pip, gem) and incremental builds.  Cache-poisoning from forked PRs (DFT-28, SLSA E6: poison the build cache) is mitigated by ref-scoped cache keys: build.yml includes ``${{ github.ref_name }}`` in both ``key`` and ``restore-keys`` (C-033), which isolates PR and release caches per branch so a fork cannot write into the release cache namespace.
      - Datastore
      - High / High / —
-   * - A-09: Winget Community Repository (microsoft/winget-pkgs)
-     - The Windows Package Manager Community Repository where the dfetch ``DFetch-org.DFetch`` manifest is hosted (https://github.com/microsoft/winget-pkgs).  CI submits manifest update PRs via ``vedantmgoyal9/winget-releaser`` using a stored PAT (A-10); PRs are reviewed by ``microsoft/winget-pkgs`` maintainers before merging (C-041).  Manifests contain SHA256 hashes of the installer binary; winget verifies the hash before installation.  A compromised PAT or a fraudulent PR that passes review could redirect consumers to a malicious installer (DFT-35).
+   * - A-28: Winget Community Repository (microsoft/winget-pkgs)
+     - The Windows Package Manager Community Repository where the dfetch ``DFetch-org.DFetch`` manifest is hosted (https://github.com/microsoft/winget-pkgs).  CI submits manifest update PRs via ``vedantmgoyal9/winget-releaser`` using a stored PAT (A-29); PRs are reviewed by ``microsoft/winget-pkgs`` maintainers before merging (C-041).  Manifests contain SHA256 hashes of the installer binary; winget verifies the hash before installation.  A compromised PAT or a fraudulent PR that passes review could redirect consumers to a malicious installer (DFT-35).
      - ExternalEntity
      - High / High / —
-   * - A-10: WINGET_TOKEN PAT
+   * - A-29: WINGET_TOKEN PAT
      - Long-lived classic GitHub Personal Access Token (fine-grained PATs are not supported by the ``vedantmgoyal9/winget-releaser`` action) with ``public_repo`` scope, stored as a GitHub Actions environment secret in the ``winget`` environment.  Used by ``winget-publish.yml`` to push a manifest branch to the pre-existing fork ``dfetch-org/winget-pkgs`` and open a PR against ``microsoft/winget-pkgs``.  Unlike the PyPI OIDC token (A-05) which is short-lived and not stored, this PAT persists indefinitely until rotated.  If exfiltrated from the CI environment, an attacker could submit fraudulent manifest PRs from outside the project's pipeline.
      - Data
      - High / High / —
@@ -677,16 +677,16 @@ Dataflows
 
    * - DF-27: Winget manifest PR submission
      - A-02: GitHub Actions Infrastructure
-     - A-09: Winget Community Repository (microsoft/winget-pkgs)
+     - A-28: Winget Community Repository (microsoft/winget-pkgs)
      - HTTPS
 
    * - DF-28: winget install dfetch
      - Consumer / End User
-     - A-09: Winget Community Repository (microsoft/winget-pkgs)
+     - A-28: Winget Community Repository (microsoft/winget-pkgs)
      - HTTPS
 
    * - DF-29: Consumer downloads MSI via winget
-     - A-09: Winget Community Repository (microsoft/winget-pkgs)
+     - A-28: Winget Community Repository (microsoft/winget-pkgs)
      - Consumer / End User
      - HTTPS
 
@@ -728,6 +728,14 @@ Threats
        | **STRIDE:** T S
        | **Status:** Mitigate
      - C-021
+   * - DFT-06
+     - Command injection via unsanitised subprocess input
+     - A-01: GitHub Repository (main / protected)
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** T E
+       | **Status:** Mitigate
+     - C-015 (CodeQL) and C-017 (bandit) perform static analysis that detects command injection patterns before code reaches production.
    * - DFT-07
      - CI/CD secret exfiltration via supply-chain attack on build environment
      - A-08: Python Build (wheel / sdist)
@@ -856,9 +864,17 @@ Threats
        | **STRIDE:** T
        | **Status:** Mitigate
      - C-038
+   * - DFT-34
+     - Long-lived stored credential enables persistent unauthorised publication after exfiltration
+     - A-29: WINGET_TOKEN PAT
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** I T
+       | **Status:** Mitigate
+     - C-042
    * - DFT-35
      - Compromised publish credential enables malicious installer URL injection via package manifest submission
-     - A-09: Winget Community Repository (microsoft/winget-pkgs)
+     - A-28: Winget Community Repository (microsoft/winget-pkgs)
      - | **Sev:** 🟠H
        | **Risk:** 🟠H
        | **STRIDE:** T S

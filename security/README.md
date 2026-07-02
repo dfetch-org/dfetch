@@ -37,7 +37,7 @@ python -m security.compliance \
 
 This produces:
 
-- `security/dfetch.component-definition.json` — OSCAL 1.1.2 Component Definition implementing
+- `security/dfetch.component-definition.json` — OSCAL 1.2.2 Component Definition implementing
   prEN 40000-1-4 Security Objectives for dfetch
 - `doc/explanation/compliance_track.rst` — human-readable RST (built into the Sphinx docs)
 

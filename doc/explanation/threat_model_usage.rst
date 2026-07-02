@@ -679,7 +679,7 @@ Asset Identification
      - Datastore
      - Critical / Critical / High
    * - A-15: SBOM Output (CycloneDX)
-     - CycloneDX JSON/XML produced by ``dfetch report -t sbom``.  Enumerates vendored components with PURL, license, and hash.  Falsification hides actual dependencies from downstream CVE scanners.  NOTE: this SBOM covers vendored deps only - dfetch itself has a separate machine-readable SBOM published on PyPI (see A-04 in tm_supply_chain.py).
+     - CycloneDX JSON/XML produced by ``dfetch report -t sbom``.  Enumerates vendored components with PURL, license, and hash.  Falsification hides actual dependencies from downstream CVE scanners.  NOTE: this SBOM covers vendored deps only - dfetch itself has a separate machine-readable SBOM published on PyPI (see A-03 in tm_supply_chain.py).
      - Datastore
      - High / High / —
    * - A-16: VCS Credentials
@@ -952,6 +952,14 @@ Threats
        | **STRIDE:** T S
        | **Status:** Mitigate
      - C-005 mitigates archive deps when hash present. Git/SVN: no integrity mechanism; pinning to an immutable commit SHA is recommended but not enforced by dfetch.
+   * - DFT-06
+     - Command injection via unsanitised subprocess input
+     - A-22: dfetch Process
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** T E
+       | **Status:** Mitigate
+     - C-006 suppresses interactive credential prompts for Git and SVN; C-007 invokes all external commands with ``shell=False`` and list-form arguments, eliminating the shell-injection vector for non-interactive VCS operations.
    * - DFT-07
      - CI/CD secret exfiltration via supply-chain attack on build environment
      - A-25: Patch Application (patch-ng)
@@ -1190,10 +1198,6 @@ Controls
      - Manifest input validation
      - DFT-04, DFT-08
      - StrictYAML schema with ``SAFE_STR = Regex(r"^[^\x00-\x1F\x7F-\x9F]*$")`` rejects control characters in all string fields.  ``dfetch/manifest/schema.py``
-   * - C-045
-     - Plaintext transport detection
-     - DFT-26
-     - ``plaintext_warning()`` (``dfetch/manifest/project.py``) inspects the resolved remote URL immediately before each VCS command is issued (inside the ``check_for_update`` and ``update`` spinners in ``subproject.py``).  If the scheme is ``http://``, ``git://``, or ``svn://``, a visible warning is emitted naming the redacted URL (credentials stripped from the userinfo component) and recommending ``https://`` or ``svn+ssh://``.  Detection only — dfetch still proceeds with the plaintext connection; the control raises user awareness but does not enforce scheme selection.  ``dfetch/manifest/project.py, dfetch/project/subproject.py``
    * - C-034
      - Hash algorithm allowlist (SHA-256/384/512 only)
      - DFT-30
@@ -1202,3 +1206,7 @@ Controls
      - Persisted-metadata credential redaction
      - DFT-13
      - ``Metadata.dump()`` rebuilds the netloc of every persisted URL from ``parsed.hostname`` and ``parsed.port`` via ``urllib.parse.urlsplit`` / ``urlunsplit``, dropping any ``user:password@`` userinfo before writing ``.dfetch_data.yaml``.  The same stripper is applied to each ``dependencies[].remote_url`` entry (git submodule, svn:external) so a credential in a nested upstream URL also never reaches disk.  The in-memory ``Metadata`` object held by the running command keeps the original URL — only the on-disk representation is redacted, so an in-flight authenticated fetch is unaffected.  ``dfetch/project/metadata.py``
+   * - C-045
+     - Plaintext transport detection
+     - DFT-26
+     - ``plaintext_warning()`` (``dfetch/manifest/project.py``) inspects the resolved remote URL immediately before each VCS command is issued (inside the ``check_for_update`` and ``update`` spinners in ``subproject.py``).  If the scheme is ``http://``, ``git://``, or ``svn://``, a visible warning is emitted naming the redacted URL (credentials stripped from the userinfo component) and recommending ``https://`` or ``svn+ssh://``.  Detection only — dfetch still proceeds with the plaintext connection; the control raises user awareness but does not enforce scheme selection.  ``dfetch/manifest/project.py, dfetch/project/subproject.py``

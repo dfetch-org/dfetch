@@ -8,6 +8,7 @@ import os
 import re
 import sys
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any
 
 from pytm import TM, Data, Element
@@ -120,6 +121,46 @@ def _render_asset_rows(
     return "".join(_asset_row(e, cia) for e in assets)
 
 
+@dataclass
+class _CatalogRow:
+    """Stand-in finding for a threat documented via ``ThreatResponse`` only.
+
+    Two situations leave a responded-to threat without any pytm finding:
+    the mitigation is already modelled in the element properties, so the
+    threat's condition no longer matches (e.g. DFT-06 with parameterized
+    subprocess input), or the threat targets ``Data`` assets, which pytm's
+    ``resolve()`` never evaluates (it iterates ``TM._elements`` only, while
+    ``Data`` lives in ``TM._data`` — e.g. DFT-34).  Rendering these rows
+    from the threat catalog keeps the decision visible in the report instead
+    of silently dropping it.
+    """
+
+    threat_id: str
+    description: str
+    severity: str
+    target: str = "—"
+
+
+def _validate_threat_coverage(
+    findings: Any,
+    responses: list[ThreatResponse],
+    catalog: dict[str, Any],
+) -> None:
+    """Fail generation when findings and responses have drifted apart.
+
+    Every pytm finding must have a documented ``ThreatResponse``, and every
+    response must reference a threat that exists in the catalog.  Raising here
+    means an undocumented threat can never silently render as an empty row.
+    """
+    resp_ids = {r.threat_id for r in responses}
+    unknown = sorted(resp_ids - set(catalog))
+    if unknown:
+        raise ValueError(f"Responses reference unknown threat IDs: {unknown}")
+    unhandled = sorted({f.threat_id for f in findings} - resp_ids)
+    if unhandled:
+        raise ValueError(f"Findings without a ThreatResponse: {unhandled}")
+
+
 def _render_threat_rows(
     tm: Any, controls: list[Control], responses: list[ThreatResponse]
 ) -> str:
@@ -129,16 +170,31 @@ def _render_threat_rows(
     threat that applies to many elements produces many byte-identical rows.
     Collapse them to a single row documented against the threat's canonical
     target (``ThreatResponse.target`` when set, otherwise the matched element).
+
+    Responses whose threat produced no pytm finding are rendered from the
+    threat catalog instead (see ``_CatalogRow``), so every documented risk
+    decision appears in the table.
     """
     findings = tm.findings
-    if not findings:
+    if not findings and not responses:
         return ""
+
+    catalog: dict[str, Any] = {t.id: t for t in getattr(TM, "_threats", [])}
+    _validate_threat_coverage(findings, responses, catalog)
 
     resp_map: dict[str, ThreatResponse] = {r.threat_id: r for r in responses}
 
     representative: dict[str, Any] = {}
     for f in findings:
         representative.setdefault(f.threat_id, f)
+    for r in responses:
+        if r.threat_id not in representative:
+            threat = catalog[r.threat_id]
+            representative[r.threat_id] = _CatalogRow(
+                threat_id=r.threat_id,
+                description=str(threat.description),
+                severity=str(threat.severity),
+            )
 
     def _row(f: Any) -> str:
         resp = resp_map.get(f.threat_id)

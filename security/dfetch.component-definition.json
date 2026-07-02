@@ -3,8 +3,8 @@
     "uuid": "eddc2e8c-a2ae-5a42-8d35-88f5c2af55b2",
     "metadata": {
       "title": "dfetch CRA Compliance Component Definition",
-      "last-modified": "2026-06-17T00:00:00Z",
-      "version": "0.15.0",
+      "last-modified": "2026-07-02T00:00:00Z",
+      "version": "0.14.0",
       "oscal-version": "1.2.2",
       "document-ids": [
         {
@@ -82,7 +82,7 @@
         "props": [
           {
             "name": "software-version",
-            "value": "0.15.0"
+            "value": "0.14.0"
           },
           {
             "name": "asset-type",
