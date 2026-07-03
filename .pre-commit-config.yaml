@@ -14,17 +14,17 @@ repos:
     hooks:
     -   id: isort
         name: Sort import
-        entry: isort
+        entry: dfetch
+        args: ['filter', '--not-dfetched', 'isort']
         language: system
         types: [file, python]
-        exclude: ^doc/_ext/sphinxcontrib_asciinema
 
     -   id: black
         name: Black (auto-format)
-        entry: black
+        entry: dfetch
+        args: ['filter', '--not-dfetched', 'black']
         language: system
         types: [file, python]
-        exclude: ^doc/_ext/sphinxcontrib_asciinema
 
     -   id: pylint
         name: pylint

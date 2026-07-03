@@ -1,3 +1,8 @@
+Release 0.15.0 (unreleased)
+===========================
+
+* Add ``dfetch filter`` command to guard vendored files, e.g. in pre-commit hooks (#19)
+
 Release 0.14.3 (released 2026-06-25)
 ====================================
 

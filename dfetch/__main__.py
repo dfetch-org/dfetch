@@ -13,6 +13,7 @@ import dfetch.commands.add
 import dfetch.commands.check
 import dfetch.commands.diff
 import dfetch.commands.environment
+import dfetch.commands.filter
 import dfetch.commands.format_patch
 import dfetch.commands.freeze
 import dfetch.commands.import_
@@ -49,6 +50,7 @@ def create_parser() -> argparse.ArgumentParser:
     dfetch.commands.check.Check.create_menu(subparsers)
     dfetch.commands.diff.Diff.create_menu(subparsers)
     dfetch.commands.environment.Environment.create_menu(subparsers)
+    dfetch.commands.filter.Filter.create_menu(subparsers)
     dfetch.commands.format_patch.FormatPatch.create_menu(subparsers)
     dfetch.commands.freeze.Freeze.create_menu(subparsers)
     dfetch.commands.import_.Import.create_menu(subparsers)
@@ -68,6 +70,11 @@ def _help(_: argparse.Namespace) -> None:
     parser.print_help()
 
 
+def _banner_wanted(args: argparse.Namespace) -> bool:
+    """Check whether the version banner should be printed for the selected command."""
+    return args.verbose or not getattr(args.func, "SILENT", False)
+
+
 def run(argv: Sequence[str], console: Console | None = None) -> None:
     """Start dfetch."""
     args = create_parser().parse_args(argv)
@@ -75,7 +82,8 @@ def run(argv: Sequence[str], console: Console | None = None) -> None:
     console = console or dfetch.log.make_console(no_color=args.no_color)
     logger: DLogger = dfetch.log.setup_root(__name__, console=console)
 
-    logger.print_title()
+    if _banner_wanted(args):
+        logger.print_title()
 
     if args.verbose:
         dfetch.log.increase_verbosity()

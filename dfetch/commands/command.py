@@ -38,6 +38,13 @@ class Command(ABC):
 
     CHILD_TYPE = TypeVar("CHILD_TYPE", bound="Command")  # noqa
 
+    SILENT: bool = False
+    """Suppress the version banner when this command runs, keeping stdout machine-readable.
+
+    Commands that produce output meant for piping (such as ``dfetch filter``)
+    can set this to ``True``. Running with ``--verbose`` prints the banner anyway.
+    """
+
     @staticmethod
     @abstractmethod
     def create_menu(subparsers: SubparserActionType) -> None:

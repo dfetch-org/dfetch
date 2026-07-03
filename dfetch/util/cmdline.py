@@ -74,6 +74,25 @@ def run_on_cmdline(
     return proc
 
 
+def run_on_cmdline_uncaptured(logger: logging.Logger, cmd: list[str]) -> None:
+    """Run a command with its output going directly to the terminal.
+
+    Raises:
+        SubprocessCommandError: When the command returns a non-zero exit code.
+        RuntimeError: When the command is not available on the system.
+    """
+    logger.debug(f"Running {cmd}")
+
+    try:
+        subprocess.run(  # nosec B603 — shell=False, list-form args from user cli
+            cmd, shell=False, check=True
+        )
+    except subprocess.CalledProcessError as exc:
+        raise SubprocessCommandError(exc.cmd, "", "", exc.returncode) from exc
+    except FileNotFoundError as exc:
+        raise RuntimeError(f"{cmd[0]} not available on system, please install") from exc
+
+
 def _log_output(proc: subprocess.CompletedProcess, logger: logging.Logger) -> None:  # type: ignore
     logger.debug(f"Return code: {proc.returncode}")
 

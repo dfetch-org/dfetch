@@ -160,6 +160,18 @@ Freeze
 
 .. automodule:: dfetch.commands.freeze
 
+Filter
+------
+.. argparse::
+   :module: dfetch.__main__
+   :func: create_parser
+   :prog: dfetch
+   :path: filter
+
+.. automodule:: dfetch.commands.filter
+
+.. seealso:: :ref:`Guard vendored files <guard-vendored-files>` — skip vendored files when running formatters and linters, locally and in pre-commit.
+
 Environment
 -----------
 .. argparse::

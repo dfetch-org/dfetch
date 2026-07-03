@@ -4,12 +4,14 @@
 # pyright: reportRedeclaration=false, reportAttributeAccessIssue=false, reportCallIssue=false
 
 import difflib
+import io
 import json
 import os
 import pathlib
 import re
 import shutil
-from contextlib import contextmanager
+import sys
+from contextlib import contextmanager, redirect_stdout
 from itertools import zip_longest
 from typing import Iterable, List, Optional, Pattern, Tuple, Union
 from unittest.mock import patch
@@ -62,16 +64,19 @@ def call_command(context: Context, args: list[str], path: Optional[str] = ".") -
 
     DLogger.reset_projects()
 
+    stdout_capture = io.StringIO()
     with temporary_env("CI", "true"):
         with in_directory(path or "."):
-            try:
-                run(args, context.console)
-                context.cmd_returncode = 0
-            except DfetchFatalException:
-                context.cmd_returncode = 1
+            with redirect_stdout(stdout_capture):
+                try:
+                    run(args, context.console)
+                    context.cmd_returncode = 0
+                except DfetchFatalException:
+                    context.cmd_returncode = 1
 
     after = context.console.export_text()
     context.cmd_output = after[len(before) :].strip("\n")
+    context.cmd_stdout = stdout_capture.getvalue().strip("\n")
 
 
 def check_file(path, content, strict=False):
@@ -203,12 +208,13 @@ def normalize_lines(text: str) -> list[str]:
     return [line.rstrip() for line in lines if line.strip() != ""]
 
 
-def check_output(context, line_count=None):
+def check_output(context, line_count=None, actual=None):
     """Check command output against expected text.
 
     Args:
         context: Behave context with cmd_output and expected text
         line_count: If set, compare only the first N lines of actual output
+        actual: If set, compare this text instead of context.cmd_output
     """
     expected_raw = apply_archive_substitutions(context.text, context)
 
@@ -238,7 +244,7 @@ def check_output(context, line_count=None):
             (svn_error, "svn: EXXXXXX: <some error text>"),
             (abs_path, "/some/path"),
         ],
-        text=context.cmd_output,
+        text=context.cmd_output if actual is None else actual,
     )
 
     actual_lines = normalize_lines(actual_text)[:line_count]
@@ -329,6 +335,19 @@ def step_impl(context, args, path=None):
     call_command(context, resolved.split(), path)
 
 
+@when('the following is piped through "dfetch {args}" in {path}')
+@when('the following is piped through "dfetch {args}"')
+def step_impl(context, args, path=None):
+    """Call a command with the step text as stdin."""
+    resolved = args.replace("some-remote-server", remote_server_path(context))
+    original_stdin = sys.stdin
+    sys.stdin = io.StringIO(context.text)
+    try:
+        call_command(context, resolved.split(), path)
+    finally:
+        sys.stdin = original_stdin
+
+
 @given('"{path}" in {directory} is changed locally')
 @when('"{path}" in {directory} is changed locally')
 def step_impl(_, directory, path):
@@ -410,6 +429,16 @@ def step_impl(context):
 @then("the output shows")
 def step_impl(context):
     check_output(context)
+
+
+@then("stdout shows")
+def step_impl(context):
+    check_output(context, actual=context.cmd_stdout)
+
+
+@then("the command succeeds")
+def step_impl(context):
+    assert context.cmd_returncode == 0, context.cmd_output
 
 
 @then("the following projects are fetched")

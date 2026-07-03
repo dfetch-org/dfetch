@@ -1,5 +1,6 @@
 """General hooks for behave tests."""
 
+import io
 import os
 import tempfile
 from pathlib import Path
@@ -31,10 +32,13 @@ def before_scenario(context, _):
     """Hook called before scenario is executed."""
     use_fixture(tmpdir, context)
 
+    # Write to an explicit buffer instead of sys.stdout, so scenarios can
+    # capture what a command prints to stdout separately from the log output.
     context.console = Console(
         record=True,
         force_terminal=True,
         width=1024,
+        file=io.StringIO(),
     )
 
     context.newer_version_patcher = patch(
