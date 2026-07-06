@@ -523,5 +523,20 @@
     "mitigations": "Pin installer URLs in manifests to the project's official release infrastructure and document that URL changes must be scrutinised as carefully as hash changes.  Store publish credentials in a deployment environment requiring reviewer approval.  Use OIDC-based credentials where available so exfiltrated tokens expire quickly.  Monitor PAT usage for activity outside expected CI build windows.",
     "example": "An attacker exfiltrates the WINGET_TOKEN PAT from a CI run via a backdoored dependency.  They fork microsoft/winget-pkgs, update the dfetch manifest to point the installer URL to attacker.example/dfetch-0.14.0-win.msi (a trojaned MSI), compute its correct SHA256 hash, and open a PR.  A reviewer sees the hash matches the declared value and approves.  Consumers who run winget install DFetch-org.DFetch download and install the malicious binary.",
     "references": "https://slsa.dev/spec/v1.0/threats#f-artifact-publication, https://capec.mitre.org/data/definitions/186.html, https://cwe.mitre.org/data/definitions/494.html"
+  },
+  {
+    "SID": "DFT-36",
+    "target": [
+      "ExternalEntity"
+    ],
+    "description": "Compromised AUR SSH key enables direct malicious PKGBUILD push without review gate",
+    "details": "The AUR (Arch Linux User Repository) accepts direct git pushes from authenticated maintainers — unlike Winget (which requires a PR reviewed by community maintainers before merging), a valid AUR SSH push goes live immediately.  An attacker who exfiltrates the AUR_SSH_KEY from the CI environment can push a malicious PKGBUILD that: (1) replaces the source URL with an attacker-controlled tarball, (2) computes its correct SHA256 hash.  Arch users running 'yay -Syu' or equivalent will receive the tampered PKGBUILD and install the malicious binary.  Because there is no review gate between CI push and consumer exposure, the window of opportunity for detection is shorter than for manifest-based registries.",
+    "Likelihood Of Attack": "Low",
+    "severity": "High",
+    "condition": "target.controls.hasAccessControl is True and target.controls.providesIntegrity is True and target.controls.usesCodeSigning is False and target.controls.isHardened is False",
+    "prerequisites": "The attacker has obtained the AUR_SSH_KEY private key from the CI environment.  The AUR repository for dfetch-bin accepts pushes authenticated with this key.  The attacker can craft a PKGBUILD with a correct SHA256 checksum for a malicious tarball.",
+    "mitigations": "Store the AUR_SSH_KEY in a deployment environment (C-044) that requires explicit environment protection rules before the secret is injected into the workflow.  Block all non-allowlisted egress from the CI runner so the key cannot be exfiltrated.  Use a dedicated bot key with the minimum required AUR permissions.  Rotate the key regularly and immediately on suspected compromise.  Monitor AUR commit history for pushes outside expected CI release windows.",
+    "example": "A backdoored build dependency reads AUR_SSH_KEY from the runner environment and posts it to an attacker-controlled server.  The attacker pushes a PKGBUILD pointing to a trojanised tarball on attacker.example with a matching SHA256.  Arch users updating dfetch-bin via yay receive and install the malicious binary before the compromise is detected.",
+    "references": "https://slsa.dev/spec/v1.0/threats#f-artifact-publication, https://wiki.archlinux.org/title/AUR_submission_guidelines, https://capec.mitre.org/data/definitions/560.html"
   }
 ]

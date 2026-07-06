@@ -1,0 +1,13 @@
+pkgbase = dfetch-bin
+	pkgdesc = Vendor tool for fetching external dependencies
+	pkgver = 0.14.3
+	pkgrel = 1
+	url = https://github.com/dfetch-org/dfetch
+	arch = x86_64
+	license = MIT
+	provides = dfetch
+	conflicts = dfetch
+	source = https://github.com/dfetch-org/dfetch/releases/download/0.14.3/dfetch-0.14.3-nix.tar.gz
+	sha256sums = SKIP
+
+pkgname = dfetch-bin

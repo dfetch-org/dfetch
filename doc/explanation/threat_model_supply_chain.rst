@@ -20,7 +20,7 @@ Chapter 5.
 The Sev / Risk rating scale and treatment vocabulary (Mitigate / Accept / Transfer)
 are defined in the :ref:`Risk Rating Methodology <risk-rating-methodology>` section of the main security page.
 
-Threat model for dfetch.  Covers the pre-install lifecycle: code contribution, CI/CD, build (wheel / sdist), PyPI distribution, Winget manifest submission, and consumer installation.  The installed dfetch package is the handoff point to tm_usage.py.
+Threat model for dfetch.  Covers the pre-install lifecycle: code contribution, CI/CD, build (wheel / sdist), PyPI distribution, Winget manifest submission, AUR PKGBUILD publication, and consumer installation.  The installed dfetch package is the handoff point to tm_usage.py.
 
 Assumptions
 -----------
@@ -83,6 +83,9 @@ Boundaries
 
    * - Winget Community Repository
      - The Windows Package Manager Community Repository (https://github.com/microsoft/winget-pkgs) where dfetch's Winget manifest is hosted.  Manifest PRs are submitted automatically by the CI release pipeline (winget-publish.yml) using the stored WINGET_TOKEN PAT (A-10).  Consumer installations resolve manifests from this repository; winget downloads the MSI installer from the URL declared in the manifest (pointing to GitHub Releases, A-01) and verifies its SHA256 hash.
+
+   * - AUR Repository
+     - The Arch Linux User Repository (https://aur.archlinux.org) where the ``dfetch-bin`` PKGBUILD is hosted.  CI pushes updated PKGBUILDs directly to the AUR git repository using ``aur-publish.yml`` and the AUR_SSH_KEY (A-12).  Unlike Winget (which goes through a community PR review), AUR accepts direct git pushes from authenticated maintainers — there is no intermediate PR review gate.
 
 
 Data Flow Diagram
@@ -264,6 +267,25 @@ Data Flow Diagram
 
        }
 
+       subgraph cluster_boundary_AURRepository_aur {
+           graph [
+               fontsize = 10;
+               fontcolor = black;
+               style = dashed;
+               color = firebrick2;
+               label = <<i>AUR\nRepository</i>>;
+           ]
+
+           externalentity_AAURRepositoryaurarchlinuxorgdfetchbin_aur [
+               shape = square;
+               color = black;
+               fontcolor = black;
+               label = "A-11: AUR\nRepository\n(aur.archlinux.org/\ndfetch-bin)";
+               margin = 0.02;
+           ]
+
+       }
+
        actor_DeveloperContributor_d2006ce1bb -> externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72 [
            color = black;
            fontcolor = black;
@@ -397,6 +419,27 @@ Data Flow Diagram
            label = "DF-29: Consumer\ndownloads MSI via\nwinget";
        ]
 
+       externalentity_AGitHubActionsInfrastructure_c76a0a7067 -> externalentity_AAURRepositoryaurarchlinuxorgdfetchbin_aur [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-30: AUR\nPKGBUILD push";
+       ]
+
+       actor_ConsumerEndUser_f8af758679 -> externalentity_AAURRepositoryaurarchlinuxorgdfetchbin_aur [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-31: yay install\ndfetch-bin";
+       ]
+
+       externalentity_AAURRepositoryaurarchlinuxorgdfetchbin_aur -> actor_ConsumerEndUser_f8af758679 [
+           color = black;
+           fontcolor = black;
+           dir = forward;
+           label = "DF-32: Consumer\ndownloads tarball\nvia AUR";
+       ]
+
    }
    @enddot
 
@@ -459,6 +502,7 @@ Sequence Diagram
    database datastore_AdfetchBuildDevDependencies_990b886585 as "A-07: dfetch\nBuild / Dev\nDependencies"
    database datastore_AbGitHubActionsBuildCache_9df04f8dae as "A-08b:\nGitHub\nActions\nBuild Cache"
    entity externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48 as "A-09: Winget\nCommunity\nRepository\n(microsoft/winget-pkgs)"
+   entity externalentity_AAURRepositoryaurarchlinuxorgdfetchbin_aur as "A-11: AUR\nRepository\n(aur.archlinux.org/\ndfetch-bin)"
 
    actor_DeveloperContributor_d2006ce1bb -> externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72: DF-11: Push commits / open PR
    externalentity_AbGitHubRepositoryfeaturebranchesPRs_0291419f72 -> process_AReleaseGateCodeReview_9345ab4c19: DF-22: PR enters code review
@@ -479,6 +523,9 @@ Sequence Diagram
    externalentity_AGitHubActionsInfrastructure_c76a0a7067 -> externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48: DF-27: Winget manifest PR submission
    actor_ConsumerEndUser_f8af758679 -> externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48: DF-28: winget install dfetch
    externalentity_AWingetCommunityRepositorymicrosoftwingetpkgs_7113ed0f48 -> actor_ConsumerEndUser_f8af758679: DF-29: Consumer downloads MSI via winget
+   externalentity_AGitHubActionsInfrastructure_c76a0a7067 -> externalentity_AAURRepositoryaurarchlinuxorgdfetchbin_aur: DF-30: AUR PKGBUILD push
+   actor_ConsumerEndUser_f8af758679 -> externalentity_AAURRepositoryaurarchlinuxorgdfetchbin_aur: DF-31: yay install dfetch-bin
+   externalentity_AAURRepositoryaurarchlinuxorgdfetchbin_aur -> actor_ConsumerEndUser_f8af758679: DF-32: Consumer downloads tarball via AUR
    @enduml
 
 .. raw:: html
@@ -554,7 +601,7 @@ Asset Identification
      - Data
      - High / High / High
    * - A-06: GitHub Actions Workflow
-     - CI/CD pipelines: test, build (wheel/msi/deb/rpm), lint, CodeQL, Scorecard, dependency-review, docs, release, winget-publish.  All actions pinned by commit SHA.  harden-runner used in every workflow that executes steps on a runner (egress: block with endpoint allowlist); ci.yml is a dispatcher-only workflow with no runner steps and does not include harden-runner.  winget-publish.yml uses a stored PAT (WINGET_TOKEN, A-10) to submit manifest PRs to the Winget Community Repository (A-09).
+     - CI/CD pipelines: test, build (wheel/msi/deb/rpm), lint, CodeQL, Scorecard, dependency-review, docs, release, distribution/winget-publish, distribution/python-publish, distribution/aur-publish.  All actions pinned by commit SHA.  harden-runner used in every workflow that executes steps on a runner (egress: block with endpoint allowlist); ci.yml is a dispatcher-only workflow with no runner steps and does not include harden-runner.  distribution/winget-publish.yml uses a stored PAT (WINGET_TOKEN, A-10) to submit manifest PRs to the Winget Community Repository (A-09).  distribution/aur-publish.yml uses an SSH key (AUR_SSH_KEY, A-12) to push PKGBUILDs directly to the AUR repository (A-11).
      - Process
      - Medium / Medium / Medium
    * - A-07: dfetch Build / Dev Dependencies
@@ -575,6 +622,14 @@ Asset Identification
      - High / High / —
    * - A-10: WINGET_TOKEN PAT
      - Long-lived classic GitHub Personal Access Token (fine-grained PATs are not supported by the ``vedantmgoyal9/winget-releaser`` action) with ``public_repo`` scope, stored as a GitHub Actions environment secret in the ``winget`` environment.  Used by ``winget-publish.yml`` to push a manifest branch to the pre-existing fork ``dfetch-org/winget-pkgs`` and open a PR against ``microsoft/winget-pkgs``.  Unlike the PyPI OIDC token (A-05) which is short-lived and not stored, this PAT persists indefinitely until rotated.  If exfiltrated from the CI environment, an attacker could submit fraudulent manifest PRs from outside the project's pipeline.
+     - Data
+     - High / High / —
+   * - A-11: AUR Repository (aur.archlinux.org/dfetch-bin)
+     - The Arch Linux User Repository entry for the ``dfetch-bin`` package (https://aur.archlinux.org/packages/dfetch-bin).  CI pushes updated PKGBUILDs directly via git using the AUR_SSH_KEY (A-12); there is no PR review step — the push goes live immediately.  PKGBUILDs contain the SHA256 checksum of the release tarball; AUR helpers such as ``yay`` download and verify the tarball before installing.  A compromised SSH key or a malicious PKGBUILD push could redirect consumers to a tampered binary (DFT-36).
+     - ExternalEntity
+     - High / High / —
+   * - A-12: AUR_SSH_KEY
+     - Ed25519 SSH private key used to authenticate git pushes to the dfetch-bin AUR repository.  Stored as a GitHub Actions environment secret in the ``aur`` environment.  Used by ``aur-publish.yml`` to push updated PKGBUILDs directly to AUR.  Unlike the PyPI OIDC token (A-05) which is short-lived and not stored, this key persists indefinitely until rotated.  If exfiltrated from the CI environment, an attacker could push a malicious PKGBUILD directly to AUR without any review gate (DFT-36).
      - Data
      - High / High / —
 
@@ -687,6 +742,21 @@ Dataflows
 
    * - DF-29: Consumer downloads MSI via winget
      - A-09: Winget Community Repository (microsoft/winget-pkgs)
+     - Consumer / End User
+     - HTTPS
+
+   * - DF-30: AUR PKGBUILD push
+     - A-02: GitHub Actions Infrastructure
+     - A-11: AUR Repository (aur.archlinux.org/dfetch-bin)
+     - SSH
+
+   * - DF-31: yay install dfetch-bin
+     - Consumer / End User
+     - A-11: AUR Repository (aur.archlinux.org/dfetch-bin)
+     - HTTPS
+
+   * - DF-32: Consumer downloads tarball via AUR
+     - A-11: AUR Repository (aur.archlinux.org/dfetch-bin)
      - Consumer / End User
      - HTTPS
 
@@ -864,6 +934,14 @@ Threats
        | **STRIDE:** T S
        | **Status:** Mitigate
      - C-041
+   * - DFT-36
+     - Compromised AUR SSH key enables direct malicious PKGBUILD push without review gate
+     - A-11: AUR Repository (aur.archlinux.org/dfetch-bin)
+     - | **Sev:** 🟠H
+       | **Risk:** 🟠H
+       | **STRIDE:** T S
+       | **Status:** Mitigate
+     - C-044, C-046, C-047
 
 
 Controls
@@ -885,7 +963,7 @@ Controls
    * - C-010
      - OIDC trusted publishing
      - DFT-07
-     - PyPI publishes via ``pypa/gh-action-pypi-publish`` with ``id-token: write`` and no stored long-lived API token.  ``.github/workflows/python-publish.yml``
+     - PyPI publishes via ``pypa/gh-action-pypi-publish`` with ``id-token: write`` and no stored long-lived API token.  ``.github/workflows/distribution/python-publish.yml``
    * - C-011
      - Minimal workflow permissions
      - DFT-07
@@ -953,8 +1031,20 @@ Controls
    * - C-041
      - Winget manifest PRs reviewed by community maintainers
      - DFT-35
-     - Manifest update PRs submitted to ``microsoft/winget-pkgs`` by ``winget-publish.yml`` go through the standard Winget community review process before merging.  ``microsoft/winget-pkgs`` maintainers verify the publisher identity and inspect manifest changes including installer URLs and hashes.  This provides a manual review gate between a fraudulent PR submission and consumer exposure.  Residual risk: a reviewer who approves without independently verifying the installer URL origin could merge a fraudulent manifest.  ``.github/workflows/winget-publish.yml``
+     - Manifest update PRs submitted to ``microsoft/winget-pkgs`` by ``winget-publish.yml`` go through the standard Winget community review process before merging.  ``microsoft/winget-pkgs`` maintainers verify the publisher identity and inspect manifest changes including installer URLs and hashes.  This provides a manual review gate between a fraudulent PR submission and consumer exposure.  Residual risk: a reviewer who approves without independently verifying the installer URL origin could merge a fraudulent manifest.  ``.github/workflows/distribution/winget-publish.yml``
    * - C-042
      - WINGET_TOKEN scoped to dedicated Winget environment
      - DFT-34
-     - ``WINGET_TOKEN`` is stored in the ``winget`` GitHub Actions deployment environment, limiting its exposure: the PAT is only injected into workflows that explicitly reference that environment.  Only ``winget-publish.yml`` references the ``winget`` environment, so the PAT is not available to other workflows.  Residual risk: unlike PyPI which uses OIDC (A-05, no stored long-lived token), Winget does not support OIDC trusted publishing; the PAT must be stored and rotated manually (DFT-34).  ``.github/workflows/winget-publish.yml``
+     - ``WINGET_TOKEN`` is stored in the ``winget`` GitHub Actions deployment environment, limiting its exposure: the PAT is only injected into workflows that explicitly reference that environment.  Only ``winget-publish.yml`` references the ``winget`` environment, so the PAT is not available to other workflows.  Residual risk: unlike PyPI which uses OIDC (A-05, no stored long-lived token), Winget does not support OIDC trusted publishing; the PAT must be stored and rotated manually (DFT-34).  ``.github/workflows/distribution/winget-publish.yml``
+   * - C-044
+     - AUR_SSH_KEY scoped to dedicated AUR environment
+     - DFT-36
+     - ``AUR_SSH_KEY`` is stored in the ``aur`` GitHub Actions deployment environment, limiting its exposure: the SSH key is only injected into workflows that explicitly reference that environment.  Only ``aur-publish.yml`` references the ``aur`` environment, so the key is not available to other workflows.  Unlike PyPI which uses OIDC (A-05, no stored long-lived token) or Winget which uses a PAT (A-10), AUR authentication requires an SSH key for git push access; the key must be stored and rotated manually.  A compromised key enables direct (no review gate) PKGBUILD pushes to AUR.  ``.github/workflows/distribution/aur-publish.yml``
+   * - C-046
+     - AUR PKGBUILD uses real SHA256 checksum of release tarball
+     - DFT-36
+     - The ``aur-publish.yml`` workflow computes the SHA256 checksum of the release tarball at publish time and embeds it in the PKGBUILD, replacing the placeholder ``SKIP``.  AUR helpers (``yay``, ``paru``) verify this checksum when building the package, so a tampered tarball would be rejected before installation.  Residual risk: a compromised AUR_SSH_KEY (A-12) allows pushing a PKGBUILD with a fraudulent checksum — the review gate present in Winget (C-041) does not exist for AUR direct pushes.  ``.github/workflows/distribution/aur-publish.yml``
+   * - C-047
+     - AUR release tarball build-provenance verified before PKGBUILD update
+     - DFT-36
+     - Before computing the SHA256 to embed in the PKGBUILD, ``aur-publish.yml`` runs ``gh attestation verify`` against the downloaded release tarball.  This confirms the tarball's Sigstore SLSA build-provenance attestation chain: the artifact was produced by the trusted ``build.yml`` workflow from a signed release tag, not tampered with in transit or substituted by a compromised release asset.  If attestation fails the workflow aborts before any PKGBUILD update or AUR push.  ``.github/workflows/distribution/aur-publish.yml``

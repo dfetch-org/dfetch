@@ -1,0 +1,255 @@
+# Publish to AUR (Arch Linux User Repository)
+#
+# Pushes an updated PKGBUILD for dfetch-bin to AUR on every GitHub release.
+# AUR uses a plain git repository — there is no PR or review gate; every push
+# is immediately visible to users who run `yay -S dfetch-bin` or equivalent.
+#
+# ─── ONE-TIME SETUP ──────────────────────────────────────────────────────────
+#
+# 1. Create an AUR account
+#    Register at https://aur.archlinux.org/register/ if you do not already have
+#    one.  Choose a bot username (e.g. "dfetch-bot") that clearly signals it is
+#    a machine account.
+#    Ref: https://wiki.archlinux.org/title/AUR_submission_guidelines#Creating_a_new_package
+#
+# 2. Generate a dedicated SSH key pair (do NOT reuse an existing key)
+#
+#    ssh-keygen -t ed25519 -C "dfetch-aur-bot" -f aur_key
+#
+#    This creates two files: aur_key (private) and aur_key.pub (public).
+#    Never commit either file; delete them from disk once the secrets are stored.
+#    Ref: https://wiki.archlinux.org/title/AUR_submission_guidelines#Authentication
+#
+# 3. Register the public key with AUR
+#    Log in to https://aur.archlinux.org, go to My Account → SSH Public Keys,
+#    and paste the contents of aur_key.pub.
+#
+# 4. Create the GitHub 'aur' environment and store the private key as a secret
+#    a. Go to: Repository → Settings → Environments → New environment
+#    b. Name it exactly "aur".
+#    c. Recommended: add "Required reviewers" so every push is approved by a
+#       human before it reaches AUR users.
+#       Ref: https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-deployments/managing-environments-for-deployment#required-reviewers
+#    d. Under "Environment secrets", click "Add secret":
+#         Name:  AUR_SSH_KEY
+#         Value: paste the full contents of the aur_key *private* key file
+#                (including the -----BEGIN/END OPENSSH PRIVATE KEY----- lines).
+#       Ref: https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-an-environment
+#
+# 5. Create or claim the dfetch-bin AUR package (first time only)
+#    Either submit a new package at https://aur.archlinux.org/submit/ or ask an
+#    existing maintainer to add the bot account as a co-maintainer.
+#    If creating fresh, replace the SKIP placeholder with the real checksum
+#    *before* the first push — AUR users rely on it for integrity verification:
+#
+#      git clone ssh://aur@aur.archlinux.org/dfetch-bin.git
+#      cp aur/PKGBUILD dfetch-bin/
+#      cd dfetch-bin
+#
+#      # Compute the real SHA256 for the existing release tarball:
+#      VERSION=<current-release-tag>   # e.g. 0.14.3
+#      URL="https://github.com/dfetch-org/dfetch/releases/download/${VERSION}/dfetch-${VERSION}-nix.tar.gz"
+#      SHA256=$(curl -fsSL "$URL" | sha256sum | awk '{print $1}')
+#      sed -i "s|pkgver=.*|pkgver=${VERSION}|" PKGBUILD
+#      sed -i "s|sha256sums=.*|sha256sums=('${SHA256}')|" PKGBUILD
+#      # Regenerate .SRCINFO from the updated PKGBUILD (requires makepkg):
+#      makepkg --printsrcinfo > .SRCINFO
+#
+#      git add PKGBUILD .SRCINFO
+#      git commit -m "Initial import"
+#      git push
+#    The package page will appear at https://aur.archlinux.org/packages/dfetch-bin
+#    within seconds of the first push.
+#    Ref: https://wiki.archlinux.org/title/AUR_submission_guidelines#Submitting_packages
+#
+# 6. Test locally before triggering CI (optional but recommended)
+#    On an Arch Linux system (or in the archlinux Docker image):
+#      cd aur/
+#      makepkg -si      # builds and installs the package from source
+#    Verify `dfetch --version` matches the expected release.
+#    Ref: https://wiki.archlinux.org/title/Makepkg
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Publish to AUR
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release-tag:
+        description: 'Release tag (e.g. 0.14.2)'
+        required: true
+        type: string
+  push:
+    branches:
+      - main
+    paths:
+      - 'aur/**'
+      - '.github/workflows/distribution/aur-publish.yml'
+  pull_request:
+    paths:
+      - 'aur/**'
+      - '.github/workflows/distribution/aur-publish.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-binary:
+    name: Build Linux binary from source
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          allowed-endpoints: >+
+            github.com:443
+            api.github.com:443
+            pypi.org:443
+            files.pythonhosted.org:443
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Build binary with Nuitka
+        run: |
+          pip install .[build]
+          python script/build.py
+
+      - name: Create tarball from build output
+        run: |
+          VERSION=$(git describe --tags --abbrev=0)
+          tar czf "dfetch-${VERSION}-nix.tar.gz" -C build/dfetch.dist .
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dfetch-nix-tarball
+          path: dfetch-*-nix.tar.gz
+
+  test:
+    name: Test PKGBUILD
+    needs: build-binary
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest@sha256:cc54f12fae7c81bd0d1a38f1694b4c28ffc708b358dd5876ab77dde49d37925a
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dfetch-nix-tarball
+
+      - name: Install build dependencies
+        run: |
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Syu --noconfirm base-devel
+
+      - name: Patch PKGBUILD to use local tarball
+        run: |
+          TARBALL=$(ls dfetch-*-nix.tar.gz)
+          VERSION=${TARBALL#dfetch-}
+          VERSION=${VERSION%-nix.tar.gz}
+          SHA256=$(sha256sum "$TARBALL" | awk '{print $1}')
+          cp "$TARBALL" aur/
+          sed -i "s|^pkgver=.*|pkgver=${VERSION}|" aur/PKGBUILD
+          sed -i "s|^source=.*|source=(\"${TARBALL}\")|" aur/PKGBUILD
+          sed -i "s|^sha256sums=.*|sha256sums=('${SHA256}')|" aur/PKGBUILD
+
+      - name: Build package with makepkg
+        run: |
+          useradd -m builder
+          chown -R builder:builder aur/
+          su builder -c "cd aur && makepkg --noconfirm"
+
+      - name: Install package and verify
+        run: |
+          pacman -U --noconfirm aur/dfetch-bin-*.pkg.tar.zst
+          dfetch --version
+
+  publish:
+    name: Publish to AUR
+    # Only on a real versioned release or a manual dispatch; skip the rolling
+    # 'latest' tag that main pushes create.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'release' && github.event.release.tag_name != 'latest')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: aur-publish-${{ github.event.release.tag_name || inputs.release-tag }}
+      cancel-in-progress: true
+
+    environment:
+      name: aur
+      url: https://aur.archlinux.org/packages/dfetch-bin
+
+    steps:
+      - name: "Harden the runner (Block egress traffic: Only allow calls to allowed endpoints)"
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          allowed-endpoints: >+
+            github.com:443
+            api.github.com:443
+            objects.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            uploads.github.com:443
+            aur.archlinux.org:443
+            aur.archlinux.org:22
+            fulcio.sigstore.dev:443
+            rekor.sigstore.dev:443
+            tuf-repo-cdn.sigstore.dev:443
+
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Download and verify release tarball
+        # Verifies Sigstore build-provenance attestation before trusting the tarball.
+        # Requires AUR_SSH_KEY secret — see one-time setup instructions at the top of this file.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.release-tag }}
+        run: |
+          URL="https://github.com/dfetch-org/dfetch/releases/download/${TAG}/dfetch-${TAG}-nix.tar.gz"
+          curl -fsSL "$URL" -o dfetch-nix.tar.gz
+          gh attestation verify dfetch-nix.tar.gz \
+            --repo "${{ github.repository }}" \
+            --predicate-type https://slsa.dev/provenance/v1 \
+            --cert-identity-regex "^https://github\.com/${{ github.repository }}/\.github/workflows/build\.yml@refs/tags/[0-9]+\.[0-9]+\.[0-9]+$" \
+            --cert-oidc-issuer https://token.actions.githubusercontent.com
+
+      - name: Update pkgver and checksums
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.release-tag }}
+        run: |
+          SHA256=$(sha256sum dfetch-nix.tar.gz | awk '{print $1}')
+          sed -i "s/^pkgver=.*/pkgver=${TAG}/" aur/PKGBUILD
+          sed -i "s/^sha256sums=.*/sha256sums=('${SHA256}')/" aur/PKGBUILD
+
+      - name: Publish to AUR
+        uses: KSXGitHub/github-actions-deploy-aur@a6ca8e3a2da2a9e461d694e80248ba1a3ab1b3e1 # v3.0.1
+        with:
+          pkgname: dfetch-bin
+          pkgbuild: ./aur/PKGBUILD
+          commit_username: dfetch-bot
+          commit_email: bot@dfetch.dev
+          ssh_private_key: ${{ secrets.AUR_SSH_KEY }}
+          commit_message: "Update to ${{ github.event.release.tag_name || inputs.release-tag }}"
+          updpkgsums: false
