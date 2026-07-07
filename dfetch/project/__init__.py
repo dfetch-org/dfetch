@@ -7,19 +7,21 @@ import dfetch.manifest.project
 from dfetch.log import get_logger
 from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.parse import find_manifest
-from dfetch.project.archivesubproject import ArchiveSubProject
-from dfetch.project.gitsubproject import GitSubProject
+from dfetch.project.archivesubproject import ArchiveFetcher
+from dfetch.project.gitsubproject import GitFetcher
 from dfetch.project.gitsuperproject import GitSuperProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import NoVcsSuperProject, SuperProject
-from dfetch.project.svnsubproject import SvnSubProject
+from dfetch.project.svnsubproject import SvnFetcher
 from dfetch.project.svnsuperproject import SvnSuperProject
 from dfetch.util.util import resolve_absolute_path
 
-SUPPORTED_SUBPROJECT_TYPES: list[
-    type[ArchiveSubProject] | type[GitSubProject] | type[SvnSubProject]
-] = [ArchiveSubProject, GitSubProject, SvnSubProject]
+_AnyFetcherType = type[ArchiveFetcher] | type[GitFetcher] | type[SvnFetcher]
+SUPPORTED_FETCHERS: list[_AnyFetcherType] = [ArchiveFetcher, GitFetcher, SvnFetcher]
 SUPPORTED_SUPERPROJECT_TYPES = [GitSuperProject, SvnSuperProject]
+
+# Backward-compatible alias used by environment.py and any external callers.
+SUPPORTED_SUBPROJECT_TYPES = SUPPORTED_FETCHERS
 
 logger = get_logger(__name__)
 
@@ -27,17 +29,16 @@ logger = get_logger(__name__)
 def create_sub_project(
     project_entry: dfetch.manifest.project.ProjectEntry,
 ) -> SubProject:
-    """Create a new SubProject based on a project from the manifest."""
-    for project_type in SUPPORTED_SUBPROJECT_TYPES:
-        if project_type.NAME == project_entry.vcs:
-            return project_type(project_entry)
+    """Create a SubProject by selecting the appropriate fetcher for *project_entry*."""
+    for fetcher_type in SUPPORTED_FETCHERS:
+        if fetcher_type.NAME == project_entry.vcs:
+            return SubProject(project_entry, fetcher_type(project_entry.remote_url))
 
-    for project_type in SUPPORTED_SUBPROJECT_TYPES:
-        project = project_type(project_entry)
+    for fetcher_type in SUPPORTED_FETCHERS:
+        if fetcher_type.handles(project_entry.remote_url):
+            return SubProject(project_entry, fetcher_type(project_entry.remote_url))
 
-        if project.check():
-            return project
-    raise RuntimeError("vcs type unsupported")
+    raise RuntimeError(f"vcs type unsupported for {project_entry.remote_url}")
 
 
 def create_super_project() -> SuperProject:

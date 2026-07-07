@@ -121,5 +121,5 @@ def guess_license_in_file(
 
     if not probable_licenses:
         return None
-    inferred, probability = probable_licenses[0]
-    return License.from_inferred(inferred, probability, text=license_text)
+    inferred_lic, probability = probable_licenses[0]
+    return License.from_inferred(inferred_lic, probability, text=license_text)

@@ -1,12 +1,11 @@
-"""Tests for dfetch.project.svnsubproject.SvnSubProject._fetch_externals."""
+"""Tests for dfetch.project.svnsubproject.SvnFetcher._fetch_externals."""
 
 # mypy: ignore-errors
 # flake8: noqa
 
 from unittest.mock import patch
 
-from dfetch.manifest.project import ProjectEntry
-from dfetch.project.svnsubproject import SvnSubProject
+from dfetch.project.svnsubproject import SvnFetcher
 from dfetch.vcs.svn import External
 
 REPO_ROOT = "repo-root"
@@ -15,20 +14,16 @@ REPO_ROOT = "repo-root"
 def test_fetch_externals_returns_empty_when_no_externals():
     with patch("dfetch.project.svnsubproject.SvnRepo.externals_from_url") as mock_ext:
         mock_ext.return_value = []
-        subproject = SvnSubProject(
-            ProjectEntry({"name": "myproject", "url": REPO_ROOT})
-        )
-        assert subproject._fetch_externals(REPO_ROOT + "/trunk", "42") == []
+        fetcher = SvnFetcher(REPO_ROOT)
+        assert fetcher._fetch_externals(REPO_ROOT + "/trunk", "42", "myproject") == []
 
 
 def test_fetch_externals_forwards_path_and_revision():
     with patch("dfetch.project.svnsubproject.SvnRepo.externals_from_url") as mock_ext:
         mock_ext.return_value = []
-        subproject = SvnSubProject(
-            ProjectEntry({"name": "myproject", "url": REPO_ROOT})
-        )
+        fetcher = SvnFetcher(REPO_ROOT)
         complete_path = REPO_ROOT + "/trunk"
-        subproject._fetch_externals(complete_path, "77")
+        fetcher._fetch_externals(complete_path, "77", "myproject")
         mock_ext.assert_called_once_with(complete_path, "77")
 
 
@@ -57,10 +52,8 @@ def test_fetch_externals_maps_externals_to_dependencies():
     ]
     with patch("dfetch.project.svnsubproject.SvnRepo.externals_from_url") as mock_ext:
         mock_ext.return_value = externals_list
-        subproject = SvnSubProject(
-            ProjectEntry({"name": "myproject", "url": REPO_ROOT})
-        )
-        result = subproject._fetch_externals(REPO_ROOT + "/trunk", "100")
+        fetcher = SvnFetcher(REPO_ROOT)
+        result = fetcher._fetch_externals(REPO_ROOT + "/trunk", "100", "myproject")
 
         assert len(result) == 2
 
@@ -91,10 +84,8 @@ def test_fetch_externals_preserves_tag_in_dependency():
     )
     with patch("dfetch.project.svnsubproject.SvnRepo.externals_from_url") as mock_ext:
         mock_ext.return_value = [external]
-        subproject = SvnSubProject(
-            ProjectEntry({"name": "myproject", "url": REPO_ROOT})
-        )
-        result = subproject._fetch_externals(REPO_ROOT + "/trunk", "300")
+        fetcher = SvnFetcher(REPO_ROOT)
+        result = fetcher._fetch_externals(REPO_ROOT + "/trunk", "300", "myproject")
 
         assert result[0]["tag"] == "v2.0"
         assert result[0]["source_type"] == "svn-external"
@@ -117,10 +108,8 @@ def test_fetch_externals_nonstd_layout_preserves_space_branch():
     )
     with patch("dfetch.project.svnsubproject.SvnRepo.externals_from_url") as mock_ext:
         mock_ext.return_value = [external]
-        subproject = SvnSubProject(
-            ProjectEntry({"name": "myproject", "url": REPO_ROOT})
-        )
-        result = subproject._fetch_externals(REPO_ROOT + "/trunk", "")
+        fetcher = SvnFetcher(REPO_ROOT)
+        result = fetcher._fetch_externals(REPO_ROOT + "/trunk", "", "myproject")
 
         assert result[0]["branch"] == " "
         assert result[0]["remote_url"] == (
