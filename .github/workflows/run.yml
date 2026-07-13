@@ -28,13 +28,10 @@ jobs:
             community.chocolatey.org:443
             community.chocolatey.org:80
             packages.chocolatey.org:443
-            cfhcable.dl.sourceforge.net:443
-            cytranet-dal.dl.sourceforge.net:443
+            cygwin.com:443
+            mirrors.kernel.org:443
+            *.dl.sourceforge.net:443
             downloads.sourceforge.net:443
-            gigenet.dl.sourceforge.net:443
-            netactuate.dl.sourceforge.net:443
-            pilotfiber.dl.sourceforge.net:443
-            psychz.dl.sourceforge.net:443
             sourceforge.net:443
             svn.code.sf.net:443
             svn.code.sf.net:3690
@@ -140,22 +137,17 @@ jobs:
             allowed-endpoints: >+
               _https._tcp.packages.microsoft.com:443
               api.github.com:443
-              cfhcable.dl.sourceforge.net:443
+              *.dl.sourceforge.net:443
               community.chocolatey.org:443
               community.chocolatey.org:80
-              cytranet-dal.dl.sourceforge.net:443
               dc.services.visualstudio.com:443
               downloads.sourceforge.net:443
               fe2cr.update.microsoft.com:443
               files.pythonhosted.org:443
-              gigenet.dl.sourceforge.net:443
               github.com:443
               mobile.events.data.microsoft.com:443
-              netactuate.dl.sourceforge.net:443
               packages.chocolatey.org:443
               packages.microsoft.com:443
-              pilotfiber.dl.sourceforge.net:443
-              psychz.dl.sourceforge.net:443
               pypi.org:443
               release-assets.githubusercontent.com:443
               sourceforge.net:443
