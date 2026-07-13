@@ -28,6 +28,16 @@ jobs:
             community.chocolatey.org:443
             community.chocolatey.org:80
             packages.chocolatey.org:443
+            cfhcable.dl.sourceforge.net:443
+            cytranet-dal.dl.sourceforge.net:443
+            downloads.sourceforge.net:443
+            gigenet.dl.sourceforge.net:443
+            netactuate.dl.sourceforge.net:443
+            pilotfiber.dl.sourceforge.net:443
+            psychz.dl.sourceforge.net:443
+            sourceforge.net:443
+            svn.code.sf.net:443
+            svn.code.sf.net:3690
 
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -130,17 +140,25 @@ jobs:
             allowed-endpoints: >+
               _https._tcp.packages.microsoft.com:443
               api.github.com:443
+              cfhcable.dl.sourceforge.net:443
               community.chocolatey.org:443
               community.chocolatey.org:80
+              cytranet-dal.dl.sourceforge.net:443
               dc.services.visualstudio.com:443
+              downloads.sourceforge.net:443
               fe2cr.update.microsoft.com:443
               files.pythonhosted.org:443
+              gigenet.dl.sourceforge.net:443
               github.com:443
               mobile.events.data.microsoft.com:443
+              netactuate.dl.sourceforge.net:443
               packages.chocolatey.org:443
               packages.microsoft.com:443
+              pilotfiber.dl.sourceforge.net:443
+              psychz.dl.sourceforge.net:443
               pypi.org:443
               release-assets.githubusercontent.com:443
+              sourceforge.net:443
               ziglang.org:443
     runs-on: ${{ matrix.platform }}
     permissions:
