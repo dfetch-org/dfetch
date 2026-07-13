@@ -31,6 +31,7 @@ jobs:
             cygwin.com:443
             mirrors.kernel.org:443
             *.c.lencr.org:443
+            *.c.lencr.org:80
             *.dl.sourceforge.net:443
             downloads.sourceforge.net:443
             sourceforge.net:443
