@@ -30,6 +30,7 @@ jobs:
             packages.chocolatey.org:443
             cygwin.com:443
             mirrors.kernel.org:443
+            *.c.lencr.org:443
             *.dl.sourceforge.net:443
             downloads.sourceforge.net:443
             sourceforge.net:443
