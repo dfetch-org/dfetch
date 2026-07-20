@@ -83,7 +83,7 @@ development = [
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml
     'pre-commit==4.6.0',
     'ruff==0.15.22',
-    'hypothesis==6.156.6',
+    'hypothesis==6.157.1',
     'import-linter==2.13',
 ]
 docs = [
