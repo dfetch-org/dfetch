@@ -41,10 +41,7 @@ from dfetch.project import create_super_project
 from dfetch.project.gitsuperproject import GitSuperProject
 from dfetch.project.metadata import Metadata
 from dfetch.project.superproject import NoVcsSuperProject, RevisionRange, SuperProject
-from dfetch.util.util import (
-    check_no_path_traversal,
-    in_directory,
-)
+from dfetch.util.util import check_no_path_traversal
 
 logger = get_logger(__name__)
 
@@ -75,8 +72,6 @@ class UpdatePatch(dfetch.commands.command.Command):
         """Perform the update patch."""
         superproject = create_super_project()
 
-        had_errors: bool = False
-
         if isinstance(superproject, NoVcsSuperProject):
             raise RuntimeError(
                 "The project containing the manifest is not under version control,"
@@ -85,16 +80,11 @@ class UpdatePatch(dfetch.commands.command.Command):
         if not isinstance(superproject, GitSuperProject):
             logger.warning("Update patch is only fully supported in git superprojects!")
 
-        with in_directory(superproject.root_directory):
-            for project in superproject.manifest.selected_projects(args.projects):
-                try:
-                    self._process_project(superproject, project)
-                except RuntimeError as exc:
-                    logger.print_error_line(project.name, str(exc))
-                    had_errors = True
-
-        if had_errors:
-            raise RuntimeError()
+        self._iter_projects(
+            superproject,
+            args.projects,
+            lambda project: self._process_project(superproject, project),
+        )
 
     def _process_project(
         self,
