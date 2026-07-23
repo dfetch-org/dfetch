@@ -106,7 +106,7 @@ build = [
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml]
     "setuptools-scm==10.2.1", # For determining version
 ]
-sbom = ["cyclonedx-bom==7.3.0"]
+sbom = ["cyclonedx-bom==7.3.1"]
 wheel = ["build==1.5.1"]
 cve-audit = ["pip-audit==2.10.1"]
 
