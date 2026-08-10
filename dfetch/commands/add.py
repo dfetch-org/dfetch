@@ -29,10 +29,8 @@ from dfetch.manifest.project import ProjectEntry, ProjectEntryDict
 from dfetch.manifest.remote import Remote
 from dfetch.manifest.version import Version
 from dfetch.project import create_sub_project, create_super_project
-from dfetch.project.gitsubproject import GitSubProject
 from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import SuperProject
-from dfetch.project.svnsubproject import SvnSubProject
 from dfetch.terminal import Entry, LsFunction
 from dfetch.terminal.tree_browser import (
     BrowserConfig,
@@ -86,9 +84,9 @@ def browse_tree(subproject: SubProject, version: str = "") -> Generator[LsFuncti
     Adds '.' as the first entry to allow selecting the repo root (which is
     treated as empty src).
     """
-    if isinstance(subproject, (GitSubProject, SvnSubProject)):
-        remote = subproject.remote_repo
-        with remote.browse_tree(version) as vcs_ls:
+    vcs = subproject.as_vcs()
+    if vcs is not None:
+        with vcs.browse_tree(version) as vcs_ls:
 
             def ls(path: str = "") -> list[Entry]:
                 entries = [
@@ -274,36 +272,47 @@ def _finalize_add(
         Update()(update_args)
 
 
+def _resolve_entry_version(ctx: _AddContext, raw_version: str) -> Version:
+    """Resolve a raw version string to a ``Version`` using remote branches and tags.
+
+    For archive-backed subprojects ``raw_version`` is preserved as a revision
+    identifier (URL or hash) because archives have no branch/tag semantics.
+    """
+    if ctx.subproject.as_vcs() is None:
+        return Version(revision=raw_version)
+    branches = ctx.subproject.list_of_branches()
+    tags = ctx.subproject.list_of_tags()
+    choices: list[Version] = [
+        *[Version(branch=b) for b in prioritise_default(branches, ctx.default_branch)],
+        *[Version(tag=t) for t in sort_tags_newest_first(tags)],
+    ]
+    return _resolve_raw_version(raw_version, choices) or Version(
+        branch=ctx.default_branch
+    )
+
+
 def _non_interactive_entry(ctx: _AddContext, overrides: _Overrides) -> ProjectEntry:
     """Build a ``ProjectEntry`` using inferred defaults (no user interaction)."""
-    if overrides.version:
-        branches = ctx.subproject.list_of_branches()
-        tags = ctx.subproject.list_of_tags()
-        choices: list[Version] = [
-            *[
-                Version(branch=b)
-                for b in prioritise_default(branches, ctx.default_branch)
-            ],
-            *[Version(tag=t) for t in sort_tags_newest_first(tags)],
-        ]
-        version = _resolve_raw_version(overrides.version, choices) or Version(
-            branch=ctx.default_branch
-        )
-    else:
-        version = Version(branch=ctx.default_branch)
+    version = (
+        _resolve_entry_version(ctx, overrides.version)
+        if overrides.version
+        else Version(branch=ctx.default_branch)
+    )
     existing_names = {p.name for p in ctx.manifest.projects}
-    return _build_entry(
+    entry = _build_entry(
         name=overrides.name or _unique_name(ctx.default_name, existing_names),
         remote_url=ctx.url,
         dst=overrides.dst or ctx.default_dst,
         version=version,
         src=overrides.src or "",
         ignore=overrides.ignore or [],
-        remote_to_use=ctx.remote_to_use,
     )
+    if ctx.remote_to_use:
+        entry.set_remote(ctx.remote_to_use)
+    return entry
 
 
-def _build_entry(  # pylint: disable=too-many-arguments
+def _build_entry(
     *,
     name: str,
     remote_url: str,
@@ -311,7 +320,6 @@ def _build_entry(  # pylint: disable=too-many-arguments
     version: Version,
     src: str,
     ignore: list[str],
-    remote_to_use: Remote | None,
 ) -> ProjectEntry:
     """Assemble a ``ProjectEntry`` from the fields collected by the wizard."""
     kind, value = version.field
@@ -325,10 +333,7 @@ def _build_entry(  # pylint: disable=too-many-arguments
         entry_dict["src"] = src
     if ignore:
         entry_dict["ignore"] = ignore
-    entry = ProjectEntry(entry_dict)
-    if remote_to_use:
-        entry.set_remote(remote_to_use)
-    return entry
+    return ProjectEntry(entry_dict)
 
 
 # ---------------------------------------------------------------------------
@@ -340,15 +345,17 @@ def _show_url_fields(
     name: str, remote_url: str, default_branch: str, remote_to_use: Remote | None
 ) -> None:
     """Print the fields determined solely by the URL (name, remote, url, repo-path)."""
-    seed = _build_entry(
+    entry = _build_entry(
         name=name,
         remote_url=remote_url,
         dst=name,
         version=Version(branch=default_branch),
         src="",
         ignore=[],
-        remote_to_use=remote_to_use,
-    ).as_yaml()
+    )
+    if remote_to_use:
+        entry.set_remote(remote_to_use)
+    seed = entry.as_yaml()
     logger.print_yaml(
         {k: seed[k] for k in ("name", "remote", "url", "repo-path") if k in seed}
     )
@@ -414,15 +421,17 @@ def _interactive_flow(ctx: _AddContext, overrides: _Overrides) -> ProjectEntry:
 
     src, ignore = _pick_src_and_ignore(ctx.subproject, version_value, overrides)
 
-    return _build_entry(
+    entry = _build_entry(
         name=name,
         remote_url=ctx.url,
         dst=dst,
         version=version,
         src=src,
         ignore=ignore,
-        remote_to_use=ctx.remote_to_use,
     )
+    if ctx.remote_to_use:
+        entry.set_remote(ctx.remote_to_use)
+    return entry
 
 
 # ---------------------------------------------------------------------------
@@ -507,10 +516,12 @@ def _ask_src(ls_function: LsFunction) -> str:
         src = tree_single_pick(ls_function, "Source path", dirs_selectable=True)
         return "" if src == "." else src
 
-    return Prompt.ask(
-        _PROMPT_FORMAT.format(label="Source path")
-        + "  (sub-path/glob, or Enter to fetch whole repo)",
-        default="",
+    return str(
+        Prompt.ask(
+            _PROMPT_FORMAT.format(label="Source path")
+            + "  (sub-path/glob, or Enter to fetch whole repo)",
+            default="",
+        )
     ).strip()
 
 

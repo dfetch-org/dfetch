@@ -91,9 +91,11 @@ def numbered_prompt(
 
     n = len(entries)
     while True:
-        raw = Prompt.ask(
-            _PROMPT_FORMAT.format(label=label) + f"  ({hint})",
-            default=default,
+        raw: str = str(
+            Prompt.ask(
+                _PROMPT_FORMAT.format(label=label) + f"  ({hint})",
+                default=default,
+            )
         ).strip()
 
         if raw.isdigit():
@@ -114,4 +116,4 @@ def prompt(label: str, default: str = "") -> str:
     """
     if is_tty():
         return ghost_prompt(f"  {GREEN}?{RESET} {label}", default).strip()
-    return Prompt.ask(_PROMPT_FORMAT.format(label=label), default=default).strip()
+    return str(Prompt.ask(_PROMPT_FORMAT.format(label=label), default=default)).strip()

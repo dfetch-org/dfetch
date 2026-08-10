@@ -71,7 +71,7 @@ dfetch.log          ← logging (lowest layer)
 - **`dfetch/__main__.py`** — CLI entry point; builds argparse subcommands and dispatches
 - **`dfetch/commands/`** — One file per CLI command (e.g., `update.py`, `check.py`); all inherit from `command.py`'s abstract `Command` base
 - **`dfetch/manifest/`** — YAML manifest loading/writing with `strictyaml` schema validation; `manifest.py` is the main handler
-- **`dfetch/project/`** — Abstract `Subproject`/`Superproject` classes with concrete Git, SVN, and Archive implementations; factory functions `create_sub_project()` and `create_super_project()` are the main entry points
+- **`dfetch/project/`** — Concrete `SubProject` domain aggregate that composes with a `Fetcher`; `GitFetcher`, `SvnFetcher`, and `ArchiveFetcher` implement the `Fetcher`/`VcsFetcher` protocols defined in `fetcher.py`; factory functions `create_sub_project()` and `create_super_project()` are the main entry points
 - **`dfetch/vcs/`** — Low-level VCS operations: `git.py`, `svn.py`, `archive.py` (with hash verification in `integrity_hash.py`), and `patch.py`
 - **`dfetch/reporting/`** — Output formatters; check results can be emitted as stdout, Jenkins JSON, SARIF, or Code Climate format; SBOM output uses CycloneDX format
 - **`dfetch/terminal/`** — Terminal UI components (interactive prompts, tree browser, ANSI colors)
@@ -84,7 +84,7 @@ dfetch.log          ← logging (lowest layer)
 
 ### Adding a new VCS backend
 
-Implement the abstract interfaces in `dfetch/project/subproject.py` and `dfetch/vcs/` and register via the factory in `dfetch/project/`.
+Implement the `Fetcher` protocol (or `VcsFetcher` if you need branch/tag/revision semantics) defined in `dfetch/project/fetcher.py`, add a concrete class in `dfetch/project/`, add low-level VCS operations in `dfetch/vcs/` if needed, and register via the factory in `dfetch/project/__init__.py`.
 
 ## Testing conventions
 

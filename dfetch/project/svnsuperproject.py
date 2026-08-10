@@ -15,7 +15,7 @@ from dfetch.manifest.manifest import Manifest
 from dfetch.manifest.project import ProjectEntry
 from dfetch.project.subproject import SubProject
 from dfetch.project.superproject import RevisionRange, SuperProject
-from dfetch.project.svnsubproject import SvnSubProject
+from dfetch.project.svnsubproject import SvnFetcher
 from dfetch.util.util import (
     check_no_path_traversal,
     in_directory,
@@ -42,7 +42,7 @@ class SvnSuperProject(SuperProject):
 
     def get_sub_project(self, project: ProjectEntry) -> SubProject | None:
         """Get the subproject in the same vcs type as the superproject."""
-        return SvnSubProject(project)
+        return SubProject(project, SvnFetcher(project.remote_url))
 
     def eol_preferences(self, paths: Sequence[str]) -> dict[str, str]:
         """Get the line ending requested per path by this repo's svn:auto-props."""
