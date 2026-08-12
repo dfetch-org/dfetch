@@ -42,7 +42,7 @@ dependencies = [
     "strictyaml==1.7.3",
     "rich==15.0.0",
     "typing-extensions==4.16.0",
-    "tldextract==5.3.0",
+    "tldextract==5.3.2",
     "sarif-om==1.0.4",
     "semver==3.0.4",
     "patch-ng==1.19.1",
