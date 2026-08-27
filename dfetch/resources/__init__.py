@@ -4,14 +4,12 @@ import importlib.resources as importlib_resources
 from contextlib import AbstractContextManager
 from pathlib import Path
 
-from dfetch import resources  # pylint: disable=import-self
-
 
 def _resource_path(filename: str) -> AbstractContextManager[Path]:
     """Get the path to the resource."""
     return importlib_resources.as_file(
         importlib_resources.files(
-            "resources" if "__compiled__" in globals() else resources
+            "resources" if "__compiled__" in globals() else __name__
         )
         / filename
     )

@@ -310,7 +310,9 @@ class Manifest:
             doc = load(text, schema=MANIFEST_SCHEMA)
         except (YAMLValidationError, StrictYAMLError) as err:
             raise RuntimeError(
-                f"Schema validation failed:\n\n{err.context_mark.get_snippet()}\n\n{err.problem}"
+                "Schema validation failed:\n\n"
+                f"{err.context_mark.get_snippet()}\n\n"
+                f"{err.problem}"
             ) from err
         except ValueError as err:
             raise RuntimeError(f"Schema validation failed: {err}") from err
