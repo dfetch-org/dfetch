@@ -14,7 +14,11 @@ from typing import NamedTuple
 from urllib.parse import urlparse
 
 from dfetch.log import get_logger
-from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
+from dfetch.util.cmdline import (
+    SubprocessCommandError,
+    decode_subprocess_output,
+    run_on_cmdline,
+)
 from dfetch.util.util import in_directory
 from dfetch.vcs.patch import Patch, PatchType
 
@@ -85,7 +89,7 @@ def _run_svn_raw(args: list[str], *, url: str = "") -> bytes:
 
 def _run_svn(args: list[str], *, url: str = "") -> str:
     """Run an svn subcommand and return decoded stdout (see _run_svn_raw)."""
-    return _run_svn_raw(args, url=url).decode()
+    return decode_subprocess_output(_run_svn_raw(args, url=url))
 
 
 def get_svn_version() -> tuple[str, str]:
@@ -303,7 +307,7 @@ class SvnRepo:
                     raise
                 except (SubprocessCommandError, RuntimeError):
                     continue
-                return result.decode()
+                return decode_subprocess_output(result)
         return ""
 
     def externals(self) -> list[External]:
@@ -461,7 +465,9 @@ class SvnRepo:
         target_str = str(target).strip()
         if os.path.isdir(target_str):
             last_digits = re.compile(r"(?P<digits>\d+)(?!.*\d)")
-            version = run_on_cmdline(logger, ["svnversion", target_str]).stdout.decode()
+            version = decode_subprocess_output(
+                run_on_cmdline(logger, ["svnversion", target_str]).stdout
+            )
 
             parsed_version = last_digits.search(version)
             if parsed_version:

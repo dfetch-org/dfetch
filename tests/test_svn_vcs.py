@@ -115,35 +115,33 @@ def test_eol_style_for_without_svn_returns_none(tmp_path):
         assert SvnRepo(tmp_path).eol_style_for("ext/mylib/_") is None
 
 
-def test_export_raises_unicodedecodeerror_on_non_utf8_output():
-    """Reproduces #1383: export() must not crash on non-UTF-8 svn stdout.
+def test_export_tolerates_non_utf8_output():
+    """Regression test for #1383: export() must not crash on non-UTF-8 svn stdout.
 
     Real-world SVN servers (e.g. accessed over HTTP on Windows) can emit
     output in the system code page (such as CP1252) rather than UTF-8, for
     example when printing exported file paths containing accented
-    characters. ``_run_svn`` currently hardcodes ``.decode()`` (UTF-8),
-    so a byte sequence that is invalid UTF-8 but valid CP1252 (like 0xe9,
-    "e" with an acute accent) crashes the whole update instead of being
-    handled gracefully.
+    characters. ``_run_svn`` used to hardcode ``.decode()`` (UTF-8), so a
+    byte sequence that is invalid UTF-8 but valid CP1252 (like 0xe9, "e"
+    with an acute accent) crashed the whole update instead of the export
+    completing.
     """
     with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
         mock_run.return_value.stdout = b"A    caf\xe9.txt\n"
-        with pytest.raises(UnicodeDecodeError):
-            SvnRepo.export("svn://example.com/repo", dst="/tmp/out")
+        SvnRepo.export("svn://example.com/repo", dst="/tmp/out")
 
 
-def test_run_svn_raises_unicodedecodeerror_on_non_utf8_output():
-    """Reproduces #1383 at the lower level: any _run_svn caller can crash.
+def test_run_svn_tolerates_non_utf8_output():
+    """Regression test for #1383 at the lower level: any _run_svn caller must not crash.
 
     ``_run_svn`` is used by several ``SvnRepo`` methods (info, externals,
-    files_in_path, ...). None of them can currently tolerate non-UTF-8
-    bytes in svn's stdout, since the decode happens unconditionally before
-    the caller ever sees the output.
+    files_in_path, ...). Non-UTF-8 bytes in svn's stdout must be decoded
+    with a fallback (CP1252) instead of raising, and CP1252-decodable
+    bytes must round-trip to the original text.
     """
     with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
-        mock_run.return_value.stdout = b"Path: caf\xe9\n"
-        with pytest.raises(UnicodeDecodeError):
-            SvnRepo.files_in_path("svn://example.com/repo/caf\xe9")
+        mock_run.return_value.stdout = "Path: café\n".encode("cp1252")
+        assert SvnRepo.files_in_path("svn://example.com/repo/café") == ["Path: café"]
 
 
 def test_export_rejects_non_digit_revision():
