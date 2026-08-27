@@ -69,6 +69,37 @@ def step_impl(context, name=None):
         commit_all("Added submodules")
 
 
+@given(
+    'a git-repository "{name}" with "{src_dir}" and a stray gitlink "{gitlink_path}" outside it'
+)
+def step_impl(context, name, src_dir, gitlink_path):
+    remote_path = os.path.join(context.remotes_dir, name)
+    pathlib.Path(remote_path).mkdir(parents=True, exist_ok=True)
+
+    with in_directory(remote_path):
+        create_repo()
+        generate_file(os.path.join(src_dir, "file.txt"), "hello")
+        commit_all("Initial commit")
+
+        sha = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
+        # A gitlink (mode 160000) with no corresponding .gitmodules entry, e.g. as
+        # left behind by an accidentally committed `git worktree` or nested checkout.
+        # `git add -A` would see the gitlink path as missing on disk and drop it
+        # again, so commit directly instead of going through commit_all().
+        subprocess.check_call(
+            [
+                "git",
+                "update-index",
+                "--add",
+                "--cacheinfo",
+                f"160000,{sha},{gitlink_path}",
+            ]
+        )
+        subprocess.check_call(
+            ["git", "commit", "-m", "Added a stray gitlink with no .gitmodules entry"]
+        )
+
+
 @given('a new tag "{tagname}" is added to git-repository "{name}"')
 def step_impl(context, tagname, name):
     remote_path = os.path.join(context.remotes_dir, name)
