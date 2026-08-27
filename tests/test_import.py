@@ -10,7 +10,7 @@ import pytest
 import yaml
 
 from dfetch.commands.import_ import Import, _determine_best_remotes
-from dfetch.vcs.git import Submodule
+from dfetch.vcs.git_submodule import Submodule
 from dfetch.vcs.svn import External
 
 DEFAULT_ARGS = argparse.Namespace(non_recursive=False)

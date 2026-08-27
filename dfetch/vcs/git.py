@@ -2,7 +2,6 @@
 
 import contextlib
 import functools
-import glob
 import os
 import re
 import shutil
@@ -13,18 +12,11 @@ from urllib.parse import urlparse, urlunparse
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
-from dfetch.util.license import is_license_file
 from dfetch.util.ssh import InvalidSshCommandError, sanitize_ssh_cmd
-from dfetch.util.util import (
-    glob_within_root,
-    in_directory,
-    move_directory_contents,
-    safe_rm,
-    strip_glob_prefix,
-    unique_parent_dirs,
-)
-from dfetch.vcs import git_gitlinks
-from dfetch.vcs.git_types import CheckoutOptions, Submodule
+from dfetch.util.util import in_directory, safe_rm
+from dfetch.vcs import git_submodule
+from dfetch.vcs.git_submodule import Submodule
+from dfetch.vcs.git_types import CheckoutOptions
 from dfetch.vcs.patch import Patch, PatchType
 
 __all__ = ["CheckoutOptions", "GitLocalRepo", "GitRemote", "Submodule"]
@@ -527,7 +519,7 @@ class GitLocalRepo:
             if options.eol is not None:
                 self._renormalize_eol()
 
-            git_gitlinks.drop_orphan_gitlinks()
+            git_submodule.drop_orphan_gitlinks()
 
             run_on_cmdline(
                 logger,
@@ -543,152 +535,11 @@ class GitLocalRepo:
                 .strip()
             )
 
-            submodules = self._apply_src_and_ignore(
+            submodules = git_submodule.apply_src_and_ignore(
                 options.remote, options.src, options.ignore, submodules
             )
 
             return str(current_sha), submodules
-
-    def _apply_src_and_ignore(
-        self,
-        remote: str,
-        src: str | None,
-        ignore: Sequence[str] | None,
-        submodules: list[Submodule],
-    ) -> list[Submodule]:
-        """Apply src filter and ignore patterns, returning surviving submodules."""
-        if src:
-            submodules = self._filter_submodules_by_src(remote, src, submodules)
-
-        for ignore_path in ignore or []:
-            paths = [
-                p
-                for p in glob.glob(ignore_path)
-                if not (os.path.isfile(p) and is_license_file(os.path.basename(p)))
-            ]
-            safe_rm(paths, within=".")
-
-        return [s for s in submodules if os.path.exists(s.path)]
-
-    def _filter_submodules_by_src(
-        self, remote: str, src: str, submodules: list[Submodule]
-    ) -> list[Submodule]:
-        """Keep only submodules within *src*, remove others, then promote *src* to root."""
-        within_src = []
-        to_remove: set[str] = set()
-        for submodule in submodules:
-            if submodule.path == src:
-                # Submodule IS the src directory itself; keep it in-scope without
-                # altering its path and let _move_src_folder_up handle promotion.
-                within_src.append(submodule)
-                continue
-            new_path = strip_glob_prefix(submodule.path, src)
-            if new_path != submodule.path:
-                submodule.path = new_path
-                within_src.append(submodule)
-            else:
-                if Path(src).is_relative_to(Path(submodule.path)):
-                    continue
-                to_remove.add(submodule.path)
-        for path in to_remove:
-            safe_rm(path, within=".")
-        GitLocalRepo._remove_empty_parents(to_remove)
-        self._move_src_folder_up(remote, src)
-        return within_src
-
-    @staticmethod
-    def _remove_empty_parents(paths: set[str]) -> None:
-        """Remove empty ancestor directories left after removing out-of-scope submodule dirs.
-
-        git submodule update may create a parent directory for a submodule even when
-        sparse-checkout excludes it; after safe_rm removes the exact submodule path the
-        parent can be left as an empty directory.  os.rmdir is used because it is atomic
-        and raises OSError when the directory is not empty, which stops the upward walk.
-        """
-        for path in paths:
-            parent = Path(path).parent
-            while parent != Path("."):
-                try:
-                    parent.rmdir()
-                except OSError:
-                    break
-                parent = parent.parent
-
-    @staticmethod
-    def _collect_safe_paths(src: str, repo_root: Path, remote: str) -> list[str]:
-        """Return glob-matched paths for *src* that are within *repo_root*.
-
-        Paths that escape the repo root are skipped with a warning.
-        """
-        safe_matched, escaped = glob_within_root(src, repo_root)
-        for p in escaped:
-            logger.warning(
-                f"The 'src:' filter '{src}' matched '{p}' outside the repo root"
-                f" for '{remote}'; skipping"
-            )
-        return safe_matched
-
-    @staticmethod
-    def _apply_move(chosen: Path, repo_root: Path, remote: str) -> None:
-        """Move the contents of *chosen* to the repo root and remove the empty parent."""
-        # Pre-remove git metadata at the root of *chosen* before promoting its contents.
-        # When *chosen* is itself a cloned submodule it contains a .git file that would
-        # collide with the parent repo's .git directory; the caller cleans these up
-        # recursively after checkout anyway.
-        for name in (GitLocalRepo.METADATA_DIR, GitLocalRepo.GIT_MODULES_FILE):
-            safe_rm(chosen / name, within=chosen)
-        try:
-            move_directory_contents(str(chosen), ".")
-        except FileNotFoundError:
-            logger.warning(
-                f"The 'src:' filter '{chosen}' didn't match any files from '{remote}'"
-            )
-            return
-        parts = chosen.relative_to(repo_root).parts
-        if parts:
-            try:
-                safe_rm(repo_root / parts[0], within=repo_root)
-            except FileNotFoundError:
-                logger.debug(
-                    f"Nothing left to remove at '{repo_root / parts[0]}' after moving '{chosen}' for '{remote}'"
-                )
-
-    @staticmethod
-    def _move_src_folder_up(remote: str, src: str) -> None:
-        """Move the files from the src folder into the root of the project.
-
-        Args:
-            remote (str): Name of the root
-            src (str): Src folder to move up
-        """
-        if os.path.isabs(src):
-            logger.warning(
-                f"The 'src:' filter '{src}' is an absolute path; skipping for '{remote}'"
-            )
-            return
-
-        repo_root = Path(os.getcwd()).resolve()
-        safe_matched = GitLocalRepo._collect_safe_paths(src, repo_root, remote)
-
-        if not safe_matched:
-            logger.warning(
-                f"The 'src:' filter '{src}' didn't match any files from '{remote}'"
-            )
-            return
-
-        # Resolve to canonical absolute paths so downstream steps use stable paths
-        # regardless of any '..' components in the original glob results.
-        resolved_dirs = [Path(d).resolve() for d in unique_parent_dirs(safe_matched)]
-
-        if len(resolved_dirs) > 1:
-            display = resolved_dirs[0].relative_to(repo_root)
-            logger.warning(
-                f"The 'src:' filter '{src}' matches multiple directories from '{remote}'. "
-                f"Only considering files in '{display}'."
-            )
-
-        if resolved_dirs:
-            GitLocalRepo._apply_move(resolved_dirs[0], repo_root, remote)
 
     @staticmethod
     def _determine_ignore_paths(
@@ -848,7 +699,7 @@ class GitLocalRepo:
     @staticmethod
     def submodules() -> list[Submodule]:
         """Get a list of submodules in the current directory."""
-        git_gitlinks.drop_orphan_gitlinks()
+        git_submodule.drop_orphan_gitlinks()
 
         result = run_on_cmdline(
             logger,
@@ -866,7 +717,9 @@ class GitLocalRepo:
         for line in result.stdout.decode().split("\n"):
             if line:
                 name, sm_path, sha, toplevel = line.split("\0")
-                urls = urls or GitLocalRepo._get_submodule_urls(toplevel)
+                urls = urls or git_submodule.get_submodule_urls(
+                    toplevel, GitLocalRepo.get_remote_url()
+                )
                 url = urls[name]
                 branch, tag = GitRemote(url).find_branch_tip_or_tag_from_sha(sha)
 
@@ -895,47 +748,6 @@ class GitLocalRepo:
             )
 
         return submodules
-
-    @staticmethod
-    def _get_submodule_urls(toplevel: str) -> dict[str, str]:
-        result = run_on_cmdline(
-            logger,
-            [
-                "git",
-                "config",
-                "--file",
-                toplevel + "/.gitmodules",
-                "--get-regexp",
-                "url",
-            ],
-        )
-
-        origin_url = GitLocalRepo.get_remote_url()
-        return {
-            str(match.group(1)): GitLocalRepo._ensure_abs_url(
-                origin_url, str(match.group(2))
-            )
-            for match in re.finditer(
-                r"submodule\.(.*)\.url\s+(.*)", result.stdout.decode()
-            )
-        }
-
-    @staticmethod
-    def _ensure_abs_url(root_url: str, rel_url: str) -> str:
-        """Make sure the given url is an absolute url."""
-        if not rel_url.startswith("../"):
-            return rel_url
-
-        new_root_url = root_url.split("/")
-        new_rel_url = rel_url.split("/")
-        for elt in new_rel_url.copy():
-            if elt != "..":
-                break
-
-            new_root_url.pop()
-            new_rel_url.pop(0)
-
-        return "/".join(new_root_url + new_rel_url)
 
     def find_branch_containing_sha(self, sha: str) -> str:
         """Try to find the branch that contains the given sha."""
