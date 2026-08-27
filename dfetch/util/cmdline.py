@@ -50,10 +50,7 @@ def decode_subprocess_output(data: bytes) -> str:
         return data.decode()
     except UnicodeDecodeError:
         pass
-    try:
-        return data.decode(encoding="cp1252")
-    except UnicodeDecodeError:
-        return data.decode(errors="replace")
+    return data.decode(encoding="cp1252", errors="replace")
 
 
 def run_on_cmdline(
