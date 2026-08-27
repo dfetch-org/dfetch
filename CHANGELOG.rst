@@ -1,3 +1,8 @@
+Release 0.14.4 (unreleased)
+====================================
+
+* Fix SVN commands raising ``UnicodeDecodeError`` on non-UTF-8 output (#1383)
+
 Release 0.14.3 (released 2026-06-25)
 ====================================
 

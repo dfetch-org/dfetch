@@ -10,7 +10,11 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
+from dfetch.util.cmdline import (
+    SubprocessCommandError,
+    decode_subprocess_output,
+    run_on_cmdline,
+)
 
 LS_CMD = "ls ."
 LS_OK_RESULT = CompletedProcess(
@@ -44,3 +48,15 @@ def test_run_on_cmdline(name, cmd, cmd_result, expectation):
         else:
             with pytest.raises(expectation):
                 run_on_cmdline(logger_mock, cmd)
+
+
+@pytest.mark.parametrize(
+    "name, data, expected",
+    [
+        ("utf-8", "café".encode(), "café"),
+        ("cp1252 fallback", "café".encode("cp1252"), "café"),
+        ("undefined in both codecs is replaced", b"\x81", "�"),
+    ],
+)
+def test_decode_subprocess_output(name, data, expected):
+    assert decode_subprocess_output(data) == expected, name

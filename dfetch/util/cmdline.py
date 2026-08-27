@@ -36,6 +36,26 @@ class SubprocessCommandError(Exception):
         return self._message
 
 
+def decode_subprocess_output(data: bytes) -> str:
+    """Decode bytes from a subprocess, tolerating non-UTF-8 output.
+
+    Command line tools such as ``svn`` can emit output in the system's
+    native code page (e.g. CP1252 on Windows) rather than UTF-8, for
+    example when a file path contains accented characters. UTF-8 is tried
+    first since it is the common case, then CP1252, a common source of
+    non-UTF-8 output. As a last resort, undecodable bytes are replaced so
+    that unexpected output never crashes the command that produced it.
+    """
+    try:
+        return data.decode()
+    except UnicodeDecodeError:
+        pass
+    try:
+        return data.decode(encoding="cp1252")
+    except UnicodeDecodeError:
+        return data.decode(errors="replace")
+
+
 def run_on_cmdline(
     logger: logging.Logger,
     cmd: list[str],
@@ -52,8 +72,8 @@ def run_on_cmdline(
     except subprocess.CalledProcessError as exc:
         raise SubprocessCommandError(
             exc.cmd,
-            exc.output.decode(errors="replace").strip(),
-            exc.stderr.decode(errors="replace").strip(),
+            decode_subprocess_output(exc.output).strip(),
+            decode_subprocess_output(exc.stderr).strip(),
             exc.returncode,
         ) from exc
     except FileNotFoundError as exc:
@@ -66,8 +86,8 @@ def run_on_cmdline(
     if proc.returncode:
         raise SubprocessCommandError(
             cmd,
-            stdout.decode(errors="replace"),
-            stderr.decode(errors="replace").strip(),
+            decode_subprocess_output(stdout),
+            decode_subprocess_output(stderr).strip(),
             proc.returncode,
         )
 
@@ -83,9 +103,5 @@ def _log_output(proc: subprocess.CompletedProcess, logger: logging.Logger) -> No
 
 def _log_output_stream(name: str, stream: Any, logger: logging.Logger) -> None:
     logger.debug(f"{name}:")
-    try:
-        for line in stream.decode().split("\n\n"):
-            logger.debug(line)
-    except UnicodeDecodeError:
-        for line in stream.decode(encoding="cp1252").split("\n\n"):
-            logger.debug(line)
+    for line in decode_subprocess_output(stream).split("\n\n"):
+        logger.debug(line)
