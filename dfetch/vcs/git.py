@@ -23,6 +23,7 @@ from dfetch.util.util import (
     strip_glob_prefix,
     unique_parent_dirs,
 )
+from dfetch.vcs import git_gitlinks
 from dfetch.vcs.git_types import CheckoutOptions, Submodule
 from dfetch.vcs.patch import Patch, PatchType
 
@@ -526,6 +527,8 @@ class GitLocalRepo:
             if options.eol is not None:
                 self._renormalize_eol()
 
+            git_gitlinks.drop_orphan_gitlinks()
+
             run_on_cmdline(
                 logger,
                 ["git", "submodule", "update", "--init", "--recursive"],
@@ -845,6 +848,8 @@ class GitLocalRepo:
     @staticmethod
     def submodules() -> list[Submodule]:
         """Get a list of submodules in the current directory."""
+        git_gitlinks.drop_orphan_gitlinks()
+
         result = run_on_cmdline(
             logger,
             [
