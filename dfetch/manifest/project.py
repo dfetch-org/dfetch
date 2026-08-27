@@ -419,7 +419,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
 
         self._remote: str = kwargs.get("remote", "")
         self._remote_obj: Remote | None = None
-        self._src: str = kwargs.get("src", "")  # noqa
+        self._src: str = kwargs.get("src", "")
         self._dst: str = kwargs.get("dst", self._name)
         self._url: str = kwargs.get("url", "")
         self._patch: list[str] = always_str_list(kwargs.get("patch", []))
@@ -448,7 +448,7 @@ class ProjectEntry:  # pylint: disable=too-many-instance-attributes
         kwargs: ProjectEntryDict = (
             {}  # type: ignore # the Required name key is checked in __init__
         )
-        for key in ProjectEntryDict.__annotations__.keys():  # pylint: disable=no-member
+        for key in ProjectEntryDict.__annotations__:  # pylint: disable=no-member
             try:
                 kwargs[str(key)] = yamldata[key]  # type: ignore
             except KeyError:

@@ -291,7 +291,7 @@ class Manifest:
             elif isinstance(remote, Remote):
                 last_remote = remotes[remote.name] = Remote.copy(remote)
             else:
-                raise RuntimeError(f"{remote} has unknown type")
+                raise TypeError(f"{remote} has unknown type")
 
             if last_remote.is_default:
                 default_remotes.append(last_remote)
@@ -310,15 +310,7 @@ class Manifest:
             doc = load(text, schema=MANIFEST_SCHEMA)
         except (YAMLValidationError, StrictYAMLError) as err:
             raise RuntimeError(
-                "\n".join(
-                    [
-                        "Schema validation failed:",
-                        "",
-                        err.context_mark.get_snippet(),
-                        "",
-                        err.problem,
-                    ]
-                )
+                f"Schema validation failed:\n\n{err.context_mark.get_snippet()}\n\n{err.problem}"
             ) from err
         except ValueError as err:
             raise RuntimeError(f"Schema validation failed: {err}") from err

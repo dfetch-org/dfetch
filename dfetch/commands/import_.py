@@ -51,7 +51,9 @@ class Import(dfetch.commands.command.Command):
         for project in projects:
             # To choose the best match, prefer longest remote url.
             # e.g. Prefer git@git.github.com:some-org over git@git.github.com
-            for remote in reversed(sorted(remotes, key=lambda remote: len(remote.url))):
+            for remote in sorted(
+                remotes, key=lambda remote: len(remote.url), reverse=True
+            ):
                 if project.remote_url.startswith(remote.url):
                     project.set_remote(remote)
                     break

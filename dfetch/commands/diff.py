@@ -111,7 +111,7 @@ class Diff(dfetch.commands.command.Command):
         old_rev, new_rev = self._parse_revs(args.revs)
 
         if isinstance(superproject, NoVcsSuperProject):
-            raise RuntimeError(
+            raise TypeError(
                 "Can only create patch if your project is an SVN or Git repo",
             )
 

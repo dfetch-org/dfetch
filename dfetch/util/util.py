@@ -106,12 +106,14 @@ def prune_files_by_pattern(directory: str, patterns: Sequence[str]) -> None:
             safe_rm(file_or_dir, within=directory)
 
 
-def _remove_readonly(func: Any, path: str, _: Any) -> None:
+def _remove_readonly(
+    func: Any, path: str, exc_info: tuple[type[BaseException], BaseException, Any]
+) -> None:
     if not os.access(path, os.W_OK):
         os.chmod(path, stat.S_IWUSR)
         func(path)
     else:
-        raise  # pylint: disable=misplaced-bare-raise
+        raise exc_info[1].with_traceback(exc_info[2])
 
 
 def find_non_matching_files(directory: str, patterns: Sequence[str]) -> Iterator[str]:
@@ -127,8 +129,7 @@ def find_matching_files(directory: str, patterns: Sequence[str]) -> Iterator[Pat
     directory_path = Path(directory)
 
     for pattern in patterns:
-        if pattern.startswith("/"):
-            pattern = pattern[1:]
+        pattern = pattern.removeprefix("/")
         matching_paths = directory_path.rglob(pattern)
 
         for path in matching_paths:

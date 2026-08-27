@@ -1,6 +1,5 @@
 """Git specific implementation."""
 
-from functools import lru_cache
 from pathlib import Path
 
 from dfetch.log import get_logger
@@ -24,6 +23,7 @@ class GitSubProject(SubProject):
         """Create a Git subproject."""
         super().__init__(project)
         self._remote_repo = GitRemote(self.remote)
+        self._default_branch: str | None = None
 
     @property
     def remote_repo(self) -> GitRemote:
@@ -143,7 +143,8 @@ class GitSubProject(SubProject):
             revision=version.revision or fetched_sha,
         )
 
-    @lru_cache
-    def get_default_branch(self) -> str:  # type: ignore
+    def get_default_branch(self) -> str:
         """Get the default branch of this repository."""
-        return self._remote_repo.get_default_branch()
+        if self._default_branch is None:
+            self._default_branch = self._remote_repo.get_default_branch()
+        return self._default_branch

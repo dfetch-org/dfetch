@@ -78,7 +78,7 @@ class UpdatePatch(dfetch.commands.command.Command):
         had_errors: bool = False
 
         if isinstance(superproject, NoVcsSuperProject):
-            raise RuntimeError(
+            raise TypeError(
                 "The project containing the manifest is not under version control,"
                 " updating patches is not supported"
             )

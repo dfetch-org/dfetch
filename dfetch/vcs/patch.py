@@ -364,9 +364,7 @@ def _reverse_patch(patch_text: str) -> str:
 
             # Rebuild hunk header
             reverse_patch_lines.append(
-                f"@@ -{hunk.starttgt},{hunk.linestgt} +{hunk.startsrc},{hunk.linessrc} @@".encode(
-                    encoding="UTF-8"
-                )
+                f"@@ -{hunk.starttgt},{hunk.linestgt} +{hunk.startsrc},{hunk.linessrc} @@".encode()
             )
             reverse_patch_lines.extend(hunk_lines)
         reverse_patch_lines.append(b"")  # blank line between files

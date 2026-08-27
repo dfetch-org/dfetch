@@ -180,7 +180,7 @@ class SubProject(ABC):  # pylint: disable=too-many-public-methods
 
     def _apply_patches(self, count: int = -1) -> list[str]:
         """Apply the patches."""
-        cwd = pathlib.Path(".").resolve()
+        cwd = pathlib.Path.cwd()
         applied_patches = []
         count = len(self.__project.patch) if count == -1 else count
         for patch in self.__project.patch[:count]:

@@ -36,7 +36,7 @@ class Command(ABC):
     - ``__call__`` which will be called when the user selects the command.
     """
 
-    CHILD_TYPE = TypeVar("CHILD_TYPE", bound="Command")  # noqa
+    CHILD_TYPE = TypeVar("CHILD_TYPE", bound="Command")
 
     @staticmethod
     @abstractmethod
