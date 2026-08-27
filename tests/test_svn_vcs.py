@@ -127,7 +127,7 @@ def test_export_tolerates_non_utf8_output():
     completing.
     """
     with patch("dfetch.vcs.svn.run_on_cmdline") as mock_run:
-        mock_run.return_value.stdout = b"A    caf\xe9.txt\n"
+        mock_run.return_value.stdout = b"A    r\xe9sum\xe9.txt\n"
         SvnRepo.export("svn://example.com/repo", dst="/tmp/out")
 
 

@@ -56,7 +56,9 @@ def test_run_on_cmdline(name, cmd, cmd_result, expectation):
         ("utf-8", "café".encode(), "café"),
         ("cp1252 fallback", "café".encode("cp1252"), "café"),
         ("undefined in both codecs is replaced", b"\x81", "�"),
+        ("valid cp1252 byte survives next to an undefined one", b"\xe9\x81", "é�"),
     ],
 )
 def test_decode_subprocess_output(name, data, expected):
+    """Decode UTF-8 and CP1252 output, replacing bytes undecodable in both."""
     assert decode_subprocess_output(data) == expected, name
