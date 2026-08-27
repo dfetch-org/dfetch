@@ -47,7 +47,7 @@ def coerce(version: str) -> tuple[str, Version | None, str]:
     return (
         match.string[: match.start()],
         Version(**ver),
-        match.string[match.end() :],  # noqa:E203
+        match.string[match.end() :],
     )
 
 

@@ -129,7 +129,7 @@ class ArchiveSubProject(SubProject):
             hex_digest = remote.download(tmp_path, algorithm=algorithm)
             return IntegrityHash(algorithm, hex_digest)
 
-    def _does_revision_exist(self, revision: str) -> bool:  # noqa: ARG002
+    def _does_revision_exist(self, revision: str) -> bool:
         """Check whether the archive URL is still reachable.
 
         A lightweight HEAD (or partial-GET) reachability check is used for

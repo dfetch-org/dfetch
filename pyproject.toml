@@ -198,11 +198,11 @@ fail_under = 72
 skip = "*.cast,./venv,**/plantuml-c4/**,./example,.mypy_cache,./doc/_build/**,./doc/landing-page/_build/**,./doc/_ext/sphinxcontrib_asciinema/**,./build,*.patch,.git,**/generate-casts/demo-magic/**,./doc/openssl/**"
 ignore-words-list = "bund"
 
-[tool.ruff.lint]
-# Ruff 0.16 expanded its default rule set from 59 to 413 rules. Pin the
-# previous default explicitly so upgrading ruff doesn't silently change
-# which rules are enforced; adopting more rules is a deliberate choice.
-select = ["E4", "E7", "E9", "F"]
+[tool.ruff.lint.isort]
+# isort (used for the isort CI check) doesn't classify this private stdlib
+# extension module as standard library; keep ruff's import sort agreeing
+# with it so the two tools don't fight over its group placement.
+known-third-party = ["_hashlib"]
 
 [tool.ruff.lint.per-file-ignores]
 "features/steps/*" = ["F811"]

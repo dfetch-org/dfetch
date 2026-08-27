@@ -254,7 +254,7 @@ class GitRemote:
         try:
             self.fetch_for_tree_browse(tmpdir, version or self.get_default_branch())
             cloned = True
-        except Exception as e:  # pylint: disable=broad-exception-caught
+        except (SubprocessCommandError, RuntimeError) as e:
             logger.debug("Failed to fetch remote tree for '%s': %s", self._remote, e)
 
         def ls(path: str = "") -> list[tuple[str, bool]]:

@@ -395,7 +395,7 @@ class SvnRepo:
                     External(
                         name=name,
                         toplevel=toplevel,
-                        path=raw_path[2:] if raw_path.startswith("./") else raw_path,
+                        path=raw_path.removeprefix("./"),
                         revision=rev,
                         url=url,
                         branch=branch,

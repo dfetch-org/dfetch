@@ -1,6 +1,6 @@
 """Version of a project."""
 
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 
 class Version(NamedTuple):
@@ -14,7 +14,7 @@ class Version(NamedTuple):
     branch: str = ""
     revision: str = ""
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Check if two versions can be considered as equal."""
         if not isinstance(other, Version):
             return False

@@ -88,8 +88,7 @@ def _vcs_namespace_and_name(remote_url: str) -> tuple[str, str, str]:
     path = parsed.path.lstrip("/")
     if "svn" in parsed.scheme or "svn." in parsed.netloc:
         namespace, name = _namespace_and_name_from_domain_and_path(parsed.netloc, path)
-        if namespace.startswith("p/"):
-            namespace = namespace[len("p/") :]
+        namespace = namespace.removeprefix("p/")
         namespace = namespace.replace("/svn/", "/")
     else:
         match = SSH_REGEX.match(remote_url)

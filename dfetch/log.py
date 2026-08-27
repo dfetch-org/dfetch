@@ -8,7 +8,7 @@ import sys
 import types
 from contextlib import nullcontext
 from logging import LogRecord
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from rich.console import Console, ConsoleRenderable
 from rich.highlighter import NullHighlighter
@@ -85,7 +85,7 @@ def configure_root_logger(console: Console | None = None) -> None:
 class DLogger(logging.Logger):
     """Logging class extended with specific log items for dfetch."""
 
-    _printed_projects: set[str] = set()
+    _printed_projects: ClassVar[set[str]] = set()
     _active_status: Status | None = None
 
     def print_report_line(self, name: str, info: str) -> None:

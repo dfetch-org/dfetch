@@ -183,7 +183,7 @@ class CheckReporter(AbstractCheckReporter):
             rule_id="unavailable-project-version",
             message=(
                 f"{project.name} wanted version is '{str(wanted_version) or 'latest'}',"
-                f" but '{str(wanted_version)}' is unavailable."
+                f" but '{wanted_version!s}' is unavailable."
             ),
             description=(
                 f"The manifest requires version '{str(wanted_version) or 'latest'}' of {project.name}. "

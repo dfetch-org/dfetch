@@ -45,12 +45,12 @@ class TreeBrowser:
         self,
         ls_function: LsFunction,
         title: str,
-        config: BrowserConfig = BrowserConfig(),
+        config: BrowserConfig | None = None,
     ) -> None:
         """Initialise browser configuration; call :meth:`run` to start."""
         self._ls_function = ls_function
         self._title = title
-        self._config = config
+        self._config = config or BrowserConfig()
         self._nodes: list[TreeNode] = []
         self._idx = 0
         self._top = 0

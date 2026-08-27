@@ -60,7 +60,7 @@ class Dependency(TypedDict):
 class Options(TypedDict):  # pylint: disable=too-many-ancestors
     """Argument types for Metadata class construction."""
 
-    last_fetch: datetime.datetime  # noqa
+    last_fetch: datetime.datetime
     branch: str
     tag: str
     revision: str
@@ -81,7 +81,8 @@ class Metadata:
     def __init__(self, kwargs: Options) -> None:
         """Create the metadata."""
         self._last_fetch: datetime.datetime = kwargs.get(
-            "last_fetch", datetime.datetime(2000, 1, 1, 0, 0, 0)
+            "last_fetch",
+            datetime.datetime(2000, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc),
         )
 
         self._version: Version = Version(
@@ -107,7 +108,9 @@ class Metadata:
             "revision": project.revision,
             "remote_url": project.remote_url,
             "destination": project.destination,
-            "last_fetch": datetime.datetime(2000, 1, 1, 0, 0, 0),
+            "last_fetch": datetime.datetime(
+                2000, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc
+            ),
             "hash": "",
             "patch": project.patch,
             "dependencies": [],
@@ -139,7 +142,7 @@ class Metadata:
         dependencies: list[Dependency] | None = None,
     ) -> None:
         """Update metadata."""
-        self._last_fetch = datetime.datetime.now()
+        self._last_fetch = datetime.datetime.now(datetime.timezone.utc)
         self._version = version
         self._hash = hash_
         self._patch = patch_ or []

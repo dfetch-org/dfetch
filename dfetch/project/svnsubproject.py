@@ -145,7 +145,7 @@ class SvnSubProject(SubProject):
                 )
 
         if self.source:
-            root_branch_path = "/".join([self.remote, branch_path]).strip("/")
+            root_branch_path = f"{self.remote}/{branch_path}".strip("/")
             license_files = SvnSubProject._license_files(root_branch_path)
             if license_files:
                 dest = (
@@ -197,7 +197,7 @@ class SvnSubProject(SubProject):
         if complete_path.count("*") == 1:
             before, after = complete_path.split("*", maxsplit=1)
             complete_path, before_star = before.rsplit("/", maxsplit=1)
-            glob_filter = "*".join([before_star, after])
+            glob_filter = f"{before_star}*{after}"
         return complete_path, glob_filter
 
     def _get_info(self, branch: str) -> dict[str, str]:

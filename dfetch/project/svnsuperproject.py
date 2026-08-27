@@ -110,9 +110,8 @@ class SvnSuperProject(SuperProject):
         """Get the diff between two revisions."""
         repo = SvnRepo(path)
         new, old = revisions.new, revisions.old
-        if reverse:
-            if new:
-                new, old = old, new
+        if reverse and new:
+            new, old = old, new
 
         patch = repo.create_diff(old, new, ignore)
 
