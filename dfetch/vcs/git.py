@@ -252,15 +252,17 @@ class GitRemote:
         tmpdir = tempfile.mkdtemp(prefix="dfetch_browse_")
         cloned = False
         try:
-            self.fetch_for_tree_browse(tmpdir, version or self.get_default_branch())
-            cloned = True
-        except (SubprocessCommandError, RuntimeError) as e:
-            logger.debug("Failed to fetch remote tree for '%s': %s", self._remote, e)
+            try:
+                self.fetch_for_tree_browse(tmpdir, version or self.get_default_branch())
+                cloned = True
+            except (SubprocessCommandError, RuntimeError) as e:
+                logger.debug(
+                    "Failed to fetch remote tree for '%s': %s", self._remote, e
+                )
 
-        def ls(path: str = "") -> list[tuple[str, bool]]:
-            return GitRemote.ls_tree(tmpdir, path=path) if cloned else []
+            def ls(path: str = "") -> list[tuple[str, bool]]:
+                return GitRemote.ls_tree(tmpdir, path=path) if cloned else []
 
-        try:
             yield ls
         finally:
             shutil.rmtree(tmpdir, ignore_errors=True)
