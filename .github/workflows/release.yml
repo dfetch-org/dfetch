@@ -57,7 +57,7 @@ jobs:
 
       - name: Update latest tag
         if: ${{ steps.release_info.outputs.tag == 'latest' }}
-        uses: EndBug/latest-tag@b1cbe90391108c0a90c6ee33ba86972cf84574e6
+        uses: EndBug/latest-tag@b2e1a0a2b6990399c5b3bf109e032a78ae82dd41
         with:
           ref: latest
           description: Last state in main
