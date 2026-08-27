@@ -220,6 +220,33 @@ Feature: Fetch projects with nested VCS dependencies
                             README.md
             """
 
+    Scenario: A gitlink with no .gitmodules entry outside src does not abort the fetch
+        Given a git-repository "GitlinkProject.git" with "vendored" and a stray gitlink "some/worktree" outside it
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: gitlink-project
+                      url: some-remote-server/GitlinkProject.git
+                      src: vendored
+            """
+        When I run "dfetch update"
+        Then the output shows
+            """
+            Dfetch (0.14.3)
+              gitlink-project:
+              > Fetched master - e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+            """
+        Then 'MyProject' looks like:
+            """
+            MyProject/
+                dfetch.yaml
+                gitlink-project/
+                    .dfetch_data.yaml
+                    file.txt
+            """
+
     Scenario: A sibling submodule at the same top-level dir as src is not fetched
         Given a git-repository "SiblingSubmoduleProject.git" with the following submodules
             | path        | url                             | revision |

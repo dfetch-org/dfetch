@@ -4,6 +4,7 @@
 # flake8: noqa
 
 import os
+import subprocess
 from subprocess import CompletedProcess
 from unittest.mock import Mock, patch
 
@@ -16,7 +17,7 @@ from dfetch.vcs.git import (
     GitRemote,
     _build_git_ssh_command,
 )
-from dfetch.vcs.git_types import Submodule
+from dfetch.vcs.git_types import CheckoutOptions, Submodule
 
 # ---------------------------------------------------------------------------
 # unique_parent_dirs  (dfetch.util.util)
@@ -217,6 +218,63 @@ def test_filter_submodules_sibling_of_src_not_removed(tmp_path, monkeypatch):
     assert any(
         s.path == "apps/lib" for s in result
     ), "src submodule should appear in result before final os.path.exists filtering"
+
+
+# ---------------------------------------------------------------------------
+# GitLocalRepo.checkout_version — gitlink with no .gitmodules entry (#1380)
+# ---------------------------------------------------------------------------
+
+
+def _init_git_repo(path):
+    subprocess.check_call(["git", "init", "--initial-branch=main", "--quiet"], cwd=path)
+    subprocess.check_call(["git", "config", "user.email", "you@example.com"], cwd=path)
+    subprocess.check_call(["git", "config", "user.name", "John Doe"], cwd=path)
+    subprocess.check_call(["git", "config", "commit.gpgsign", "false"], cwd=path)
+
+
+def test_checkout_version_survives_gitlink_with_no_gitmodules_entry_outside_src(
+    tmp_path,
+):
+    """Reproduces #1380.
+
+    An upstream repo can contain a gitlink (mode 160000) with no matching
+    entry in .gitmodules — e.g. an accidentally committed `git worktree`.
+    `git submodule update`/`foreach` abort on such a gitlink even when it
+    sits entirely outside the requested `src`, so the whole fetch must not
+    be allowed to die because of it.
+    """
+    upstream = tmp_path / "upstream"
+    upstream.mkdir()
+    _init_git_repo(upstream)
+    (upstream / "vendored").mkdir()
+    (upstream / "vendored" / "file.txt").write_text("hello")
+    subprocess.check_call(["git", "add", "-A"], cwd=upstream)
+    subprocess.check_call(["git", "commit", "-qm", "initial"], cwd=upstream)
+
+    sha = (
+        subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=upstream)
+        .decode()
+        .strip()
+    )
+    subprocess.check_call(
+        ["git", "update-index", "--add", "--cacheinfo", f"160000,{sha},some/worktree"],
+        cwd=upstream,
+    )
+    subprocess.check_call(
+        ["git", "commit", "-qm", "commit a gitlink with no .gitmodules entry"],
+        cwd=upstream,
+    )
+
+    consumer = tmp_path / "consumer"
+    consumer.mkdir()
+    repo = GitLocalRepo(str(consumer))
+
+    _, submodules = repo.checkout_version(
+        CheckoutOptions(remote=str(upstream), version="main", src="vendored")
+    )
+
+    assert submodules == []
+    assert (consumer / "file.txt").read_text() == "hello"
 
 
 @pytest.mark.parametrize(
