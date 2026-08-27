@@ -226,6 +226,11 @@ def test_filter_submodules_sibling_of_src_not_removed(tmp_path, monkeypatch):
 
 
 def _init_git_repo(path):
+    """Initialize a real git repo at *path* with a committer identity set.
+
+    Args:
+        path: Directory to initialize as a git repo.
+    """
     subprocess.check_call(["git", "init", "--initial-branch=main", "--quiet"], cwd=path)
     subprocess.check_call(["git", "config", "user.email", "you@example.com"], cwd=path)
     subprocess.check_call(["git", "config", "user.name", "John Doe"], cwd=path)
