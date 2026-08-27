@@ -32,3 +32,26 @@ Feature: Importing submodules from an existing git repository
                 repo-path: test-repo
 
             """
+
+    Scenario: A stray gitlink with no .gitmodules entry does not abort the import
+        Given a git repo with the following submodules
+            | path           | url                                     | revision                                 |
+            | ext/test-repo1 | https://github.com/dfetch-org/test-repo | e1fda19a57b873eb8e6ae37780594cbb77b70f1a |
+        And a stray gitlink "some/worktree" is added with no .gitmodules entry
+        When I run "dfetch import"
+        Then it should generate the manifest 'dfetch.yaml'
+            """
+            manifest:
+              version: '0.0'
+
+              remotes:
+              - name: github-com-dfetch-org
+                url-base: https://github.com/dfetch-org
+
+              projects:
+              - name: ext/test-repo1
+                revision: e1fda19a57b873eb8e6ae37780594cbb77b70f1a
+                branch: main
+                repo-path: test-repo
+
+            """
