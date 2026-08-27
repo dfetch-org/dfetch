@@ -32,23 +32,43 @@ def gitlink_paths() -> list[str]:
     return paths
 
 
-def declared_submodule_paths() -> set[str]:
-    """Return the submodule paths declared in .gitmodules, if any."""
-    if not os.path.isfile(GIT_MODULES_FILE):
-        return set()
+def _submodule_config_values(key: str) -> dict[str, str]:
+    """Return {submodule name: value} for a .gitmodules key ("path" or "url").
+
+    Args:
+        key: The per-submodule config key to read, e.g. "path" or "url".
+    """
     try:
         result = run_on_cmdline(
             logger,
-            ["git", "config", "--file", GIT_MODULES_FILE, "--get-regexp", "path"],
+            ["git", "config", "--file", GIT_MODULES_FILE, "--get-regexp", key],
         )
-    except SubprocessCommandError:
-        return set()
+    except SubprocessCommandError as exc:
+        # get-regexp documents exit status 1 for "no matching lines"; anything
+        # else (e.g. a malformed .gitmodules) must not be mistaken for that.
+        if exc.returncode == 1:
+            return {}
+        raise
     return {
-        match.group(1)
+        match.group(1): match.group(2)
         for match in re.finditer(
-            r"submodule\.(?:.*)\.path\s+(.*)", result.stdout.decode()
+            rf"submodule\.(.*)\.{key}\s+(.*)", result.stdout.decode()
         )
     }
+
+
+def declared_submodule_paths() -> set[str]:
+    """Return the paths of .gitmodules submodules that also declare a url.
+
+    A stanza with a ``path`` but no ``url`` cannot be initialized by
+    ``git submodule update`` either, so it is treated the same as an orphan
+    gitlink rather than as "declared".
+    """
+    if not os.path.isfile(GIT_MODULES_FILE):
+        return set()
+    paths = _submodule_config_values("path")
+    urls = _submodule_config_values("url")
+    return {path for name, path in paths.items() if name in urls}
 
 
 def drop_orphan_gitlinks() -> None:
@@ -67,4 +87,6 @@ def drop_orphan_gitlinks() -> None:
                 "Gitlink '%s' has no '.gitmodules' entry; skipping it as a submodule",
                 path,
             )
-            run_on_cmdline(logger, ["git", "update-index", "--force-remove", path])
+            run_on_cmdline(
+                logger, ["git", "update-index", "--force-remove", "--", path]
+            )
