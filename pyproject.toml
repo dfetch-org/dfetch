@@ -82,7 +82,7 @@ development = [
     'pyupgrade==3.21.2',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml
     'pre-commit==4.6.1',
-    'ruff==0.15.22',
+    'ruff==0.16.4',
     'hypothesis==6.165.2',
     'import-linter==2.13',
 ]
@@ -197,6 +197,12 @@ fail_under = 72
 [tool.codespell]
 skip = "*.cast,./venv,**/plantuml-c4/**,./example,.mypy_cache,./doc/_build/**,./doc/landing-page/_build/**,./doc/_ext/sphinxcontrib_asciinema/**,./build,*.patch,.git,**/generate-casts/demo-magic/**,./doc/openssl/**"
 ignore-words-list = "bund"
+
+[tool.ruff.lint]
+# Ruff 0.16 expanded its default rule set from 59 to 413 rules. Pin the
+# previous default explicitly so upgrading ruff doesn't silently change
+# which rules are enforced; adopting more rules is a deliberate choice.
+select = ["E4", "E7", "E9", "F"]
 
 [tool.ruff.lint.per-file-ignores]
 "features/steps/*" = ["F811"]
