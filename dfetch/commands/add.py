@@ -507,10 +507,12 @@ def _ask_src(ls_function: LsFunction) -> str:
         src = tree_single_pick(ls_function, "Source path", dirs_selectable=True)
         return "" if src == "." else src
 
-    return Prompt.ask(
-        _PROMPT_FORMAT.format(label="Source path")
-        + "  (sub-path/glob, or Enter to fetch whole repo)",
-        default="",
+    return str(
+        Prompt.ask(
+            _PROMPT_FORMAT.format(label="Source path")
+            + "  (sub-path/glob, or Enter to fetch whole repo)",
+            default="",
+        )
     ).strip()
 
 

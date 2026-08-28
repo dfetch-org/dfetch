@@ -197,8 +197,8 @@ if __name__ == "__main__":
         )
 
     dfetch_args = sys.argv[1:]
-    keystrokes = _parse_keystrokes(sys.stdin.read())
-    if not keystrokes:
+    script_keystrokes = _parse_keystrokes(sys.stdin.read())
+    if not script_keystrokes:
         sys.exit("No keystrokes provided on stdin")
 
     rows, cols = _terminal_size()
@@ -212,7 +212,7 @@ if __name__ == "__main__":
     )
     dfetch_child.logfile_read = sys.stdout
 
-    _drive(dfetch_child, keystrokes)
+    _drive(dfetch_child, script_keystrokes)
     dfetch_child.expect(pexpect.EOF)
     dfetch_child.close()
     sys.exit(dfetch_child.exitstatus or 0)

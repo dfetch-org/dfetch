@@ -70,7 +70,7 @@ def step_impl(context, name=None):
 
 
 @given('a stray gitlink "{gitlink_path}" is added with no .gitmodules entry')
-def step_impl(context, gitlink_path):
+def step_impl(_context, gitlink_path):
     sha = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
     # A gitlink (mode 160000) with no corresponding .gitmodules entry, e.g. as
     # left behind by an accidentally committed `git worktree` or nested checkout.
