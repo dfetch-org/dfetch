@@ -43,8 +43,10 @@ clear
 # Run the command
 pe "cat dfetch.yaml"
 pe "cat patches/cpputest.patch"
-# Pipe stdin to avoid blocking on "Press Enter to restore..."
-pe "echo '' | dfetch replay-patches cpputest"
+# Show the command a user would actually type; feed it empty stdin behind
+# the scenes so recording doesn't block on "Press Enter to restore..."
+p "dfetch replay-patches cpputest"
+echo '' | dfetch replay-patches cpputest
 
 PROMPT_TIMEOUT=3
 wait
