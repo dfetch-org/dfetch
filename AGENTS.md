@@ -72,7 +72,7 @@ dfetch.log          ← logging (lowest layer)
 - **`dfetch/commands/`** — One file per CLI command (e.g., `update.py`, `check.py`); all inherit from `command.py`'s abstract `Command` base
 - **`dfetch/manifest/`** — YAML manifest loading/writing with `strictyaml` schema validation; `manifest.py` is the main handler
 - **`dfetch/project/`** — Abstract `Subproject`/`Superproject` classes with concrete Git, SVN, and Archive implementations; factory functions `create_sub_project()` and `create_super_project()` are the main entry points
-- **`dfetch/vcs/`** — Low-level VCS operations: `git.py`, `svn.py`, `archive.py` (with hash verification in `integrity_hash.py`), and `patch.py`
+- **`dfetch/vcs/`** — Low-level VCS operations: `git.py`, `svn.py`, `archive.py` (with hash verification in `integrity_hash.py`), and `patch.py`; Git submodule handling (enumeration, `.gitmodules` parsing, orphan-gitlink hygiene, `src`/`ignore` filtering) lives in `git_submodule.py`
 - **`dfetch/reporting/`** — Output formatters; check results can be emitted as stdout, Jenkins JSON, SARIF, or Code Climate format; SBOM output uses CycloneDX format
 - **`dfetch/terminal/`** — Terminal UI components (interactive prompts, tree browser, ANSI colors)
 
