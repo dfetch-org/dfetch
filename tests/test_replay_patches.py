@@ -6,7 +6,7 @@
 import argparse
 import tempfile
 from pathlib import Path
-from unittest.mock import ANY, Mock, call, patch
+from unittest.mock import ANY, Mock, patch
 
 import pytest
 

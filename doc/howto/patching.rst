@@ -288,9 +288,9 @@ contributes to a vendored project, run:
 
     $ dfetch replay-patches some-project
 
-*Dfetch* puts the clean upstream source in the git index and applies the
-patches to the working tree.  You can now see exactly what the patches change
-using any diff tool you prefer — for example:
+For a Git superproject, *dfetch* puts the clean upstream source in the git
+index and applies the patches to the working tree.  You can now see exactly
+what the patches change using any diff tool you prefer — for example:
 
 .. code-block:: console
 
@@ -299,6 +299,9 @@ using any diff tool you prefer — for example:
 Or open the project in VS Code and browse the **Changes** view in the Source
 Control panel.  (The **Staged Changes** view shows something different and
 unrelated to your patches — use **Changes**.)
+
+For an SVN superproject there's no staging area, so *dfetch* applies the
+patches straight to the working tree and points you at ``svn diff`` instead.
 
 When you are done, press **Enter** and *dfetch* restores everything to its
 original state.

@@ -85,6 +85,7 @@ def _parse_project_spec(spec: str) -> tuple[str, int | None]:
 
 
 def _validate_superproject(superproject: SuperProject) -> None:
+    """Validate that the superproject supports patch review, warning for SVN."""
     if isinstance(superproject, NoVcsSuperProject):
         raise RuntimeError(
             "The project containing the manifest is not under version control,"
@@ -100,6 +101,7 @@ def _validate_superproject(superproject: SuperProject) -> None:
 def _check_count_conflicts(
     count: int | None, per_project_counts: dict[str, int]
 ) -> None:
+    """Raise if both --count and a project:N suffix were supplied together."""
     if count is not None and per_project_counts:
         raise RuntimeError("use either --count or project:N, not both")
 

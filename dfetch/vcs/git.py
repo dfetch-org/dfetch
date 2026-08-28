@@ -678,6 +678,7 @@ class GitLocalRepo:
             run_on_cmdline(logger, ["git", "add", "--", path])
 
     def _git_restore(self, *flags: str, path: str) -> None:
+        """Run ``git restore`` with the given flags against a single pathspec."""
         with in_directory(self._path):
             run_on_cmdline(logger, ["git", "restore", *flags, "--", path])
 

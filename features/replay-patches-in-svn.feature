@@ -47,6 +47,7 @@ Feature: Replay patches in svn
             """
             Patched file for SomeProject
             """
+        And the svn superproject 'MySvnProject' reports no changes to 'SomeProject'
 
     Scenario: Only the first N patches are applied with --count
         When I run "dfetch replay-patches --count 0 SomeProject" in MySvnProject
@@ -66,3 +67,4 @@ Feature: Replay patches in svn
             """
             Patched file for SomeProject
             """
+        And the svn superproject 'MySvnProject' reports no changes to 'SomeProject'
