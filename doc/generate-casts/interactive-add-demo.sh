@@ -28,8 +28,27 @@ clear
 
 pe "cat dfetch.yaml"
 
+# Accept the default name/destination, pick the v3.4 tag, keep the whole
+# repository as src, and ignore examples/ and tests/ -- see
+# doc/asciicasts/interactive-add.cast for what this looks like.
+KEYSTROKES=$(cat <<'KEYSTROKES'
+WAIT "Name:" SEND ENTER DELAY 1.3
+WAIT "Destination:" SEND ENTER DELAY 1.3
+WAIT "Enter select" SEND DOWN DELAY 0.35 REPEAT 7
+SEND ENTER DELAY 0.9
+WAIT "Esc skip" SEND ENTER DELAY 1.8
+WAIT "Space toggle" SEND DOWN DELAY 0.35 REPEAT 5
+SEND SPACE DELAY 0.35
+SEND DOWN DELAY 0.35 REPEAT 7
+SEND SPACE DELAY 0.35
+SEND ENTER DELAY 0.9
+WAIT "Add project to manifest?" SEND "y\r" DELAY 1.3
+WAIT "Run '.*' now\?" SEND "n\r" DELAY 1.3
+KEYSTROKES
+)
+
 p "dfetch add -i https://github.com/cpputest/cpputest.git"
-python3 ../interactive_helper.py add --interactive https://github.com/cpputest/cpputest.git
+echo "$KEYSTROKES" | python3 ../interactive_helper.py add --interactive https://github.com/cpputest/cpputest.git
 
 pe "cat dfetch.yaml"
 
