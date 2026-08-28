@@ -340,9 +340,19 @@ so your editor always reflects the current position in the stack:
     $ dfetch replay-patches --interactive some-project
 
 With multiple projects, use ↑ and ↓ to switch focus between project stacks while
-← and → continue to step that project's patches.
+← and → continue to step that project's patches:
 
-Press **Enter** to finish and restore the original state.
+.. code-block:: console
+
+    $ dfetch replay-patches --interactive proj-a proj-b
+
+Press **Enter** to finish and restore the original state.  Here's what
+stepping through two projects interactively looks like:
+
+.. asciinema:: ../asciicasts/replay-patches-multi.cast
+
+And here's the plain, non-interactive command from the very first example
+on this page:
 
 .. asciinema:: ../asciicasts/replay-patches.cast
 

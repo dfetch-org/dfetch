@@ -19,9 +19,10 @@ it a keystroke script read from stdin, one scripted input per line::
 - ``WAIT "<regex>"`` (optional) waits for ``<regex>`` to appear in the
   child's output before sending; omit it to send right after the previous
   line's delay (e.g. repeated Down-presses while stepping through a tree).
-- ``<keys>`` is ``ENTER``, ``DOWN``, or ``SPACE`` (resolved to their
-  terminal escape sequences), or a quoted literal sent as-is, with ``\\r``/
-  ``\\n``/``\\t`` recognised (e.g. ``"y\\r"``).
+- ``<keys>`` is ``ENTER``, ``UP``, ``DOWN``, ``LEFT``, ``RIGHT``, or
+  ``SPACE`` (resolved to their terminal escape sequences), or a quoted
+  literal sent as-is, with ``\\r``/``\\n``/``\\t`` recognised (e.g.
+  ``"y\\r"``).
 - ``DELAY <seconds>`` is how long to pause -- draining and mirroring output
   the whole time -- before sending, to simulate human timing.
 - ``REPEAT <count>`` (optional, default 1) repeats the line *count* times;
@@ -51,7 +52,10 @@ _PUMP_SLICE = 0.02  # granularity for draining/mirroring output while paused
 
 _KEY_ALIASES = {
     "ENTER": "\r",
+    "UP": "\x1b[A",
     "DOWN": "\x1b[B",
+    "RIGHT": "\x1b[C",
+    "LEFT": "\x1b[D",
     "SPACE": " ",
 }
 
