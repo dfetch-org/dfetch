@@ -323,3 +323,65 @@ def test_orphan_gitlinks_dropped_restores_even_when_body_raises(tmp_path, monkey
         ["git", "ls-files", "-s"], cwd=tmp_path
     ).decode()
     assert index_after == index_before
+
+
+def test_orphan_gitlinks_dropped_leaves_a_conflicted_gitlink_untouched(
+    tmp_path, monkeypatch
+):
+    """An unresolved merge conflict on an orphan gitlink must not be collapsed.
+
+    A conflicted path occupies multiple non-zero index "stages" instead of
+    the usual stage 0. Restoring via `update-index --cacheinfo` always
+    writes stage 0, so round-tripping a conflicted gitlink through drop and
+    restore would silently discard one side of the conflict and mark it
+    resolved -- corrupting a repository dfetch does not own (e.g. mid-merge
+    during `dfetch import`). Such a path must be left out of dropping
+    entirely.
+    """
+    _init_git_repo(tmp_path)
+    (tmp_path / "root").write_text("root")
+    subprocess.check_call(["git", "add", "root"], cwd=tmp_path)
+    subprocess.check_call(["git", "commit", "-qm", "base"], cwd=tmp_path)
+    base_branch = (
+        subprocess.check_output(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=tmp_path
+        )
+        .decode()
+        .strip()
+    )
+
+    subprocess.check_call(["git", "checkout", "-qb", "branch-a"], cwd=tmp_path)
+    _add_gitlink(tmp_path, "stray")
+    subprocess.check_call(["git", "commit", "-qm", "branch-a stray"], cwd=tmp_path)
+
+    subprocess.check_call(["git", "checkout", "-q", base_branch], cwd=tmp_path)
+    subprocess.check_call(["git", "checkout", "-qb", "branch-b"], cwd=tmp_path)
+    (tmp_path / "root").write_text("root\nmore\n")
+    subprocess.check_call(["git", "add", "root"], cwd=tmp_path)
+    subprocess.check_call(["git", "commit", "-qm", "branch-b change"], cwd=tmp_path)
+    _add_gitlink(tmp_path, "stray")  # same path, different sha -> a real conflict
+    subprocess.check_call(["git", "commit", "-qm", "branch-b stray"], cwd=tmp_path)
+
+    subprocess.run(["git", "merge", "branch-a"], cwd=tmp_path, check=False)
+
+    monkeypatch.chdir(tmp_path)
+    index_before = subprocess.check_output(
+        ["git", "ls-files", "-s"], cwd=tmp_path
+    ).decode()
+    stray_stages = [line for line in index_before.splitlines() if "stray" in line]
+    assert len(stray_stages) == 2, "expected two conflicted stages for 'stray'"
+
+    with git_submodule.orphan_gitlinks_dropped():
+        during = subprocess.check_output(
+            ["git", "ls-files", "-s"], cwd=tmp_path
+        ).decode()
+        assert during == index_before
+
+    index_after = subprocess.check_output(
+        ["git", "ls-files", "-s"], cwd=tmp_path
+    ).decode()
+    status_after = subprocess.check_output(
+        ["git", "status", "--porcelain"], cwd=tmp_path
+    ).decode()
+    assert index_after == index_before
+    assert status_after.strip() == "AA stray"
