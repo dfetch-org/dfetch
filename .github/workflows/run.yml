@@ -66,7 +66,17 @@ jobs:
       - run: dfetch update
       - run: dfetch update
       - run: dfetch update-patch
-      - run: dfetch replay-patches
+      - name: Verify replay-patches restores a clean working tree
+        shell: bash
+        run: |
+          before="$(git status --porcelain)"
+          dfetch replay-patches
+          after="$(git status --porcelain)"
+          if [ "$before" != "$after" ]; then
+            echo "::error::dfetch replay-patches left the working tree changed"
+            git status
+            exit 1
+          fi
       - run: dfetch format-patch
       - run: dfetch report -t sbom
       - run: dfetch remove test-repo
@@ -212,7 +222,17 @@ jobs:
       - run: dfetch update
       - run: dfetch update
       - run: dfetch update-patch
-      - run: dfetch replay-patches
+      - name: Verify replay-patches restores a clean working tree
+        shell: bash
+        run: |
+          before="$(git status --porcelain)"
+          dfetch replay-patches
+          after="$(git status --porcelain)"
+          if [ "$before" != "$after" ]; then
+            echo "::error::dfetch replay-patches left the working tree changed"
+            git status
+            exit 1
+          fi
       - run: dfetch format-patch
       - run: dfetch report -t sbom
       - run: dfetch remove test-repo

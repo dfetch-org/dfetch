@@ -284,6 +284,22 @@ def _can_review_project(
     return True
 
 
+def _is_safe_patch_path(patch: str) -> bool:
+    """Return False for a patch that ``SubProject._apply_patches`` would have skipped.
+
+    Mirrors its checks (stays within the current directory, and exists) so
+    the interactive stepper never hands ``Patch.from_file`` a path that the
+    non-interactive apply would have silently skipped instead.
+    """
+    cwd = Path.cwd()
+    patch_path = (cwd / patch).resolve()
+    try:
+        patch_path.relative_to(cwd)
+    except ValueError:
+        return False
+    return patch_path.exists()
+
+
 def _apply_review(
     subproject: SubProject,
     project_name: str,
@@ -509,12 +525,20 @@ def _apply_step(
 ) -> tuple[int, bool]:
     """Handle one keypress; return (new_current, done)."""
     if key == "LEFT" and current > 0:
-        with _silent_patch_ng():
-            Patch.from_file(patches[current - 1]).reverse().apply(root=local_path)
+        patch = patches[current - 1]
+        if _is_safe_patch_path(patch):
+            with _silent_patch_ng():
+                Patch.from_file(patch).reverse().apply(root=local_path)
+        else:
+            logger.warning(f'Skipping patch "{patch}": missing or outside {Path.cwd()}')
         return current - 1, False
     if key == "RIGHT" and current < total:
-        with _silent_patch_ng():
-            Patch.from_file(patches[current]).apply(root=local_path)
+        patch = patches[current]
+        if _is_safe_patch_path(patch):
+            with _silent_patch_ng():
+                Patch.from_file(patch).apply(root=local_path)
+        else:
+            logger.warning(f'Skipping patch "{patch}": missing or outside {Path.cwd()}')
         return current + 1, False
     if key in ("ENTER", "ESC"):
         return current, True

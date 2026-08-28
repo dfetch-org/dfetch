@@ -431,3 +431,30 @@ def test_stage_one_restores_worktree_on_add_path_failure():
 
     sub_a.update.assert_called_once()
     fake_super.restore_from_head.assert_called_once_with("proj_a")
+
+
+def test_is_safe_patch_path_rejects_missing_and_outside_root():
+    """A missing patch, or one outside cwd, is rejected rather than handed to Patch.from_file."""
+    from dfetch.commands.replay_patches import _is_safe_patch_path
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with patch("pathlib.Path.cwd", return_value=Path(tmpdir)):
+            (Path(tmpdir) / "patches").mkdir()
+            (Path(tmpdir) / "patches" / "real.patch").write_text("diff")
+
+            assert _is_safe_patch_path("patches/real.patch") is True
+            assert _is_safe_patch_path("patches/missing.patch") is False
+            assert _is_safe_patch_path("../outside.patch") is False
+
+
+def test_apply_step_skips_unsafe_patch_without_crashing():
+    """RIGHT on a missing patch logs a warning, still advances, and does not raise."""
+    from dfetch.commands.replay_patches import _apply_step
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with patch("pathlib.Path.cwd", return_value=Path(tmpdir)):
+            current, done = _apply_step(
+                "RIGHT", 0, 1, ["patches/missing.patch"], "some/local/path"
+            )
+
+    assert (current, done) == (1, False)
