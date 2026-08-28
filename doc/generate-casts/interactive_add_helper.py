@@ -1,134 +1,134 @@
 #!/usr/bin/env python3
-"""Drive ``dfetch add -i`` with simulated typing for asciinema recordings.
+"""Drive ``dfetch add -i`` through a real pty for asciinema recordings.
 
 Usage::
 
-    python3 interactive-add-helper.py <remote-url>
+    python3 interactive_add_helper.py <remote-url>
 
-Every Rich ``Prompt.ask`` / ``Confirm.ask`` call is intercepted:
+``dfetch add -i`` always uses its real interactive-terminal UI (ghost-text
+prompts for name/destination, a hierarchical tree browser for
+version/src/ignore) -- the UI documented in ``doc/howto/adding-a-project.rst``
+and shown in ``doc/asciicasts/interactive-add.cast``. That UI reads raw
+keypresses straight from the terminal, so there is nothing to mock at the
+Python level; the only way to automate it is to actually drive a terminal.
 
-1. The prompt markup is rendered to the terminal exactly as dfetch would.
-2. After a short "thinking" pause each answer character is written to stdout
-   one at a time, mimicking natural typing speed.
-3. The answer is returned to dfetch as if the user had pressed Enter.
+This script does that by spawning ``dfetch`` inside its own pty (via
+``pexpect``) and feeding it the same choices shown in the current cast, on a
+timer: accept the default name/destination, use the version tree to pick the
+``v3.4`` tag, accept the whole repository as ``src``, then use the ignore
+tree to exclude ``examples/`` and ``tests/``.
 
-``is_tty`` is forced to ``False`` so that dfetch uses the text-based
-fallbacks (numbered version list, plain src/ignore prompts) rather than
-the raw-terminal tree browser – the text fallback looks better on a cast.
-
-Answers
--------
-``None`` in a prompt-answer slot means "accept the default" – the default
-value is typed out so the viewer can read what was chosen.  An explicit
-string overrides the default.
+Everything the inner pty prints is mirrored to this script's own stdout as
+it arrives, so when this script is itself run under ``asciinema rec -c``,
+the recorder captures dfetch's real terminal output with real timing --
+and no human needs to be at the keyboard.
 """
 
 from __future__ import annotations
 
+import os
 import sys
 import time
-from collections import deque
-from unittest.mock import patch
 
-from rich.console import Console
+import pexpect
 
-# ---------------------------------------------------------------------------
-# Wizard answers – customise these to change what the demo shows
-# ---------------------------------------------------------------------------
-_PROMPT_ANSWERS: deque[str | None] = deque(
-    [
-        None,  # Name          – accept the default (derived from URL)
-        "ext/cpputest",  # Destination   – show the common ext/ convention
-        None,  # Version       – accept the default branch
-        None,  # Source path   – press Enter to fetch the whole repo
-        None,  # Ignore paths  – press Enter to skip
-    ]
-)
-_CONFIRM_ANSWERS: deque[bool] = deque(
-    [
-        True,  # "Add project to manifest?" → yes
-        False,  # "Run 'dfetch update' now?" → no
-    ]
-)
+_PRE_DELAY = 0.6  # pause before pressing a key, to simulate "thinking"
+_STEP_DELAY = 0.3  # pause between arrow-key presses while browsing a tree
+_CONFIRM_DELAY = 0.6  # pause before the Enter that accepts a tree pick
+_PUMP_SLICE = 0.02  # granularity for draining/mirroring output while paused
 
-# ---------------------------------------------------------------------------
-# Timing (seconds) – tweak for faster/slower recording
-# ---------------------------------------------------------------------------
-_PRE_DELAY = 0.55  # pause before starting to type (user "thinking")
-_CHAR_DELAY = 0.06  # delay between consecutive characters
-
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
-_console = Console(force_terminal=True)
+DOWN = "\x1b[B"
+ENTER = "\r"
+SPACE = " "
 
 
-def _type_out(text: str) -> None:
-    """Write *text* to stdout one character at a time, then a newline."""
-    time.sleep(_PRE_DELAY)
-    for ch in text:
-        sys.stdout.write(ch)
-        sys.stdout.flush()
-        time.sleep(_CHAR_DELAY)
-    sys.stdout.write("\n")
-    sys.stdout.flush()
+def _terminal_size() -> tuple[int, int]:
+    """Return ``(rows, cols)`` of the enclosing terminal, falling back to a default."""
+    try:
+        size = os.get_terminal_size(sys.stdout.fileno())
+        return size.lines, size.columns
+    except OSError:
+        return 28, 116
 
 
-# ---------------------------------------------------------------------------
-# Prompt replacements
-# ---------------------------------------------------------------------------
+def _pump(child: pexpect.spawn, duration: float) -> None:
+    """Drain and mirror *child* output for *duration* seconds.
 
-
-def _fake_prompt_ask(prompt_markup: str, *, default: str = "", **_kw: object) -> str:
-    """Render the Rich-markup prompt, then simulate typing the next answer.
-
-    ``None`` in the queue means "accept the default" – the default is
-    typed out (visible to the viewer) rather than silently accepted.
+    Reading (rather than plain ``time.sleep``) is what keeps the mirrored
+    output flowing to our own stdout in real time during a scripted pause,
+    so the recorded pacing matches when a human would actually see it.
     """
-    suffix = f" [{default}]" if default else ""
-    _console.print(f"{prompt_markup}{suffix}: ", end="")
-
-    raw = (
-        _PROMPT_ANSWERS.popleft() if _PROMPT_ANSWERS else None
-    )  # IndexError if queue is exhausted
-    answer = raw if raw is not None else default
-    _type_out(answer)
-    return answer
-
-
-def _fake_confirm_ask(
-    prompt_markup: str, *, default: bool = True, **_kw: object
-) -> bool:
-    """Render the confirm prompt, then simulate typing y or n."""
-    yn_hint = "y" if default else "n"
-    _console.print(f"{prompt_markup} [y/n] ({yn_hint}): ", end="")
-
-    val = (
-        _CONFIRM_ANSWERS.popleft() if _CONFIRM_ANSWERS else default
-    )  # IndexError if queue is exhausted
-    _type_out("y" if val else "n")
-    return val
+    deadline = time.monotonic() + duration
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return
+        try:
+            child.read_nonblocking(size=4096, timeout=min(_PUMP_SLICE, remaining))
+        except pexpect.exceptions.TIMEOUT:
+            continue
+        except pexpect.exceptions.EOF:
+            return
 
 
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
+def _press(child: pexpect.spawn, keys: str, *, delay: float = _STEP_DELAY) -> None:
+    """Pause *delay* seconds (mirroring output), then send *keys*."""
+    _pump(child, delay)
+    child.send(keys)
+
+
+def _navigate(child: pexpect.spawn, steps: int, *, delay: float = _STEP_DELAY) -> None:
+    """Press Down *steps* times, pausing *delay* seconds between presses."""
+    for _ in range(steps):
+        _press(child, DOWN, delay=delay)
+
+
+def _drive_wizard(child: pexpect.spawn) -> None:
+    """Feed the wizard the same choices shown in ``doc/asciicasts/interactive-add.cast``."""
+    child.expect("Name:")
+    _press(child, ENTER, delay=_PRE_DELAY)  # accept default name (cpputest)
+
+    child.expect("Destination:")
+    _press(child, ENTER, delay=_PRE_DELAY)  # accept default destination
+
+    child.expect("Enter select")  # version tree browser has been drawn
+    _navigate(child, 7)  # master -> 3.7.2 -> gh-pages -> ... -> v3.4
+    _press(child, ENTER, delay=_CONFIRM_DELAY)
+
+    child.expect("Esc skip")  # source-path tree browser has been drawn
+    _press(child, ENTER, delay=_PRE_DELAY)  # accept "." (fetch whole repo)
+
+    child.expect("Space toggle")  # ignore tree browser has been drawn
+    _navigate(child, 5)  # . -> .settings -> build -> cmake -> docs -> examples
+    _press(child, SPACE, delay=_STEP_DELAY)  # deselect examples/
+    _navigate(child, 7)  # examples -> include -> ... -> src -> tests
+    _press(child, SPACE, delay=_STEP_DELAY)  # deselect tests/
+    _press(child, ENTER, delay=_CONFIRM_DELAY)
+
+    child.expect("Add project to manifest?")
+    _press(child, f"y{ENTER}", delay=_PRE_DELAY)
+
+    child.expect(r"Run '.*' now\?")
+    _press(child, f"n{ENTER}", delay=_PRE_DELAY)
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        sys.exit("Usage: interactive-add-helper.py <remote-url>")
+        sys.exit("Usage: interactive_add_helper.py <remote-url>")
 
     url = sys.argv[1]
+    rows, cols = _terminal_size()
 
-    # Force text-mode prompts so dfetch uses the numbered list + plain prompts
-    # instead of the raw-TTY tree browser. dfetch.terminal.is_tty() (and the
-    # copies imported by value into dfetch.terminal.prompt/screen) all read
-    # sys.stdin.isatty(), so patching that single source is what actually
-    # takes effect under asciinema's real pty -- patching
-    # dfetch.terminal.keys.is_tty directly would miss those value-imports.
-    with patch("sys.stdin.isatty", return_value=False):
-        with patch("rich.prompt.Prompt.ask", side_effect=_fake_prompt_ask):
-            with patch("rich.prompt.Confirm.ask", side_effect=_fake_confirm_ask):
-                from dfetch.__main__ import run
+    dfetch_child = pexpect.spawn(
+        "dfetch",
+        ["add", "--interactive", url],
+        dimensions=(rows, cols),
+        encoding="utf-8",
+        timeout=120,
+    )
+    dfetch_child.logfile_read = sys.stdout
 
-                run(["add", "--interactive", url], _console)
+    _drive_wizard(dfetch_child)
+    dfetch_child.expect(pexpect.EOF)
+    dfetch_child.close()
+    sys.exit(dfetch_child.exitstatus or 0)
