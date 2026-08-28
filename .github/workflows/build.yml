@@ -50,6 +50,7 @@ jobs:
             tuf-repo-cdn.sigstore.dev:443
             *.blob.core.windows.net:443
             ziglang.org:443
+            dependencywalker.com:443
             ghcr.io:443
             pkg-containers.githubusercontent.com:443
             formulae.brew.sh:443
