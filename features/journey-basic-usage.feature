@@ -29,7 +29,7 @@ Feature: Basic usage journey
         When I run "dfetch check"
         Then the output shows
             """
-            Dfetch (0.14.3)
+            Dfetch (0.14.4)
               ext/test-repo-tag:
               > wanted & current (v1), available (v2.0)
             """
