@@ -6,10 +6,11 @@ submodule URLs/branches, and filtering/promoting a fetched submodule tree
 according to a project's ``src``/``ignore`` settings.
 """
 
+import contextlib
 import glob
 import os
 import re
-from collections.abc import Sequence
+from collections.abc import Generator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -55,17 +56,18 @@ class Submodule:
 # ---------------------------------------------------------------------------
 
 
-def gitlink_paths() -> list[str]:
-    """List the paths of all gitlinks (mode 160000) in the current index."""
+def _gitlink_entries() -> list[tuple[str, str]]:
+    """List (path, sha) for every gitlink (mode 160000) in the current index."""
     result = run_on_cmdline(logger, ["git", "ls-files", "-s", "-z"])
-    paths = []
+    entries = []
     for entry in result.stdout.decode().split("\0"):
         if not entry:
             continue
         meta, _, path = entry.partition("\t")
-        if meta.split()[0] == "160000":
-            paths.append(path)
-    return paths
+        mode, sha = meta.split()[:2]
+        if mode == "160000":
+            entries.append((path, sha))
+    return entries
 
 
 def _submodule_config_values(key: str) -> dict[str, str]:
@@ -107,24 +109,39 @@ def declared_submodule_paths() -> set[str]:
     return {path for name, path in paths.items() if name in urls}
 
 
-def drop_orphan_gitlinks() -> None:
-    """Strip gitlinks with no .gitmodules entry from the index.
+@contextlib.contextmanager
+def orphan_gitlinks_dropped() -> Generator[None, None, None]:
+    """Temporarily strip gitlinks with no .gitmodules entry from the index.
 
     Such a gitlink has no declared URL, so dfetch can neither fetch it nor
-    report it as a dependency. Removing it from the index leaves its
-    directory (if checked out at all) as an empty placeholder and lets
-    ``git submodule update``/``foreach`` proceed over the submodules that
-    remain, instead of aborting the whole operation.
+    report it as a dependency. Removing it lets ``git submodule
+    update``/``foreach`` proceed over the submodules that remain, instead of
+    aborting the whole operation. Every stripped gitlink is re-staged on
+    exit, so this leaves no lasting change -- safe to use even against a
+    repository dfetch does not own, such as the user's own working
+    directory during ``dfetch import``.
     """
     declared = declared_submodule_paths()
-    for path in gitlink_paths():
-        if path not in declared:
-            logger.debug(
-                "Gitlink '%s' has no '.gitmodules' entry; skipping it as a submodule",
-                path,
-            )
+    removed = [(path, sha) for path, sha in _gitlink_entries() if path not in declared]
+    for path, _sha in removed:
+        logger.debug(
+            "Gitlink '%s' has no '.gitmodules' entry; skipping it as a submodule",
+            path,
+        )
+        run_on_cmdline(logger, ["git", "update-index", "--force-remove", "--", path])
+    try:
+        yield
+    finally:
+        for path, sha in removed:
             run_on_cmdline(
-                logger, ["git", "update-index", "--force-remove", "--", path]
+                logger,
+                [
+                    "git",
+                    "update-index",
+                    "--add",
+                    "--cacheinfo",
+                    f"160000,{sha},{path}",
+                ],
             )
 
 

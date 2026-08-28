@@ -55,3 +55,4 @@ Feature: Importing submodules from an existing git repository
                 repo-path: test-repo
 
             """
+        Then the git repo has no staged changes

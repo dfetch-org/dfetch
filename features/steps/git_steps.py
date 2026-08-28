@@ -7,7 +7,7 @@ import os
 import pathlib
 import subprocess
 
-from behave import given, when  # pylint: disable=no-name-in-module
+from behave import given, then, when  # pylint: disable=no-name-in-module
 
 from dfetch.util.util import in_directory
 from features.steps.generic_steps import (
@@ -80,6 +80,15 @@ def step_impl(context, gitlink_path):
     subprocess.check_call(
         ["git", "commit", "-m", "Added a stray gitlink with no .gitmodules entry"]
     )
+
+
+@then("the git repo has no staged changes")
+def step_impl(_):
+    status = subprocess.check_output(["git", "status", "--porcelain"]).decode()
+    staged = [
+        line for line in status.splitlines() if line and line[0] not in (" ", "?")
+    ]
+    assert not staged, "Expected no staged changes, but found:\n" + "\n".join(staged)
 
 
 @given(
