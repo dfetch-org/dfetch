@@ -57,15 +57,23 @@ class Submodule:
 
 
 def _gitlink_entries() -> list[tuple[str, str]]:
-    """List (path, sha) for every gitlink (mode 160000) in the current index."""
+    """List (path, sha) for every gitlink (mode 160000) in the current index.
+
+    A path with an unresolved merge conflict occupies multiple non-zero
+    "stage" slots instead of the usual stage 0, and restoring those via
+    ``update-index --cacheinfo`` (which always writes stage 0) would collapse
+    the conflict, silently discarding one side's version. Such paths are
+    left out entirely -- and therefore untouched by
+    :func:`orphan_gitlinks_dropped` -- rather than risk corrupting them.
+    """
     result = run_on_cmdline(logger, ["git", "ls-files", "-s", "-z"])
     entries = []
     for entry in result.stdout.decode().split("\0"):
         if not entry:
             continue
         meta, _, path = entry.partition("\t")
-        mode, sha = meta.split()[:2]
-        if mode == "160000":
+        mode, sha, stage = meta.split()[:3]
+        if mode == "160000" and stage == "0":
             entries.append((path, sha))
     return entries
 
