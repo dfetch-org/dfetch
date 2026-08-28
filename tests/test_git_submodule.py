@@ -284,3 +284,42 @@ def test_orphan_gitlinks_dropped_restores_the_index_on_exit(tmp_path, monkeypatc
     ).decode()
     assert index_after == index_before
     assert status_after == status_before
+
+
+def test_orphan_gitlinks_dropped_restores_even_when_body_raises(tmp_path, monkeypatch):
+    """The index must be restored even if the wrapped git command fails.
+
+    checkout_version() wraps a real `git submodule update --init --recursive`
+    call that can itself fail (e.g. an unrelated bad URL, or the nested-orphan
+    case). Restoration relies on try/finally rather than a plain sequential
+    drop-then-restore, so this locks that in: a failure inside the `with`
+    block must not leave an orphan gitlink stripped from the index, and the
+    original exception must still propagate rather than being swallowed.
+    """
+    _init_git_repo(tmp_path)
+    (tmp_path / "root").write_text("root")
+    subprocess.check_call(["git", "add", "root"], cwd=tmp_path)
+    subprocess.check_call(["git", "commit", "-qm", "initial"], cwd=tmp_path)
+    _add_gitlink(tmp_path, "orphan")
+    subprocess.check_call(["git", "commit", "-qm", "add orphan gitlink"], cwd=tmp_path)
+
+    monkeypatch.chdir(tmp_path)
+    index_before = subprocess.check_output(
+        ["git", "ls-files", "-s"], cwd=tmp_path
+    ).decode()
+
+    class _Boom(Exception):
+        pass
+
+    with pytest.raises(_Boom):
+        with git_submodule.orphan_gitlinks_dropped():
+            during = subprocess.check_output(
+                ["git", "ls-files", "-s"], cwd=tmp_path
+            ).decode()
+            assert "orphan" not in during
+            raise _Boom("simulated failure of the wrapped git submodule command")
+
+    index_after = subprocess.check_output(
+        ["git", "ls-files", "-s"], cwd=tmp_path
+    ).decode()
+    assert index_after == index_before
