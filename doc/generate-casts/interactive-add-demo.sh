@@ -29,7 +29,7 @@ clear
 pe "cat dfetch.yaml"
 
 p "dfetch add -i https://github.com/cpputest/cpputest.git"
-python3 ../interactive_add_helper.py https://github.com/cpputest/cpputest.git
+python3 ../interactive_helper.py add --interactive https://github.com/cpputest/cpputest.git
 
 pe "cat dfetch.yaml"
 
