@@ -130,14 +130,21 @@ def orphan_gitlinks_dropped() -> Generator[None, None, None]:
     directory during ``dfetch import``.
     """
     declared = declared_submodule_paths()
-    removed = [(path, sha) for path, sha in _gitlink_entries() if path not in declared]
-    for path, _sha in removed:
-        logger.debug(
-            "Gitlink '%s' has no '.gitmodules' entry; skipping it as a submodule",
-            path,
-        )
-        run_on_cmdline(logger, ["git", "update-index", "--force-remove", "--", path])
+    orphans = [(path, sha) for path, sha in _gitlink_entries() if path not in declared]
+    removed: list[tuple[str, str]] = []
     try:
+        for path, sha in orphans:
+            logger.debug(
+                "Gitlink '%s' has no '.gitmodules' entry; skipping it as a submodule",
+                path,
+            )
+            run_on_cmdline(
+                logger, ["git", "update-index", "--force-remove", "--", path]
+            )
+            # Only remember paths actually removed, so a failure partway
+            # through this loop still restores what came before it -- not
+            # doing so would leave those entries missing from the index.
+            removed.append((path, sha))
         yield
     finally:
         for path, sha in removed:

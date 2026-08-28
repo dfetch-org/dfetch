@@ -325,6 +325,49 @@ def test_orphan_gitlinks_dropped_restores_even_when_body_raises(tmp_path, monkey
     assert index_after == index_before
 
 
+def test_orphan_gitlinks_dropped_restores_earlier_removals_after_a_mid_loop_failure(
+    tmp_path, monkeypatch
+):
+    """A failure removing one orphan gitlink must not strand earlier removals.
+
+    With two orphan gitlinks, if 'git update-index --force-remove' fails on
+    the second one, the first must still be restored -- not left missing
+    from the index because the removal loop raised before the try/finally
+    that normally guarantees restoration was ever entered.
+    """
+    _init_git_repo(tmp_path)
+    (tmp_path / "root").write_text("root")
+    subprocess.check_call(["git", "add", "root"], cwd=tmp_path)
+    subprocess.check_call(["git", "commit", "-qm", "initial"], cwd=tmp_path)
+    _add_gitlink(tmp_path, "orphan-a")
+    _add_gitlink(tmp_path, "orphan-b")
+    subprocess.check_call(["git", "commit", "-qm", "add orphan gitlinks"], cwd=tmp_path)
+
+    monkeypatch.chdir(tmp_path)
+    index_before = subprocess.check_output(
+        ["git", "ls-files", "-s"], cwd=tmp_path
+    ).decode()
+
+    real_run_on_cmdline = git_submodule.run_on_cmdline
+
+    def _fail_on_second_removal(logger_, cmd, *args, **kwargs):
+        if cmd[:3] == ["git", "update-index", "--force-remove"] and "orphan-b" in cmd:
+            raise SubprocessCommandError(cmd, "", "simulated failure", 1)
+        return real_run_on_cmdline(logger_, cmd, *args, **kwargs)
+
+    with patch(
+        "dfetch.vcs.git_submodule.run_on_cmdline", side_effect=_fail_on_second_removal
+    ):
+        with pytest.raises(SubprocessCommandError):
+            with git_submodule.orphan_gitlinks_dropped():
+                pass  # pragma: no cover - never reached; removal fails first
+
+    index_after = subprocess.check_output(
+        ["git", "ls-files", "-s"], cwd=tmp_path
+    ).decode()
+    assert index_after == index_before
+
+
 def test_orphan_gitlinks_dropped_leaves_a_conflicted_gitlink_untouched(
     tmp_path, monkeypatch
 ):
