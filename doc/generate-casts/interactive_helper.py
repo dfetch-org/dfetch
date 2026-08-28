@@ -3,7 +3,7 @@
 
 Usage::
 
-    python3 interactive_helper.py <dfetch-args...>
+    python3 interactive_helper.py <dfetch-args...> < keystrokes.txt
 
 Interactive dfetch commands (like ``add -i``) use a real interactive-terminal
 UI -- ghost-text prompts, hierarchical tree browsers -- that reads raw
@@ -12,49 +12,57 @@ Python level; the only way to automate a recording of one is to actually
 drive a terminal.
 
 This script spawns ``dfetch`` inside its own pty (via ``pexpect``) and feeds
-it a scripted list of keystrokes (see ``INTERACTIVE_ADD_KEYSTROKES`` below),
-each preceded by a pattern to wait for and a delay that simulates human
-timing. Everything the inner pty prints is mirrored to this script's own
-stdout as it arrives, so when this script is itself run under
-``asciinema rec -c``, the recorder captures dfetch's real terminal output
-with real timing -- and no human needs to be at the keyboard.
+it a keystroke script read from stdin, one scripted input per line::
 
-To script a recording for another interactive command, add a new keystroke
-list next to ``INTERACTIVE_ADD_KEYSTROKES`` and register it in
-``_KEYSTROKES_BY_SUBCOMMAND``.
+    [WAIT "<regex>"] SEND <keys> DELAY <seconds> [REPEAT <count>]
+
+- ``WAIT "<regex>"`` (optional) waits for ``<regex>`` to appear in the
+  child's output before sending; omit it to send right after the previous
+  line's delay (e.g. repeated Down-presses while stepping through a tree).
+- ``<keys>`` is ``ENTER``, ``DOWN``, or ``SPACE`` (resolved to their
+  terminal escape sequences), or a quoted literal sent as-is, with ``\\r``/
+  ``\\n``/``\\t`` recognised (e.g. ``"y\\r"``).
+- ``DELAY <seconds>`` is how long to pause -- draining and mirroring output
+  the whole time -- before sending, to simulate human timing.
+- ``REPEAT <count>`` (optional, default 1) repeats the line *count* times;
+  only the first repetition waits on ``WAIT``.
+
+Blank lines and lines starting with ``#`` are ignored. Everything the inner
+pty prints is mirrored to this script's own stdout as it arrives, so when
+this script is itself run under ``asciinema rec -c``, the recorder captures
+dfetch's real terminal output with real timing -- and no human needs to be
+at the keyboard.
+
+This script has no knowledge of any particular dfetch command; the demo
+script piping keystrokes in on stdin owns that.
 """
 
 from __future__ import annotations
 
 import dataclasses
 import os
+import shlex
 import sys
 import time
 
 import pexpect
 
-# ---------------------------------------------------------------------------
-# Timing (seconds), tuned to match doc/asciicasts/interactive-add.cast's pacing
-# ---------------------------------------------------------------------------
-_PRE_DELAY = 1.3  # pause before accepting/typing a field, to simulate "thinking"
-_STEP_DELAY = 0.35  # pause between arrow-key presses while browsing a tree
-_CONFIRM_DELAY = 0.9  # pause before the Enter that accepts a tree pick
-_READ_DELAY = 1.8  # longer pause where a human lingers to read a list
 _PUMP_SLICE = 0.02  # granularity for draining/mirroring output while paused
 
-DOWN = "\x1b[B"
-ENTER = "\r"
-SPACE = " "
+_KEY_ALIASES = {
+    "ENTER": "\r",
+    "DOWN": "\x1b[B",
+    "SPACE": " ",
+}
 
 
 @dataclasses.dataclass(frozen=True)
 class Keystroke:
     """One scripted input to send to the driven dfetch process.
 
-    *expect* is a regex to wait for before sending *keys*; ``None`` sends
-    right after the previous keystroke's delay, for runs of repeated presses
-    (e.g. stepping down a tree). *delay* is how long to pause -- draining and
-    mirroring output the whole time -- before sending *keys*.
+    *expect* is a regex to wait for before sending *keys* (``None`` to send
+    right after the previous keystroke's delay). *delay* is how long to
+    pause -- draining and mirroring output the whole time -- before sending.
     """
 
     expect: str | None
@@ -62,36 +70,45 @@ class Keystroke:
     delay: float
 
 
-def _downs(
-    count: int, *, delay: float = _STEP_DELAY, first_expect: str | None = None
-) -> list[Keystroke]:
-    """*count* Down-arrow presses in a row; only the first waits on *first_expect*."""
-    return [
-        Keystroke(first_expect if i == 0 else None, DOWN, delay) for i in range(count)
-    ]
+def _unescape(text: str) -> str:
+    """Turn literal ``\\r``/``\\n``/``\\t`` two-character sequences into real control chars."""
+    return text.replace("\\r", "\r").replace("\\n", "\n").replace("\\t", "\t")
 
 
-# The choices shown in doc/asciicasts/interactive-add.cast: accept the
-# default name/destination, pick the v3.4 tag, keep the whole repository as
-# src, and ignore examples/ and tests/.
-INTERACTIVE_ADD_KEYSTROKES: list[Keystroke] = [
-    Keystroke("Name:", ENTER, _PRE_DELAY),  # accept default name (cpputest)
-    Keystroke("Destination:", ENTER, _PRE_DELAY),  # accept default destination
-    *_downs(7, first_expect="Enter select"),  # master -> 3.7.2 -> ... -> v3.4
-    Keystroke(None, ENTER, _CONFIRM_DELAY),
-    Keystroke("Esc skip", ENTER, _READ_DELAY),  # accept "." (fetch whole repo)
-    *_downs(5, first_expect="Space toggle"),  # . -> .settings -> ... -> examples
-    Keystroke(None, SPACE, _STEP_DELAY),  # deselect examples/
-    *_downs(7),  # examples -> include -> ... -> src -> tests
-    Keystroke(None, SPACE, _STEP_DELAY),  # deselect tests/
-    Keystroke(None, ENTER, _CONFIRM_DELAY),
-    Keystroke("Add project to manifest?", f"y{ENTER}", _PRE_DELAY),
-    Keystroke(r"Run '.*' now\?", f"n{ENTER}", _PRE_DELAY),
-]
+def _parse_line(tokens: list[str], lineno: int) -> list[Keystroke]:
+    """Parse one ``[WAIT ...] SEND ... DELAY ... [REPEAT ...]`` line into Keystrokes."""
+    try:
+        pos = 0
+        expect = None
+        if tokens[pos] == "WAIT":
+            expect, pos = tokens[pos + 1], pos + 2
+        if tokens[pos] != "SEND":
+            raise ValueError("expected SEND")
+        keys_token, pos = tokens[pos + 1], pos + 2
+        if tokens[pos] != "DELAY":
+            raise ValueError("expected DELAY")
+        delay, pos = float(tokens[pos + 1]), pos + 2
+        repeat = 1
+        if pos < len(tokens):
+            if tokens[pos] != "REPEAT":
+                raise ValueError("expected REPEAT")
+            repeat = int(tokens[pos + 1])
+    except (IndexError, ValueError) as exc:
+        raise ValueError(f"line {lineno}: malformed keystroke: {tokens!r}") from exc
 
-_KEYSTROKES_BY_SUBCOMMAND: dict[str, list[Keystroke]] = {
-    "add": INTERACTIVE_ADD_KEYSTROKES,
-}
+    keys = _KEY_ALIASES.get(keys_token, _unescape(keys_token))
+    return [Keystroke(expect if i == 0 else None, keys, delay) for i in range(repeat)]
+
+
+def _parse_keystrokes(text: str) -> list[Keystroke]:
+    """Parse a keystroke script (see module docstring) into a list of Keystrokes."""
+    keystrokes: list[Keystroke] = []
+    for lineno, raw_line in enumerate(text.splitlines(), start=1):
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        keystrokes.extend(_parse_line(shlex.split(line), lineno))
+    return keystrokes
 
 
 def _terminal_size() -> tuple[int, int]:
@@ -134,13 +151,14 @@ def _drive(child: pexpect.spawn, keystrokes: list[Keystroke]) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        sys.exit("Usage: interactive_helper.py <dfetch-args...>")
+        sys.exit(
+            "Usage: <keystroke script on stdin> | interactive_helper.py <dfetch-args...>"
+        )
 
     dfetch_args = sys.argv[1:]
-    subcommand = dfetch_args[0]
-    keystrokes = _KEYSTROKES_BY_SUBCOMMAND.get(subcommand)
-    if keystrokes is None:
-        sys.exit(f"No scripted keystrokes for 'dfetch {subcommand}'")
+    keystrokes = _parse_keystrokes(sys.stdin.read())
+    if not keystrokes:
+        sys.exit("No keystrokes provided on stdin")
 
     rows, cols = _terminal_size()
 
