@@ -87,7 +87,7 @@ def _parse_project_spec(spec: str) -> tuple[str, int | None]:
 def _validate_superproject(superproject: SuperProject) -> None:
     """Validate that the superproject supports patch review, warning for SVN."""
     if isinstance(superproject, NoVcsSuperProject):
-        raise RuntimeError(
+        raise TypeError(
             "The project containing the manifest is not under version control,"
             " reviewing patches is not supported"
         )

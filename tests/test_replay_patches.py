@@ -217,14 +217,14 @@ def test_local_changes_logs_warning_and_skips():
 
 
 def test_no_vcs_superproject_raises():
-    """A superproject with no VCS raises RuntimeError."""
+    """A superproject with no VCS raises TypeError."""
     cmd = ReplayPatches()
     fake_super = Mock(spec=NoVcsSuperProject)
 
     with patch(
         "dfetch.commands.replay_patches.create_super_project", return_value=fake_super
     ):
-        with pytest.raises(RuntimeError):
+        with pytest.raises(TypeError):
             cmd(_make_args())
 
 
