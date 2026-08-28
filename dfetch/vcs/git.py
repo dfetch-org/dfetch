@@ -519,13 +519,12 @@ class GitLocalRepo:
             if options.eol is not None:
                 self._renormalize_eol()
 
-            git_submodule.drop_orphan_gitlinks()
-
-            run_on_cmdline(
-                logger,
-                ["git", "submodule", "update", "--init", "--recursive"],
-                env=_extend_env_for_non_interactive_mode(),
-            )
+            with git_submodule.orphan_gitlinks_dropped():
+                run_on_cmdline(
+                    logger,
+                    ["git", "submodule", "update", "--init", "--recursive"],
+                    env=_extend_env_for_non_interactive_mode(),
+                )
 
             submodules = self.submodules()
 
@@ -699,18 +698,17 @@ class GitLocalRepo:
     @staticmethod
     def submodules() -> list[Submodule]:
         """Get a list of submodules in the current directory."""
-        git_submodule.drop_orphan_gitlinks()
-
-        result = run_on_cmdline(
-            logger,
-            [
-                "git",
-                "submodule",
-                "foreach",
-                "--quiet",
-                'printf "%s\\0%s\\0%s\\0%s\n" "$name" "$sm_path" "$sha1" "$toplevel"',
-            ],
-        )
+        with git_submodule.orphan_gitlinks_dropped():
+            result = run_on_cmdline(
+                logger,
+                [
+                    "git",
+                    "submodule",
+                    "foreach",
+                    "--quiet",
+                    'printf "%s\\0%s\\0%s\\0%s\n" "$name" "$sm_path" "$sha1" "$toplevel"',
+                ],
+            )
 
         submodules: list[Submodule] = []
         urls: dict[str, str] = {}

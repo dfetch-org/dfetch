@@ -213,7 +213,7 @@ def test_declared_submodule_paths_propagates_malformed_gitmodules(
     """A malformed .gitmodules must raise, not be silently treated as 'no submodules'.
 
     Swallowing every SubprocessCommandError here would make
-    drop_orphan_gitlinks() strip every gitlink -- including legitimately
+    orphan_gitlinks_dropped() strip every gitlink -- including legitimately
     declared ones -- whenever .gitmodules simply fails to parse.
     """
     _init_git_repo(tmp_path)
@@ -224,7 +224,7 @@ def test_declared_submodule_paths_propagates_malformed_gitmodules(
         git_submodule.declared_submodule_paths()
 
 
-def test_drop_orphan_gitlinks_handles_leading_dash_path(tmp_path, monkeypatch):
+def test_orphan_gitlinks_dropped_handles_leading_dash_path(tmp_path, monkeypatch):
     """A gitlink path starting with '-' must not be parsed as a git option.
 
     Without a '--' terminator before the path, `git update-index
@@ -238,9 +238,49 @@ def test_drop_orphan_gitlinks_handles_leading_dash_path(tmp_path, monkeypatch):
     _add_gitlink(tmp_path, "--cacheinfo")
 
     monkeypatch.chdir(tmp_path)
-    git_submodule.drop_orphan_gitlinks()
+    with git_submodule.orphan_gitlinks_dropped():
+        remaining = subprocess.check_output(
+            ["git", "ls-files", "-s"], cwd=tmp_path
+        ).decode()
+        assert "--cacheinfo" not in remaining
 
-    remaining = subprocess.check_output(
+
+def test_orphan_gitlinks_dropped_restores_the_index_on_exit(tmp_path, monkeypatch):
+    """Stripped gitlinks must be re-staged once the context manager exits.
+
+    orphan_gitlinks_dropped() can run against a repository dfetch does not
+    own (e.g. the user's own working directory during `dfetch import`), so
+    it must not leave a lasting change there.
+    """
+    _init_git_repo(tmp_path)
+    (tmp_path / "root").write_text("root")
+    subprocess.check_call(["git", "add", "root"], cwd=tmp_path)
+    subprocess.check_call(["git", "commit", "-qm", "initial"], cwd=tmp_path)
+    _add_gitlink(tmp_path, "orphan")
+    subprocess.check_call(["git", "commit", "-qm", "add orphan gitlink"], cwd=tmp_path)
+
+    monkeypatch.chdir(tmp_path)
+    index_before = subprocess.check_output(
         ["git", "ls-files", "-s"], cwd=tmp_path
     ).decode()
-    assert "--cacheinfo" not in remaining
+    # The gitlink was committed with no real submodule checked out under it, so
+    # git already reports it deleted-in-worktree before any dropping happens;
+    # the point here is that this baseline noise is unchanged by the fix.
+    status_before = subprocess.check_output(
+        ["git", "status", "--porcelain"], cwd=tmp_path
+    ).decode()
+
+    with git_submodule.orphan_gitlinks_dropped():
+        during = subprocess.check_output(
+            ["git", "ls-files", "-s"], cwd=tmp_path
+        ).decode()
+        assert "orphan" not in during
+
+    index_after = subprocess.check_output(
+        ["git", "ls-files", "-s"], cwd=tmp_path
+    ).decode()
+    status_after = subprocess.check_output(
+        ["git", "status", "--porcelain"], cwd=tmp_path
+    ).decode()
+    assert index_after == index_before
+    assert status_after == status_before
