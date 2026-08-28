@@ -121,13 +121,14 @@ if __name__ == "__main__":
     url = sys.argv[1]
 
     # Force text-mode prompts so dfetch uses the numbered list + plain prompts
-    # instead of the raw-TTY tree browser.
-    import dfetch.terminal.keys as _keys
+    # instead of the raw-TTY tree browser. dfetch.terminal.is_tty() (and the
+    # copies imported by value into dfetch.terminal.prompt/screen) all read
+    # sys.stdin.isatty(), so patching that single source is what actually
+    # takes effect under asciinema's real pty -- patching
+    # dfetch.terminal.keys.is_tty directly would miss those value-imports.
+    with patch("sys.stdin.isatty", return_value=False):
+        with patch("rich.prompt.Prompt.ask", side_effect=_fake_prompt_ask):
+            with patch("rich.prompt.Confirm.ask", side_effect=_fake_confirm_ask):
+                from dfetch.__main__ import run
 
-    _keys.is_tty = lambda: False  # type: ignore[assignment]
-
-    with patch("rich.prompt.Prompt.ask", side_effect=_fake_prompt_ask):
-        with patch("rich.prompt.Confirm.ask", side_effect=_fake_confirm_ask):
-            from dfetch.__main__ import run
-
-            run(["add", "--interactive", url], _console)
+                run(["add", "--interactive", url], _console)
