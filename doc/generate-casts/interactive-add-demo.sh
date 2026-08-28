@@ -35,12 +35,15 @@ KEYSTROKES=$(cat <<'KEYSTROKES'
 WAIT "Name:" SEND ENTER DELAY 1.3
 WAIT "Destination:" SEND ENTER DELAY 1.3
 WAIT "Enter select" SEND DOWN DELAY 0.35 REPEAT 7
-SEND ENTER DELAY 0.9
+# Confirm the tag actually highlighted is v3.4 before pressing Enter --
+# cpputest's branch/tag order could change upstream, and a fixed count of
+# Down-presses would otherwise silently lock in whatever ended up there.
+WAIT "▶.*v3\.4" SEND ENTER DELAY 0.9
 WAIT "Esc skip" SEND ENTER DELAY 1.8
 WAIT "Space toggle" SEND DOWN DELAY 0.35 REPEAT 5
-SEND SPACE DELAY 0.35
+WAIT "▶.*examples" SEND SPACE DELAY 0.35
 SEND DOWN DELAY 0.35 REPEAT 7
-SEND SPACE DELAY 0.35
+WAIT "▶.*tests" SEND SPACE DELAY 0.35
 SEND ENTER DELAY 0.9
 WAIT "Add project to manifest?" SEND "y\r" DELAY 1.3
 WAIT "Run '.*' now\?" SEND "n\r" DELAY 1.3

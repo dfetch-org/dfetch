@@ -71,12 +71,32 @@ class Keystroke:
 
 
 def _unescape(text: str) -> str:
-    """Turn literal ``\\r``/``\\n``/``\\t`` two-character sequences into real control chars."""
+    """Turn literal ``\\r``/``\\n``/``\\t`` two-character sequences into real control chars.
+
+    Args:
+        text: Raw token text as returned by ``shlex.split``.
+
+    Returns:
+        *text* with ``\\r``, ``\\n``, and ``\\t`` replaced by the actual
+        control characters they represent.
+    """
     return text.replace("\\r", "\r").replace("\\n", "\n").replace("\\t", "\t")
 
 
 def _parse_line(tokens: list[str], lineno: int) -> list[Keystroke]:
-    """Parse one ``[WAIT ...] SEND ... DELAY ... [REPEAT ...]`` line into Keystrokes."""
+    """Parse one ``[WAIT ...] SEND ... DELAY ... [REPEAT ...]`` line into Keystrokes.
+
+    Args:
+        tokens: The line, already ``shlex.split`` into words.
+        lineno: 1-based line number, used only for the error message.
+
+    Returns:
+        One ``Keystroke`` per repetition (``REPEAT count``, default 1); only
+        the first carries *expect*.
+
+    Raises:
+        ValueError: *tokens* doesn't match the expected grammar.
+    """
     try:
         pos = 0
         expect = None
@@ -101,7 +121,14 @@ def _parse_line(tokens: list[str], lineno: int) -> list[Keystroke]:
 
 
 def _parse_keystrokes(text: str) -> list[Keystroke]:
-    """Parse a keystroke script (see module docstring) into a list of Keystrokes."""
+    """Parse a keystroke script (see module docstring) into a list of Keystrokes.
+
+    Args:
+        text: The full keystroke script, as read from stdin.
+
+    Returns:
+        The scripted keystrokes, in order.
+    """
     keystrokes: list[Keystroke] = []
     for lineno, raw_line in enumerate(text.splitlines(), start=1):
         line = raw_line.strip()
@@ -112,7 +139,12 @@ def _parse_keystrokes(text: str) -> list[Keystroke]:
 
 
 def _terminal_size() -> tuple[int, int]:
-    """Return ``(rows, cols)`` of the enclosing terminal, falling back to a default."""
+    """Return ``(rows, cols)`` of the enclosing terminal, falling back to a default.
+
+    Returns:
+        A ``(rows, cols)`` tuple: the real terminal size when stdout is a
+        tty, otherwise ``(28, 116)``.
+    """
     try:
         size = os.get_terminal_size(sys.stdout.fileno())
         return size.lines, size.columns
@@ -126,6 +158,10 @@ def _pump(child: pexpect.spawn, duration: float) -> None:
     Reading (rather than plain ``time.sleep``) is what keeps the mirrored
     output flowing to our own stdout in real time during a scripted pause,
     so the recorded pacing matches when a human would actually see it.
+
+    Args:
+        child: The pexpect-spawned dfetch process to read from.
+        duration: How long to pause, in seconds.
     """
     deadline = time.monotonic() + duration
     while True:
@@ -141,7 +177,12 @@ def _pump(child: pexpect.spawn, duration: float) -> None:
 
 
 def _drive(child: pexpect.spawn, keystrokes: list[Keystroke]) -> None:
-    """Feed *child* each scripted keystroke in order."""
+    """Feed *child* each scripted keystroke in order.
+
+    Args:
+        child: The pexpect-spawned dfetch process to drive.
+        keystrokes: The scripted keystrokes, in order.
+    """
     for step in keystrokes:
         if step.expect is not None:
             child.expect(step.expect)
