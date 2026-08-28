@@ -369,7 +369,12 @@ def _stage_one(
         if git_super is not None:
             git_super.add_path(subproject.local_path)
     except Exception:
-        Path(subproject.metadata_path).write_bytes(saved_metadata)
+        try:
+            _restore_project(
+                superproject, git_super, subproject, project.name, False, _ignored
+            )
+        finally:
+            Path(subproject.metadata_path).write_bytes(saved_metadata)
         raise
     state = _ProjectState(
         name=project.name,

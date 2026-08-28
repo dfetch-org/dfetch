@@ -415,3 +415,19 @@ def test_combined_interactive_launches_tui():
     mock_tui.assert_called_once()
     states = mock_tui.call_args[0][0]
     assert [s.name for s in states] == ["proj_a", "proj_b"]
+
+
+def test_stage_one_restores_worktree_on_add_path_failure():
+    """A failure in add_path() after update() still restores the worktree, not just metadata."""
+    from dfetch.commands.replay_patches import _stage_one
+
+    fake_super = _make_multi_superproject(["proj_a"])
+    sub_a = _make_named_subproject("proj_a")
+    project = fake_super.manifest.selected_projects(["proj_a"])[0]
+    fake_super.add_path.side_effect = RuntimeError("index lock")
+
+    with pytest.raises(RuntimeError, match="index lock"):
+        _stage_one(fake_super, fake_super, project, sub_a)
+
+    sub_a.update.assert_called_once()
+    fake_super.restore_from_head.assert_called_once_with("proj_a")
