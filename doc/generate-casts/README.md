@@ -6,6 +6,8 @@ It can only run on linux.
 
 ## Requirements
 
+Install the `casts` extra from the repository root:
+
 ```console
 pip install -e .[casts]
 ```
