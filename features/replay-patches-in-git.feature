@@ -82,7 +82,7 @@ Feature: Replay patches in git
             """
             Dfetch (0.14.0)
               SomeProject:
-              > skipped - there is no patch file, use "dfetch diff" SomeProject to create one
+              > skipped - there is no patch file, use "dfetch diff SomeProject" to create one
             """
 
     Scenario: A warning is shown when the project has uncommitted local changes

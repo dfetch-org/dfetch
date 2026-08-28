@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
-source ./demo-magic/demo-magic.sh
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$DIR/demo-magic/demo-magic.sh"
 
 PROMPT_TIMEOUT=1
 
-# Copy example manifest
-mkdir review-patch
-pushd review-patch || exit 1
+WORKDIR="$(mktemp -d "$DIR/review-patch.XXXXXX")"
+trap 'popd 2>/dev/null; rm -rf "$WORKDIR"' EXIT
+pushd "$WORKDIR" || { echo 'pushd failed' >&2; exit 1; }
 
 git init
-cp -r ../update/* .
+cp -r "$DIR/update"/* .
 git add .
 git commit -m "Initial commit"
 
@@ -47,11 +48,11 @@ pe "cat patches/cpputest.patch"
 # the scenes so recording doesn't block on "Press Enter to restore..."
 p "dfetch replay-patches cpputest"
 echo '' | dfetch replay-patches cpputest
+status=$?
 
 PROMPT_TIMEOUT=3
 wait
 
 pei ""
 
-popd || exit 1
-rm -rf review-patch
+exit "$status"

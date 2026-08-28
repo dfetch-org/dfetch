@@ -319,9 +319,10 @@ un-applied:
 **Replaying multiple projects at once**
 
 When you call ``replay-patches`` with two or more project names (or with no
-names to select all), *dfetch* stages all of them together and presents a single
-pause.  You can limit the patches applied to a specific project with the
-``name:N`` shorthand:
+names to select all), *dfetch* stages all eligible selected projects together
+and presents a single pause.  Projects that have no patches or can't be safely
+replayed are skipped with a warning.  You can limit the patches applied to a
+specific project with the ``name:N`` shorthand:
 
 .. code-block:: console
 

@@ -116,7 +116,9 @@ def _parse_line(tokens: list[str], lineno: int) -> list[Keystroke]:
         if pos < len(tokens):
             if tokens[pos] != "REPEAT":
                 raise ValueError("expected REPEAT")
-            repeat = int(tokens[pos + 1])
+            repeat, pos = int(tokens[pos + 1]), pos + 2
+        if pos != len(tokens):
+            raise ValueError("unexpected trailing tokens")
     except (IndexError, ValueError) as exc:
         raise ValueError(f"line {lineno}: malformed keystroke: {tokens!r}") from exc
 
@@ -216,7 +218,11 @@ if __name__ == "__main__":
     )
     dfetch_child.logfile_read = sys.stdout
 
-    _drive(dfetch_child, script_keystrokes)
-    dfetch_child.expect(pexpect.EOF)
+    try:
+        _drive(dfetch_child, script_keystrokes)
+        dfetch_child.expect(pexpect.EOF)
+    finally:
+        if dfetch_child.isalive():
+            dfetch_child.terminate(force=True)
     dfetch_child.close()
     sys.exit(dfetch_child.exitstatus or 0)

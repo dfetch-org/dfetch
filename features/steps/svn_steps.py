@@ -7,7 +7,7 @@ import os
 import pathlib
 import subprocess
 
-from behave import given, then  # pylint: disable=no-name-in-module
+from behave import given, then
 
 from dfetch.util.util import in_directory
 from features.steps.generic_steps import call_command, extend_file, generate_file

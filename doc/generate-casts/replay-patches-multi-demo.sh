@@ -10,12 +10,12 @@ source "$DIR/demo-magic/demo-magic.sh"
 
 PROMPT_TIMEOUT=1
 
-mkdir replay-patches-multi
-trap 'popd 2>/dev/null; rm -rf replay-patches-multi' EXIT
-pushd replay-patches-multi || { echo 'pushd failed' >&2; exit 1; }
+WORKDIR="$(mktemp -d "$DIR/replay-patches-multi.XXXXXX")"
+trap 'popd 2>/dev/null; rm -rf "$WORKDIR"' EXIT
+pushd "$WORKDIR" || { echo 'pushd failed' >&2; exit 1; }
 
 git init
-cp -r ../update/* .
+cp -r "$DIR/update"/* .
 git add .
 git commit -m "Initial commit"
 
@@ -69,12 +69,12 @@ KEYSTROKES
 )
 
 p "dfetch replay-patches --interactive cpputest jsmn"
-echo "$KEYSTROKES" | python3 ../interactive_helper.py replay-patches --interactive cpputest jsmn
+echo "$KEYSTROKES" | python3 "$DIR/interactive_helper.py" replay-patches --interactive cpputest jsmn
+status=$?
 
 PROMPT_TIMEOUT=3
 wait
 
 pei ""
 
-popd || { echo 'popd failed' >&2; exit 1; }
-rm -rf replay-patches-multi
+exit "$status"

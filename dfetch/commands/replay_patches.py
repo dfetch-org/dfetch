@@ -265,8 +265,8 @@ def _can_review_project(
     if not subproject.patch:
         logger.print_warning_line(
             project_name,
-            'skipped - there is no patch file, use "dfetch diff"'
-            f" {project_name} to create one",
+            f'skipped - there is no patch file, use "dfetch diff {project_name}"'
+            " to create one",
         )
         return False
     if not subproject.on_disk_version():
@@ -361,6 +361,7 @@ def _stage_one(
     def _ignored() -> list[str]:
         return list(superproject.ignored_files(project.destination))
 
+    staged_ok = False
     try:
         subproject.update(
             force=True,
@@ -370,14 +371,15 @@ def _stage_one(
         )
         if git_super is not None:
             git_super.add_path(subproject.local_path)
-    except Exception:
-        try:
-            _restore_project(
-                superproject, git_super, subproject, project.name, False, _ignored
-            )
-        finally:
-            Path(subproject.metadata_path).write_bytes(saved_metadata)
-        raise
+        staged_ok = True
+    finally:
+        if not staged_ok:
+            try:
+                _restore_project(
+                    superproject, git_super, subproject, project.name, False, _ignored
+                )
+            finally:
+                Path(subproject.metadata_path).write_bytes(saved_metadata)
     state = _ProjectState(
         name=project.name,
         local_path=subproject.local_path,
@@ -540,7 +542,7 @@ def _step_tui(patches: list[str], local_path: str, project_name: str) -> None:
             raise
         try:
             current, done = _apply_step(key, current, total, patches, local_path)
-        except RuntimeError:
+        except (RuntimeError, OSError):
             screen.clear()
             raise
         if done:
@@ -606,7 +608,7 @@ def _step_tui_multi(states: list[_ProjectState]) -> None:
             raise
         try:
             focused, done = _handle_tui_multi_key(key, focused, states)
-        except RuntimeError:
+        except (RuntimeError, OSError):
             screen.clear()
             raise
         if done:
