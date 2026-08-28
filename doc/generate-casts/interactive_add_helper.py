@@ -32,9 +32,10 @@ import time
 
 import pexpect
 
-_PRE_DELAY = 0.6  # pause before pressing a key, to simulate "thinking"
-_STEP_DELAY = 0.3  # pause between arrow-key presses while browsing a tree
-_CONFIRM_DELAY = 0.6  # pause before the Enter that accepts a tree pick
+_PRE_DELAY = 1.3  # pause before pressing a key, to simulate "thinking"
+_STEP_DELAY = 0.35  # pause between arrow-key presses while browsing a tree
+_CONFIRM_DELAY = 0.9  # pause before the Enter that accepts a tree pick
+_READ_DELAY = 1.8  # longer pause where the original recording lingers to read
 _PUMP_SLICE = 0.02  # granularity for draining/mirroring output while paused
 
 DOWN = "\x1b[B"
@@ -96,7 +97,7 @@ def _drive_wizard(child: pexpect.spawn) -> None:
     _press(child, ENTER, delay=_CONFIRM_DELAY)
 
     child.expect("Esc skip")  # source-path tree browser has been drawn
-    _press(child, ENTER, delay=_PRE_DELAY)  # accept "." (fetch whole repo)
+    _press(child, ENTER, delay=_READ_DELAY)  # accept "." (fetch whole repo)
 
     child.expect("Space toggle")  # ignore tree browser has been drawn
     _navigate(child, 5)  # . -> .settings -> build -> cmake -> docs -> examples
