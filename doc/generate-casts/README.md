@@ -10,8 +10,11 @@ It can only run on linux.
 pip install -e .[casts]
 ```
 
-`interactive_add_helper.py` drives `dfetch add -i`'s real tree-browser UI
-through its own pty (via `pexpect`), so the recording needs no human input.
+`interactive_helper.py` drives an interactive dfetch command's real
+tree-browser UI through its own pty (via `pexpect`), so the recording needs
+no human input. It takes the dfetch subcommand and arguments to run (e.g.
+`add --interactive <url>`) and looks up the scripted keystrokes for that
+subcommand -- see `INTERACTIVE_ADD_KEYSTROKES` for `add -i`'s.
 
 ## Usage
 ```console
