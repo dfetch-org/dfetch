@@ -84,7 +84,7 @@ development = [
     'pre-commit==4.6.2',
     'ruff==0.16.4',
     'hypothesis==6.165.10',
-    'import-linter==2.13',
+    'import-linter==2.14',
 ]
 docs = [
     'sphinx==8.2.3',
