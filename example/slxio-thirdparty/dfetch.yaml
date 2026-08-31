@@ -90,10 +90,8 @@ manifest:
       - doc
       - fuzz
       - issues_closed_for_0.*.md
-      - json-c.pc.in
-      - json-c.sym
-      - json_config.h.in
-      - json_config.h.win32
+      - json-c.*
+      - json_config.h*
       - json_inttypes.h
       - tests
 
@@ -125,8 +123,7 @@ manifest:
       - configure.ac
       - docs
       - img
-      - libuv-static.pc.in
-      - libuv.pc.in
+      - libuv*.pc.in
       - m4
       - test
       - tools
@@ -147,8 +144,7 @@ manifest:
       - Changes.txt
       - Makefile
       - Package.swift
-      - build.zig
-      - build.zig.zon
+      - build.zig*
       - cocoapods
       - dev
       - docs
@@ -166,9 +162,11 @@ manifest:
     tag: v2.15.2
     ignore:                # recreates the old files=() allow-list
       - .*
+      - '**/Makefile.am'
+      - '**/meson*'
+      - '*.cmake'
       - CMakeLists.txt
       - MAINTAINERS.md
-      - Makefile.am
       - NEWS
       - README.zOS
       - VERSION
@@ -177,19 +175,13 @@ manifest:
       - doc
       - example
       - fuzz
-      - include/**/Makefile.am
-      - include/**/meson.build
       - libxml-2.0.pc.in
       - libxml.m4
       - libxml2.doap
       - m4
-      - meson.build
-      - meson_options.txt
       - python
       - result
-      - run_and_diff.cmake
       - test
-      - test_xmlcatalog_add_del.cmake
       - testcatalog.c
       - xml2-config-meson
       - xstc
@@ -208,8 +200,7 @@ manifest:
       - TODO.md
       - android
       - appveyor.yml
-      - cmake
-      - cmake-compat
+      - cmake*
       - examples
       - lib/CMakeLists.txt
       - lib/zip_add.c
@@ -270,10 +261,8 @@ manifest:
       - .gitignore
       - appveyor.yml
       - docs
-      - glog_bench
-      - glog_example
-      - loguru_bench
-      - loguru_example
+      - glog_*
+      - loguru_*
       - test
 
   # matio has a submodule (test/datasets) served over the plain git://
@@ -307,8 +296,7 @@ manifest:
     tag: v3.0.2
     ignore:                # recreates the old files=() allow-list
       - .*
-      - CMakeLists.txt
-      - CMakePresets.json
+      - CMake*
       - SECURITY.md
       - docs
       - include/pybind11/cast.h
