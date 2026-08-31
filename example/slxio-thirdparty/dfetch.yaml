@@ -318,14 +318,11 @@ manifest:
       - include/pybind11/conduit
       - include/pybind11/critical_section.h
       - include/pybind11/detail
-      - include/pybind11/eigen
-      - include/pybind11/eigen.h
+      - include/pybind11/eigen*
       - include/pybind11/embed.h
       - include/pybind11/eval.h
       - include/pybind11/functional.h
-      - include/pybind11/gil.h
-      - include/pybind11/gil_safe_call_once.h
-      - include/pybind11/gil_simple.h
+      - include/pybind11/gil*
       - include/pybind11/iostream.h
       - include/pybind11/native_enum.h
       - include/pybind11/numpy.h
@@ -333,9 +330,7 @@ manifest:
       - include/pybind11/options.h
       - include/pybind11/pybind11.h
       - include/pybind11/pytypes.h
-      - include/pybind11/stl
-      - include/pybind11/stl.h
-      - include/pybind11/stl_bind.h
+      - include/pybind11/stl*
       - include/pybind11/subinterpreter.h
       - include/pybind11/trampoline_self_life_support.h
       - include/pybind11/type_caster_pyobject_ptr.h
