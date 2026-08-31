@@ -102,7 +102,7 @@ docs = [
 test = ['pytest==9.1.1', 'pytest-cov==7.1.0', 'behave==1.3.3', 'cyclonedx-python-lib[json-validation]==11.12.0']
 casts = ['asciinema==2.4.0', 'pexpect==4.9.0']
 build = [
-    'nuitka==4.1.3',
+    'nuitka==4.2',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml]
     "setuptools-scm==10.2.1", # For determining version
 ]
