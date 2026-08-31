@@ -435,7 +435,7 @@ manifest:
   - name: npio
     repo-path: wissem01chiha/npio.git
     dst: npio/src
-    branch: master          # repo has no tags at all; VERSION.txt on master reads 0.1.0
+    revision: 3f04a9c26786504d0eecbc470b37c81c7611be3a   # master HEAD; repo has no tags — see git ls-remote
     # no ignore: update.sh's files=() list was copy-pasted from pybind11's
     # script (paths like "include/pybind11/attr.h" don't exist in this repo),
     # so there is nothing valid to recreate here.
