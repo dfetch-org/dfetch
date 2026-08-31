@@ -107,7 +107,7 @@ build = [
     "setuptools-scm==10.2.1", # For determining version
 ]
 sbom = ["cyclonedx-bom==7.3.1"]
-wheel = ["build==1.5.1"]
+wheel = ["build==1.6.0"]
 cve-audit = ["pip-audit==2.10.1"]
 
 [project.scripts]
