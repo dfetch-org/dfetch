@@ -1,0 +1,137 @@
+manifest:
+  version: '0.0'
+
+  remotes:
+  - name: github
+    url-base: https://github.com/
+
+  projects:
+  - name: cxxopts
+    repo-path: jarro2783/cxxopts.git
+    dst: cxxopts/src
+    tag: v3.3.1
+
+  - name: doctest
+    repo-path: doctest/doctest.git
+    dst: doctest/src
+    tag: v2.5.2
+    ignore:                # recreates the old files=() allow-list
+      - .bazelignore
+      - .bazelrc
+      - .bazelversion
+      - .clang-format
+      - .clang-tidy
+      - .editorconfig
+      - .github
+      - .gitattributes
+      - .gitignore
+      - .pre-commit-config.yaml
+      - BUILD.bazel
+      - CHANGELOG.md
+      - CMakeLists.txt
+      - CONTRIBUTING.md
+      - MODULE.bazel
+      - WORKSPACE.bazel
+      - doc
+      - doctest.pc.in
+      - examples
+      - meson.build
+      - scripts
+      - tests
+      - doctest/parts/private
+      - doctest/parts/public
+
+  - name: expat
+    repo-path: libexpat/libexpat.git
+    dst: expat/src
+    tag: R_2_6_4          # verify: update.sh was empty, guessed from expat.h
+
+  - name: fast_float
+    repo-path: fastfloat/fast_float.git
+    dst: fast_float/src
+    tag: v8.2.5
+
+  - name: fmi-library
+    repo-path: modelon-community/fmi-library.git
+    dst: fmi-library/src
+    tag: '3.0.4'           # no "v" prefix upstream
+
+  - name: json-c
+    repo-path: json-c/json-c.git
+    dst: json-c/src
+    tag: json-c-0.18
+
+  # - name: libtex
+  #   repo-path: wissem01chiha/libtex.git
+  #   dst: libtex/src
+  #   tag: v0.1.1
+  #   BLOCKED: github.com/wissem01chiha/libtex returns 404 (not public / doesn't
+  #   exist under this name) as of this validation run. update.sh pointed at
+  #   libxlsxwriter by mistake, so there was never a working reference either.
+  #   Re-enable once the real upstream location for libtex is confirmed.
+
+  - name: libuv
+    repo-path: libuv/libuv.git
+    dst: libuv/src
+    tag: v1.52.1
+
+  - name: libxlsxwriter
+    repo-path: jmcnamara/libxlsxwriter.git
+    dst: libxlsxwriter/src
+    tag: v1.2.4
+
+  - name: libxml2
+    repo-path: GNOME/libxml2.git
+    dst: libxml2/src
+    tag: v2.15.2
+
+  - name: libzip
+    repo-path: nih-at/libzip.git
+    dst: libzip/src
+    tag: v1.11.4
+
+  - name: loguru
+    repo-path: emilk/loguru.git
+    dst: loguru/src
+    tag: v2.1.0
+
+  # matio has a submodule (test/datasets) served over the plain git://
+  # protocol from git.code.sf.net. dfetch always runs
+  # `git submodule update --init --recursive` before applying `ignore`, so
+  # `ignore` below does NOT skip the clone attempt, only what's kept
+  # afterwards. This sandbox blocks outbound git://, so validating this one
+  # entry with a real `dfetch update` wasn't possible here (every other
+  # entry in this file was). The tag was independently confirmed to exist
+  # via `git ls-remote --tags`; expect this to fetch cleanly on a normal
+  # network / most CI runners.
+  - name: matio
+    repo-path: tbeu/matio.git
+    dst: matio/src
+    tag: v1.5.30           # verify: update.sh was empty, guessed from configure.ac
+    ignore:
+      - test/datasets       # test fixtures only; not needed to build matio itself
+
+  - name: npio
+    repo-path: wissem01chiha/npio.git
+    dst: npio/src
+    branch: master          # repo has no tags at all; VERSION.txt on master reads 0.1.0
+
+  - name: pybind11
+    repo-path: pybind/pybind11.git
+    dst: pybind11/src
+    tag: v3.0.2
+
+  - name: rapidcsv
+    repo-path: d99kris/rapidcsv.git
+    dst: rapidcsv/src
+    tag: v8.92
+
+  - name: spdlog
+    repo-path: gabime/spdlog.git
+    dst: spdlog/src
+    tag: v1.17.0           # verify: update.sh was empty, guessed from version.h
+
+  - name: zlib
+    repo-path: madler/zlib.git
+    dst: zlib/src
+    tag: v1.3.2

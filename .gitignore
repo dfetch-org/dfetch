@@ -12,6 +12,8 @@ dist
 doc/_build
 doc/landing-page/_build
 example/Tests/
+example/slxio-thirdparty/*
+!example/slxio-thirdparty/dfetch.yaml
 venv*
 *.cdx.json
 release_notes.txt
