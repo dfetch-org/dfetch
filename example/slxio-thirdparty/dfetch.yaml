@@ -11,11 +11,7 @@ manifest:
     dst: cxxopts/src
     tag: v3.3.1
     ignore:                # recreates the old files=() allow-list
-      - .clang-format
-      - .github
-      - .gitignore
-      - .tipi
-      - .travis.yml
+      - .*
       - BUILD.bazel
       - CHANGELOG.md
       - CMakeLists.txt
@@ -32,22 +28,11 @@ manifest:
     dst: doctest/src
     tag: v2.5.2
     ignore:                # recreates the old files=() allow-list
-      - .bazelignore
-      - .bazelrc
-      - .bazelversion
-      - .clang-format
-      - .clang-tidy
-      - .editorconfig
-      - .github
-      - .gitattributes
-      - .gitignore
-      - .pre-commit-config.yaml
-      - BUILD.bazel
+      - .*
+      - '*.bazel'
       - CHANGELOG.md
       - CMakeLists.txt
       - CONTRIBUTING.md
-      - MODULE.bazel
-      - WORKSPACE.bazel
       - doc
       - doctest.pc.in
       - examples
@@ -85,11 +70,7 @@ manifest:
     dst: json-c/src
     tag: json-c-0.18
     ignore:                # recreates the old files=() allow-list
-      - .clang-format
-      - .editorconfig
-      - .github
-      - .gitignore
-      - .travis.yml
+      - .*
       - Android.configure.mk
       - CMakeLists.txt
       - ChangeLog
@@ -108,12 +89,7 @@ manifest:
       - cmake/json_config.h.in
       - doc
       - fuzz
-      - issues_closed_for_0.13.md
-      - issues_closed_for_0.14.md
-      - issues_closed_for_0.15.md
-      - issues_closed_for_0.16.md
-      - issues_closed_for_0.17.md
-      - issues_closed_for_0.18.md
+      - issues_closed_for_0.*.md
       - json-c.pc.in
       - json-c.sym
       - json_config.h.in
@@ -135,12 +111,7 @@ manifest:
     dst: libuv/src
     tag: v1.52.1
     ignore:                # recreates the old files=() allow-list
-      - .clang-tidy
-      - .gitattributes
-      - .github
-      - .gitignore
-      - .mailmap
-      - .readthedocs.yaml
+      - .*
       - CMakeLists.txt
       - CONTRIBUTING.md
       - ChangeLog
@@ -170,10 +141,7 @@ manifest:
     # this repo actually uses "License.txt"/"Readme.md" and the header lives
     # at "include/xlsxwriter.h" (no "src/" prefix) - corrected below.
     ignore:                # recreates the old files=() allow-list (path/case-corrected)
-      - .cirrus.yml
-      - .github
-      - .gitignore
-      - .indent.pro
+      - .*
       - CMakeLists.txt
       - CONTRIBUTING.md
       - Changes.txt
@@ -197,11 +165,7 @@ manifest:
     dst: libxml2/src
     tag: v2.15.2
     ignore:                # recreates the old files=() allow-list
-      - .editorconfig
-      - .gitattributes
-      - .gitignore
-      - .gitlab-ci
-      - .gitlab-ci.yml
+      - .*
       - CMakeLists.txt
       - MAINTAINERS.md
       - Makefile.am
@@ -213,11 +177,8 @@ manifest:
       - doc
       - example
       - fuzz
-      - include/Makefile.am
-      - include/libxml/Makefile.am
-      - include/libxml/meson.build
-      - include/meson.build
-      - include/private/Makefile.am
+      - include/**/Makefile.am
+      - include/**/meson.build
       - libxml-2.0.pc.in
       - libxml.m4
       - libxml2.doap
@@ -238,10 +199,7 @@ manifest:
     dst: libzip/src
     tag: v1.11.4
     ignore:                # recreates the old files=() allow-list
-      - .clang-format
-      - .gitattributes
-      - .github
-      - .gitignore
+      - .*
       - API-CHANGES.md
       - CMakeLists.txt
       - INSTALL.md
@@ -445,16 +403,7 @@ manifest:
     dst: pybind11/src
     tag: v3.0.2
     ignore:                # recreates the old files=() allow-list
-      - .appveyor.yml
-      - .clang-format
-      - .clang-tidy
-      - .cmake-format.yaml
-      - .codespell-ignore-lines
-      - .gitattributes
-      - .github
-      - .gitignore
-      - .pre-commit-config.yaml
-      - .readthedocs.yml
+      - .*
       - CMakeLists.txt
       - CMakePresets.json
       - SECURITY.md
@@ -500,8 +449,7 @@ manifest:
     dst: rapidcsv/src
     tag: v8.92
     ignore:                # recreates the old files=() allow-list
-      - .github
-      - .gitignore
+      - .*
       - CMakeLists.txt
       - cmake
       - doc
@@ -522,15 +470,12 @@ manifest:
     dst: zlib/src
     tag: v1.3.2
     ignore:                # recreates the old files=() allow-list
-      - .cmake-format.yaml
-      - .github
-      - .gitignore
-      - BUILD.bazel
+      - .*
+      - '*.bazel'
       - CMakeLists.txt
       - ChangeLog
       - FAQ
       - INDEX
-      - MODULE.bazel
       - Makefile
       - Makefile.in
       - amiga
