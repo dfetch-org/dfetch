@@ -10,6 +10,22 @@ manifest:
     repo-path: jarro2783/cxxopts.git
     dst: cxxopts/src
     tag: v3.3.1
+    ignore:                # recreates the old files=() allow-list
+      - .clang-format
+      - .github
+      - .gitignore
+      - .tipi
+      - .travis.yml
+      - BUILD.bazel
+      - CHANGELOG.md
+      - CMakeLists.txt
+      - INSTALL
+      - WORKSPACE
+      - cmake
+      - include/CMakeLists.txt
+      - packaging
+      - src
+      - test
 
   - name: doctest
     repo-path: doctest/doctest.git
@@ -45,21 +61,65 @@ manifest:
     repo-path: libexpat/libexpat.git
     dst: expat/src
     tag: R_2_6_4          # verify: update.sh was empty, guessed from expat.h
+    # no ignore: update.sh never had a files=() list to recreate (empty script)
 
   - name: fast_float
     repo-path: fastfloat/fast_float.git
     dst: fast_float/src
     tag: v8.2.5
+    # no ignore: update.sh's files=() list is just ["README.md"] - applying it
+    # literally would drop the actual include/fast_float/*.h headers and vendor
+    # nothing usable. Treated as stale/broken like fmi-library's list below,
+    # not recreated.
 
   - name: fmi-library
     repo-path: modelon-community/fmi-library.git
     dst: fmi-library/src
     tag: '3.0.4'           # no "v" prefix upstream
+    # no ignore: update.sh's files=() list was copy-pasted from libxlsxwriter's
+    # script (lists "src/include/xlsxwriter.h", which doesn't exist in this
+    # repo at all), so there is nothing valid to recreate here.
 
   - name: json-c
     repo-path: json-c/json-c.git
     dst: json-c/src
     tag: json-c-0.18
+    ignore:                # recreates the old files=() allow-list
+      - .clang-format
+      - .editorconfig
+      - .github
+      - .gitignore
+      - .travis.yml
+      - Android.configure.mk
+      - CMakeLists.txt
+      - ChangeLog
+      - INSTALL
+      - NEWS
+      - README
+      - README.html
+      - RELEASE_CHECKLIST.txt
+      - STYLE.txt
+      - abi-check.sh
+      - apps
+      - appveyor.yml
+      - bench
+      - cmake-configure
+      - cmake/Config.cmake.in
+      - cmake/json_config.h.in
+      - doc
+      - fuzz
+      - issues_closed_for_0.13.md
+      - issues_closed_for_0.14.md
+      - issues_closed_for_0.15.md
+      - issues_closed_for_0.16.md
+      - issues_closed_for_0.17.md
+      - issues_closed_for_0.18.md
+      - json-c.pc.in
+      - json-c.sym
+      - json_config.h.in
+      - json_config.h.win32
+      - json_inttypes.h
+      - tests
 
   # - name: libtex
   #   repo-path: wissem01chiha/libtex.git
@@ -74,26 +134,286 @@ manifest:
     repo-path: libuv/libuv.git
     dst: libuv/src
     tag: v1.52.1
+    ignore:                # recreates the old files=() allow-list
+      - .clang-tidy
+      - .gitattributes
+      - .github
+      - .gitignore
+      - .mailmap
+      - .readthedocs.yaml
+      - CMakeLists.txt
+      - CONTRIBUTING.md
+      - ChangeLog
+      - LINKS.md
+      - MAINTAINERS.md
+      - Makefile.am
+      - SECURITY.md
+      - SUPPORTED_PLATFORMS.md
+      - autogen.sh
+      - cmake-toolchains
+      - configure.ac
+      - docs
+      - img
+      - libuv-static.pc.in
+      - libuv.pc.in
+      - m4
+      - test
+      - tools
+      - tsansupp.txt
+      - uv_win_longpath.manifest
 
   - name: libxlsxwriter
     repo-path: jmcnamara/libxlsxwriter.git
     dst: libxlsxwriter/src
     tag: v1.2.4
+    # update.sh named "LICENSE"/"README.md"/"src/include/xlsxwriter.h", but
+    # this repo actually uses "License.txt"/"Readme.md" and the header lives
+    # at "include/xlsxwriter.h" (no "src/" prefix) - corrected below.
+    ignore:                # recreates the old files=() allow-list (path/case-corrected)
+      - .cirrus.yml
+      - .github
+      - .gitignore
+      - .indent.pro
+      - CMakeLists.txt
+      - CONTRIBUTING.md
+      - Changes.txt
+      - Makefile
+      - Package.swift
+      - build.zig
+      - build.zig.zon
+      - cocoapods
+      - dev
+      - docs
+      - examples
+      - include/xlsxwriter
+      - lib
+      - libxlsxwriter.podspec
+      - src
+      - test
+      - third_party
 
   - name: libxml2
     repo-path: GNOME/libxml2.git
     dst: libxml2/src
     tag: v2.15.2
+    ignore:                # recreates the old files=() allow-list
+      - .editorconfig
+      - .gitattributes
+      - .gitignore
+      - .gitlab-ci
+      - .gitlab-ci.yml
+      - CMakeLists.txt
+      - MAINTAINERS.md
+      - Makefile.am
+      - NEWS
+      - README.zOS
+      - VERSION
+      - autogen.sh
+      - configure.ac
+      - doc
+      - example
+      - fuzz
+      - include/Makefile.am
+      - include/libxml/Makefile.am
+      - include/libxml/meson.build
+      - include/meson.build
+      - include/private/Makefile.am
+      - libxml-2.0.pc.in
+      - libxml.m4
+      - libxml2.doap
+      - m4
+      - meson.build
+      - meson_options.txt
+      - python
+      - result
+      - run_and_diff.cmake
+      - test
+      - test_xmlcatalog_add_del.cmake
+      - testcatalog.c
+      - xml2-config-meson
+      - xstc
 
   - name: libzip
     repo-path: nih-at/libzip.git
     dst: libzip/src
     tag: v1.11.4
+    ignore:                # recreates the old files=() allow-list
+      - .clang-format
+      - .gitattributes
+      - .github
+      - .gitignore
+      - API-CHANGES.md
+      - CMakeLists.txt
+      - INSTALL.md
+      - NEWS.md
+      - SECURITY.md
+      - TODO.md
+      - android
+      - appveyor.yml
+      - cmake
+      - cmake-compat
+      - examples
+      - lib/CMakeLists.txt
+      - lib/zip_add.c
+      - lib/zip_algorithm_bzip2.c
+      - lib/zip_algorithm_deflate.c
+      - lib/zip_algorithm_xz.c
+      - lib/zip_algorithm_zstd.c
+      - lib/zip_buffer.c
+      - lib/zip_close.c
+      - lib/zip_crypto.h
+      - lib/zip_crypto_commoncrypto.c
+      - lib/zip_crypto_commoncrypto.h
+      - lib/zip_crypto_gnutls.c
+      - lib/zip_crypto_gnutls.h
+      - lib/zip_crypto_mbedtls.c
+      - lib/zip_crypto_mbedtls.h
+      - lib/zip_crypto_openssl.c
+      - lib/zip_crypto_openssl.h
+      - lib/zip_crypto_win.c
+      - lib/zip_crypto_win.h
+      - lib/zip_delete.c
+      - lib/zip_dir_add.c
+      - lib/zip_dirent.c
+      - lib/zip_discard.c
+      - lib/zip_entry.c
+      - lib/zip_error.c
+      - lib/zip_error_clear.c
+      - lib/zip_error_get.c
+      - lib/zip_error_get_sys_type.c
+      - lib/zip_error_strerror.c
+      - lib/zip_error_to_str.c
+      - lib/zip_extra_field.c
+      - lib/zip_extra_field_api.c
+      - lib/zip_fclose.c
+      - lib/zip_fdopen.c
+      - lib/zip_file_add.c
+      - lib/zip_file_error_clear.c
+      - lib/zip_file_error_get.c
+      - lib/zip_file_get_comment.c
+      - lib/zip_file_get_external_attributes.c
+      - lib/zip_file_get_offset.c
+      - lib/zip_file_rename.c
+      - lib/zip_file_replace.c
+      - lib/zip_file_set_comment.c
+      - lib/zip_file_set_encryption.c
+      - lib/zip_file_set_external_attributes.c
+      - lib/zip_file_set_mtime.c
+      - lib/zip_file_strerror.c
+      - lib/zip_fopen.c
+      - lib/zip_fopen_encrypted.c
+      - lib/zip_fopen_index.c
+      - lib/zip_fopen_index_encrypted.c
+      - lib/zip_fread.c
+      - lib/zip_fseek.c
+      - lib/zip_ftell.c
+      - lib/zip_get_archive_comment.c
+      - lib/zip_get_archive_flag.c
+      - lib/zip_get_encryption_implementation.c
+      - lib/zip_get_file_comment.c
+      - lib/zip_get_name.c
+      - lib/zip_get_num_entries.c
+      - lib/zip_get_num_files.c
+      - lib/zip_hash.c
+      - lib/zip_io_util.c
+      - lib/zip_libzip_version.c
+      - lib/zip_memdup.c
+      - lib/zip_name_locate.c
+      - lib/zip_new.c
+      - lib/zip_open.c
+      - lib/zip_pkware.c
+      - lib/zip_progress.c
+      - lib/zip_random_unix.c
+      - lib/zip_random_uwp.c
+      - lib/zip_random_win32.c
+      - lib/zip_realloc.c
+      - lib/zip_rename.c
+      - lib/zip_replace.c
+      - lib/zip_set_archive_comment.c
+      - lib/zip_set_archive_flag.c
+      - lib/zip_set_default_password.c
+      - lib/zip_set_file_comment.c
+      - lib/zip_set_file_compression.c
+      - lib/zip_set_name.c
+      - lib/zip_source_accept_empty.c
+      - lib/zip_source_begin_write.c
+      - lib/zip_source_begin_write_cloning.c
+      - lib/zip_source_buffer.c
+      - lib/zip_source_call.c
+      - lib/zip_source_close.c
+      - lib/zip_source_commit_write.c
+      - lib/zip_source_compress.c
+      - lib/zip_source_crc.c
+      - lib/zip_source_error.c
+      - lib/zip_source_file.h
+      - lib/zip_source_file_common.c
+      - lib/zip_source_file_stdio.c
+      - lib/zip_source_file_stdio.h
+      - lib/zip_source_file_stdio_named.c
+      - lib/zip_source_file_win32.c
+      - lib/zip_source_file_win32.h
+      - lib/zip_source_file_win32_ansi.c
+      - lib/zip_source_file_win32_named.c
+      - lib/zip_source_file_win32_utf16.c
+      - lib/zip_source_file_win32_utf8.c
+      - lib/zip_source_free.c
+      - lib/zip_source_function.c
+      - lib/zip_source_get_dostime.c
+      - lib/zip_source_get_file_attributes.c
+      - lib/zip_source_is_deleted.c
+      - lib/zip_source_layered.c
+      - lib/zip_source_open.c
+      - lib/zip_source_pass_to_lower_layer.c
+      - lib/zip_source_pkware_decode.c
+      - lib/zip_source_pkware_encode.c
+      - lib/zip_source_read.c
+      - lib/zip_source_remove.c
+      - lib/zip_source_rollback_write.c
+      - lib/zip_source_seek.c
+      - lib/zip_source_seek_write.c
+      - lib/zip_source_stat.c
+      - lib/zip_source_supports.c
+      - lib/zip_source_tell.c
+      - lib/zip_source_tell_write.c
+      - lib/zip_source_window.c
+      - lib/zip_source_winzip_aes_decode.c
+      - lib/zip_source_winzip_aes_encode.c
+      - lib/zip_source_write.c
+      - lib/zip_source_zip.c
+      - lib/zip_source_zip_new.c
+      - lib/zip_stat.c
+      - lib/zip_stat_index.c
+      - lib/zip_stat_init.c
+      - lib/zip_strerror.c
+      - lib/zip_string.c
+      - lib/zip_unchange.c
+      - lib/zip_unchange_all.c
+      - lib/zip_unchange_archive.c
+      - lib/zip_unchange_data.c
+      - lib/zip_utf-8.c
+      - lib/zip_winzip_aes.c
+      - lib/zipint.h
+      - libzip.pc.in
+      - man
+      - ossfuzz
+      - regress
+      - src/CMakeLists.txt
+      - vcpkg.json
+      - vstudio
 
   - name: loguru
     repo-path: emilk/loguru.git
     dst: loguru/src
     tag: v2.1.0
+    ignore:                # recreates the old files=() allow-list
+      - .gitignore
+      - appveyor.yml
+      - docs
+      - glog_bench
+      - glog_example
+      - loguru_bench
+      - loguru_example
+      - test
 
   # matio has a submodule (test/datasets) served over the plain git://
   # protocol from git.code.sf.net. dfetch always runs
@@ -110,28 +430,122 @@ manifest:
     tag: v1.5.30           # verify: update.sh was empty, guessed from configure.ac
     ignore:
       - test/datasets       # test fixtures only; not needed to build matio itself
+    # no files=() allow-list existed to recreate beyond this (empty update.sh)
 
   - name: npio
     repo-path: wissem01chiha/npio.git
     dst: npio/src
     branch: master          # repo has no tags at all; VERSION.txt on master reads 0.1.0
+    # no ignore: update.sh's files=() list was copy-pasted from pybind11's
+    # script (paths like "include/pybind11/attr.h" don't exist in this repo),
+    # so there is nothing valid to recreate here.
 
   - name: pybind11
     repo-path: pybind/pybind11.git
     dst: pybind11/src
     tag: v3.0.2
+    ignore:                # recreates the old files=() allow-list
+      - .appveyor.yml
+      - .clang-format
+      - .clang-tidy
+      - .cmake-format.yaml
+      - .codespell-ignore-lines
+      - .gitattributes
+      - .github
+      - .gitignore
+      - .pre-commit-config.yaml
+      - .readthedocs.yml
+      - CMakeLists.txt
+      - CMakePresets.json
+      - SECURITY.md
+      - docs
+      - include/pybind11/cast.h
+      - include/pybind11/chrono.h
+      - include/pybind11/common.h
+      - include/pybind11/complex.h
+      - include/pybind11/conduit
+      - include/pybind11/critical_section.h
+      - include/pybind11/detail
+      - include/pybind11/eigen
+      - include/pybind11/eigen.h
+      - include/pybind11/embed.h
+      - include/pybind11/eval.h
+      - include/pybind11/functional.h
+      - include/pybind11/gil.h
+      - include/pybind11/gil_safe_call_once.h
+      - include/pybind11/gil_simple.h
+      - include/pybind11/iostream.h
+      - include/pybind11/native_enum.h
+      - include/pybind11/numpy.h
+      - include/pybind11/operators.h
+      - include/pybind11/options.h
+      - include/pybind11/pybind11.h
+      - include/pybind11/pytypes.h
+      - include/pybind11/stl
+      - include/pybind11/stl.h
+      - include/pybind11/stl_bind.h
+      - include/pybind11/subinterpreter.h
+      - include/pybind11/trampoline_self_life_support.h
+      - include/pybind11/type_caster_pyobject_ptr.h
+      - include/pybind11/typing.h
+      - include/pybind11/warnings.h
+      - noxfile.py
+      - pybind11
+      - pyproject.toml
+      - tests
+      - tools
 
   - name: rapidcsv
     repo-path: d99kris/rapidcsv.git
     dst: rapidcsv/src
     tag: v8.92
+    ignore:                # recreates the old files=() allow-list
+      - .github
+      - .gitignore
+      - CMakeLists.txt
+      - cmake
+      - doc
+      - examples
+      - make.sh
+      - tests
+      - uncrustify.cfg
+      - winmake.bat
 
   - name: spdlog
     repo-path: gabime/spdlog.git
     dst: spdlog/src
     tag: v1.17.0           # verify: update.sh was empty, guessed from version.h
+    # no ignore: update.sh never had a files=() list to recreate (empty script)
 
   - name: zlib
     repo-path: madler/zlib.git
     dst: zlib/src
     tag: v1.3.2
+    ignore:                # recreates the old files=() allow-list
+      - .cmake-format.yaml
+      - .github
+      - .gitignore
+      - BUILD.bazel
+      - CMakeLists.txt
+      - ChangeLog
+      - FAQ
+      - INDEX
+      - MODULE.bazel
+      - Makefile
+      - Makefile.in
+      - amiga
+      - configure
+      - contrib
+      - doc
+      - examples
+      - make_vms.com
+      - msdos
+      - os400
+      - qnx
+      - test
+      - treebuild.xml
+      - watcom
+      - win32
+      - zconf.h.in
+      - zlib.map
+      - zlib.pc.in
