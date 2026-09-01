@@ -198,12 +198,6 @@ fail_under = 72
 skip = "*.cast,./venv,**/plantuml-c4/**,./example,.mypy_cache,./doc/_build/**,./doc/landing-page/_build/**,./doc/_ext/sphinxcontrib_asciinema/**,./build,*.patch,.git,**/generate-casts/demo-magic/**,./doc/openssl/**"
 ignore-words-list = "bund"
 
-[tool.ruff.lint.isort]
-# isort (used for the isort CI check) doesn't classify this private stdlib
-# extension module as standard library; keep ruff's import sort agreeing
-# with it so the two tools don't fight over its group placement.
-known-third-party = ["_hashlib"]
-
 [tool.ruff.lint.per-file-ignores]
 "features/steps/*" = ["F811"]
 
