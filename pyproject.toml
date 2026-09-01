@@ -82,7 +82,7 @@ development = [
     'pyupgrade==3.21.2',
     "tomli; python_version < '3.11'", # Tomllib is default in 3.11, required for letting codespell read the pyproject.toml
     'pre-commit==4.6.2',
-    'ruff==0.16.4',
+    'ruff==0.16.5',
     'hypothesis==6.165.10',
     'import-linter==2.14',
 ]
