@@ -10,7 +10,7 @@ manifest:
     repo-path: jarro2783/cxxopts.git
     dst: cxxopts/src
     tag: v3.3.1
-    ignore:                # recreates the old files=() allow-list
+    ignore:
       - .*
       - BUILD.bazel
       - CHANGELOG.md
@@ -27,7 +27,7 @@ manifest:
     repo-path: doctest/doctest.git
     dst: doctest/src
     tag: v2.5.2
-    ignore:                # recreates the old files=() allow-list
+    ignore:
       - .*
       - '*.bazel'
       - CHANGELOG.md
@@ -45,31 +45,25 @@ manifest:
   - name: expat
     repo-path: libexpat/libexpat.git
     dst: expat/src
-    tag: R_2_6_4          # verify: update.sh was empty, guessed from expat.h
-    # no ignore: update.sh never had a files=() list to recreate (empty script)
+    tag: R_2_6_4  # verify
 
   - name: fast_float
     repo-path: fastfloat/fast_float.git
     dst: fast_float/src
     tag: v8.2.5
-    # no ignore: update.sh's files=() list is just ["README.md"] - applying it
-    # literally would drop the actual include/fast_float/*.h headers and vendor
-    # nothing usable. Treated as stale/broken like fmi-library's list below,
-    # not recreated.
+    # ignore not recreated: old list would drop the actual headers
 
   - name: fmi-library
     repo-path: modelon-community/fmi-library.git
     dst: fmi-library/src
-    tag: '3.0.4'           # no "v" prefix upstream
-    # no ignore: update.sh's files=() list was copy-pasted from libxlsxwriter's
-    # script (lists "src/include/xlsxwriter.h", which doesn't exist in this
-    # repo at all), so there is nothing valid to recreate here.
+    tag: '3.0.4'  # no "v" prefix
+    # ignore not recreated: old list copy-pasted from libxlsxwriter
 
   - name: json-c
     repo-path: json-c/json-c.git
     dst: json-c/src
     tag: json-c-0.18
-    ignore:                # recreates the old files=() allow-list
+    ignore:
       - .*
       - Android.configure.mk
       - CMakeLists.txt
@@ -99,16 +93,13 @@ manifest:
   #   repo-path: wissem01chiha/libtex.git
   #   dst: libtex/src
   #   tag: v0.1.1
-  #   BLOCKED: github.com/wissem01chiha/libtex returns 404 (not public / doesn't
-  #   exist under this name) as of this validation run. update.sh pointed at
-  #   libxlsxwriter by mistake, so there was never a working reference either.
-  #   Re-enable once the real upstream location for libtex is confirmed.
+  #   blocked: repo returns 404
 
   - name: libuv
     repo-path: libuv/libuv.git
     dst: libuv/src
     tag: v1.52.1
-    ignore:                # recreates the old files=() allow-list
+    ignore:
       - .*
       - CMakeLists.txt
       - CONTRIBUTING.md
@@ -134,10 +125,8 @@ manifest:
     repo-path: jmcnamara/libxlsxwriter.git
     dst: libxlsxwriter/src
     tag: v1.2.4
-    # update.sh named "LICENSE"/"README.md"/"src/include/xlsxwriter.h", but
-    # this repo actually uses "License.txt"/"Readme.md" and the header lives
-    # at "include/xlsxwriter.h" (no "src/" prefix) - corrected below.
-    ignore:                # recreates the old files=() allow-list (path/case-corrected)
+    # kept files renamed: License.txt/Readme.md/include/xlsxwriter.h
+    ignore:
       - .*
       - CMakeLists.txt
       - CONTRIBUTING.md
@@ -160,7 +149,7 @@ manifest:
     repo-path: GNOME/libxml2.git
     dst: libxml2/src
     tag: v2.15.2
-    ignore:                # recreates the old files=() allow-list
+    ignore:
       - .*
       - '**/Makefile.am'
       - '**/meson*'
@@ -190,7 +179,7 @@ manifest:
     repo-path: nih-at/libzip.git
     dst: libzip/src
     tag: v1.11.4
-    ignore:                # recreates the old files=() allow-list
+    ignore:
       - .*
       - API-CHANGES.md
       - CMakeLists.txt
@@ -257,7 +246,7 @@ manifest:
     repo-path: emilk/loguru.git
     dst: loguru/src
     tag: v2.1.0
-    ignore:                # recreates the old files=() allow-list
+    ignore:
       - .gitignore
       - appveyor.yml
       - docs
@@ -265,36 +254,24 @@ manifest:
       - loguru_*
       - test
 
-  # matio has a submodule (test/datasets) served over the plain git://
-  # protocol from git.code.sf.net. dfetch always runs
-  # `git submodule update --init --recursive` before applying `ignore`, so
-  # `ignore` below does NOT skip the clone attempt, only what's kept
-  # afterwards. This sandbox blocks outbound git://, so validating this one
-  # entry with a real `dfetch update` wasn't possible here (every other
-  # entry in this file was). The tag was independently confirmed to exist
-  # via `git ls-remote --tags`; expect this to fetch cleanly on a normal
-  # network / most CI runners.
+  # git:// submodule blocks fetch in this sandbox; ignore below doesn't skip the clone attempt
   - name: matio
     repo-path: tbeu/matio.git
     dst: matio/src
-    tag: v1.5.30           # verify: update.sh was empty, guessed from configure.ac
+    tag: v1.5.30  # verify
     ignore:
-      - test/datasets       # test fixtures only; not needed to build matio itself
-    # no files=() allow-list existed to recreate beyond this (empty update.sh)
+      - test/datasets
 
   - name: npio
     repo-path: wissem01chiha/npio.git
     dst: npio/src
-    revision: 3f04a9c26786504d0eecbc470b37c81c7611be3a   # master HEAD; repo has no tags — see git ls-remote
-    # no ignore: update.sh's files=() list was copy-pasted from pybind11's
-    # script (paths like "include/pybind11/attr.h" don't exist in this repo),
-    # so there is nothing valid to recreate here.
+    revision: 3f04a9c26786504d0eecbc470b37c81c7611be3a  # master HEAD, no tags
 
   - name: pybind11
     repo-path: pybind/pybind11.git
     dst: pybind11/src
     tag: v3.0.2
-    ignore:                # recreates the old files=() allow-list
+    ignore:
       - .*
       - CMake*
       - SECURITY.md
@@ -334,7 +311,7 @@ manifest:
     repo-path: d99kris/rapidcsv.git
     dst: rapidcsv/src
     tag: v8.92
-    ignore:                # recreates the old files=() allow-list
+    ignore:
       - .*
       - CMakeLists.txt
       - cmake
@@ -348,14 +325,13 @@ manifest:
   - name: spdlog
     repo-path: gabime/spdlog.git
     dst: spdlog/src
-    tag: v1.17.0           # verify: update.sh was empty, guessed from version.h
-    # no ignore: update.sh never had a files=() list to recreate (empty script)
+    tag: v1.17.0  # verify
 
   - name: zlib
     repo-path: madler/zlib.git
     dst: zlib/src
     tag: v1.3.2
-    ignore:                # recreates the old files=() allow-list
+    ignore:
       - .*
       - '*.bazel'
       - CMakeLists.txt
