@@ -7,12 +7,11 @@ import os
 import shutil
 import stat
 import tempfile
+from _hashlib import HASH
 from collections.abc import Generator, Iterator, Sequence
 from contextlib import contextmanager
 from pathlib import Path, PurePath
 from typing import Any
-
-from _hashlib import HASH
 
 from dfetch.util.license import is_license_file
 

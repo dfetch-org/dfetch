@@ -20,7 +20,8 @@ _repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _repo_root not in sys.path:
     sys.path.insert(0, _repo_root)
 
-from pytm import (  # noqa: E402  # pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-position
+from pytm import (  # noqa: E402
     TM,
     Actor,
     Boundary,
@@ -32,10 +33,8 @@ from pytm import (  # noqa: E402  # pylint: disable=wrong-import-position
     Process,
 )
 
-from security.tm_controls_data import (  # noqa: E402  # pylint: disable=wrong-import-position
-    SC_CONTROLS as CONTROLS,
-)
-from security.tm_elements import (  # noqa: E402  # pylint: disable=wrong-import-position
+from security.tm_controls_data import SC_CONTROLS as CONTROLS  # noqa: E402
+from security.tm_elements import (  # noqa: E402
     THREATS_FILE,
     Control,
     ThreatResponse,
@@ -43,10 +42,9 @@ from security.tm_elements import (  # noqa: E402  # pylint: disable=wrong-import
     make_dev_env_boundary,
     make_supply_chain_assumptions,
 )
-from security.tm_render import (  # noqa: E402  # pylint: disable=wrong-import-position
-    apply_report_utils_patch,
-    run_model,
-)
+from security.tm_render import apply_report_utils_patch, run_model  # noqa: E402
+
+# pylint: enable=wrong-import-position
 
 
 def _make_sc_boundaries() -> tuple[Boundary, Boundary, Boundary, Boundary]:
