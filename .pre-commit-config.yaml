@@ -43,6 +43,7 @@ repos:
         entry: mypy
         language: system
         files: ^dfetch/
+        require_serial: true
         types: [file, python]
     -   id: doc8
         name: doc8
