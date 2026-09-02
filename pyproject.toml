@@ -129,6 +129,7 @@ target-version = ["py313"]
 
 [tool.isort]
 profile = "black"
+py_version = "310"
 skip = [
     "doc/_ext/sphinxcontrib_asciinema",
 ]
@@ -197,6 +198,9 @@ fail_under = 72
 [tool.codespell]
 skip = "*.cast,./venv,**/plantuml-c4/**,./example,.mypy_cache,./doc/_build/**,./doc/landing-page/_build/**,./doc/_ext/sphinxcontrib_asciinema/**,./build,*.patch,.git,**/generate-casts/demo-magic/**,./doc/openssl/**"
 ignore-words-list = "bund"
+
+[tool.ruff]
+extend-exclude = ["doc/_ext/sphinxcontrib_asciinema"]
 
 [tool.ruff.lint.per-file-ignores]
 "features/steps/*" = ["F811"]

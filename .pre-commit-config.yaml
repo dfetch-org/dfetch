@@ -110,6 +110,7 @@ repos:
         entry: ruff
         language: python
         args: [check]
+        exclude: ^doc/_ext/sphinxcontrib_asciinema
         types: [file, python]
     -   id: pyright
         name: pyright

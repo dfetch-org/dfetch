@@ -4,13 +4,12 @@ Contains all data classes and constants used by compliance.py.
 Kept in a separate module to stay within the 1000-line limit per file.
 """
 
-from security.compliance_types import (  # noqa: F401  # re-exported
+from security.compliance_types import (  # re-exported
     ApplicableStandard,
-    PartIIRequirement,
     SODocumentation,
     SOImplementation,
 )
-from security.tm_controls_data import Control  # noqa: F401  # re-exported
+from security.tm_controls_data import Control  # re-exported
 
 # ── Classification decision ───────────────────────────────────────────────────
 
@@ -143,46 +142,68 @@ TRACK_B_CONTROLS: list[Control] = [
 
 ANNEX_V_MAP: list[tuple[str, str]] = [
     (
-        "**1. General description** — intended purpose, product name and version, "
-        "manufacturer address",
-        ":doc:`security` § *Product and manufacturer identification*; "
-        ":doc:`../reference/manifest` (manifest schema and version field)",
+        (
+            "**1. General description** — intended purpose, product name and version, "
+            "manufacturer address"
+        ),
+        (
+            ":doc:`security` § *Product and manufacturer identification*; "
+            ":doc:`../reference/manifest` (manifest schema and version field)"
+        ),
     ),
     (
-        "**2. Design and development** — software architecture; how components "
-        "build on or feed into each other",
-        ":doc:`../explanation/architecture` (layer diagram and module overview); "
-        ":doc:`security_pipeline` § *Threat model pipeline* (security-relevant "
-        "component relationships)",
+        (
+            "**2. Design and development** — software architecture; how components "
+            "build on or feed into each other"
+        ),
+        (
+            ":doc:`../explanation/architecture` (layer diagram and module overview); "
+            ":doc:`security_pipeline` § *Threat model pipeline* (security-relevant "
+            "component relationships)"
+        ),
     ),
     (
-        "**3. Production and monitoring** — build pipeline, dependency management, "
-        "CI/CD monitoring",
-        ":doc:`security_pipeline` § *Compliance pipeline* and *Release attestations*; "
-        "CI workflows in "
-        "`\\.github/workflows/ <https://github.com/dfetch-org/dfetch/tree/main/.github/workflows>`_",
+        (
+            "**3. Production and monitoring** — build pipeline, dependency management, "
+            "CI/CD monitoring"
+        ),
+        (
+            ":doc:`security_pipeline` § *Compliance pipeline* and *Release attestations*; "
+            "CI workflows in "
+            "`\\.github/workflows/ <https://github.com/dfetch-org/dfetch/tree/main/.github/workflows>`_"
+        ),
     ),
     (
-        "**4. Cybersecurity risk assessment** (Article 13(2)) — asset identification, "
-        "threat analysis, risk treatment",
-        ":doc:`threat_model_supply_chain` (pre-install lifecycle); "
-        ":doc:`threat_model_usage` (runtime invocation); "
-        "see also :doc:`security` § *Risk Rating Methodology*",
+        (
+            "**4. Cybersecurity risk assessment** (Article 13(2)) — asset identification, "
+            "threat analysis, risk treatment"
+        ),
+        (
+            ":doc:`threat_model_supply_chain` (pre-install lifecycle); "
+            ":doc:`threat_model_usage` (runtime invocation); "
+            "see also :doc:`security` § *Risk Rating Methodology*"
+        ),
     ),
     (
-        "**5. Implemented security solutions and applied standards** — "
-        "list of harmonised standards applied; where not applied, description of how "
-        "each Annex I requirement is met",
-        "This page (§§ *Applicable Standards*, *Part I*, *Part II*); "
-        ":doc:`control_register` (all 46 controls with references); "
-        "OSCAL Component Definition "
-        "`security/dfetch.component-definition.json "
-        "<https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_",
+        (
+            "**5. Implemented security solutions and applied standards** — "
+            "list of harmonised standards applied; where not applied, description of how "
+            "each Annex I requirement is met"
+        ),
+        (
+            "This page (§§ *Applicable Standards*, *Part I*, *Part II*); "
+            ":doc:`control_register` (all 46 controls with references); "
+            "OSCAL Component Definition "
+            "`security/dfetch.component-definition.json "
+            "<https://github.com/dfetch-org/dfetch/blob/main/security/dfetch.component-definition.json>`_"
+        ),
     ),
     (
         "**6. EU Declaration of Conformity** (Annex IV)",
-        "Not required. dfetch is outside mandatory CRA scope (see "
-        "*Classification Decision* above). No CE marking is affixed.",
+        (
+            "Not required. dfetch is outside mandatory CRA scope (see "
+            "*Classification Decision* above). No CE marking is affixed."
+        ),
     ),
 ]
 
@@ -226,8 +247,10 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
             "AUM-5 (no password or authentication mechanism)",
         ],
         gaps=[
-            "Integrity hash verification (:ref:`C-005 <c-005>`) is opt-in; manifest entries"
-            " without an ``integrity`` field are fetched without hash verification by default"
+            (
+                "Integrity hash verification (:ref:`C-005 <c-005>`) is opt-in; manifest entries"
+                " without an ``integrity`` field are fetched without hash verification by default"
+            )
         ],
         status="partially-implemented",
         doc=SODocumentation(
@@ -355,15 +378,19 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         ecr_id="ecr-d",
         controls=["C-006", "C-036"],
         not_applicable=[
-            "ACM-2, AUM-2, AUM-3, AUM-4, AUM-6 "
-            "(dfetch has no user-facing authentication or access control)"
+            (
+                "ACM-2, AUM-2, AUM-3, AUM-4, AUM-6 "
+                "(dfetch has no user-facing authentication or access control)"
+            )
         ],
         gaps=[
-            "dfetch has no native authentication or authorisation layer; access control is "
-            "fully delegated to the underlying VCS server and host OS. C-006 prevents "
-            "interactive credential prompts, and C-036 strips credentials from persisted "
-            "metadata — both are confidentiality controls, not access-control mechanisms "
-            "in the authentication/authorisation sense"
+            (
+                "dfetch has no native authentication or authorisation layer; access control is "
+                "fully delegated to the underlying VCS server and host OS. C-006 prevents "
+                "interactive credential prompts, and C-036 strips credentials from persisted "
+                "metadata — both are confidentiality controls, not access-control mechanisms "
+                "in the authentication/authorisation sense"
+            )
         ],
         status="partially-implemented",
         doc=SODocumentation(
@@ -449,9 +476,11 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         ecr_id="ecr-e",
         controls=["C-045"],
         gaps=[
-            "C-045 warns on plaintext-scheme URLs but does not refuse to proceed; "
-            "TLS/SSH confidentiality is provided by the underlying VCS client, not "
-            "enforced by dfetch itself"
+            (
+                "C-045 warns on plaintext-scheme URLs but does not refuse to proceed; "
+                "TLS/SSH confidentiality is provided by the underlying VCS client, not "
+                "enforced by dfetch itself"
+            )
         ],
         status="partially-implemented",
         doc=SODocumentation(
@@ -479,10 +508,12 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         ecr_id="ecr-e",
         controls=["C-045"],
         gaps=[
-            "Server authentication (TLS certificate verification, SSH host-key checking) "
-            "is delegated to the OS trust store and VCS client; dfetch does not "
-            "independently authenticate remote endpoints and cannot enforce authenticated "
-            "channels when C-045's warning is overridden by the user"
+            (
+                "Server authentication (TLS certificate verification, SSH host-key checking) "
+                "is delegated to the OS trust store and VCS client; dfetch does not "
+                "independently authenticate remote endpoints and cannot enforce authenticated "
+                "channels when C-045's warning is overridden by the user"
+            )
         ],
         status="partially-implemented",
         doc=SODocumentation(
@@ -564,9 +595,11 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         ecr_id="ecr-f",
         controls=["C-005"],
         gaps=[
-            "C-005 provides end-to-end hash verification for archive sources only (opt-in); "
-            "git and svn sources rely solely on VCS object integrity (SHA-1/SHA-256 object "
-            "model) and TLS/SSH channel integrity — no dfetch-level hash verification"
+            (
+                "C-005 provides end-to-end hash verification for archive sources only (opt-in); "
+                "git and svn sources rely solely on VCS object integrity (SHA-1/SHA-256 object "
+                "model) and TLS/SSH channel integrity — no dfetch-level hash verification"
+            )
         ],
         status="partially-implemented",
         doc=SODocumentation(
@@ -663,13 +696,17 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         ecr_id="ecr-i",
         controls=["C-001", "C-007"],
         not_applicable=[
-            "TCM-1 (dfetch makes targeted VCS fetch requests; "
-            "no ambient outbound traffic to throttle)"
+            (
+                "TCM-1 (dfetch makes targeted VCS fetch requests; "
+                "no ambient outbound traffic to throttle)"
+            )
         ],
         gaps=[
-            "Archive HTTP operations time out at 15 s (reachability) and 60 s (download) "
-            "via ``archive.py``; git and svn subprocess calls have no timeout and can "
-            "stall indefinitely"
+            (
+                "Archive HTTP operations time out at 15 s (reachability) and 60 s (download) "
+                "via ``archive.py``; git and svn subprocess calls have no timeout and can "
+                "stall indefinitely"
+            )
         ],
         status="partially-implemented",
         doc=SODocumentation(
@@ -724,13 +761,17 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         ecr_id="ecr-j",
         controls=["C-001", "C-003", "C-004", "C-007", "C-008"],
         not_applicable=[
-            "GEC-2-j, GEC-3-j, GEC-4-j, GEC-5-j, GEC-7-j "
-            "(dfetch exposes no network services)"
+            (
+                "GEC-2-j, GEC-3-j, GEC-4-j, GEC-5-j, GEC-7-j "
+                "(dfetch exposes no network services)"
+            )
         ],
         gaps=[
-            "No domain or URL-scheme allowlist constrains which remote URLs the manifest "
-            "may reference; git and svn subprocess calls have no timeout (archive HTTP "
-            "operations time out at 15 s / 60 s)"
+            (
+                "No domain or URL-scheme allowlist constrains which remote URLs the manifest "
+                "may reference; git and svn subprocess calls have no timeout (archive HTTP "
+                "operations time out at 15 s / 60 s)"
+            )
         ],
         status="partially-implemented",
         doc=SODocumentation(
@@ -785,11 +826,13 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         ecr_id="ecr-l",
         controls=[],
         gaps=[
-            "No persistent structured security event log (LGM-1/2/3/4 gap). dfetch prints "
-            "operational output to stderr but does not retain it, does not record which "
-            "credentials were used, which files were modified, or when remote access occurred. "
-            "C-036 ensures credentials are excluded from operational output but is not a "
-            "logging control"
+            (
+                "No persistent structured security event log (LGM-1/2/3/4 gap). dfetch prints "
+                "operational output to stderr but does not retain it, does not record which "
+                "credentials were used, which files were modified, or when remote access occurred. "
+                "C-036 ensures credentials are excluded from operational output but is not a "
+                "logging control"
+            )
         ],
         status="partially-implemented",
         doc=SODocumentation(
@@ -846,12 +889,14 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         so_id="so-secure-data-deletion",
         ecr_id="ecr-m",
         not_applicable=[
-            "No dfetch-specific secure-deletion control is required: dfetch stores "
-            "no personal data and no keying material. The only on-disk state is "
-            ".dfetch_data.yaml (non-sensitive metadata) and vendored source files "
-            "(third-party code, not user data). Standard OS file deletion (rm / del) "
-            "is sufficient; cryptographic wipe is not warranted. DLM-1 is satisfied "
-            "by design (no sensitive data to wipe), not by a dedicated dfetch control."
+            (
+                "No dfetch-specific secure-deletion control is required: dfetch stores "
+                "no personal data and no keying material. The only on-disk state is "
+                ".dfetch_data.yaml (non-sensitive metadata) and vendored source files "
+                "(third-party code, not user data). Standard OS file deletion (rm / del) "
+                "is sufficient; cryptographic wipe is not warranted. DLM-1 is satisfied "
+                "by design (no sensitive data to wipe), not by a dedicated dfetch control."
+            )
         ],
         status="implemented",
         doc=SODocumentation(
@@ -902,62 +947,5 @@ SO_IMPLEMENTATIONS: list[SOImplementation] = [
         doc=SODocumentation(
             description="Not applicable — see SO.DataTransmittedConfidentiality (data export context).",
         ),
-    ),
-]
-
-# ── CRA Part II requirements (prEN 40000-1-3) ────────────────────────────────
-
-PART_II_REQUIREMENTS: list[PartIIRequirement] = [
-    PartIIRequirement(
-        id="pii-01",
-        ref="Part II §1",
-        text="Identify and document vulnerabilities and components (SBOM).",
-        controls=["C-021", "C-022"],
-        status="implemented",
-    ),
-    PartIIRequirement(
-        id="pii-02",
-        ref="Part II §2",
-        text="Address vulnerabilities without delay; provide free security updates.",
-        controls=["C-015", "C-016", "SECURITY.md"],
-        gaps=[
-            "No LTS backport policy (latest release only — documented in SECURITY.md)"
-        ],
-        status="partially-implemented",
-    ),
-    PartIIRequirement(
-        id="pii-03",
-        ref="Part II §3",
-        text="Apply effective coordinated vulnerability disclosure (CVD) policy.",
-        controls=["SECURITY.md"],
-        status="implemented",
-    ),
-    PartIIRequirement(
-        id="pii-04",
-        ref="Part II §4",
-        text="Report actively exploited vulnerabilities to national CSIRT and ENISA.",
-        status="not-applicable",
-    ),
-    PartIIRequirement(
-        id="pii-05",
-        ref="Part II §5",
-        text="Publish coordinated vulnerability disclosure policy.",
-        controls=["SECURITY.md"],
-        status="implemented",
-    ),
-    PartIIRequirement(
-        id="pii-06",
-        ref="Part II §6",
-        text="Share information on vulnerabilities in integrated components.",
-        controls=["C-022", "C-016"],
-        gaps=["No proactive downstream notification process"],
-        status="partially-implemented",
-    ),
-    PartIIRequirement(
-        id="pii-07",
-        ref="Part II §7",
-        text="Provide security updates free of charge for the support period.",
-        controls=["MIT licence", "PyPI", "SECURITY.md"],
-        status="implemented",
     ),
 ]

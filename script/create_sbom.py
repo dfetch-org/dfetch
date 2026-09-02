@@ -11,6 +11,7 @@ import venv
 from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 PROJECT_DIR = Path(__file__).parent.parent.resolve()
 
@@ -35,7 +36,7 @@ def temporary_venv():
     """Create a temporary virtual environment and clean it up on exit."""
     with tempfile.TemporaryDirectory(prefix="venv_sbom_") as tmpdir:
         venv_dir = Path(tmpdir)
-        logging.info(f"Creating temporary virtual environment at {venv_dir}")
+        logger.info(f"Creating temporary virtual environment at {venv_dir}")
         venv.create(venv_dir, with_pip=True, upgrade_deps=True)
 
         if sys.platform.startswith("win"):
@@ -98,4 +99,4 @@ with temporary_venv() as python:
         [python, "-m", "cyclonedx_py", "environment", "-o", str(output_file)]
     )
 
-logging.info(f"SBOM generated at {output_file}")
+logger.info(f"SBOM generated at {output_file}")

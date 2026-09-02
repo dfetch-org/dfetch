@@ -20,17 +20,17 @@ import os
 import re
 import sys
 import uuid
-from datetime import date
+from datetime import datetime, timezone
 from typing import Any
 
 from security.compliance_data import (
     ANNEX_V_MAP,
     CLASSIFICATION_DECISION,
-    PART_II_REQUIREMENTS,
     SO_IMPLEMENTATIONS,
     STANDARDS,
     TRACK_B_CONTROLS,
 )
+from security.compliance_part_ii_data import PART_II_REQUIREMENTS
 from security.compliance_types import SOImplementation
 from security.tm_controls_data import SC_CONTROLS, USAGE_CONTROLS, Control
 
@@ -100,7 +100,7 @@ def _build_metadata(version: str) -> dict[str, Any]:
     """Return the OSCAL 1.2.2 metadata block with parties and roles."""
     return {
         "title": "dfetch CRA Compliance Component Definition",
-        "last-modified": f"{date.today().isoformat()}T00:00:00Z",
+        "last-modified": f"{datetime.now(tz=timezone.utc).date().isoformat()}T00:00:00Z",
         "version": version,
         "oscal-version": "1.2.2",
         "document-ids": [
@@ -502,7 +502,7 @@ def _format_ref_as_rst(ref: str) -> str:
     if not ref or ref == "—":
         return "—"
     # Already RST markup
-    if ref.startswith(":doc:") or ref.startswith(":ref:"):
+    if ref.startswith((":doc:", ":ref:")):
         return ref
     # Handle parenthetical suffix like "path (note about it)"
     paren_suffix = ""
@@ -664,8 +664,10 @@ def _gap_entries() -> list[tuple[str, str]]:
     """Return (title, body) pairs for the gap analysis section."""
     return [
         (
-            ":ref:`C-043 <c-043>` — Release-gate CVE check"
-            " (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)",
+            (
+                ":ref:`C-043 <c-043>` — Release-gate CVE check"
+                " (ECR-a, SO.VulnerabilityManagementProcess → GEC-1)"
+            ),
             (
                 "dfetch's CI detects vulnerabilities at commit time "
                 "(:ref:`C-015 <c-015>`, :ref:`C-016 <c-016>`, :ref:`C-017 <c-017>`). "
@@ -675,8 +677,10 @@ def _gap_entries() -> list[tuple[str, str]]:
             ),
         ),
         (
-            ":ref:`C-044 <c-044>` — Data minimisation policy"
-            " (ECR-g, SO.DataMinimization → DTM-1)",
+            (
+                ":ref:`C-044 <c-044>` — Data minimisation policy"
+                " (ECR-g, SO.DataMinimization → DTM-1)"
+            ),
             (
                 "dfetch processes dependency metadata only. The ``.dfetch_data.yaml`` "
                 "file stores: ``remote_url`` (credentials stripped by "
@@ -688,8 +692,10 @@ def _gap_entries() -> list[tuple[str, str]]:
             ),
         ),
         (
-            ":ref:`C-046 <c-046>` — Exploit mitigation inventory"
-            " (ECR-k, SO.ReduceImpactOfIncident → GEC-11)",
+            (
+                ":ref:`C-046 <c-046>` — Exploit mitigation inventory"
+                " (ECR-k, SO.ReduceImpactOfIncident → GEC-11)"
+            ),
             (
                 "prEN 40000-1-4 ECR-k requires documenting applicable exploit "
                 "mitigation techniques. For dfetch (pure Python):\n\n"
