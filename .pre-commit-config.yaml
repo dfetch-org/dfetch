@@ -116,6 +116,7 @@ repos:
         description: Lint using pyright
         entry: pyright
         language: python
+        require_serial: true
         types: [file, python]
     -   id: pyupgrade
         name: pyupgrade
