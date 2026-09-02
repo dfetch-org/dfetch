@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Documentation build configuration file.
 """
@@ -18,7 +17,7 @@ from importlib.metadata import PackageNotFoundError, version
 ext_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "_ext"))
 sys.path.insert(0, ext_path)
 
-import dfetch_style  # noqa: E402
+import dfetch_style
 
 dfetch_style.register()
 

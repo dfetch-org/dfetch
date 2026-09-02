@@ -4,8 +4,12 @@ __version__ = "0.4.3"
 
 
 def setup(app):
-    from .asciinema import Asciinema, ASCIINemaDirective
-    from .asciinema import copy_asset_files, _NODE_VISITORS
+    from .asciinema import (
+        _NODE_VISITORS,
+        Asciinema,
+        ASCIINemaDirective,
+        copy_asset_files,
+    )
 
     app.add_config_value('sphinxcontrib_asciinema_defaults', {}, 'html')
 

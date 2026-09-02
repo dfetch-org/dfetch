@@ -2,7 +2,8 @@
 
 import sys
 import types
-from typing import MutableMapping, cast
+from collections.abc import Mapping, MutableMapping
+from typing import Any, ClassVar, cast
 
 import pygments.styles
 from pygments.style import Style
@@ -24,7 +25,7 @@ class DfetchStyle(Style):  # pylint: disable=too-few-public-methods
 
     background_color = "#fef8f0"  # --bg-tint
     default_style = ""
-    styles = {
+    styles: ClassVar[Mapping[Any, str]] = {
         Token: "#1c1917",  # --text
         Comment: "italic #78716c",  # --text-muted
         Comment.Preproc: "noitalic #a0510a",  # --primary-dark

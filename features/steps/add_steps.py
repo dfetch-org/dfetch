@@ -48,9 +48,11 @@ def _run_interactive_add(context, cmd: list[str]) -> None:
             return prompt_answers.popleft()
         return str(kwargs.get("default", ""))
 
-    with patch("dfetch.commands.add.Prompt.ask", side_effect=_auto_prompt):
-        with patch("dfetch.commands.add.Confirm.ask", side_effect=_auto_confirm):
-            call_command(context, cmd)
+    with (
+        patch("dfetch.commands.add.Prompt.ask", side_effect=_auto_prompt),
+        patch("dfetch.commands.add.Confirm.ask", side_effect=_auto_confirm),
+    ):
+        call_command(context, cmd)
 
 
 @when('I run "dfetch {add_args}" with inputs')

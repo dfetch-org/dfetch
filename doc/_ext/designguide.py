@@ -25,7 +25,8 @@ Register in conf.py::
 """
 
 import html
-from typing import Any
+from collections.abc import Callable
+from typing import Any, ClassVar
 
 from docutils import nodes
 from docutils.nodes import Node
@@ -38,7 +39,7 @@ class SwatchDirective(Directive):
 
     required_arguments = 1
     optional_arguments = 0
-    option_spec = {
+    option_spec: ClassVar[dict[str, Callable[[str], Any]] | None] = {
         "token": directives.unchanged,
         "label": directives.unchanged,
         "usage": directives.unchanged,
@@ -81,7 +82,7 @@ class PaletteDirective(Directive):
 
     required_arguments = 0
     optional_arguments = 0
-    option_spec = {
+    option_spec: ClassVar[dict[str, Callable[[str], Any]] | None] = {
         "columns": directives.positive_int,
     }
     has_content = True

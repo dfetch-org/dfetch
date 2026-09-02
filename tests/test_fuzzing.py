@@ -169,23 +169,27 @@ def test_manifest_can_be_created(data):
 @given(manifest_strategy)
 def test_check(data):
     """Validate check command."""
-    with suppress(DfetchFatalException):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with in_directory(tmpdir):
-                with open("dfetch.yaml", "w", encoding="UTF-8") as manifest_file:
-                    yaml.dump(data, manifest_file)
-                run(["check"])
+    with (
+        suppress(DfetchFatalException),
+        tempfile.TemporaryDirectory() as tmpdir,
+        in_directory(tmpdir),
+    ):
+        with open("dfetch.yaml", "w", encoding="UTF-8") as manifest_file:
+            yaml.dump(data, manifest_file)
+        run(["check"])
 
 
 @given(manifest_strategy)
 def test_update(data):
     """Validate update command."""
-    with suppress(DfetchFatalException):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            with in_directory(tmpdir):
-                with open("dfetch.yaml", "w", encoding="UTF-8") as manifest_file:
-                    yaml.dump(data, manifest_file)
-                run(["update"])
+    with (
+        suppress(DfetchFatalException),
+        tempfile.TemporaryDirectory() as tmpdir,
+        in_directory(tmpdir),
+    ):
+        with open("dfetch.yaml", "w", encoding="UTF-8") as manifest_file:
+            yaml.dump(data, manifest_file)
+        run(["update"])
 
 
 if __name__ == "__main__":

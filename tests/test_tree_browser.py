@@ -146,6 +146,7 @@ def _dir_with_children_st(
 # ---------------------------------------------------------------------------
 
 _NAV_KEYS = ["UP", "DOWN", "PGUP", "PGDN"]
+_DEFAULT_BROWSER_CONFIG = BrowserConfig()
 
 
 def _browser(
@@ -153,7 +154,7 @@ def _browser(
     *,
     idx: int = 0,
     top: int = 0,
-    config: BrowserConfig = BrowserConfig(),
+    config: BrowserConfig = _DEFAULT_BROWSER_CONFIG,
     children: list[Entry] | None = None,
 ) -> _HeadlessBrowser:
     """Return a seeded _HeadlessBrowser backed by *children* (or empty) for expansions."""

@@ -221,7 +221,7 @@ def step_impl(context, name, ending):
         create_repo()
         subprocess.check_call(["git", "config", "core.autocrlf", "false"])
         pathlib.Path("README.md").write_bytes(
-            f"Generated file for {name}{terminator}".encode("utf-8")
+            f"Generated file for {name}{terminator}".encode()
         )
         commit_all("Initial commit")
         tag("v1")
@@ -239,7 +239,7 @@ def step_impl(context, name, ending, filename, gitattr):
         subprocess.check_call(["git", "config", "core.autocrlf", "false"])
         pathlib.Path(".gitattributes").write_text(gitattr + "\n", encoding="utf-8")
         pathlib.Path(filename).write_bytes(
-            f"Generated file for {name}{terminator}".encode("utf-8")
+            f"Generated file for {name}{terminator}".encode()
         )
         commit_all("Initial commit")
         tag("v1")

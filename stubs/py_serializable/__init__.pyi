@@ -9,43 +9,44 @@ at runtime.
 """
 
 from collections.abc import Callable, Iterable
-from typing import Any, Optional, TypeVar, overload
+from typing import Any, TypeVar, overload
+
+from typing_extensions import Self
 
 _T = TypeVar("_T")
 
 class _Serializable:
     def as_json(self) -> str: ...
     @classmethod
-    def from_json(cls: type[_T], data: dict[str, Any]) -> Optional[_T]: ...
+    def from_json(cls, data: dict[str, Any]) -> Self | None: ...
     def as_xml(self) -> Any: ...
     @classmethod
-    def from_xml(cls: type[_T], data: Any) -> Optional[_T]: ...
+    def from_xml(cls, data: Any) -> Self | None: ...
 
 @overload
 def serializable_class(
     cls: None = ...,
     *,
-    name: Optional[str] = ...,
-    serialization_types: Optional[Iterable[Any]] = ...,
-    ignore_during_deserialization: Optional[Iterable[str]] = ...,
+    name: str | None = ...,
+    serialization_types: Iterable[Any] | None = ...,
+    ignore_during_deserialization: Iterable[str] | None = ...,
     ignore_unknown_during_deserialization: bool = ...,
 ) -> Callable[[type[_T]], type[_T]]: ...
 @overload
 def serializable_class(
     cls: type[_T],
     *,
-    name: Optional[str] = ...,
-    serialization_types: Optional[Iterable[Any]] = ...,
-    ignore_during_deserialization: Optional[Iterable[str]] = ...,
+    name: str | None = ...,
+    serialization_types: Iterable[Any] | None = ...,
+    ignore_during_deserialization: Iterable[str] | None = ...,
     ignore_unknown_during_deserialization: bool = ...,
 ) -> type[_T]: ...
 def serializable_class(cls: Any = None, **kwargs: Any) -> Any: ...
-
 def xml_name(name: str) -> Callable[[_T], _T]: ...
 def xml_sequence(order: int) -> Callable[[_T], _T]: ...
 def xml_array(
     array_type: Any,
-    child_name: Optional[str] = ...,
+    child_name: str | None = ...,
 ) -> Callable[[_T], _T]: ...
 def xml_attribute() -> Callable[[_T], _T]: ...
 def xml_string(string_type: Any) -> Callable[[_T], _T]: ...

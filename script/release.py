@@ -5,7 +5,7 @@
 import glob
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 from dfetch import __version__
 
@@ -45,7 +45,9 @@ if __name__ == "__main__":
     replace_pattern_in_files(
         file_path_pattern=f"{base_dir}/CHANGELOG.rst",
         search_pattern=r"(Release \d+\.\d+\.\d+) \(unreleased\)",
-        replacement=r"\1 (released " + datetime.now().strftime("%Y-%m-%d") + ")",
+        replacement=r"\1 (released "
+        + datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
+        + ")",
         flags=re.DOTALL,
     )
 
@@ -69,7 +71,7 @@ if __name__ == "__main__":
         flags=re.DOTALL,
     )
 
-    major, minor, _ = map(int, __version__.split("."))
+    major, minor, _ = (int(part) for part in __version__.split(".", maxsplit=2))
 
     replace_pattern_in_files(
         file_path_pattern=f"{base_dir}/doc/howto/contributing.rst",

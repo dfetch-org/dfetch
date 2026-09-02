@@ -9,9 +9,10 @@ import os
 import pathlib
 import re
 import shutil
+from collections.abc import Iterable
 from contextlib import contextmanager
 from itertools import zip_longest
-from typing import Iterable, List, Optional, Pattern, Tuple, Union
+from re import Pattern
 from unittest.mock import patch
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
@@ -57,18 +58,17 @@ def remote_server_path(context) -> str:
     return pathlib.Path(context.remotes_dir_path).as_uri()
 
 
-def call_command(context: Context, args: list[str], path: Optional[str] = ".") -> None:
+def call_command(context: Context, args: list[str], path: str | None = ".") -> None:
     before = context.console.export_text()
 
     DLogger.reset_projects()
 
-    with temporary_env("CI", "true"):
-        with in_directory(path or "."):
-            try:
-                run(args, context.console)
-                context.cmd_returncode = 0
-            except DfetchFatalException:
-                context.cmd_returncode = 1
+    with temporary_env("CI", "true"), in_directory(path or "."):
+        try:
+            run(args, context.console)
+            context.cmd_returncode = 0
+        except DfetchFatalException:
+            context.cmd_returncode = 1
 
     after = context.console.export_text()
     context.cmd_output = after[len(before) :].strip("\n")
@@ -186,7 +186,7 @@ def list_dir(path):
 
     result = ""
     prev_node = []
-    for node in list(sorted(nodes)) + [""]:
+    for node in sorted(nodes) + [""]:
         if prev_node:
             end = ""
             if "".join(node).startswith("".join(prev_node)):
@@ -359,7 +359,7 @@ def step_impl(context, name):
         check_file_exists(name)
 
 
-def check_json(path: Union[str, os.PathLike], content: str, context) -> None:
+def check_json(path: str | os.PathLike, content: str, context) -> None:
     """Check a JSON file for exact equality (after normalising formatting)."""
     content = apply_archive_substitutions(content, context)
     with open(path, "r", encoding="UTF-8") as file_to_check:
@@ -394,7 +394,7 @@ def step_impl(_, path, target):
     assert actual == target, f"Expected {path!r} to point to {target!r}, got {actual!r}"
 
 
-def multisub(patterns: List[Tuple[Pattern[str], str]], text: str) -> str:
+def multisub(patterns: list[tuple[Pattern[str], str]], text: str) -> str:
     """Apply a list of tuples that each contain a regex + replace string."""
     for pattern, replace in patterns:
         text = pattern.sub(replace, text)

@@ -1,4 +1,6 @@
 import os
+from collections.abc import Callable
+from typing import Any, ClassVar
 
 from docutils import nodes
 from docutils.parsers.rst import directives
@@ -115,7 +117,7 @@ def bool_or_positive_int(argument):
 class ASCIINemaDirective(SphinxDirective):
     has_content = True
     final_argument_whitespace = False
-    option_spec = {
+    option_spec: ClassVar[dict[str, Callable[[str], Any]] | None] = {
         "cols": directives.positive_int,
         "rows": directives.positive_int,
         "autoplay": bool_parse,
@@ -152,12 +154,12 @@ class ASCIINemaDirective(SphinxDirective):
             kw["content"] = self.to_b64(fname)
             kw["type"] = "local"
             kw["id"] = fname
-            logger.debug("asciinema: added cast file %s" % fname)
+            logger.debug(f"asciinema: added cast file {fname}")
         else:
             kw["content"] = arg
             kw["id"] = arg
             kw["type"] = "remote"
-            logger.debug("asciinema: added cast id %s" % arg)
+            logger.debug(f"asciinema: added cast id {arg}")
         if "path" in kw["options"]:
             del kw["options"]["path"]
         return [Asciinema(**kw)]

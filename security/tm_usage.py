@@ -33,7 +33,7 @@ if _repo_root not in sys.path:
     sys.path.insert(0, _repo_root)
 
 # pylint: disable=wrong-import-position
-from pytm import (  # noqa: E402
+from pytm import (
     TM,
     Actor,
     Boundary,
@@ -45,8 +45,8 @@ from pytm import (  # noqa: E402
     Process,
 )
 
-from security.tm_controls_data import USAGE_CONTROLS as CONTROLS  # noqa: E402
-from security.tm_elements import (  # noqa: E402
+from security.tm_controls_data import USAGE_CONTROLS as CONTROLS
+from security.tm_elements import (
     THREATS_FILE,
     Control,
     ThreatResponse,
@@ -55,7 +55,7 @@ from security.tm_elements import (  # noqa: E402
     make_network_boundary,
     make_usage_assumptions,
 )
-from security.tm_render import apply_report_utils_patch, run_model  # noqa: E402
+from security.tm_render import apply_report_utils_patch, run_model
 
 # pylint: enable=wrong-import-position
 

@@ -4,7 +4,6 @@
 import re
 import sys
 from pathlib import Path
-from typing import Optional
 
 # Config
 SBOM_FILE = "sbom.json"  # path to your CycloneDX SBOM
@@ -29,7 +28,7 @@ def get_new_version_from_pyproject(name: str) -> str:
 
 def replace_cyclonedx_version_if_outdated(
     new_version: str,
-) -> Optional[str]:
+) -> str | None:
     """Update the SBOM JSON file with the new version"""
     feature_file_path = Path(FEATURE_FILE)
     content = feature_file_path.read_text(encoding="UTF-8")
