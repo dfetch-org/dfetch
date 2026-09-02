@@ -20,7 +20,7 @@ Register in conf.py::
 
 import html
 import re
-from typing import Any, List
+from typing import Any
 
 from docutils import nodes
 from docutils.nodes import Node, system_message
@@ -99,7 +99,7 @@ def _replace_emoji_for_latex(
         if parent is None:
             continue
         idx = parent.children.index(text_node)
-        new_nodes: List[Node] = []
+        new_nodes: list[Node] = []
         last = 0
         for m in _EMOJI_RE.finditer(text):
             if m.start() > last:

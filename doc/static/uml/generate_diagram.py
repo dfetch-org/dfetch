@@ -3,8 +3,8 @@ import glob
 import os
 import pathlib
 import re
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence, Tuple
 
 import_regex = re.compile(r"(import|from) dfetch\.(?P<relation>[\.\w]+)")
 description_regex = re.compile(r"^\"{3}(?P<description>.*)")
@@ -17,7 +17,7 @@ class Relation:
 
 @dataclasses.dataclass
 class Module:
-    path: Tuple[str]
+    path: tuple[str]
     name: str
     description: str
     relations: list
@@ -129,7 +129,7 @@ Rel(user, contCommands, "Uses")
                     f'{indent}{indent}Component(comp{name}, "{name}", "python", "{description}")'
                 )
 
-            print("")
+            print()
             for name, module in modules.items():
                 if isinstance(module, dict):
                     continue
@@ -145,14 +145,14 @@ Rel(user, contCommands, "Uses")
             print(
                 f'{indent}Container(cont{container}, "{container}", "python", "Something.")'
             )
-    print("")
+    print()
     for relation in outside_in:
         print(relation)
-    print("")
+    print()
 
     for relation in inside_out:
         print(relation)
-    print("")
+    print()
     print(C3_END_TEMPLATE)
 
 

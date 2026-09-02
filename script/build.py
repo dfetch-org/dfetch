@@ -3,15 +3,13 @@
 
 import subprocess  # nosec
 import sys
+
 import tomllib as toml
-from typing import Union
 
 from dfetch import __version__
 
 
-def parse_option(
-    option_name: str, option_value: Union[bool, str, list, dict]
-) -> list[str]:
+def parse_option(option_name: str, option_value: bool | str | list | dict) -> list[str]:
     """
     Convert a config value to Nuitka CLI arguments.
 

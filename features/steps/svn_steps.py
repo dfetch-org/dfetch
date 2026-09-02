@@ -175,9 +175,8 @@ def step_impl(context, name, ext_path, source_name):
     source_url = (
         pathlib.Path(context.remotes_dir_path).joinpath(source_name, "trunk").as_uri()
     )
-    with in_directory(name):
-        with in_directory("trunk"):
-            add_externals([{"url": source_url, "path": ext_path, "revision": ""}])
+    with in_directory(name), in_directory("trunk"):
+        add_externals([{"url": source_url, "path": ext_path, "revision": ""}])
 
 
 @given(
@@ -185,9 +184,8 @@ def step_impl(context, name, ext_path, source_name):
 )
 def step_impl(context, name, ext_path, source_name):
     source_url = pathlib.Path(context.remotes_dir_path).joinpath(source_name).as_uri()
-    with in_directory(name):
-        with in_directory("trunk"):
-            add_externals([{"url": source_url, "path": ext_path, "revision": ""}])
+    with in_directory(name), in_directory("trunk"):
+        add_externals([{"url": source_url, "path": ext_path, "revision": ""}])
 
 
 @given('a svn-server "{name}" with {ending} content')
@@ -198,7 +196,7 @@ def step_impl(context, name, ending):
         create_stdlayout()
         with in_directory("trunk"):
             pathlib.Path("README.md").write_bytes(
-                f"Generated file for {name}{terminator}".encode("utf-8")
+                f"Generated file for {name}{terminator}".encode()
             )
         subprocess.check_call(["svn", "update", "."])
         subprocess.check_call(["svn", "add", "--force", "."])

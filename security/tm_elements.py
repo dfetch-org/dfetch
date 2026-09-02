@@ -11,7 +11,7 @@ from typing import Literal
 
 from pytm import Assumption, Boundary
 
-from security.tm_controls_data import Control  # noqa: F401  # re-exported
+from security.tm_controls_data import Control  # re-exported
 
 THREATS_FILE = os.path.join(os.path.dirname(__file__), "threats.json")
 

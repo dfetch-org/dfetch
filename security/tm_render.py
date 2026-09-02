@@ -111,7 +111,7 @@ def _render_asset_rows(
     The highest risk across all matching findings/controls is used per dimension.
     """
     assets = sorted(
-        list(getattr(TM, "_assets")) + list(getattr(TM, "_data", [])),
+        list(getattr(TM, "_assets", [])) + list(getattr(TM, "_data", [])),
         key=lambda e: getattr(e, "name", ""),
     )
     if not assets:

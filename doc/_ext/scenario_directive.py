@@ -39,7 +39,8 @@ import html
 import os
 import re
 import textwrap
-from typing import Dict, FrozenSet, List, Tuple
+from collections.abc import Callable
+from typing import Any, ClassVar
 
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
@@ -83,9 +84,9 @@ class ScenarioIncludePlaceholder(nodes.General, nodes.Element):
 # ---------------------------------------------------------------------------
 
 
-def _feature_tags(feature_path: str) -> List[str]:
+def _feature_tags(feature_path: str) -> list[str]:
     """Return all behave tags declared before the ``Feature:`` line."""
-    tags: List[str] = []
+    tags: list[str] = []
     with open(feature_path, encoding="utf-8") as fh:
         for line in fh:
             stripped = line.strip()
@@ -96,7 +97,7 @@ def _feature_tags(feature_path: str) -> List[str]:
     return tags
 
 
-def _group_tag(feature_path: str, non_group_tags: FrozenSet[str]) -> str:
+def _group_tag(feature_path: str, non_group_tags: frozenset[str]) -> str:
     """Return the first tag not in *non_group_tags*, or ``'other'``."""
     for tag in _feature_tags(feature_path):
         if tag not in non_group_tags:
@@ -114,7 +115,7 @@ def _feature_title(feature_path: str) -> str:
     return os.path.basename(feature_path)
 
 
-def _all_scenarios(feature_path: str) -> Tuple[Tuple[str, str], ...]:
+def _all_scenarios(feature_path: str) -> tuple[tuple[str, str], ...]:
     """Return (header, title) pairs for all scenarios in the feature file."""
     with open(feature_path, encoding="utf-8") as fh:
         return tuple(
@@ -131,7 +132,7 @@ def _full_feature_content(feature_path: str) -> str:
         return fh.read()
 
 
-def _selected_scenarios_content(feature_path: str, scenario_titles: List[str]) -> str:
+def _selected_scenarios_content(feature_path: str, scenario_titles: list[str]) -> str:
     """Return content containing only the selected scenario blocks."""
     with open(feature_path, encoding="utf-8") as fh:
         content = fh.read()
@@ -173,7 +174,7 @@ class ScenarioIncludeDirective(Directive):
     required_arguments = 1
     optional_arguments = 0
     final_argument_whitespace = False
-    option_spec = {
+    option_spec: ClassVar[dict[str, Callable[[str], Any]] | None] = {
         "scenario": str,
         "inline": directives.flag,  # keep inline even in PDF mode
     }
@@ -192,7 +193,7 @@ class ScenarioIncludeDirective(Directive):
             raise self.error(f"Feature file not found: {path}")
         return path
 
-    def _requested_scenarios(self, available: Tuple[Tuple[str, str], ...]) -> List[str]:
+    def _requested_scenarios(self, available: tuple[tuple[str, str], ...]) -> list[str]:
         return [
             t.strip()
             for t in self.options.get("scenario", "").splitlines()
@@ -203,7 +204,7 @@ class ScenarioIncludeDirective(Directive):
     # Appendix entry registration (always runs, any builder)
     # ------------------------------------------------------------------
 
-    def _entry_metadata(self, feature_abs: str) -> Tuple[str, str, str]:
+    def _entry_metadata(self, feature_abs: str) -> tuple[str, str, str]:
         """Return (label, group_tag, feature_title) for a feature file."""
         env = self._env()
         non_group_tags = frozenset(getattr(env.config, "scenario_non_command_tags", []))
@@ -218,7 +219,7 @@ class ScenarioIncludeDirective(Directive):
         self,
         feature_file: str,
         feature_abs: str,
-        scenario_titles: List[str],
+        scenario_titles: list[str],
     ) -> None:
         """Store entry in env.scenario_appendix_entries for any builder.
 
@@ -254,7 +255,7 @@ class ScenarioIncludeDirective(Directive):
     # Entry point
     # ------------------------------------------------------------------
 
-    def run(self) -> List[nodes.Node]:
+    def run(self) -> list[nodes.Node]:
         feature_file = self.arguments[0].strip()
         feature_abs = self._feature_abs(feature_file)
         available = _all_scenarios(feature_abs)
@@ -310,7 +311,7 @@ class ScenarioAppendixDirective(Directive):
     optional_arguments = 0
     has_content = False
 
-    def run(self) -> List[nodes.Node]:
+    def run(self) -> list[nodes.Node]:
         env = self.state.document.settings.env
         # Record which document hosts the appendix so that ScenarioAppendixRef
         # nodes in other documents can be resolved with the correct refdocname.
@@ -329,13 +330,13 @@ class ScenarioAppendixDirective(Directive):
 # ---------------------------------------------------------------------------
 
 
-def _build_appendix_nodes(entries: Dict) -> List[nodes.Node]:
+def _build_appendix_nodes(entries: dict) -> list[nodes.Node]:
     """Build docutils section nodes for every collected appendix entry."""
-    by_tag: Dict[str, List] = {}
+    by_tag: dict[str, list] = {}
     for entry in entries.values():
         by_tag.setdefault(entry["group_tag"], []).append(entry)
 
-    result: List[nodes.Node] = []
+    result: list[nodes.Node] = []
     for tag in sorted(by_tag):
         tag_entries = sorted(by_tag[tag], key=lambda e: e["feature_title"])
         label = f"appendix-{tag}"
@@ -366,10 +367,10 @@ def _build_appendix_nodes(entries: Dict) -> List[nodes.Node]:
 
 
 def _render_scenario_inline(
-    scenario_titles: List[str], feature_abs: str
-) -> List[nodes.Node]:
+    scenario_titles: list[str], feature_abs: str
+) -> list[nodes.Node]:
     """Return docutils nodes for inline HTML rendering of *scenario_titles*."""
-    result: List[nodes.Node] = []
+    result: list[nodes.Node] = []
     for title in scenario_titles:
         raw_content = _selected_scenarios_content(feature_abs, [title])
         content = textwrap.dedent(raw_content).strip()

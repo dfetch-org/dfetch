@@ -153,10 +153,12 @@ def _browser(
     *,
     idx: int = 0,
     top: int = 0,
-    config: BrowserConfig = BrowserConfig(),
+    config: BrowserConfig | None = None,
     children: list[Entry] | None = None,
 ) -> _HeadlessBrowser:
     """Return a seeded _HeadlessBrowser backed by *children* (or empty) for expansions."""
+    if config is None:
+        config = BrowserConfig()
     dir_path = nodes[0].path if nodes else ""
     ls = (
         (lambda path: children if path == dir_path else [])

@@ -5,7 +5,6 @@
 
 import os
 import pathlib
-from typing import Optional
 
 from behave import given, then, when  # pylint: disable=no-name-in-module
 
@@ -27,7 +26,7 @@ def apply_manifest_substitutions(context, contents: str) -> str:
 
 
 def generate_manifest(
-    context, name="dfetch.yaml", contents: Optional[str] = None, path=None
+    context, name="dfetch.yaml", contents: str | None = None, path=None
 ):
     contents = contents or context.text
     manifest = apply_manifest_substitutions(context, contents)

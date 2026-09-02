@@ -6,7 +6,6 @@
 import json
 import os
 import re
-from typing import Union
 
 from behave import then  # pylint: disable=no-name-in-module
 
@@ -59,16 +58,19 @@ def _json_subset_matches(expected, actual) -> bool:
                 return True
             exp_item = expected[exp_index]
             for i, act_item in enumerate(actual):
-                if i not in used and _json_subset_matches(exp_item, act_item):
-                    if _try_match(exp_index + 1, used | {i}):
-                        return True
+                if (
+                    i not in used
+                    and _json_subset_matches(exp_item, act_item)
+                    and _try_match(exp_index + 1, used | {i})
+                ):
+                    return True
             return False
 
         return _try_match(0, set())
     return expected == actual
 
 
-def check_json_subset(path: Union[str, os.PathLike], content: str, context) -> None:
+def check_json_subset(path: str | os.PathLike, content: str, context) -> None:
     """Assert that a JSON file *contains* the given key-values (subset match).
 
     Dynamic placeholders (``<archive-sha256>``, ``<archive-url>``) in
