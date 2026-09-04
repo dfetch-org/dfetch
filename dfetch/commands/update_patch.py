@@ -158,10 +158,7 @@ class UpdatePatch(dfetch.commands.command.Command):
         patches = list(subproject.patch)
         target_index = len(patches) - 1
         if patch_target is not None:
-            resolved = _resolve_patch_index(patches, patch_target, project.name)
-            if resolved is None:
-                return
-            target_index = resolved
+            target_index = _resolve_patch_index(patches, patch_target)
 
         if target_index == len(patches) - 1:
             self._update_last_patch(superproject, subproject, project, _ignored)
@@ -337,28 +334,32 @@ class UpdatePatch(dfetch.commands.command.Command):
 
 
 def _peel_patches(local_path: str, patches_to_peel: Sequence[str]) -> None:
-    """Reverse-apply the given patches, from last to first, onto the working tree."""
+    """Reverse-apply the given patches, from last to first, onto the working tree.
+
+    Fuzzy matching is deliberately disabled here: a fuzzy reversal can
+    "succeed" against content it doesn't really match, silently discarding
+    part of the change being recorded instead of surfacing the conflict.
+    """
     for patch in reversed(patches_to_peel):
         try:
-            Patch.from_file(patch).reverse().apply(root=local_path)
-        except OSError as exc:
+            Patch.from_file(patch).reverse().apply(root=local_path, fuzz=False)
+        except (RuntimeError, OSError) as exc:
             raise RuntimeError(f'reversing "{patch}" failed: {exc}') from exc
 
 
-def _resolve_patch_index(
-    patches: list[str], target: str, project_name: str
-) -> int | None:
-    """Resolve a --patch argument to an index into the patch stack, or None if invalid."""
+def _resolve_patch_index(patches: list[str], target: str) -> int:
+    """Resolve a --patch argument to an index into the patch stack.
+
+    Raises RuntimeError with a clear message if the target is out of range,
+    or matches zero or more than one patch by name.
+    """
     if target.isdigit():
         index = int(target) - 1
         if 0 <= index < len(patches):
             return index
-        logger.print_warning_line(
-            project_name,
-            f"skipped - --patch {target} is out of range,"
-            f" project has {len(patches)} patch(es)",
+        raise RuntimeError(
+            f"--patch {target} is out of range, project has {len(patches)} patch(es)"
         )
-        return None
 
     matches = [
         i for i, patch in enumerate(patches) if _patch_name_matches(patch, target)
@@ -368,21 +369,14 @@ def _resolve_patch_index(
 
     available = ", ".join(pathlib.Path(patch).name for patch in patches)
     if not matches:
-        logger.print_warning_line(
-            project_name,
-            f'skipped - no patch matches "{target}", available: {available}',
-        )
-    else:
-        logger.print_warning_line(
-            project_name,
-            f'skipped - "{target}" matches multiple patches ({available}),'
-            " be more specific",
-        )
-    return None
+        raise RuntimeError(f'no patch matches "{target}", available: {available}')
+    raise RuntimeError(
+        f'"{target}" matches multiple patches ({available}), be more specific'
+    )
 
 
 def _patch_name_matches(patch_path: str, target: str) -> bool:
-    """Check if a patch's file name matches a --patch target string."""
-    name = pathlib.Path(patch_path).name
-    stem = pathlib.Path(patch_path).stem
-    return target in (name, stem) or name.startswith(target) or stem.startswith(target)
+    """Check if a patch's stored path or file name contains a --patch target string."""
+    path = pathlib.PurePosixPath(patch_path)
+    candidates = (patch_path, str(path.with_suffix("")), path.name, path.stem)
+    return any(target in candidate for candidate in candidates)
