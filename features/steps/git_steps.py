@@ -259,6 +259,13 @@ def step_impl(context, directory, path):
         commit_all("A change")
 
 
+@given('"{path}" in {directory} is removed and committed')
+def step_impl(_, directory, path):
+    with in_directory(directory):
+        os.remove(path)
+        commit_all("Remove a file")
+
+
 @given('MyProject with applied patches "001-diff.patch, 002-diff.patch"')
 def step_impl(context):
     manifest = """
