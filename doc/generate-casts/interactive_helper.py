@@ -49,6 +49,7 @@ import time
 import pexpect
 
 _PUMP_SLICE = 0.02  # granularity for draining/mirroring output while paused
+_TERMINATE_GRACE = 5.0  # seconds to wait for graceful termination to take effect
 
 _KEY_ALIASES = {
     "ENTER": "\r",
@@ -226,8 +227,14 @@ if __name__ == "__main__":
             # Try a graceful termination (SIGHUP/SIGCONT/SIGINT) first so
             # dfetch's own restore-on-exit cleanup gets a chance to run;
             # SIGKILL (force=True) can't be caught, so it would skip that
-            # cleanup entirely. Only escalate if it's still alive after.
+            # cleanup entirely. pexpect's own terminate() only waits its
+            # short delayafterterminate (0.1s) between signals, which may
+            # not be enough for replay-patches' git-restore cleanup, so
+            # poll a while longer before escalating to force=True.
             dfetch_child.terminate()
+            terminate_deadline = time.monotonic() + _TERMINATE_GRACE
+            while dfetch_child.isalive() and time.monotonic() < terminate_deadline:
+                time.sleep(0.1)
             if dfetch_child.isalive():
                 dfetch_child.terminate(force=True)
     dfetch_child.close()
