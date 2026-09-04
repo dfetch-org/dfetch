@@ -1,0 +1,7 @@
+# Keep workflow files LF-terminated regardless of the checkout platform's
+# core.autocrlf setting. Windows runners otherwise check these out with
+# CRLF, and GitHub Actions embeds a `run:` block's raw bytes verbatim into
+# the generated shell script -- Cygwin's bash (unlike Git Bash) rejects a
+# CRLF-terminated line like "set +e\r" with "invalid option".
+.github/workflows/*.yml text eol=lf
+.github/workflows/*.yaml text eol=lf
