@@ -19,9 +19,10 @@ it a keystroke script read from stdin, one scripted input per line::
 - ``WAIT "<regex>"`` (optional) waits for ``<regex>`` to appear in the
   child's output before sending; omit it to send right after the previous
   line's delay (e.g. repeated Down-presses while stepping through a tree).
-- ``<keys>`` is ``ENTER``, ``DOWN``, or ``SPACE`` (resolved to their
-  terminal escape sequences), or a quoted literal sent as-is, with ``\\r``/
-  ``\\n``/``\\t`` recognised (e.g. ``"y\\r"``).
+- ``<keys>`` is ``ENTER``, ``UP``, ``DOWN``, ``LEFT``, ``RIGHT``, or
+  ``SPACE`` (resolved to their terminal escape sequences), or a quoted
+  literal sent as-is, with ``\\r``/``\\n``/``\\t`` recognised (e.g.
+  ``"y\\r"``).
 - ``DELAY <seconds>`` is how long to pause -- draining and mirroring output
   the whole time -- before sending, to simulate human timing.
 - ``REPEAT <count>`` (optional, default 1) repeats the line *count* times;
@@ -51,7 +52,10 @@ _PUMP_SLICE = 0.02  # granularity for draining/mirroring output while paused
 
 _KEY_ALIASES = {
     "ENTER": "\r",
+    "UP": "\x1b[A",
     "DOWN": "\x1b[B",
+    "RIGHT": "\x1b[C",
+    "LEFT": "\x1b[D",
     "SPACE": " ",
 }
 
@@ -112,7 +116,9 @@ def _parse_line(tokens: list[str], lineno: int) -> list[Keystroke]:
         if pos < len(tokens):
             if tokens[pos] != "REPEAT":
                 raise ValueError("expected REPEAT")
-            repeat = int(tokens[pos + 1])
+            repeat, pos = int(tokens[pos + 1]), pos + 2
+        if pos != len(tokens):
+            raise ValueError("unexpected trailing tokens")
     except (IndexError, ValueError) as exc:
         raise ValueError(f"line {lineno}: malformed keystroke: {tokens!r}") from exc
 
@@ -212,7 +218,11 @@ if __name__ == "__main__":
     )
     dfetch_child.logfile_read = sys.stdout
 
-    _drive(dfetch_child, script_keystrokes)
-    dfetch_child.expect(pexpect.EOF)
+    try:
+        _drive(dfetch_child, script_keystrokes)
+        dfetch_child.expect(pexpect.EOF)
+    finally:
+        if dfetch_child.isalive():
+            dfetch_child.terminate(force=True)
     dfetch_child.close()
     sys.exit(dfetch_child.exitstatus or 0)
