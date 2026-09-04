@@ -7,7 +7,7 @@ import os
 import pathlib
 import subprocess
 
-from behave import given  # pylint: disable=no-name-in-module
+from behave import given, then
 
 from dfetch.util.util import in_directory
 from features.steps.generic_steps import call_command, extend_file, generate_file
@@ -205,3 +205,16 @@ def step_impl(context, name, ending):
         )
         subprocess.check_call(["svn", "ci", "-m", '"Initial commit"'])
         create_tag("v1")
+
+
+@then("the svn superproject '{superproject}' reports no changes to '{path}'")
+def step_impl(_, superproject, path):
+    """Verify svn superproject reports no changes to path.
+
+    Args:
+        superproject: directory name of the svn superproject.
+        path: path inside the superproject to check for changes.
+    """
+    with in_directory(superproject):
+        result = subprocess.check_output(["svn", "status", path], text=True)
+    assert result.strip() == "", f"Unexpected changes in {path!r}:\n{result}"
