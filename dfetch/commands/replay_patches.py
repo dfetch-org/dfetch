@@ -237,12 +237,14 @@ class ReplayPatches(dfetch.commands.command.Command):
                 git_super.add_path(subproject.local_path)
             _apply_review(subproject, project.name, chosen_count, interactive, info_msg)
         finally:
-            try:
-                _restore_project(
-                    superproject, git_super, subproject, project.name, _ignored
-                )
-            finally:
-                Path(subproject.metadata_path).write_bytes(saved_metadata)
+            # Only rewrite the metadata once the restore itself has actually
+            # succeeded: if restoration fails, leaving stale metadata would
+            # claim the project is back to its original state when the
+            # worktree or index may still be in replay state.
+            _restore_project(
+                superproject, git_super, subproject, project.name, _ignored
+            )
+            Path(subproject.metadata_path).write_bytes(saved_metadata)
 
 
 def _is_safe_patch_path(patch: str) -> bool:
@@ -389,12 +391,12 @@ def _stage_one(
         staged_ok = True
     finally:
         if not staged_ok:
-            try:
-                _restore_project(
-                    superproject, git_super, subproject, project.name, _ignored
-                )
-            finally:
-                Path(subproject.metadata_path).write_bytes(saved_metadata)
+            # Only rewrite the metadata once the restore itself has actually
+            # succeeded; see _review_project's identical reasoning.
+            _restore_project(
+                superproject, git_super, subproject, project.name, _ignored
+            )
+            Path(subproject.metadata_path).write_bytes(saved_metadata)
     state = _ProjectState(
         name=project.name,
         local_path=subproject.local_path,
@@ -434,12 +436,14 @@ def _restore_one_combined(
     git_super: GitSuperProject | None,
     entry: _StagedEntry,
 ) -> None:
-    """Restore a single staged project and write back its saved metadata."""
+    """Restore a single staged project and write back its saved metadata.
+
+    Metadata is only rewritten once the restore itself has actually
+    succeeded; see _review_project's identical reasoning.
+    """
     subproject, state, saved_meta, ignored = entry
-    try:
-        _restore_project(superproject, git_super, subproject, state.name, ignored)
-    finally:
-        Path(subproject.metadata_path).write_bytes(saved_meta)
+    _restore_project(superproject, git_super, subproject, state.name, ignored)
+    Path(subproject.metadata_path).write_bytes(saved_meta)
 
 
 def _review_projects_combined(
@@ -472,11 +476,19 @@ def _review_projects_combined(
             # to tell which project each one belongs to.
             logger.info("[bold]Restoring projects...[/bold]")
             logger.reset_projects()
+        had_errors = False
         for entry in staged:
             try:
                 _restore_one_combined(superproject, git_super, entry)
             except (RuntimeError, SubprocessCommandError, OSError) as exc:
                 logger.print_error_line(entry[1].name, str(exc))
+                had_errors = True
+        if had_errors:
+            # Every staged project was still given a chance to restore above;
+            # only now, once that pass is complete, report the failure so the
+            # command doesn't exit 0 while a project's worktree or index is
+            # still in replay state.
+            raise RuntimeError("failed to restore one or more projects")
 
 
 # ---------------------------------------------------------------------------
