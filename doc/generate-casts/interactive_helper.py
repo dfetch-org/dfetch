@@ -223,6 +223,12 @@ if __name__ == "__main__":
         dfetch_child.expect(pexpect.EOF)
     finally:
         if dfetch_child.isalive():
-            dfetch_child.terminate(force=True)
+            # Try a graceful termination (SIGHUP/SIGCONT/SIGINT) first so
+            # dfetch's own restore-on-exit cleanup gets a chance to run;
+            # SIGKILL (force=True) can't be caught, so it would skip that
+            # cleanup entirely. Only escalate if it's still alive after.
+            dfetch_child.terminate()
+            if dfetch_child.isalive():
+                dfetch_child.terminate(force=True)
     dfetch_child.close()
     sys.exit(dfetch_child.exitstatus or 0)

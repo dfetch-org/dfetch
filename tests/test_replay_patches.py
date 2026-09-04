@@ -514,6 +514,58 @@ def test_stage_one_restores_worktree_on_add_path_failure():
     fake_super.restore_from_head.assert_called_once_with("proj_a")
 
 
+def test_restore_one_combined_skips_metadata_write_on_restore_failure():
+    """Metadata is left untouched (not falsely marked clean) when the restore itself fails."""
+    from dfetch.commands.replay_patches import _ProjectState, _restore_one_combined
+
+    fake_super = _make_multi_superproject(["proj_a"])
+    sub_a = _make_named_subproject("proj_a")
+    fake_super.restore_from_head.side_effect = RuntimeError("boom")
+    staged_bytes = b"staged-state"
+    Path(sub_a.metadata_path).write_bytes(staged_bytes)
+    entry = (
+        sub_a,
+        _ProjectState(name="proj_a", local_path="proj_a", patches=sub_a.patch),
+        b"original-state",
+        list,
+    )
+
+    with pytest.raises(RuntimeError, match="boom"):
+        _restore_one_combined(fake_super, fake_super, entry)
+
+    assert Path(sub_a.metadata_path).read_bytes() == staged_bytes
+
+
+def test_combined_restore_failure_raises_but_still_restores_every_project():
+    """A restore failure for one project doesn't stop restoration of the others, and is reported."""
+    cmd = ReplayPatches()
+    fake_super = _make_multi_superproject(["proj_a", "proj_b"])
+    sub_a = _make_named_subproject("proj_a")
+    sub_b = _make_named_subproject("proj_b")
+    fake_super.restore_from_head.side_effect = lambda path: (
+        (_ for _ in ()).throw(RuntimeError("boom")) if path == "proj_a" else None
+    )
+
+    with patch(
+        "dfetch.commands.replay_patches.create_super_project", return_value=fake_super
+    ):
+        with patch(
+            "dfetch.commands.replay_patches.create_sub_project",
+            side_effect=[sub_a, sub_b],
+        ):
+            with patch("dfetch.commands.replay_patches.is_tty", return_value=False):
+                with patch("dfetch.commands.replay_patches.in_directory"):
+                    with patch(
+                        "dfetch.commands.replay_patches._is_safe_patch_path",
+                        return_value=True,
+                    ):
+                        with pytest.raises(RuntimeError):
+                            cmd(_make_args())
+
+    fake_super.restore_from_head.assert_any_call("proj_a")
+    fake_super.restore_from_head.assert_any_call("proj_b")
+
+
 def test_is_safe_patch_path_rejects_missing_and_outside_root():
     """A missing patch, or one outside cwd, is rejected rather than handed to Patch.from_file."""
     from dfetch.commands.replay_patches import _is_safe_patch_path
