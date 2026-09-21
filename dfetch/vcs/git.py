@@ -12,6 +12,7 @@ from urllib.parse import urlparse, urlunparse
 
 from dfetch.log import get_logger
 from dfetch.util.cmdline import SubprocessCommandError, run_on_cmdline
+from dfetch.util.license import is_license_file
 from dfetch.util.ssh import InvalidSshCommandError, sanitize_ssh_cmd
 from dfetch.util.util import in_directory, safe_rm
 from dfetch.vcs import git_submodule
@@ -487,6 +488,29 @@ class GitLocalRepo:
 
             f.write("\n".join(map(str, patterns)) + "\n")
 
+    @staticmethod
+    def _drop_directories_matching_license_globs(src: str | None) -> None:
+        """Undo the license keep patterns matching root-level directories.
+
+        The sparse-checkout keep patterns for license files (see
+        ``LICENSE_GLOBS``) are written without a trailing slash so plain
+        ``fnmatch`` can also recognise them elsewhere; in a sparse-checkout
+        pattern file that same lack of a trailing slash makes them match
+        directories too, e.g. a root-level ``licensecore/`` folder ends up
+        vendored whole (#1428). Only files should ever be kept as license
+        files, so any root-level directory that merely shares the name is
+        removed again here, unless it is the directory requested via
+        ``src:`` itself.
+        """
+        keep_root = Path(src).parts[0] if src else None
+        for entry in Path(".").iterdir():
+            if (
+                entry.is_dir()
+                and entry.name != keep_root
+                and is_license_file(entry.name)
+            ):
+                safe_rm(entry, within=".")
+
     def checkout_version(
         self,
         options: CheckoutOptions,
@@ -515,6 +539,9 @@ class GitLocalRepo:
                 env=_extend_env_for_non_interactive_mode(),
             )
             run_on_cmdline(logger, ["git", "reset", "--hard", "FETCH_HEAD"])
+
+            if options.src or options.ignore:
+                self._drop_directories_matching_license_globs(options.src)
 
             if options.eol is not None:
                 self._renormalize_eol()
