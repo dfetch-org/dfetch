@@ -63,6 +63,32 @@ Feature: Keep license in project
                 dfetch.yaml
             """
 
+    Scenario: A 'src:' glob whose root component looks like a license file is kept
+        Given the manifest 'dfetch.yaml' in MyProject
+            """
+            manifest:
+                version: 0.0
+                projects:
+                    - name: SomeProjectWithLicenseLikeSrc
+                      url: some-remote-server/SomeProjectWithLicenseLikeSrc.git
+                      src: licen*/
+                      tag: v1
+            """
+        And a git-repository "SomeProjectWithLicenseLikeSrc.git" with the files
+            | path                       |
+            | LICENSE                    |
+            | licensecore/SomeFile.txt   |
+        When I run "dfetch update"
+        Then 'MyProject' looks like:
+            """
+            MyProject/
+                SomeProjectWithLicenseLikeSrc/
+                    .dfetch_data.yaml
+                    LICENSE
+                    SomeFile.txt
+                dfetch.yaml
+            """
+
     Scenario: License is preserved in svn repo sparse checkout and cannot be ignored
         Given the manifest 'dfetch.yaml' in MyProject
             """

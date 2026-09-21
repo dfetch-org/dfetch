@@ -1,6 +1,7 @@
 """Git specific implementation."""
 
 import contextlib
+import fnmatch
 import functools
 import os
 import re
@@ -500,14 +501,15 @@ class GitLocalRepo:
         vendored whole (#1428). Only files should ever be kept as license
         files, so any root-level directory that merely shares the name is
         removed again here, unless it is the directory requested via
-        ``src:`` itself.
+        ``src:`` itself -- whose leading path component may itself be a
+        glob (e.g. ``licen*/``), so it is matched with ``fnmatch`` too.
         """
         keep_root = Path(src).parts[0] if src else None
         for entry in Path(".").iterdir():
             if (
                 entry.is_dir()
-                and entry.name != keep_root
                 and is_license_file(entry.name)
+                and not (keep_root and fnmatch.fnmatch(entry.name, keep_root))
             ):
                 safe_rm(entry, within=".")
 
