@@ -2,6 +2,7 @@ Release 0.15.0 (unreleased)
 ==============================
 
 * Add ``replay-patches`` command to step through patch contributions interactively (#1290)
+* Fix a root-level directory matching a license glob being vendored alongside ``src:`` (#1428)
 
 Release 0.14.4 (released 2026-08-28)
 ====================================
