@@ -1,5 +1,5 @@
-Release 0.15.0 (unreleased)
-==============================
+Release 0.15.0 (released 2026-10-07)
+====================================
 
 * Add ``replay-patches`` command to step through patch contributions interactively (#1290)
 * Fix ``dfetch diff`` writing patch outside superproject (thanks @sadandbset)

@@ -34,7 +34,7 @@ Feature: Replay patches in svn
         When I run "dfetch replay-patches SomeProject" in MySvnProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.15.0)
             replay-patches has limited support in SVN superprojects (no staging area, use `svn diff` to inspect changes)
               SomeProject:
               > Fetched trunk - 1
@@ -56,7 +56,7 @@ Feature: Replay patches in svn
         When I run "dfetch replay-patches --count 0 SomeProject" in MySvnProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.15.0)
             replay-patches has limited support in SVN superprojects (no staging area, use `svn diff` to inspect changes)
               SomeProject:
               > Fetched trunk - 1

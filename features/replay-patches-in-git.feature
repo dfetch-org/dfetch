@@ -38,7 +38,7 @@ Feature: Replay patches in git
         When I run "dfetch replay-patches SomeProject" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.15.0)
               SomeProject:
               > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
               > Applying patch "patches/SomeProject.patch"
@@ -56,7 +56,7 @@ Feature: Replay patches in git
         When I run "dfetch replay-patches --count 0 SomeProject" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.15.0)
               SomeProject:
               > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
               > stage = upstream, working tree = 0 patch(es) applied, open your editor and run `git diff` to inspect
@@ -80,7 +80,7 @@ Feature: Replay patches in git
         When I run "dfetch replay-patches SomeProject" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.15.0)
               SomeProject:
               > skipped - there is no patch file, use "dfetch diff SomeProject" to create one
             """
@@ -90,7 +90,7 @@ Feature: Replay patches in git
         When I run "dfetch replay-patches SomeProject" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.15.0)
               SomeProject:
               > skipped - uncommitted changes in SomeProject
             """
@@ -122,7 +122,7 @@ Feature: Replay patches in git
         When I run "dfetch replay-patches" in MyProject
         Then the output shows
             """
-            Dfetch (0.14.0)
+            Dfetch (0.15.0)
               SomeProject:
               > Fetched master - f9b88b8259d9a7fb48327bf23beabe40c150d474
               OtherProject:

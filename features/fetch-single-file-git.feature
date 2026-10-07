@@ -22,7 +22,7 @@ Feature: Fetch single file from git repo
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.14.4)
+            Dfetch (0.15.0)
               SomeProjectWithAnInterestingFile:
               > Fetched v1
             """
@@ -54,7 +54,7 @@ Feature: Fetch single file from git repo
         When I run "dfetch update"
         Then the output shows
             """
-            Dfetch (0.14.4)
+            Dfetch (0.15.0)
               SomeProjectWithAnInterestingFile:
               > Fetched v1
             """
