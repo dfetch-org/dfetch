@@ -2,6 +2,7 @@ Release 0.15.0 (unreleased)
 ==============================
 
 * Add ``replay-patches`` command to step through patch contributions interactively (#1290)
+* Fix ``dfetch diff`` writing the patch outside the superproject for a crafted project name
 
 Release 0.14.4 (released 2026-08-28)
 ====================================

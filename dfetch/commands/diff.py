@@ -19,6 +19,10 @@ The below statement will generate a patch for ``some-project`` from your manifes
 
    $ dfetch diff some-project
 
+The patch is written as ``<project>.patch`` in the directory of your manifest.
+*Dfetch* keeps it there: a project name that would place the patch outside
+the superproject (e.g. ``../some-project``) is reported as an error.
+
 .. tabs::
 
    .. tab:: Git
@@ -63,7 +67,7 @@ from dfetch.log import get_logger
 from dfetch.project import create_super_project
 from dfetch.project.metadata import Metadata
 from dfetch.project.superproject import NoVcsSuperProject, RevisionRange, SuperProject
-from dfetch.util.util import in_directory
+from dfetch.util.util import check_no_path_traversal, in_directory
 
 logger = get_logger(__name__)
 
@@ -165,6 +169,7 @@ class Diff(dfetch.commands.command.Command):
         msg = self._rev_msg(old_rev, new_rev)
         if patch:
             patch_path = pathlib.Path(f"{project.name}.patch")
+            check_no_path_traversal(patch_path, superproject.root_directory)
             logger.print_info_line(
                 project.name,
                 f"Generating patch {patch_path} {msg} in {superproject.root_directory}",
