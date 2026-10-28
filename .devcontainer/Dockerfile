@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/python:3.13-trixie@sha256:c3a082525f51bb81e3d952d5ec12c2bed3525179a45ef3a09d48993ebc871133
+FROM mcr.microsoft.com/devcontainers/python:3.15-trixie@sha256:4e9aee4b9498b21ecb00e3049ea050ae90d2dbe735ccac7f7f796f0ddc03d9fb
 
 # Remove yarn source to avoid conflicts (https://github.com/devcontainers/images/issues/1752)
 RUN rm -f /etc/apt/sources.list.d/yarn.list \
